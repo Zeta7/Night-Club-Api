@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  WORKER
+  CUSTOMER
+}
+
+enum UserStatus {
+  PENDING_PHONE_CONFIRMATION
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum PhoneVerificationPurpose {
+  REGISTRATION
+  ACCOUNT_RECOVERY
+}
+
+enum ClubStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  INACTIVE
+}
+
+enum ClubWorkerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum WorkerPermission {
+  VALIDATE_TICKETS
+  VALIDATE_PRODUCTS
+  VALIDATE_PROMOTIONS
+  VIEW_CAPACITY
+  MANAGE_CAPACITY
+  VIEW_DASHBOARD
+  VIEW_EVENT_ATTENDANCE
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  SALE_ACTIVE
+  SOLD_OUT
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+  POSTPONED
+}
+
+enum TicketTypeStatus {
+  ACTIVE
+  INACTIVE
+  SOLD_OUT
+}
+
+model User {
+  id               String     @id @default(uuid())
+  phoneCountryCode String
+  phoneNumber      String
+  phoneVerifiedAt  DateTime?
+  email            String?    @unique
+  emailVerifiedAt  DateTime?
+  passwordHash     String
+  fullName         String
+  role             UserRole   @default(CUSTOMER)
+  status           UserStatus @default(PENDING_PHONE_CONFIRMATION)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  phoneVerificationCodes PhoneVerificationCode[]
+  refreshTokens          RefreshToken[]
+  clubAdmins             ClubAdmin[]
+  clubWorkers            ClubWorker[]
+
+  @@unique([phoneCountryCode, phoneNumber])
+  @@index([phoneCountryCode, phoneNumber])
+}
+
+model PhoneVerificationCode {
+  id               String                   @id @default(uuid())
+  userId           String
+  phoneCountryCode String
+  phoneNumber      String
+  codeHash         String
+  purpose          PhoneVerificationPurpose @default(REGISTRATION)
+  expiresAt        DateTime
+  consumedAt       DateTime?
+  attempts         Int                      @default(0)
+  createdAt        DateTime                 @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([phoneCountryCode, phoneNumber, purpose])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
+
+model PlatformSettings {
+  id           String   @id @default("platform")
+  settingsJson String   @default("{}")
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+}
+
+model Club {
+  id              String     @id @default(uuid())
+  name            String
+  description     String?
+  type            String     @default("club")
+  addressJson     Json?
+  contactJson     Json?
+  coverImageUrl   String?
+  profileImageUrl String?
+  socialMediaJson Json?
+  scheduleJson    Json?
+  status          ClubStatus @default(PENDING_APPROVAL)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  admins      ClubAdmin[]
+  workers     ClubWorker[]
+  events      Event[]
+  ticketTypes TicketType[]
+
+  @@index([status])
+}
+
+model ClubAdmin {
+  id        String   @id @default(uuid())
+  clubId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  club Club @relation(fields: [clubId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([clubId, userId])
+  @@index([userId])
+  @@index([clubId])
+}
+
+model ClubWorker {
+  id          String             @id @default(uuid())
+  clubId      String
+  userId      String
+  status      ClubWorkerStatus   @default(ACTIVE)
+  permissions WorkerPermission[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([clubId, userId])
+  @@index([userId])
+  @@index([clubId])
+  @@index([status])
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  clubId      String
+  name        String
+  description String?
+  imageUrl    String?
+  startsAt    DateTime
+  endsAt      DateTime
+  capacity    Int
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  club        Club         @relation(fields: [clubId], references: [id])
+  ticketTypes TicketType[]
+
+  @@index([clubId])
+  @@index([status])
+  @@index([startsAt])
+}
+
+model TicketType {
+  id            String           @id @default(uuid())
+  clubId        String
+  eventId       String?
+  name          String
+  description   String?
+  priceCents    Int
+  currency      String           @default("PEN")
+  quantityTotal Int
+  quantitySold  Int              @default(0)
+  perUserLimit  Int?
+  saleStartAt   DateTime?
+  saleEndAt     DateTime?
+  status        TicketTypeStatus @default(ACTIVE)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  club  Club   @relation(fields: [clubId], references: [id])
+  event Event? @relation(fields: [eventId], references: [id])
+
+  @@index([clubId])
+  @@index([eventId])
+  @@index([status])
+  @@index([clubId, eventId])
+}
