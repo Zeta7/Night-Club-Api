@@ -1,13 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateEventDto {
@@ -22,10 +23,16 @@ export class CreateEventDto {
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ example: 'https://example.com/event.jpg' })
-  @IsUrl({}, { message: 'La imagen debe ser una URL valida.' })
+  @ApiPropertyOptional({ example: 'upload-id-uuid' })
+  @IsString({ message: 'El upload de la imagen debe ser texto.' })
   @IsOptional()
-  imageUrl?: string;
+  imageUploadId?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @ValidateIf((object: CreateEventDto) => object.imageUploadId === undefined)
+  @IsBoolean({ message: 'El indicador removeImage debe ser booleano.' })
+  @IsOptional()
+  removeImage?: boolean;
 
   @ApiProperty({ example: '2026-08-01T22:00:00.000Z' })
   @IsDateString({}, { message: 'La fecha de inicio debe tener formato ISO valido.' })

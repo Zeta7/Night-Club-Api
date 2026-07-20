@@ -28,6 +28,7 @@ Responsable de usuarios, autenticacion, sesiones, refresh tokens y roles base.
 Entidades:
 
 - User.
+  - Debe almacenar datos visibles para la app como nombre, telefono, email y foto de perfil.
 - Session.
 - RefreshToken.
 
@@ -87,6 +88,8 @@ Entidades:
 - Club.
 - ClubAdmin.
 - ClubWorker.
+  - Representa la relacion operativa entre un usuario y una discoteca.
+  - Debe almacenar el rol visible del trabajador en el negocio, por ejemplo `Portero`, `Caja` o `Barra 1`.
 - WorkerPermission.
 
 Value Objects:

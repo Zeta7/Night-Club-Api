@@ -26,8 +26,8 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('NightClub Platform API')
-    .setDescription('API REST para la plataforma NightClub Platform.')
+    .setTitle('Beerry API')
+    .setDescription('API REST para la plataforma Beerry Platform.')
     .setVersion('0.1.0')
     .addBearerAuth()
     .build();
@@ -39,7 +39,8 @@ async function bootstrap() {
   });
 
   const port = config.get<number>('PORT') ?? 3000;
-  await app.listen(port);
+  const host = config.get<string>('HOST') ?? '0.0.0.0';
+  await app.listen(port, host);
 }
 
 void bootstrap();

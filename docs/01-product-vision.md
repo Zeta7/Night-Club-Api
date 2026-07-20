@@ -56,6 +56,7 @@ NightClub Platform permitira a los establecimientos:
 El MVP debe cubrir:
 
 - Registro e inicio de sesion.
+- Gestion basica de perfil del usuario autenticado, incluyendo foto de perfil.
 - Administracion de clubes.
 - Administracion de eventos.
 - Venta de entradas, productos y promociones.
@@ -82,4 +83,3 @@ Quedan para futuras versiones:
 - Reservas.
 - Recomendaciones con IA.
 - Suscripciones Premium para clubes.
-

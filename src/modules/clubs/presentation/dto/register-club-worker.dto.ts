@@ -9,6 +9,14 @@ export class RegisterClubWorkerDto {
   userId!: string;
 
   @ApiProperty({
+    description: 'Rol operativo visible dentro de la discoteca.',
+    example: 'Barra 1',
+  })
+  @IsString({ message: 'El rol del trabajador debe ser texto.' })
+  @IsNotEmpty({ message: 'El rol del trabajador es obligatorio.' })
+  roleLabel!: string;
+
+  @ApiProperty({
     enum: WorkerPermission,
     isArray: true,
     example: [WorkerPermission.VALIDATE_TICKETS],

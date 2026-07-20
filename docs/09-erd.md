@@ -14,6 +14,7 @@ Este documento define el modelo entidad-relacion inicial para el MVP. El detalle
 - phoneVerifiedAt.
 - email.
 - emailVerifiedAt.
+- profileImageUrl.
 - passwordHash.
 - fullName.
 - role.
@@ -104,6 +105,7 @@ Relaciona administradores con clubes.
 - id.
 - clubId.
 - userId.
+- roleLabel.
 - status.
 - createdAt.
 - updatedAt.

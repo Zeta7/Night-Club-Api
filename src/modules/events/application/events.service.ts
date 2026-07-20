@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ClubStatus, EventStatus, UserRole } from '@prisma/client';
+import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
+import { UploadsService } from '../../uploads/application/uploads.service';
 import { CreateEventDto } from '../presentation/dto/create-event.dto';
 import { UpdateEventDto } from '../presentation/dto/update-event.dto';
 
@@ -15,28 +18,44 @@ const PUBLIC_EVENT_STATUSES = [
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploadsService: UploadsService,
+    private readonly config: ConfigService,
+  ) {}
 
   async createEvent(currentUser: AuthenticatedUser, clubId: string, input: CreateEventDto) {
     await this.assertCanManageClub(currentUser, clubId);
     const { startsAt, endsAt } = parseEventDates(input.startsAt, input.endsAt);
 
-    const event = await this.prisma.event.create({
-      data: {
-        clubId,
-        name: normalizeText(input.name),
-        description: normalizeOptionalText(input.description),
-        imageUrl: normalizeOptionalText(input.imageUrl),
-        startsAt,
-        endsAt,
-        capacity: input.capacity,
-      },
-      include: eventInclude,
+    this.assertImageMutationInput(input.imageUploadId, input.removeImage);
+
+    const event = await this.prisma.$transaction(async (tx) => {
+      const consumedImage = input.imageUploadId
+          ? await this.uploadsService.consumeUpload({
+              uploadId: input.imageUploadId,
+              userId: currentUser.id,
+              transaction: tx,
+            })
+          : null;
+
+      return tx.event.create({
+        data: {
+          clubId,
+          name: normalizeText(input.name),
+          description: normalizeOptionalText(input.description),
+          imageUrl: consumedImage?.url ?? null,
+          startsAt,
+          endsAt,
+          capacity: input.capacity,
+        },
+        include: eventInclude,
+      });
     });
 
     return {
       message: 'Evento creado correctamente.',
-      event: toEventResponse(event),
+      event: toEventResponse(event, this.config),
     };
   }
 
@@ -51,7 +70,7 @@ export class EventsService {
 
     return {
       message: 'Eventos del club obtenidos correctamente.',
-      events: events.map(toEventResponse),
+      events: events.map((event) => toEventResponse(event, this.config)),
     };
   }
 
@@ -67,7 +86,7 @@ export class EventsService {
 
     return {
       message: 'Eventos publicos obtenidos correctamente.',
-      events: events.map(toEventResponse),
+      events: events.map((event) => toEventResponse(event, this.config)),
     };
   }
 
@@ -136,11 +155,11 @@ export class EventsService {
               type: 'selling_out',
               title: 'Proximo a agotarse',
               text: nearlySoldOutEvent.name,
-              imageUrl: nearlySoldOutEvent.imageUrl,
+              imageUrl: buildMediaUrl(nearlySoldOutEvent.imageUrl, this.config),
             },
           ]
         : [],
-      events: club.events.map((event) => toAdminEventCard(event, now)),
+      events: club.events.map((event) => toAdminEventCard(event, now, this.config)),
       topEvents: visibleEvents.slice(0, 3).map((event, index) => ({
         rank: index + 1,
         id: event.id,
@@ -167,7 +186,7 @@ export class EventsService {
 
     return {
       message: 'Evento obtenido correctamente.',
-      event: toEventResponse(event),
+      event: toEventResponse(event, this.config),
     };
   }
 
@@ -196,10 +215,6 @@ export class EventsService {
       data.description = normalizeOptionalText(input.description);
     }
 
-    if (input.imageUrl !== undefined) {
-      data.imageUrl = normalizeOptionalText(input.imageUrl);
-    }
-
     if (input.capacity !== undefined) {
       data.capacity = input.capacity;
     }
@@ -214,15 +229,33 @@ export class EventsService {
       data.endsAt = endsAt;
     }
 
-    const event = await this.prisma.event.update({
-      where: { id: eventId },
-      data,
-      include: eventInclude,
+    this.assertImageMutationInput(input.imageUploadId, input.removeImage);
+    const currentEvent = await this.findEventOrFail(clubId, eventId);
+
+    const event = await this.prisma.$transaction(async (tx) => {
+      if (input.imageUploadId) {
+        const replacement = await this.uploadsService.replaceUpload({
+          uploadId: input.imageUploadId,
+          userId: currentUser.id,
+          previousObjectKey: currentEvent.imageUrl,
+          transaction: tx,
+        });
+        data.imageUrl = replacement.url;
+      } else if (input.removeImage) {
+        data.imageUrl = null;
+        await this.uploadsService.queueObjectDeletion(currentEvent.imageUrl, tx);
+      }
+
+      return tx.event.update({
+        where: { id: eventId },
+        data,
+        include: eventInclude,
+      });
     });
 
     return {
       message: 'Evento actualizado correctamente.',
-      event: toEventResponse(event),
+      event: toEventResponse(event, this.config),
     };
   }
 
@@ -320,7 +353,7 @@ export class EventsService {
 
     return {
       message,
-      event: toEventResponse(event),
+      event: toEventResponse(event, this.config),
     };
   }
 
@@ -388,6 +421,18 @@ export class EventsService {
       );
     }
   }
+
+  private assertImageMutationInput(
+    imageUploadId?: string,
+    removeImage?: boolean,
+  ) {
+    if (imageUploadId && removeImage) {
+      throw badRequest(
+        'EVENT_IMAGE_INPUT_CONFLICT',
+        'No puedes enviar imageUploadId y removeImage al mismo tiempo.',
+      );
+    }
+  }
 }
 
 const eventInclude = {
@@ -445,12 +490,14 @@ const toEventResponse = (event: {
     createdAt: Date;
     updatedAt: Date;
   }>;
-}) => ({
+}, config: ConfigService) => ({
   id: event.id,
   clubId: event.clubId,
   name: event.name,
   description: event.description,
-  imageUrl: event.imageUrl,
+  imageUrl: buildMediaUrl(event.imageUrl, config),
+  imageObjectKey: event.imageUrl,
+  imagePublicUrl: buildMediaUrl(event.imageUrl, config),
   startsAt: event.startsAt,
   endsAt: event.endsAt,
   capacity: event.capacity,
@@ -505,6 +552,7 @@ const toAdminEventCard = (
     }>;
   },
   now: Date,
+  config: ConfigService,
 ) => {
   const status = getAdminEventDisplayStatus(event, now);
   const ticketTypes = event.ticketTypes ?? [];
@@ -520,7 +568,7 @@ const toAdminEventCard = (
     id: event.id,
     name: event.name,
     description: event.description,
-    imageUrl: event.imageUrl,
+    imageUrl: buildMediaUrl(event.imageUrl, config),
     startsAt: event.startsAt,
     endsAt: event.endsAt,
     createdAt: event.createdAt,

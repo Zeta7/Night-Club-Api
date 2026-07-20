@@ -63,6 +63,39 @@ enum TicketTypeStatus {
   SOLD_OUT
 }
 
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+}
+
+enum PromotionStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PromotionPricingMode {
+  CALCULATED
+  MANUAL_FINAL_PRICE
+}
+
+enum PromotionItemType {
+  PRODUCT
+  TICKET
+}
+
+enum PromotionDiscountType {
+  NONE
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum UploadStatus {
+  PENDING
+  TEMPORARY
+  USED
+}
+
 model User {
   id               String     @id @default(uuid())
   phoneCountryCode String
@@ -72,6 +105,7 @@ model User {
   emailVerifiedAt  DateTime?
   passwordHash     String
   fullName         String
+  profileImageUrl  String?
   role             UserRole   @default(CUSTOMER)
   status           UserStatus @default(PENDING_PHONE_CONFIRMATION)
   createdAt        DateTime   @default(now())
@@ -81,6 +115,7 @@ model User {
   refreshTokens          RefreshToken[]
   clubAdmins             ClubAdmin[]
   clubWorkers            ClubWorker[]
+  uploads                Upload[]
 
   @@unique([phoneCountryCode, phoneNumber])
   @@index([phoneCountryCode, phoneNumber])
@@ -145,6 +180,8 @@ model Club {
   workers     ClubWorker[]
   events      Event[]
   ticketTypes TicketType[]
+  products    Product[]
+  promotions  Promotion[]
 
   @@index([status])
 }
@@ -167,6 +204,7 @@ model ClubWorker {
   id          String             @id @default(uuid())
   clubId      String
   userId      String
+  roleLabel   String?
   status      ClubWorkerStatus   @default(ACTIVE)
   permissions WorkerPermission[]
   createdAt   DateTime           @default(now())
@@ -196,6 +234,7 @@ model Event {
 
   club        Club         @relation(fields: [clubId], references: [id])
   ticketTypes TicketType[]
+  promotions  Promotion[]
 
   @@index([clubId])
   @@index([status])
@@ -221,9 +260,119 @@ model TicketType {
 
   club  Club   @relation(fields: [clubId], references: [id])
   event Event? @relation(fields: [eventId], references: [id])
+  promotionItems PromotionItem[]
 
   @@index([clubId])
   @@index([eventId])
   @@index([status])
   @@index([clubId, eventId])
+}
+
+model Product {
+  id            String        @id @default(uuid())
+  clubId        String
+  name          String
+  description   String?
+  imageUrl      String?
+  priceCents    Int
+  currency      String        @default("PEN")
+  stockQuantity Int
+  status        ProductStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id])
+  promotionItems PromotionItem[]
+
+  @@index([clubId])
+  @@index([status])
+  @@index([clubId, status])
+}
+
+model Promotion {
+  id              String                @id @default(uuid())
+  clubId          String
+  eventId         String?
+  name            String
+  description     String?
+  imageUrl        String?
+  pricingMode     PromotionPricingMode  @default(CALCULATED)
+  basePriceCents  Int
+  finalPriceCents Int
+  currency        String                @default("PEN")
+  status          PromotionStatus       @default(ACTIVE)
+  startsAt        DateTime?
+  endsAt          DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  club  Club   @relation(fields: [clubId], references: [id])
+  event Event? @relation(fields: [eventId], references: [id])
+  items PromotionItem[]
+
+  @@index([clubId])
+  @@index([eventId])
+  @@index([status])
+  @@index([clubId, status])
+  @@index([clubId, eventId])
+}
+
+model PromotionItem {
+  id                     String                 @id @default(uuid())
+  promotionId            String
+  itemType               PromotionItemType
+  productId              String?
+  ticketTypeId           String?
+  quantity               Int
+  baseUnitPriceCents     Int
+  discountType           PromotionDiscountType  @default(NONE)
+  discountValue          Int                    @default(0)
+  discountedUnitPriceCents Int
+  lineBaseTotalCents     Int
+  lineFinalTotalCents    Int
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  promotion  Promotion  @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product    Product?   @relation(fields: [productId], references: [id])
+  ticketType TicketType? @relation(fields: [ticketTypeId], references: [id])
+
+  @@index([promotionId])
+  @@index([productId])
+  @@index([ticketTypeId])
+}
+
+model Upload {
+  id           String       @id @default(uuid())
+  userId       String
+  objectKey    String       @unique
+  originalName String
+  contentType  String
+  sizeBytes    Int
+  status       UploadStatus @default(PENDING)
+  expiresAt    DateTime?
+  confirmedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([status, expiresAt])
+}
+
+model PendingFileDeletion {
+  id            String   @id @default(uuid())
+  objectKey     String   @unique
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  lastError     String?
+  createdAt     DateTime @default(now())
+  deletedAt     DateTime?
+
+  @@index([nextAttemptAt])
+  @@index([deletedAt])
+  @@index([deletedAt, nextAttemptAt])
 }

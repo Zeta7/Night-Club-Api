@@ -1,9 +1,9 @@
 {
-  "name": "nightclub-platform-backend",
+  "name": "beerry-platform-backend",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.34.3",
-  "description": "Backend API for NightClub Platform.",
+  "description": "Backend API for Beerry Platform.",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",

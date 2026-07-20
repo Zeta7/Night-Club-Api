@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -70,5 +70,20 @@ export class ClubWorkersController {
     @Body() body: ReplaceClubWorkerPermissionsDto,
   ) {
     return this.clubWorkersService.replacePermissions(currentUser, clubId, workerId, body);
+  }
+
+  @Delete(':workerId')
+  @ApiOperation({
+    summary: 'Desvincular trabajador del club (ADMIN, SUPER_ADMIN)',
+    description:
+      'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para eliminar la relacion operativa entre un trabajador y el club.',
+  })
+  @ApiResponse({ status: 200, description: 'Trabajador desvinculado correctamente.' })
+  removeWorker(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('workerId') workerId: string,
+  ) {
+    return this.clubWorkersService.removeWorker(currentUser, clubId, workerId);
   }
 }

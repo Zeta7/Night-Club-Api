@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { ClubsService } from '../application/clubs.service';
 import { CreateClubDto } from './dto/create-club.dto';
+import { CustomerHomeQueryDto } from './dto/customer-home-query.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 
 @ApiTags('Clubs')
@@ -37,13 +38,27 @@ export class ClubsController {
 
   @Get('admin/dashboard')
   @ApiOperation({
-    summary: 'Obtener dashboard admin del club (ADMIN, SUPER_ADMIN)',
+    summary: 'Obtener dashboard admin del club (ADMIN, SUPER_ADMIN, WORKER)',
     description:
-      'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve el estado del dashboard admin; si el usuario admin aun no administra una discoteca, retorna hasClub=false con los datos necesarios para mostrar la pantalla sin datos.',
+      'Roles permitidos: ADMIN, SUPER_ADMIN, WORKER. Requiere accessToken. Devuelve el estado del dashboard operativo del club; si el usuario es WORKER tambien incluye su contexto de permisos para que mobile pueda mostrar solo los modulos habilitados.',
   })
   @ApiResponse({ status: 200, description: 'Dashboard admin obtenido correctamente.' })
   getAdminDashboard(@CurrentUser() currentUser: AuthenticatedUser) {
     return this.clubsService.getAdminDashboard(currentUser);
+  }
+
+  @Get('customer/home')
+  @ApiOperation({
+    summary: 'Obtener home del cliente por ubicacion (AUTENTICADO)',
+    description:
+      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve el contenido del inicio del cliente filtrado por la ciudad/zona enviada desde mobile y solo considera discotecas activas con eventos, promociones y productos visibles.',
+  })
+  @ApiResponse({ status: 200, description: 'Home del cliente obtenido correctamente.' })
+  getCustomerHome(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query() query: CustomerHomeQueryDto,
+  ) {
+    return this.clubsService.getCustomerHome(currentUser, query);
   }
 
   @Get(':clubId')

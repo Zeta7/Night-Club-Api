@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -59,5 +59,27 @@ export class ClubTicketsController {
     @Param('ticketTypeId') ticketTypeId: string,
   ) {
     return this.ticketsService.deactivateTicketType(currentUser, clubId, ticketTypeId);
+  }
+
+  @Patch(':ticketTypeId/activate')
+  @ApiOperation({ summary: 'Activar tipo de entrada (ADMIN, SUPER_ADMIN)' })
+  @ApiResponse({ status: 200, description: 'Entrada activada correctamente.' })
+  activateTicketType(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('ticketTypeId') ticketTypeId: string,
+  ) {
+    return this.ticketsService.activateTicketType(currentUser, clubId, ticketTypeId);
+  }
+
+  @Delete(':ticketTypeId')
+  @ApiOperation({ summary: 'Eliminar tipo de entrada (ADMIN, SUPER_ADMIN)' })
+  @ApiResponse({ status: 200, description: 'Entrada eliminada correctamente.' })
+  deleteTicketType(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('ticketTypeId') ticketTypeId: string,
+  ) {
+    return this.ticketsService.deleteTicketType(currentUser, clubId, ticketTypeId);
   }
 }

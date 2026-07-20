@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -14,9 +14,9 @@ export class UploadsController {
 
   @Post('presigned-url')
   @ApiOperation({
-    summary: 'Generar URL firmada para subir imagen (ADMIN, SUPER_ADMIN)',
+    summary: 'Generar URL firmada para subir imagen',
     description:
-      'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para generar una URL temporal de subida directa a S3 para imagenes de clubes o eventos existentes.',
+      'Requiere accessToken. Se usa para generar una URL temporal de subida directa a S3 para imagenes que luego seran confirmadas y consumidas por otros modulos.',
   })
   @ApiResponse({ status: 201, description: 'URL firmada generada correctamente.' })
   createPresignedUploadUrl(
@@ -24,5 +24,19 @@ export class UploadsController {
     @Body() body: CreatePresignedUploadUrlDto,
   ) {
     return this.uploadsService.createPresignedUploadUrl(currentUser, body);
+  }
+
+  @Post(':uploadId/confirm')
+  @ApiOperation({
+    summary: 'Confirmar upload temporal',
+    description:
+      'Requiere accessToken. Verifica el objeto en S3, valida tamano/tipo y deja el archivo disponible temporalmente para ser consumido por otro modulo.',
+  })
+  @ApiResponse({ status: 201, description: 'Upload confirmado correctamente.' })
+  confirmUpload(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('uploadId') uploadId: string,
+  ) {
+    return this.uploadsService.confirmUpload(currentUser, uploadId);
   }
 }

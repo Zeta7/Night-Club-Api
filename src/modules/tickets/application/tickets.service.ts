@@ -145,6 +145,76 @@ export class TicketsService {
     };
   }
 
+  async activateTicketType(currentUser: AuthenticatedUser, clubId: string, ticketTypeId: string) {
+    const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, null);
+    await this.assertCanManageClub(currentUser, clubId);
+    const nextStatus =
+      current.quantityTotal > 0 && current.quantitySold >= current.quantityTotal
+        ? TicketTypeStatus.SOLD_OUT
+        : TicketTypeStatus.ACTIVE;
+    const ticketType = await this.prisma.ticketType.update({
+      where: { id: ticketTypeId },
+      data: { status: nextStatus },
+      include: ticketTypeInclude,
+    });
+    return {
+      message: 'Entrada activada correctamente.',
+      ticketType: toTicketTypeResponse(ticketType),
+    };
+  }
+
+  async activateEventTicketType(
+    currentUser: AuthenticatedUser,
+    clubId: string,
+    eventId: string,
+    ticketTypeId: string,
+  ) {
+    const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, eventId);
+    await this.assertCanManageEvent(currentUser, clubId, eventId);
+    const nextStatus =
+      current.quantityTotal > 0 && current.quantitySold >= current.quantityTotal
+        ? TicketTypeStatus.SOLD_OUT
+        : TicketTypeStatus.ACTIVE;
+    const ticketType = await this.prisma.ticketType.update({
+      where: { id: ticketTypeId },
+      data: { status: nextStatus },
+      include: ticketTypeInclude,
+    });
+    return {
+      message: 'Entrada de evento activada correctamente.',
+      ticketType: toTicketTypeResponse(ticketType),
+    };
+  }
+
+  async deleteTicketType(currentUser: AuthenticatedUser, clubId: string, ticketTypeId: string) {
+    const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, null);
+    await this.assertCanManageClub(currentUser, clubId);
+    this.assertTicketCanBeDeleted(current.quantitySold);
+    await this.prisma.ticketType.delete({
+      where: { id: ticketTypeId },
+    });
+    return {
+      message: 'Entrada eliminada correctamente.',
+    };
+  }
+
+  async deleteEventTicketType(
+    currentUser: AuthenticatedUser,
+    clubId: string,
+    eventId: string,
+    ticketTypeId: string,
+  ) {
+    const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, eventId);
+    await this.assertCanManageEvent(currentUser, clubId, eventId);
+    this.assertTicketCanBeDeleted(current.quantitySold);
+    await this.prisma.ticketType.delete({
+      where: { id: ticketTypeId },
+    });
+    return {
+      message: 'Entrada de evento eliminada correctamente.',
+    };
+  }
+
   private normalizeTicketInput(input: CreateTicketTypeDto) {
     const saleStartAt = parseOptionalDate(input.saleStartAt);
     const saleEndAt = parseOptionalDate(input.saleEndAt);
@@ -209,6 +279,15 @@ export class TicketsService {
     }
   }
 
+  private assertTicketCanBeDeleted(quantitySold: number) {
+    if (quantitySold > 0) {
+      throw badRequest(
+        'TICKET_TYPE_DELETE_NOT_ALLOWED',
+        'No puedes eliminar una entrada que ya tiene ventas registradas.',
+      );
+    }
+  }
+
   private async assertCanManageEvent(
     currentUser: AuthenticatedUser,
     clubId: string,
@@ -244,7 +323,7 @@ export class TicketsService {
   ) {
     const ticketType = await this.prisma.ticketType.findFirst({
       where: { id: ticketTypeId, clubId, eventId },
-      select: { id: true, quantitySold: true },
+      select: { id: true, quantitySold: true, quantityTotal: true, status: true },
     });
     if (!ticketType)
       throw notFound('TICKET_TYPE_NOT_FOUND', 'No encontramos la entrada solicitada.');

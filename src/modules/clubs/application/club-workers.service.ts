@@ -52,6 +52,7 @@ export class ClubWorkersService {
         data: {
           clubId,
           userId: input.userId,
+          roleLabel: input.roleLabel.trim(),
           permissions: input.permissions,
         },
         include: workerInclude,
@@ -90,7 +91,8 @@ export class ClubWorkersService {
     const worker = await this.prisma.clubWorker.update({
       where: { id: workerId },
       data: {
-        status: input.status,
+        ...(input.status != null ? { status: input.status } : {}),
+        ...(input.roleLabel != null ? { roleLabel: input.roleLabel.trim() } : {}),
       },
       include: workerInclude,
     });
@@ -121,6 +123,23 @@ export class ClubWorkersService {
     return {
       message: 'Permisos del trabajador actualizados correctamente.',
       worker: toWorkerResponse(worker),
+    };
+  }
+
+  async removeWorker(
+    currentUser: AuthenticatedUser,
+    clubId: string,
+    workerId: string,
+  ) {
+    await this.assertCanManageClub(currentUser, clubId);
+    await this.findWorkerOrFail(clubId, workerId);
+
+    await this.prisma.clubWorker.delete({
+      where: { id: workerId },
+    });
+
+    return {
+      message: 'Trabajador desvinculado correctamente.',
     };
   }
 
@@ -180,6 +199,7 @@ const toWorkerResponse = (worker: {
   clubId: string;
   userId: string;
   status: ClubWorkerStatus;
+  roleLabel: string | null;
   permissions: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -197,6 +217,7 @@ const toWorkerResponse = (worker: {
   clubId: worker.clubId,
   userId: worker.userId,
   status: worker.status,
+  roleLabel: worker.roleLabel,
   permissions: worker.permissions,
   createdAt: worker.createdAt,
   updatedAt: worker.updatedAt,

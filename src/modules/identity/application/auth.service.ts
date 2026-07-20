@@ -1,8 +1,10 @@
+import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { PhoneVerificationPurpose, User, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'node:crypto';
 import { NotificationService } from '../../notification/application/notification.service';
+import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import {
   badRequest,
@@ -28,6 +30,7 @@ const MAX_PHONE_CODE_ATTEMPTS = 5;
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
     private readonly verificationCodes: VerificationCodeService,
     private readonly notifications: NotificationService,
     private readonly tokens: TokenService,
@@ -490,6 +493,8 @@ export class AuthService {
       phoneNumber: user.phoneNumber,
       email: user.email,
       fullName: user.fullName,
+      profileImage: buildMediaUrl(user.profileImageUrl, this.config),
+      profileImageObjectKey: user.profileImageUrl,
       role: user.role,
       status: user.status,
     };

@@ -116,6 +116,20 @@ Body sugerido:
 
 Devuelve el usuario autenticado.
 
+### PATCH /users/me
+
+Actualiza el perfil del usuario autenticado.
+
+Body sugerido:
+
+```json
+{
+  "fullName": "Edson Meza",
+  "email": "admin@beerry.app",
+  "imageUploadId": "uuid-del-upload"
+}
+```
+
 ### POST /auth/password-reset/request
 
 Solicita un codigo telefonico para recuperar contrasena.
@@ -286,6 +300,16 @@ Desactiva club.
 
 Registra trabajador.
 
+Body sugerido:
+
+```json
+{
+  "userId": "uuid",
+  "roleLabel": "Barra 1",
+  "permissions": ["VALIDATE_PRODUCTS"]
+}
+```
+
 ### GET /clubs/{clubId}/workers
 
 Lista trabajadores.
@@ -293,6 +317,15 @@ Lista trabajadores.
 ### PATCH /clubs/{clubId}/workers/{workerId}
 
 Actualiza trabajador.
+
+Body sugerido:
+
+```json
+{
+  "status": "ACTIVE",
+  "roleLabel": "Portero"
+}
+```
 
 ### PUT /clubs/{clubId}/workers/{workerId}/permissions
 

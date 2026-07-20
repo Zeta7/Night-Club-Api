@@ -1,9 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { UsersService } from '../application/users.service';
 import { SearchUsersDto } from './dto/search-users.dto';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -21,5 +22,19 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Usuarios encontrados correctamente.' })
   searchUsers(@CurrentUser() currentUser: AuthenticatedUser, @Query() query: SearchUsersDto) {
     return this.usersService.searchUsers(currentUser, query);
+  }
+
+  @Patch('me')
+  @ApiOperation({
+    summary: 'Actualizar perfil propio (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    description:
+      'Permite actualizar nombre, email y foto de perfil del usuario autenticado usando accessToken.',
+  })
+  @ApiResponse({ status: 200, description: 'Perfil actualizado correctamente.' })
+  updateMyProfile(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Body() body: UpdateMyProfileDto,
+  ) {
+    return this.usersService.updateMyProfile(currentUser, body);
   }
 }
