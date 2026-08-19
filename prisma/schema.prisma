@@ -36,6 +36,17 @@ enum ClubWorkerStatus {
   INACTIVE
 }
 
+enum WorkerShiftStatus {
+  ACTIVE
+  CLOSED
+  REVOKED
+}
+
+enum WorkerDeviceStatus {
+  AUTHORIZED
+  REVOKED
+}
+
 enum WorkerPermission {
   VALIDATE_TICKETS
   VALIDATE_PRODUCTS
@@ -44,6 +55,20 @@ enum WorkerPermission {
   MANAGE_CAPACITY
   VIEW_DASHBOARD
   VIEW_EVENT_ATTENDANCE
+  VIEW_SALES
+  REQUEST_REFUNDS
+  VIEW_OPERATIONS
+  MANAGE_BUSINESS_CONFIG
+}
+
+enum RefundRequestStatus {
+  REQUESTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 enum EventStatus {
@@ -96,6 +121,232 @@ enum UploadStatus {
   USED
 }
 
+enum WalletMovementType {
+  TOP_UP
+  PURCHASE
+  REFUND
+  ADJUSTMENT
+  REFERRAL_REWARD
+  REFERRAL_REVERSAL
+  CREDIT_EXPIRATION
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+enum WalletMovementStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+enum ReferralCaptureMethod {
+  LINK
+  CODE
+  QR
+}
+
+enum ReferralExpirationMode {
+  SAME_MONTH_END
+  NEXT_MONTH_END
+  FIXED_DAYS
+  NONE
+}
+
+enum ReferralRewardStatus {
+  PENDING
+  AVAILABLE
+  PARTIALLY_USED
+  USED
+  EXPIRED
+  REVERSED
+  BLOCKED
+}
+
+enum WalletCreditSource {
+  TOP_UP
+  REFUND
+  REFERRAL_REWARD
+  PROMOTION
+  TRANSFER
+  ADMIN_ADJUSTMENT
+}
+
+enum WalletCreditLotStatus {
+  PENDING
+  AVAILABLE
+  PARTIALLY_USED
+  USED
+  EXPIRED
+  REVERSED
+  BLOCKED
+}
+
+enum WalletTransferStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+  REVERSED
+}
+
+enum ReferralFraudFlagStatus {
+  OPEN
+  CONFIRMED
+  DISMISSED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUND_PENDING
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentAttemptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELLED
+  REFUND_PENDING
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentPurpose {
+  ORDER_PAYMENT
+  WALLET_TOP_UP
+}
+
+enum OrderPaymentMethod {
+  FLOW
+  BEERRY_WALLET
+  SIMULATED
+}
+
+enum WalletTopUpStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  REFUND_PENDING
+  REFUNDED
+  CHARGEDBACK
+}
+
+enum PaymentProviderEventStatus {
+  RECEIVED
+  PROCESSED
+  IGNORED
+  FAILED
+}
+
+enum InventoryReservationStatus {
+  ACTIVE
+  CONFIRMED
+  RELEASED
+  EXPIRED
+}
+
+enum NotificationCategory {
+  PAYMENT
+  ORDER
+  QR
+  EVENT
+  PROMOTION
+  STOCK
+  WORKER
+  WITHDRAWAL
+  SYSTEM
+}
+
+enum NotificationChannelType {
+  IN_APP
+  PUSH
+  SMS
+  EMAIL
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum QrValidationOutcome {
+  VALID
+  INVALID
+  REPEATED
+  REVERSED
+}
+
+enum CapacityMovementType {
+  ENTRY
+  EXIT
+  CORRECTION
+}
+
+enum AuditSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum FinancialAccountOwnerType {
+  CUSTOMER
+  CLUB
+  PLATFORM
+  PROVIDER
+}
+
+enum LedgerTransactionType {
+  SALE
+  REFUND
+  CHARGEBACK
+  SETTLEMENT
+  WITHDRAWAL
+  ADJUSTMENT
+}
+
+enum LedgerEntryDirection {
+  DEBIT
+  CREDIT
+}
+
+enum FinancialBalanceBucket {
+  PENDING
+  AVAILABLE
+  HELD
+  WITHDRAWN
+}
+
+enum WithdrawalStatus {
+  REQUESTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PROCESSING
+  PAID
+  FAILED
+}
+
+enum CommerceItemType {
+  TICKET
+  PRODUCT
+  PROMOTION
+}
+
+enum RedeemableStatus {
+  AVAILABLE
+  USED
+  EXPIRED
+  CANCELLED
+}
+
 model User {
   id               String     @id @default(uuid())
   phoneCountryCode String
@@ -111,14 +362,456 @@ model User {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  phoneVerificationCodes PhoneVerificationCode[]
-  refreshTokens          RefreshToken[]
-  clubAdmins             ClubAdmin[]
-  clubWorkers            ClubWorker[]
-  uploads                Upload[]
+  phoneVerificationCodes   PhoneVerificationCode[]
+  refreshTokens            RefreshToken[]
+  clubAdmins               ClubAdmin[]
+  clubWorkers              ClubWorker[]
+  uploads                  Upload[]
+  wallet                   Wallet?
+  orders                   Order[]
+  tickets                  Ticket[]
+  consumableRights         ConsumableRight[]
+  auditLogs                AuditLogEntry[]
+  cart                     Cart?
+  notifications            Notification[]
+  notificationPreferences  NotificationPreference[]
+  deviceTokens             DeviceToken[]
+  financialAccounts        FinancialAccount[]
+  requestedWithdrawals     WithdrawalRequest[]      @relation("WithdrawalRequester")
+  reviewedWithdrawals      WithdrawalRequest[]      @relation("WithdrawalReviewer")
+  requestedRefunds         RefundRequest[]
+  referralsMade            CustomerReferral[]       @relation("ReferralReferrer")
+  referredBy               CustomerReferral?        @relation("ReferralReferred")
+  referralRewardsEarned    ReferralReward[]         @relation("RewardBeneficiary")
+  referralRewardsGenerated ReferralReward[]         @relation("RewardBuyer")
+  referralCode             String?                  @unique
+  walletTopUps             WalletTopUp[]
 
   @@unique([phoneCountryCode, phoneNumber])
   @@index([phoneCountryCode, phoneNumber])
+}
+
+model Wallet {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  balanceCents    Int      @default(0)
+  totalSpentCents Int      @default(0)
+  currency        String   @default("PEN")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movements         WalletMovement[]
+  creditLots        WalletCreditLot[]
+  outgoingTransfers WalletTransfer[]  @relation("WalletTransferSender")
+  incomingTransfers WalletTransfer[]  @relation("WalletTransferReceiver")
+  topUps            WalletTopUp[]
+
+  @@index([userId])
+}
+
+model NotificationTemplate {
+  id               String               @id @default(uuid())
+  key              String
+  version          Int                  @default(1)
+  category         NotificationCategory
+  titleTemplate    String
+  bodyTemplate     String
+  deepLinkTemplate String?
+  active           Boolean              @default(true)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@unique([key, version])
+  @@index([key, active])
+}
+
+model Notification {
+  id              String               @id @default(uuid())
+  userId          String
+  category        NotificationCategory
+  templateKey     String?
+  templateVersion Int?
+  title           String
+  body            String
+  deepLink        String?
+  data            Json?
+  readAt          DateTime?
+  createdAt       DateTime             @default(now())
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, category, createdAt])
+}
+
+model NotificationPreference {
+  id           String               @id @default(uuid())
+  userId       String
+  category     NotificationCategory
+  inAppEnabled Boolean              @default(true)
+  pushEnabled  Boolean              @default(true)
+  smsEnabled   Boolean              @default(false)
+  emailEnabled Boolean              @default(false)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([userId])
+}
+
+model DeviceToken {
+  id         String   @id @default(uuid())
+  userId     String
+  token      String   @unique
+  platform   String
+  enabled    Boolean  @default(true)
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, enabled])
+}
+
+model NotificationDelivery {
+  id             String                     @id @default(uuid())
+  notificationId String
+  channel        NotificationChannelType
+  status         NotificationDeliveryStatus @default(PENDING)
+  provider       String
+  attempts       Int                        @default(0)
+  nextAttemptAt  DateTime                   @default(now())
+  sentAt         DateTime?
+  errorMessage   String?
+  providerData   Json?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, channel])
+  @@index([status, nextAttemptAt])
+}
+
+model WalletMovement {
+  id          String               @id @default(uuid())
+  walletId    String
+  type        WalletMovementType
+  status      WalletMovementStatus @default(PENDING)
+  amountCents Int
+  description String
+  referenceId String?
+  createdAt   DateTime             @default(now())
+  completedAt DateTime?
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+  @@index([referenceId])
+  @@index([status])
+}
+
+model ReferralProgramSettings {
+  id                         String                 @id @default("referral-program")
+  enabled                    Boolean                @default(false)
+  platformCommissionBps      Int                    @default(600)
+  rewardBps                  Int                    @default(100)
+  minimumPlatformMarginBps   Int                    @default(300)
+  minimumPurchaseCents       Int                    @default(0)
+  maximumRewardPerOrderCents Int?
+  maximumMonthlyRewardCents  Int?
+  holdHours                  Int                    @default(24)
+  expirationMode             ReferralExpirationMode @default(NEXT_MONTH_END)
+  expirationDays             Int?
+  associationWindowDays      Int                    @default(7)
+  maxCreditUsageBps          Int                    @default(10000)
+  transfersEnabled           Boolean                @default(false)
+  maxDailyTransferCents      Int?
+  maxMonthlyTransferCents    Int?
+  startsAt                   DateTime?
+  endsAt                     DateTime?
+  version                    Int                    @default(1)
+  updatedByUserId            String?
+  createdAt                  DateTime               @default(now())
+  updatedAt                  DateTime               @updatedAt
+}
+
+model CustomerReferral {
+  id               String                @id @default(uuid())
+  referrerUserId   String
+  referredUserId   String                @unique
+  captureMethod    ReferralCaptureMethod
+  codeSnapshot     String
+  associatedAt     DateTime              @default(now())
+  lockedAt         DateTime?
+  firstPaidOrderId String?
+  createdAt        DateTime              @default(now())
+
+  referrer User             @relation("ReferralReferrer", fields: [referrerUserId], references: [id], onDelete: Restrict)
+  referred User             @relation("ReferralReferred", fields: [referredUserId], references: [id], onDelete: Restrict)
+  rewards  ReferralReward[]
+
+  @@unique([referrerUserId, referredUserId])
+  @@index([referrerUserId, associatedAt])
+  @@index([firstPaidOrderId])
+}
+
+model ReferralReward {
+  id                    String               @id @default(uuid())
+  referralId            String
+  orderId               String               @unique
+  beneficiaryUserId     String
+  buyerUserId           String
+  status                ReferralRewardStatus @default(PENDING)
+  eligibleBaseCents     Int
+  platformCommissionBps Int
+  rewardBps             Int
+  settingsVersion       Int
+  amountCents           Int
+  availableAt           DateTime
+  expiresAt             DateTime?
+  availableSince        DateTime?
+  reversedAt            DateTime?
+  reversalReason        String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  referral    CustomerReferral @relation(fields: [referralId], references: [id], onDelete: Restrict)
+  order       Order            @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  beneficiary User             @relation("RewardBeneficiary", fields: [beneficiaryUserId], references: [id], onDelete: Restrict)
+  buyer       User             @relation("RewardBuyer", fields: [buyerUserId], references: [id], onDelete: Restrict)
+  creditLot   WalletCreditLot?
+
+  @@index([beneficiaryUserId, status, createdAt])
+  @@index([buyerUserId, createdAt])
+  @@index([status, availableAt])
+  @@index([expiresAt])
+}
+
+model WalletCreditLot {
+  id                   String                @id @default(uuid())
+  walletId             String
+  source               WalletCreditSource
+  sourceReferenceId    String?
+  referralRewardId     String?               @unique
+  status               WalletCreditLotStatus @default(AVAILABLE)
+  originalAmountCents  Int
+  remainingAmountCents Int
+  availableAt          DateTime              @default(now())
+  expiresAt            DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  wallet              Wallet                     @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  referralReward      ReferralReward?            @relation(fields: [referralRewardId], references: [id], onDelete: Restrict)
+  consumptions        WalletCreditConsumption[]
+  outgoingAllocations WalletTransferAllocation[] @relation("TransferSourceLot")
+  incomingAllocations WalletTransferAllocation[] @relation("TransferDestinationLot")
+
+  @@index([walletId, status, expiresAt])
+  @@index([source, sourceReferenceId])
+}
+
+model WalletCreditConsumption {
+  id          String   @id @default(uuid())
+  creditLotId String
+  orderId     String
+  amountCents Int
+  createdAt   DateTime @default(now())
+
+  creditLot WalletCreditLot @relation(fields: [creditLotId], references: [id], onDelete: Restrict)
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([creditLotId, orderId])
+  @@index([orderId])
+}
+
+model WalletTransfer {
+  id             String               @id @default(uuid())
+  fromWalletId   String
+  toWalletId     String
+  amountCents    Int
+  status         WalletTransferStatus @default(PENDING)
+  idempotencyKey String               @unique
+  note           String?
+  completedAt    DateTime?
+  rejectedReason String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  fromWallet  Wallet                     @relation("WalletTransferSender", fields: [fromWalletId], references: [id], onDelete: Restrict)
+  toWallet    Wallet                     @relation("WalletTransferReceiver", fields: [toWalletId], references: [id], onDelete: Restrict)
+  allocations WalletTransferAllocation[]
+
+  @@index([fromWalletId, createdAt])
+  @@index([toWalletId, createdAt])
+  @@index([status, createdAt])
+}
+
+model WalletTransferAllocation {
+  id                     String @id @default(uuid())
+  transferId             String
+  sourceCreditLotId      String
+  destinationCreditLotId String
+  amountCents            Int
+
+  transfer             WalletTransfer  @relation(fields: [transferId], references: [id], onDelete: Restrict)
+  sourceCreditLot      WalletCreditLot @relation("TransferSourceLot", fields: [sourceCreditLotId], references: [id], onDelete: Restrict)
+  destinationCreditLot WalletCreditLot @relation("TransferDestinationLot", fields: [destinationCreditLotId], references: [id], onDelete: Restrict)
+
+  @@unique([transferId, sourceCreditLotId])
+  @@index([destinationCreditLotId])
+}
+
+model ReferralFraudFlag {
+  id               String                  @id @default(uuid())
+  subjectUserId    String
+  relatedUserId    String?
+  referralId       String?
+  rewardId         String?
+  type             String
+  score            Int
+  status           ReferralFraudFlagStatus @default(OPEN)
+  metadata         Json?
+  reviewedByUserId String?
+  resolutionNote   String?
+  reviewedAt       DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@index([subjectUserId, status, createdAt])
+  @@index([relatedUserId, status])
+  @@index([referralId])
+  @@index([rewardId])
+}
+
+model FinancialAccount {
+  id             String                    @id @default(uuid())
+  code           String                    @unique
+  ownerType      FinancialAccountOwnerType
+  userId         String?
+  clubId         String?
+  provider       String?
+  currency       String                    @default("PEN")
+  pendingCents   Int                       @default(0)
+  availableCents Int                       @default(0)
+  heldCents      Int                       @default(0)
+  withdrawnCents Int                       @default(0)
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+
+  user    User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club    Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  entries LedgerEntry[]
+
+  @@index([ownerType])
+  @@index([userId])
+  @@index([clubId])
+  @@index([provider])
+}
+
+model LedgerTransaction {
+  id                  String                @id @default(uuid())
+  reference           String                @unique
+  type                LedgerTransactionType
+  orderId             String?
+  paymentAttemptId    String?
+  providerEventId     String?
+  reversalOfId        String?
+  withdrawalRequestId String?
+  currency            String                @default("PEN")
+  debitTotalCents     Int
+  creditTotalCents    Int
+  description         String
+  metadata            Json?
+  postedAt            DateTime              @default(now())
+  createdAt           DateTime              @default(now())
+
+  order             Order?              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentAttempt    PaymentAttempt?     @relation(fields: [paymentAttemptId], references: [id], onDelete: Restrict)
+  reversalOf        LedgerTransaction?  @relation("LedgerReversals", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversals         LedgerTransaction[] @relation("LedgerReversals")
+  entries           LedgerEntry[]
+  withdrawalRequest WithdrawalRequest?  @relation(fields: [withdrawalRequestId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, postedAt])
+  @@index([paymentAttemptId])
+  @@index([providerEventId])
+  @@index([withdrawalRequestId])
+  @@index([type, postedAt])
+}
+
+model LedgerEntry {
+  id            String                 @id @default(uuid())
+  transactionId String
+  accountId     String
+  direction     LedgerEntryDirection
+  bucket        FinancialBalanceBucket
+  amountCents   Int
+  description   String
+  createdAt     DateTime               @default(now())
+
+  transaction LedgerTransaction @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+  account     FinancialAccount  @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@index([transactionId])
+  @@index([accountId, createdAt])
+  @@index([accountId, bucket, createdAt])
+}
+
+model ClubFinancialProfile {
+  id                   String    @id @default(uuid())
+  clubId               String    @unique
+  legalName            String
+  taxDocumentType      String
+  taxDocumentNumber    String
+  bankName             String
+  bankAccountType      String
+  bankAccountEncrypted String
+  bankAccountLast4     String
+  bankAccountHolder    String
+  verifiedAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model WithdrawalRequest {
+  id                String           @id @default(uuid())
+  clubId            String
+  requestedByUserId String
+  reviewedByUserId  String?
+  amountCents       Int
+  currency          String           @default("PEN")
+  status            WithdrawalStatus @default(REQUESTED)
+  bankAccountLast4  String
+  requestNote       String?
+  rejectionReason   String?
+  paymentReference  String?
+  proofUrl          String?
+  requestedAt       DateTime         @default(now())
+  reviewedAt        DateTime?
+  approvedAt        DateTime?
+  processingAt      DateTime?
+  paidAt            DateTime?
+  failedAt          DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  club               Club                @relation(fields: [clubId], references: [id], onDelete: Restrict)
+  requestedBy        User                @relation("WithdrawalRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  reviewedBy         User?               @relation("WithdrawalReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  ledgerTransactions LedgerTransaction[]
+
+  @@index([clubId, createdAt])
+  @@index([status, createdAt])
+  @@index([requestedByUserId, createdAt])
 }
 
 model PhoneVerificationCode {
@@ -176,12 +869,22 @@ model Club {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  admins      ClubAdmin[]
-  workers     ClubWorker[]
-  events      Event[]
-  ticketTypes TicketType[]
-  products    Product[]
-  promotions  Promotion[]
+  admins             ClubAdmin[]
+  workers            ClubWorker[]
+  events             Event[]
+  ticketTypes        TicketType[]
+  products           Product[]
+  promotions         Promotion[]
+  orders             Order[]
+  financialAccounts  FinancialAccount[]
+  financialProfile   ClubFinancialProfile?
+  withdrawalRequests WithdrawalRequest[]
+  refundRequests     RefundRequest[]
+  operationalProfile ClubOperationalProfile?
+  tickets            Ticket[]
+  consumableRights   ConsumableRight[]
+  auditLogs          AuditLogEntry[]
+  carts              Cart[]
 
   @@index([status])
 }
@@ -201,17 +904,22 @@ model ClubAdmin {
 }
 
 model ClubWorker {
-  id          String             @id @default(uuid())
-  clubId      String
-  userId      String
-  roleLabel   String?
-  status      ClubWorkerStatus   @default(ACTIVE)
-  permissions WorkerPermission[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  id            String             @id @default(uuid())
+  clubId        String
+  userId        String
+  roleLabel     String?
+  status        ClubWorkerStatus   @default(ACTIVE)
+  permissions   WorkerPermission[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  assignedDoor  String?
+  assignedZone  String?
+  assignedPoint String?
 
-  club Club @relation(fields: [clubId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  club              Club                     @relation(fields: [clubId], references: [id])
+  user              User                     @relation(fields: [userId], references: [id])
+  shifts            WorkerShift[]
+  authorizedDevices WorkerAuthorizedDevice[]
 
   @@unique([clubId, userId])
   @@index([userId])
@@ -232,13 +940,101 @@ model Event {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  club        Club         @relation(fields: [clubId], references: [id])
-  ticketTypes TicketType[]
-  promotions  Promotion[]
+  club              Club               @relation(fields: [clubId], references: [id])
+  ticketTypes       TicketType[]
+  promotions        Promotion[]
+  tickets           Ticket[]
+  consumableRights  ConsumableRight[]
+  workerShifts      WorkerShift[]
+  occupancy         EventOccupancy?
+  capacityMovements CapacityMovement[]
 
   @@index([clubId])
   @@index([status])
   @@index([startsAt])
+}
+
+model EventOccupancy {
+  id             String   @id @default(uuid())
+  eventId        String   @unique
+  currentCount   Int      @default(0)
+  reentryAllowed Boolean  @default(false)
+  revision       Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model CapacityMovement {
+  id             String               @id @default(uuid())
+  eventId        String
+  actorUserId    String
+  ticketId       String?
+  workerShiftId  String?
+  type           CapacityMovementType
+  delta          Int
+  previousCount  Int
+  newCount       Int
+  reason         String?
+  idempotencyKey String?              @unique
+  createdAt      DateTime             @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([ticketId, createdAt])
+  @@index([workerShiftId, createdAt])
+}
+
+model WorkerShift {
+  id                String            @id @default(uuid())
+  workerId          String
+  eventId           String?
+  status            WorkerShiftStatus @default(ACTIVE)
+  assignedDoor      String?
+  assignedZone      String?
+  assignedPoint     String?
+  deviceFingerprint String?
+  openedByUserId    String
+  closedByUserId    String?
+  startedAt         DateTime          @default(now())
+  endedAt           DateTime?
+  closeReason       String?
+  lastActivityAt    DateTime          @default(now())
+  lastSyncAt        DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  worker ClubWorker @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  event  Event?     @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([workerId, status, startedAt])
+  @@index([eventId, status])
+  @@index([status, lastActivityAt])
+}
+
+model WorkerAuthorizedDevice {
+  id                 String             @id @default(uuid())
+  workerId           String
+  fingerprint        String
+  name               String
+  platform           String
+  status             WorkerDeviceStatus @default(AUTHORIZED)
+  authorizedByUserId String
+  revokedByUserId    String?
+  authorizedAt       DateTime           @default(now())
+  revokedAt          DateTime?
+  lastSeenAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  worker ClubWorker @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@unique([workerId, fingerprint])
+  @@index([workerId, status])
+  @@index([fingerprint, status])
 }
 
 model TicketType {
@@ -258,9 +1054,10 @@ model TicketType {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  club  Club   @relation(fields: [clubId], references: [id])
-  event Event? @relation(fields: [eventId], references: [id])
+  club           Club            @relation(fields: [clubId], references: [id])
+  event          Event?          @relation(fields: [eventId], references: [id])
   promotionItems PromotionItem[]
+  tickets        Ticket[]
 
   @@index([clubId])
   @@index([eventId])
@@ -281,8 +1078,9 @@ model Product {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  club Club @relation(fields: [clubId], references: [id])
-  promotionItems PromotionItem[]
+  club             Club              @relation(fields: [clubId], references: [id])
+  promotionItems   PromotionItem[]
+  consumableRights ConsumableRight[]
 
   @@index([clubId])
   @@index([status])
@@ -290,25 +1088,26 @@ model Product {
 }
 
 model Promotion {
-  id              String                @id @default(uuid())
+  id              String               @id @default(uuid())
   clubId          String
   eventId         String?
   name            String
   description     String?
   imageUrl        String?
-  pricingMode     PromotionPricingMode  @default(CALCULATED)
+  pricingMode     PromotionPricingMode @default(CALCULATED)
   basePriceCents  Int
   finalPriceCents Int
-  currency        String                @default("PEN")
-  status          PromotionStatus       @default(ACTIVE)
+  currency        String               @default("PEN")
+  status          PromotionStatus      @default(ACTIVE)
   startsAt        DateTime?
   endsAt          DateTime?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
-  club  Club   @relation(fields: [clubId], references: [id])
-  event Event? @relation(fields: [eventId], references: [id])
-  items PromotionItem[]
+  club             Club              @relation(fields: [clubId], references: [id])
+  event            Event?            @relation(fields: [eventId], references: [id])
+  items            PromotionItem[]
+  consumableRights ConsumableRight[]
 
   @@index([clubId])
   @@index([eventId])
@@ -318,28 +1117,364 @@ model Promotion {
 }
 
 model PromotionItem {
-  id                     String                 @id @default(uuid())
-  promotionId            String
-  itemType               PromotionItemType
-  productId              String?
-  ticketTypeId           String?
-  quantity               Int
-  baseUnitPriceCents     Int
-  discountType           PromotionDiscountType  @default(NONE)
-  discountValue          Int                    @default(0)
+  id                       String                @id @default(uuid())
+  promotionId              String
+  itemType                 PromotionItemType
+  productId                String?
+  ticketTypeId             String?
+  quantity                 Int
+  baseUnitPriceCents       Int
+  discountType             PromotionDiscountType @default(NONE)
+  discountValue            Int                   @default(0)
   discountedUnitPriceCents Int
-  lineBaseTotalCents     Int
-  lineFinalTotalCents    Int
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
+  lineBaseTotalCents       Int
+  lineFinalTotalCents      Int
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
 
-  promotion  Promotion  @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-  product    Product?   @relation(fields: [productId], references: [id])
+  promotion  Promotion   @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product    Product?    @relation(fields: [productId], references: [id])
   ticketType TicketType? @relation(fields: [ticketTypeId], references: [id])
 
   @@index([promotionId])
   @@index([productId])
   @@index([ticketTypeId])
+}
+
+model Order {
+  id                         String                    @id @default(uuid())
+  userId                     String
+  clubId                     String
+  status                     OrderStatus               @default(PENDING)
+  totalCents                 Int
+  promotionalCreditUsedCents Int                       @default(0)
+  walletBalanceUsedCents     Int                       @default(0)
+  customerFundedCents        Int                       @default(0)
+  currency                   String                    @default("PEN")
+  simulatedPayment           Boolean                   @default(false)
+  paymentMethod              OrderPaymentMethod        @default(SIMULATED)
+  paidAt                     DateTime?
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+  user                       User                      @relation(fields: [userId], references: [id])
+  club                       Club                      @relation(fields: [clubId], references: [id])
+  items                      OrderItem[]
+  tickets                    Ticket[]
+  consumableRights           ConsumableRight[]
+  paymentAttempts            PaymentAttempt[]
+  reservations               InventoryReservation[]
+  ledgerTransactions         LedgerTransaction[]
+  refundRequests             RefundRequest[]
+  referralReward             ReferralReward?
+  creditConsumptions         WalletCreditConsumption[]
+
+  @@index([userId, createdAt])
+  @@index([clubId])
+  @@index([status])
+}
+
+model RefundRequest {
+  id                String              @id @default(uuid())
+  orderId           String
+  clubId            String
+  requestedByUserId String
+  reason            String
+  status            RefundRequestStatus @default(REQUESTED)
+  resolutionNote    String?
+  requestedAt       DateTime            @default(now())
+  reviewedAt        DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  order       Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  club        Club  @relation(fields: [clubId], references: [id], onDelete: Restrict)
+  requestedBy User  @relation(fields: [requestedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([clubId, status, createdAt])
+  @@index([orderId, createdAt])
+  @@index([requestedByUserId, createdAt])
+}
+
+model ClubOperationalProfile {
+  id                        String   @id @default(uuid())
+  clubId                    String   @unique
+  refundPolicy              String?
+  responsibleName           String?
+  responsibleEmail          String?
+  responsiblePhone          String?
+  approvalDocumentUploadIds Json?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+}
+
+model InventoryReservation {
+  id           String                     @id @default(uuid())
+  orderId      String
+  resourceType CommerceItemType
+  resourceId   String
+  quantity     Int
+  status       InventoryReservationStatus @default(ACTIVE)
+  expiresAt    DateTime
+  confirmedAt  DateTime?
+  releasedAt   DateTime?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, resourceType, resourceId])
+  @@index([resourceType, resourceId, status, expiresAt])
+  @@index([orderId, status])
+  @@index([status, expiresAt])
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  clubId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  club  Club?      @relation(fields: [clubId], references: [id])
+  items CartItem[]
+
+  @@index([clubId])
+}
+
+model CartItem {
+  id        String           @id @default(uuid())
+  cartId    String
+  itemType  CommerceItemType
+  itemId    String
+  quantity  Int
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, itemType, itemId])
+  @@index([cartId])
+  @@index([itemType, itemId])
+}
+
+model PaymentAttempt {
+  id                String               @id @default(uuid())
+  orderId           String?
+  walletTopUpId     String?              @unique
+  purpose           PaymentPurpose       @default(ORDER_PAYMENT)
+  provider          String
+  externalPaymentId String?              @unique
+  status            PaymentAttemptStatus @default(PENDING)
+  amountCents       Int
+  currency          String               @default("PEN")
+  failureCode       String?
+  failureMessage    String?
+  providerData      Json?
+  approvedAt        DateTime?
+  failedAt          DateTime?
+  expiresAt         DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  order              Order?                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  walletTopUp        WalletTopUp?           @relation(fields: [walletTopUpId], references: [id], onDelete: Cascade)
+  events             PaymentProviderEvent[]
+  ledgerTransactions LedgerTransaction[]
+
+  @@index([orderId, createdAt])
+  @@index([walletTopUpId])
+  @@index([purpose, status, createdAt])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model WalletTopUp {
+  id             String            @id @default(uuid())
+  userId         String
+  walletId       String
+  amountCents    Int
+  currency       String            @default("PEN")
+  status         WalletTopUpStatus @default(PENDING)
+  idempotencyKey String            @unique
+  approvedAt     DateTime?
+  rejectedAt     DateTime?
+  refundedAt     DateTime?
+  failureCode    String?
+  failureMessage String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  wallet         Wallet          @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  paymentAttempt PaymentAttempt?
+
+  @@index([userId, createdAt])
+  @@index([walletId, createdAt])
+  @@index([status, createdAt])
+}
+
+model PaymentProviderEvent {
+  id               String                     @id @default(uuid())
+  paymentAttemptId String
+  provider         String
+  providerEventId  String
+  type             String
+  status           PaymentProviderEventStatus @default(RECEIVED)
+  payload          Json?
+  errorMessage     String?
+  processedAt      DateTime?
+  createdAt        DateTime                   @default(now())
+
+  paymentAttempt PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerEventId])
+  @@index([paymentAttemptId, createdAt])
+  @@index([status])
+}
+
+model OrderItem {
+  id               String            @id @default(uuid())
+  orderId          String
+  clubId           String
+  itemType         CommerceItemType
+  itemId           String
+  nameSnapshot     String
+  quantity         Int
+  unitPriceCents   Int
+  totalCents       Int
+  createdAt        DateTime          @default(now())
+  order            Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  tickets          Ticket[]
+  consumableRights ConsumableRight[]
+
+  @@index([orderId])
+  @@index([itemType, itemId])
+}
+
+model Ticket {
+  id               String           @id @default(uuid())
+  orderId          String
+  orderItemId      String
+  clubId           String
+  eventId          String?
+  ticketTypeId     String
+  ownerUserId      String
+  code             String           @unique
+  qrPayload        String           @unique
+  signatureVersion String           @default("v1")
+  status           RedeemableStatus @default(AVAILABLE)
+  redemptionCount  Int              @default(0)
+  maxRedemptions   Int              @default(1)
+  validFrom        DateTime?
+  validUntil       DateTime?
+  usedAt           DateTime?
+  revokedAt        DateTime?
+  revokedReason    String?
+  createdAt        DateTime         @default(now())
+  order            Order            @relation(fields: [orderId], references: [id])
+  orderItem        OrderItem        @relation(fields: [orderItemId], references: [id])
+  club             Club             @relation(fields: [clubId], references: [id])
+  event            Event?           @relation(fields: [eventId], references: [id])
+  ticketType       TicketType       @relation(fields: [ticketTypeId], references: [id])
+  owner            User             @relation(fields: [ownerUserId], references: [id])
+
+  @@index([ownerUserId, status])
+  @@index([clubId])
+}
+
+model ConsumableRight {
+  id               String           @id @default(uuid())
+  orderId          String
+  orderItemId      String
+  clubId           String
+  eventId          String?
+  ownerUserId      String
+  sourceType       CommerceItemType
+  sourceId         String
+  productId        String?
+  promotionId      String?
+  code             String           @unique
+  qrPayload        String           @unique
+  signatureVersion String           @default("v1")
+  status           RedeemableStatus @default(AVAILABLE)
+  redemptionCount  Int              @default(0)
+  maxRedemptions   Int              @default(1)
+  validFrom        DateTime?
+  validUntil       DateTime?
+  usedAt           DateTime?
+  revokedAt        DateTime?
+  revokedReason    String?
+  createdAt        DateTime         @default(now())
+  order            Order            @relation(fields: [orderId], references: [id])
+  orderItem        OrderItem        @relation(fields: [orderItemId], references: [id])
+  club             Club             @relation(fields: [clubId], references: [id])
+  event            Event?           @relation(fields: [eventId], references: [id])
+  owner            User             @relation(fields: [ownerUserId], references: [id])
+  product          Product?         @relation(fields: [productId], references: [id])
+  promotion        Promotion?       @relation(fields: [promotionId], references: [id])
+
+  @@index([ownerUserId, status])
+  @@index([clubId])
+}
+
+model QrValidationAttempt {
+  id              String              @id @default(uuid())
+  clubId          String
+  actorUserId     String?
+  resourceType    String?
+  resourceId      String?
+  outcome         QrValidationOutcome
+  codeFingerprint String
+  reasonCode      String?
+  metadata        Json?
+  createdAt       DateTime            @default(now())
+
+  @@index([clubId, createdAt])
+  @@index([resourceType, resourceId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([outcome, createdAt])
+}
+
+model AuditLogEntry {
+  id                String        @id @default(uuid())
+  actorUserId       String
+  action            String
+  resourceType      String
+  resourceId        String
+  clubId            String?
+  metadata          Json?
+  ipAddress         String?
+  deviceFingerprint String?
+  correlationId     String?
+  actorRoleSnapshot String?
+  severity          AuditSeverity @default(INFO)
+  previousHash      String?
+  integrityHash     String?       @unique
+  expiresAt         DateTime?
+  createdAt         DateTime      @default(now())
+
+  actor User  @relation(fields: [actorUserId], references: [id])
+  club  Club? @relation(fields: [clubId], references: [id])
+
+  @@index([actorUserId, createdAt])
+  @@index([clubId, createdAt])
+  @@index([resourceType, resourceId])
+  @@index([action])
+  @@index([severity, createdAt])
+  @@index([correlationId])
+  @@index([expiresAt])
+}
+
+model AuditPolicy {
+  id              String   @id @default("audit")
+  retentionDays   Int      @default(730)
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Upload {
@@ -364,12 +1499,12 @@ model Upload {
 }
 
 model PendingFileDeletion {
-  id            String   @id @default(uuid())
-  objectKey     String   @unique
-  attempts      Int      @default(0)
-  nextAttemptAt DateTime @default(now())
+  id            String    @id @default(uuid())
+  objectKey     String    @unique
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime  @default(now())
   lastError     String?
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
   deletedAt     DateTime?
 
   @@index([nextAttemptAt])

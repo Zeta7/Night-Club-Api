@@ -10,7 +10,11 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
 import { TicketsModule } from './modules/tickets/tickets.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { UsersModule } from './modules/users/users.module';
+import { WalletsModule } from './modules/wallets/wallets.module';
 import { PrismaModule } from './shared/infrastructure/prisma/prisma.module';
+import { CommerceModule } from './modules/commerce/commerce.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { ReferralsModule } from './modules/referrals/referrals.module';
 
 @Module({
   imports: [
@@ -29,6 +33,10 @@ import { PrismaModule } from './shared/infrastructure/prisma/prisma.module';
     TicketsModule,
     UploadsModule,
     UsersModule,
+    WalletsModule,
+    CommerceModule,
+    AuditModule,
+    ReferralsModule,
   ],
 })
 export class AppModule {}

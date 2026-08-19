@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClubStatus, EventStatus, UserRole } from '@prisma/client';
+import { ClubStatus, EventStatus, RedeemableStatus, UserRole } from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
@@ -32,19 +32,19 @@ export class EventsService {
 
     const event = await this.prisma.$transaction(async (tx) => {
       const consumedImage = input.imageUploadId
-          ? await this.uploadsService.consumeUpload({
-              uploadId: input.imageUploadId,
-              userId: currentUser.id,
-              transaction: tx,
-            })
-          : null;
+        ? await this.uploadsService.consumeUpload({
+            uploadId: input.imageUploadId,
+            userId: currentUser.id,
+            transaction: tx,
+          })
+        : null;
 
       return tx.event.create({
         data: {
           clubId,
           name: normalizeText(input.name),
           description: normalizeOptionalText(input.description),
-          imageUrl: consumedImage?.url ?? null,
+          imageUrl: consumedImage?.objectKey ?? null,
           startsAt,
           endsAt,
           capacity: input.capacity,
@@ -55,7 +55,7 @@ export class EventsService {
 
     return {
       message: 'Evento creado correctamente.',
-      event: toEventResponse(event, this.config),
+      event: await toEventResponse(event, this.config, this.uploadsService),
     };
   }
 
@@ -70,7 +70,9 @@ export class EventsService {
 
     return {
       message: 'Eventos del club obtenidos correctamente.',
-      events: events.map((event) => toEventResponse(event, this.config)),
+      events: await Promise.all(
+        events.map((event) => toEventResponse(event, this.config, this.uploadsService)),
+      ),
     };
   }
 
@@ -86,23 +88,16 @@ export class EventsService {
 
     return {
       message: 'Eventos publicos obtenidos correctamente.',
-      events: events.map((event) => toEventResponse(event, this.config)),
+      events: await Promise.all(
+        events.map((event) => toEventResponse(event, this.config, this.uploadsService)),
+      ),
     };
   }
 
   async getAdminEventsDashboard(currentUser: AuthenticatedUser) {
     this.assertCanViewAdminEvents(currentUser);
 
-    const club = await this.prisma.club.findFirst({
-      where: this.getAdminEventsClubWhere(currentUser),
-      orderBy: { createdAt: 'asc' },
-      include: {
-        events: {
-          orderBy: { startsAt: 'asc' },
-          include: eventInclude,
-        },
-      },
-    });
+    const club = await this.findAdminEventsClub(currentUser);
 
     if (!club) {
       return {
@@ -133,6 +128,16 @@ export class EventsService {
       0,
     );
 
+    const eventCards = await Promise.all(
+      club.events.map(async (event) => ({
+        ...toAdminEventCard(event, now, this.config),
+        imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+      })),
+    );
+    const alertImageUrl = nearlySoldOutEvent
+      ? await this.uploadsService.createReadableImageUrl(nearlySoldOutEvent.imageUrl)
+      : null;
+
     return {
       message: 'Dashboard de eventos obtenido correctamente.',
       hasClub: true,
@@ -155,11 +160,11 @@ export class EventsService {
               type: 'selling_out',
               title: 'Proximo a agotarse',
               text: nearlySoldOutEvent.name,
-              imageUrl: buildMediaUrl(nearlySoldOutEvent.imageUrl, this.config),
+              imageUrl: alertImageUrl,
             },
           ]
         : [],
-      events: club.events.map((event) => toAdminEventCard(event, now, this.config)),
+      events: eventCards,
       topEvents: visibleEvents.slice(0, 3).map((event, index) => ({
         rank: index + 1,
         id: event.id,
@@ -186,7 +191,7 @@ export class EventsService {
 
     return {
       message: 'Evento obtenido correctamente.',
-      event: toEventResponse(event, this.config),
+      event: await toEventResponse(event, this.config, this.uploadsService),
     };
   }
 
@@ -240,7 +245,7 @@ export class EventsService {
           previousObjectKey: currentEvent.imageUrl,
           transaction: tx,
         });
-        data.imageUrl = replacement.url;
+        data.imageUrl = replacement.objectKey;
       } else if (input.removeImage) {
         data.imageUrl = null;
         await this.uploadsService.queueObjectDeletion(currentEvent.imageUrl, tx);
@@ -255,7 +260,7 @@ export class EventsService {
 
     return {
       message: 'Evento actualizado correctamente.',
-      event: toEventResponse(event, this.config),
+      event: await toEventResponse(event, this.config, this.uploadsService),
     };
   }
 
@@ -330,30 +335,54 @@ export class EventsService {
     }
   }
 
-  private getAdminEventsClubWhere(currentUser: AuthenticatedUser) {
+  private async findAdminEventsClub(currentUser: AuthenticatedUser) {
     if (currentUser.role === UserRole.SUPER_ADMIN) {
-      return {};
+      return this.prisma.club.findFirst({
+        orderBy: { createdAt: 'asc' },
+        include: adminEventsClubInclude,
+      });
     }
 
-    return {
-      admins: {
-        some: {
-          userId: currentUser.id,
+    const relation = await this.prisma.clubAdmin.findFirst({
+      where: {
+        userId: currentUser.id,
+      },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        club: {
+          include: adminEventsClubInclude,
         },
       },
-    };
+    });
+
+    return relation?.club ?? null;
   }
 
   private async updateEventStatus(eventId: string, status: EventStatus, message: string) {
-    const event = await this.prisma.event.update({
-      where: { id: eventId },
-      data: { status },
-      include: eventInclude,
+    const event = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.event.update({
+        where: { id: eventId },
+        data: { status },
+        include: eventInclude,
+      });
+      if (status === EventStatus.CANCELLED) {
+        const revokedAt = new Date();
+        const revokedReason = `EVENT_CANCELLED:${eventId}`;
+        await tx.ticket.updateMany({
+          where: { eventId, status: RedeemableStatus.AVAILABLE },
+          data: { status: RedeemableStatus.CANCELLED, revokedAt, revokedReason },
+        });
+        await tx.consumableRight.updateMany({
+          where: { eventId, status: RedeemableStatus.AVAILABLE },
+          data: { status: RedeemableStatus.CANCELLED, revokedAt, revokedReason },
+        });
+      }
+      return updated;
     });
 
     return {
       message,
-      event: toEventResponse(event, this.config),
+      event: await toEventResponse(event, this.config, this.uploadsService),
     };
   }
 
@@ -422,10 +451,7 @@ export class EventsService {
     }
   }
 
-  private assertImageMutationInput(
-    imageUploadId?: string,
-    removeImage?: boolean,
-  ) {
+  private assertImageMutationInput(imageUploadId?: string, removeImage?: boolean) {
     if (imageUploadId && removeImage) {
       throw badRequest(
         'EVENT_IMAGE_INPUT_CONFLICT',
@@ -439,6 +465,13 @@ const eventInclude = {
   club: true,
   ticketTypes: {
     orderBy: { createdAt: 'asc' },
+  },
+} as const;
+
+const adminEventsClubInclude = {
+  events: {
+    orderBy: { startsAt: 'asc' as const },
+    include: eventInclude,
   },
 } as const;
 
@@ -461,56 +494,63 @@ const parseEventDates = (startsAtInput: string, endsAtInput: string) => {
   return { startsAt, endsAt };
 };
 
-const toEventResponse = (event: {
-  id: string;
-  clubId: string;
-  name: string;
-  description: string | null;
-  imageUrl: string | null;
-  startsAt: Date;
-  endsAt: Date;
-  capacity: number;
-  status: EventStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  club: {
+const toEventResponse = async (
+  event: {
     id: string;
-    name: string;
-    status: ClubStatus;
-  };
-  ticketTypes?: Array<{
-    id: string;
+    clubId: string;
     name: string;
     description: string | null;
-    priceCents: number;
-    currency: string;
-    quantityTotal: number;
-    quantitySold: number;
-    status: string;
+    imageUrl: string | null;
+    startsAt: Date;
+    endsAt: Date;
+    capacity: number;
+    status: EventStatus;
     createdAt: Date;
     updatedAt: Date;
-  }>;
-}, config: ConfigService) => ({
-  id: event.id,
-  clubId: event.clubId,
-  name: event.name,
-  description: event.description,
-  imageUrl: buildMediaUrl(event.imageUrl, config),
-  imageObjectKey: event.imageUrl,
-  imagePublicUrl: buildMediaUrl(event.imageUrl, config),
-  startsAt: event.startsAt,
-  endsAt: event.endsAt,
-  capacity: event.capacity,
-  status: event.status,
-  createdAt: event.createdAt,
-  updatedAt: event.updatedAt,
-  club: {
-    id: event.club.id,
-    name: event.club.name,
-    status: event.club.status,
+    club: {
+      id: string;
+      name: string;
+      status: ClubStatus;
+    };
+    ticketTypes?: Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      priceCents: number;
+      currency: string;
+      quantityTotal: number;
+      quantitySold: number;
+      status: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }>;
   },
-  ticketTypes: event.ticketTypes?.map(toEventTicketTypeResponse) ?? [],
-});
+  config: ConfigService,
+  uploadsService: UploadsService,
+) => {
+  const imageUrl = await uploadsService.createReadableImageUrl(event.imageUrl);
+  return {
+    id: event.id,
+    clubId: event.clubId,
+    name: event.name,
+    description: event.description,
+    imageUrl,
+    imageObjectKey: event.imageUrl,
+    imagePublicUrl: imageUrl ?? buildMediaUrl(event.imageUrl, config),
+    startsAt: event.startsAt,
+    endsAt: event.endsAt,
+    capacity: event.capacity,
+    status: event.status,
+    createdAt: event.createdAt,
+    updatedAt: event.updatedAt,
+    club: {
+      id: event.club.id,
+      name: event.club.name,
+      status: event.club.status,
+    },
+    ticketTypes: event.ticketTypes?.map(toEventTicketTypeResponse) ?? [],
+  };
+};
 
 const emptyAdminEventsSummary = () => ({
   activeEvents: 0,

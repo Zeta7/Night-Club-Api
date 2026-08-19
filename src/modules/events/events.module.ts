@@ -5,10 +5,13 @@ import { EventsService } from './application/events.service';
 import { ClubEventsController } from './presentation/club-events.controller';
 import { AdminEventsController } from './presentation/admin-events.controller';
 import { PublicEventsController } from './presentation/public-events.controller';
+import { CapacityService } from './application/capacity.service';
+import { CapacityController } from './presentation/capacity.controller';
 
 @Module({
   imports: [IdentityModule, UploadsModule],
-  controllers: [AdminEventsController, ClubEventsController, PublicEventsController],
-  providers: [EventsService],
+  controllers: [AdminEventsController, ClubEventsController, PublicEventsController, CapacityController],
+  providers: [EventsService, CapacityService],
+  exports: [CapacityService],
 })
 export class EventsModule {}

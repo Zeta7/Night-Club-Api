@@ -5,7 +5,9 @@ import { AccessTokenGuard } from '../../identity/presentation/guards/access-toke
 import { ClubsService } from '../application/clubs.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { CustomerHomeQueryDto } from './dto/customer-home-query.dto';
+import { CustomerExploreQueryDto } from './dto/customer-explore-query.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
+import { UpdateClubOperationalProfileDto } from './dto/update-club-operational-profile.dto';
 
 @ApiTags('Clubs')
 @ApiBearerAuth()
@@ -61,6 +63,44 @@ export class ClubsController {
     return this.clubsService.getCustomerHome(currentUser, query);
   }
 
+  @Get('customer/explore')
+  @ApiOperation({
+    summary: 'Buscar contenido del cliente en todo Perú (AUTENTICADO)',
+    description:
+      'Busca nacionalmente por nombre de negocio, ciudad, evento, promoción o producto. Solo devuelve negocios activos y contenido visible vigente.',
+  })
+  @ApiResponse({ status: 200, description: 'Resultados nacionales obtenidos correctamente.' })
+  exploreCustomerContent(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query() query: CustomerExploreQueryDto,
+  ) {
+    return this.clubsService.exploreCustomerContent(currentUser, query);
+  }
+
+  @Get('customer/clubs/:clubId')
+  @ApiOperation({
+    summary: 'Obtener el detalle publico de un club (AUTENTICADO)',
+    description:
+      'Devuelve el negocio activo y todo su contenido visible sin restringirlo a la ubicacion actual del cliente.',
+  })
+  @ApiResponse({ status: 200, description: 'Detalle del club obtenido correctamente.' })
+  getCustomerClubDetail(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+  ) {
+    return this.clubsService.getCustomerClubDetail(currentUser, clubId);
+  }
+
+  @Get('customer/events/:eventId')
+  @ApiOperation({ summary: 'Obtener el detalle publico de un evento (AUTENTICADO)' })
+  @ApiResponse({ status: 200, description: 'Detalle del evento obtenido correctamente.' })
+  getCustomerEventDetail(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('eventId') eventId: string,
+  ) {
+    return this.clubsService.getCustomerEventDetail(currentUser, eventId);
+  }
+
   @Get(':clubId')
   @ApiOperation({
     summary: 'Obtener detalle de club (CLIENTE, ADMIN, SUPER_ADMIN)',
@@ -85,6 +125,23 @@ export class ClubsController {
     @Body() body: UpdateClubDto,
   ) {
     return this.clubsService.updateClub(currentUser, clubId, body);
+  }
+
+  @Get(':clubId/operational-profile')
+  getOperationalProfile(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+  ) {
+    return this.clubsService.getOperationalProfile(currentUser, clubId);
+  }
+
+  @Patch(':clubId/operational-profile')
+  updateOperationalProfile(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Body() body: UpdateClubOperationalProfileDto,
+  ) {
+    return this.clubsService.updateOperationalProfile(currentUser, clubId, body);
   }
 
   @Patch(':clubId/activate')

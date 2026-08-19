@@ -6,9 +6,11 @@ import {
   IsEmail,
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   Matches,
   MaxLength,
   ArrayMaxSize,
@@ -53,6 +55,16 @@ export class ClubAddressDto {
   @IsString({ message: 'El pais debe ser texto.' })
   @IsOptional()
   pais?: string;
+
+  @ApiPropertyOptional({ example: -12.1219 })
+  @IsNumber({}, { message: 'La latitud debe ser numerica.' })
+  @IsOptional()
+  latitude?: number;
+
+  @ApiPropertyOptional({ example: -77.0306 })
+  @IsNumber({}, { message: 'La longitud debe ser numerica.' })
+  @IsOptional()
+  longitude?: number;
 }
 
 export class ClubContactDto {
@@ -107,15 +119,21 @@ export class ClubScheduleDayDto {
 export class CreateClubDto {
   @ApiProperty({ example: '' })
   @IsString({ message: 'La imagen de portada debe ser texto.' })
-  @ValidateIf((_, value) => value !== undefined && value !== '')
-  @IsUrl({}, { message: 'La imagen de portada debe ser una URL valida.' })
   coverImage!: string;
+
+  @ApiPropertyOptional({ description: 'ID temporal de la nueva imagen de portada.' })
+  @IsOptional()
+  @IsUUID('4', { message: 'El identificador de portada no es valido.' })
+  coverImageUploadId?: string;
 
   @ApiProperty({ example: '' })
   @IsString({ message: 'La imagen de perfil debe ser texto.' })
-  @ValidateIf((_, value) => value !== undefined && value !== '')
-  @IsUrl({}, { message: 'La imagen de perfil debe ser una URL valida.' })
   profileImage!: string;
+
+  @ApiPropertyOptional({ description: 'ID temporal de la nueva imagen de perfil.' })
+  @IsOptional()
+  @IsUUID('4', { message: 'El identificador de perfil no es valido.' })
+  profileImageUploadId?: string;
 
   @ApiProperty({ example: 'Club Nocturno Central' })
   @IsString({ message: 'El nombre del club debe ser texto.' })

@@ -1,13 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClubStatus, EventStatus, Prisma, ProductStatus, PromotionStatus, TicketTypeStatus, UserRole } from '@prisma/client';
-import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
+import {
+  ClubStatus,
+  EventStatus,
+  Prisma,
+  ProductStatus,
+  PromotionStatus,
+  TicketTypeStatus,
+  UserRole,
+} from '@prisma/client';
+import {
+  buildMediaUrl,
+  extractObjectKeyFromUrl,
+} from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
+import { UploadsService } from '../../uploads/application/uploads.service';
 import { CreateClubDto } from '../presentation/dto/create-club.dto';
 import { CustomerHomeQueryDto } from '../presentation/dto/customer-home-query.dto';
+import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-query.dto';
 import { UpdateClubDto } from '../presentation/dto/update-club.dto';
+import { UpdateClubOperationalProfileDto } from '../presentation/dto/update-club-operational-profile.dto';
 
 const CUSTOMER_VISIBLE_EVENT_STATUSES = [
   EventStatus.PUBLISHED,
@@ -15,7 +29,9 @@ const CUSTOMER_VISIBLE_EVENT_STATUSES = [
   EventStatus.SOLD_OUT,
   EventStatus.IN_PROGRESS,
 ] as const;
-const CUSTOMER_HOME_CACHE_TTL_MS = 1000 * 60 * 3;
+// Customer discovery must reflect newly activated clubs and published events.
+// Keep the cache effectively disabled until mutation-driven invalidation exists.
+const CUSTOMER_HOME_CACHE_TTL_MS = 0;
 const customerHomeCache = new Map<
   string,
   { expiresAt: number; payload: Record<string, unknown> }
@@ -26,6 +42,7 @@ export class ClubsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly uploadsService: UploadsService,
   ) {}
 
   async createClub(currentUser: AuthenticatedUser, input: CreateClubDto) {
@@ -33,28 +50,45 @@ export class ClubsService {
 
     const address = normalizeAddress(input.address);
     const contact = normalizeContact(input.contact);
-    const coverImageUrl = normalizeOptionalText(input.coverImage);
-    const profileImageUrl = normalizeOptionalText(input.profileImage);
     const socialMedia = normalizeSocialMedia(input.socialMedia);
     const schedule = normalizeSchedule(input.schedule);
-    const club = await this.prisma.club.create({
-      data: {
-        name: normalizeText(input.name),
-        description: normalizeOptionalText(input.description),
-        type: normalizeBusinessType(input.type),
-        addressJson: toNullableJson(address),
-        contactJson: toNullableJson(contact),
-        coverImageUrl,
-        profileImageUrl,
-        socialMediaJson: toNullableJson(socialMedia),
-        scheduleJson: toNullableJson(schedule),
-        admins: {
-          create: {
+    const club = await this.prisma.$transaction(async (tx) => {
+      const coverUpload = input.coverImageUploadId
+        ? await this.uploadsService.consumeUpload({
+            uploadId: input.coverImageUploadId,
             userId: currentUser.id,
+            transaction: tx,
+          })
+        : null;
+      const profileUpload = input.profileImageUploadId
+        ? await this.uploadsService.consumeUpload({
+            uploadId: input.profileImageUploadId,
+            userId: currentUser.id,
+            transaction: tx,
+          })
+        : null;
+
+      return tx.club.create({
+        data: {
+          name: normalizeText(input.name),
+          description: normalizeOptionalText(input.description),
+          type: normalizeBusinessType(input.type),
+          addressJson: toNullableJson(address),
+          contactJson: toNullableJson(contact),
+          coverImageUrl:
+            coverUpload?.objectKey ?? extractObjectKeyFromUrl(input.coverImage, this.config),
+          profileImageUrl:
+            profileUpload?.objectKey ?? extractObjectKeyFromUrl(input.profileImage, this.config),
+          socialMediaJson: toNullableJson(socialMedia),
+          scheduleJson: toNullableJson(schedule),
+          admins: {
+            create: {
+              userId: currentUser.id,
+            },
           },
         },
-      },
-      include: clubInclude,
+        include: clubInclude,
+      });
     });
 
     return {
@@ -79,41 +113,7 @@ export class ClubsService {
   async getAdminDashboard(currentUser: AuthenticatedUser) {
     this.assertCanViewAdminDashboard(currentUser);
 
-    const club = await this.prisma.club.findFirst({
-      where: this.getAdminDashboardClubWhere(currentUser),
-      orderBy: { createdAt: 'asc' },
-      include: {
-        admins: {
-          include: {
-            user: true,
-          },
-        },
-        workers: {
-          where: {
-            userId: currentUser.id,
-          },
-          take: 1,
-          include: {
-            user: true,
-          },
-        },
-        events: {
-          orderBy: { startsAt: 'asc' },
-          take: 6,
-          include: {
-            ticketTypes: {
-              where: {
-                status: {
-                  in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT],
-                },
-              },
-              orderBy: { priceCents: 'asc' },
-              take: 1,
-            },
-          },
-        },
-      },
-    });
+    const club = await this.findAdminDashboardClub(currentUser);
 
     if (!club) {
       return {
@@ -206,6 +206,10 @@ export class ClubsService {
       where: { clubId: club.id },
       _sum: { capacity: true },
     });
+    const occupancyAggregate = await this.prisma.eventOccupancy.aggregate({
+      where: { event: { clubId: club.id } },
+      _sum: { currentCount: true },
+    });
 
     const profileImage = buildMediaUrl(club.profileImageUrl, this.config);
     const coverImage = buildMediaUrl(club.coverImageUrl, this.config);
@@ -218,7 +222,7 @@ export class ClubsService {
         return {
           id: event.id,
           name: event.name,
-          imageUrl: buildMediaUrl(event.imageUrl, this.config),
+          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
           startsAt: event.startsAt,
           endsAt: event.endsAt,
           capacity: event.capacity,
@@ -228,6 +232,35 @@ export class ClubsService {
         };
       }),
     );
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const previousStart = new Date(todayStart.getTime() - 86_400_000);
+    const [paidSales, previousSales, validatedQr, customers, latestSales, recentActivity] =
+      await Promise.all([
+        this.prisma.order.aggregate({ where: { clubId: club.id, status: 'PAID', paidAt: { gte: todayStart } }, _sum: { totalCents: true }, _count: true }),
+        this.prisma.order.aggregate({ where: { clubId: club.id, status: 'PAID', paidAt: { gte: previousStart, lt: todayStart } }, _sum: { totalCents: true } }),
+        this.prisma.qrValidationAttempt.count({ where: { clubId: club.id, outcome: 'VALID', createdAt: { gte: todayStart } } }),
+        this.prisma.order.groupBy({ by: ['userId'], where: { clubId: club.id, status: 'PAID' } }),
+        this.prisma.order.findMany({
+          where: { clubId: club.id },
+          include: { user: { select: { fullName: true } }, items: { orderBy: { createdAt: 'asc' } }, paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } },
+          orderBy: { createdAt: 'desc' }, take: 10,
+        }),
+        this.prisma.auditLogEntry.findMany({ where: { clubId: club.id }, include: { actor: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 10 }),
+      ]);
+    const currentAmount = paidSales._sum.totalCents ?? 0;
+    const previousAmount = previousSales._sum.totalCents ?? 0;
+    const salesTrend = previousAmount > 0
+      ? Math.round(((currentAmount - previousAmount) / previousAmount) * 1000) / 10
+      : currentAmount > 0 ? 100 : 0;
+    const alerts = topProducts.filter((product) => product.stockQuantity <= 5).map((product) => ({
+      type: product.stockQuantity <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK',
+      severity: product.stockQuantity <= 0 ? 'critical' : 'warning',
+      resourceId: product.id,
+      title: product.stockQuantity <= 0 ? `${product.name} agotado` : `Stock bajo: ${product.name}`,
+      value: product.stockQuantity,
+    }));
 
     return {
       message: 'Dashboard admin obtenido correctamente.',
@@ -268,7 +301,7 @@ export class ClubsService {
         : null,
       summary: {
         capacity: {
-          current: 0,
+          current: occupancyAggregate._sum.currentCount ?? 0,
           total: capacityAggregate._sum.capacity ?? 0,
         },
         counts: {
@@ -280,13 +313,13 @@ export class ClubsService {
       },
       metrics: {
         sales: {
-          amount: 0,
+          amount: currentAmount / 100,
           currency: 'PEN',
-          trendPercent: 0,
+          trendPercent: salesTrend,
         },
-        purchases: 0,
-        validatedQr: 0,
-        customers: 0,
+        purchases: paidSales._count,
+        validatedQr,
+        customers: customers.length,
       },
       upcomingEvents,
       quickActions: [
@@ -297,8 +330,26 @@ export class ClubsService {
         { key: 'manage_staff', label: 'Gestionar Pers.', icon: 'badge' },
         { key: 'reports', label: 'Ver Reportes', icon: 'chart' },
       ],
-      alerts: [],
-      latestSales: [],
+      alerts,
+      latestSales: latestSales.map((order) => ({
+        id: order.id,
+        customerName: order.user.fullName,
+        amount: order.totalCents / 100,
+        amountCents: order.totalCents,
+        currency: order.currency,
+        status: order.status,
+        paymentStatus: order.paymentAttempts[0]?.status ?? null,
+        createdAt: order.createdAt,
+        paidAt: order.paidAt,
+        category: order.items[0]?.itemType ?? 'MIXED',
+        items: order.items.map((item) => ({
+          id: item.id,
+          type: item.itemType,
+          name: item.nameSnapshot,
+          quantity: item.quantity,
+          totalCents: item.totalCents,
+        })),
+      })),
       topProducts: topProducts.map((product) => ({
         id: product.id,
         name: product.name,
@@ -317,7 +368,14 @@ export class ClubsService {
         itemsCount: promotion.items.length,
         imageUrl: buildMediaUrl(promotion.imageUrl, this.config),
       })),
-      recentActivity: [],
+      recentActivity: recentActivity.map((entry) => ({
+        id: entry.id,
+        actorName: entry.actor.fullName,
+        action: entry.action,
+        resourceType: entry.resourceType,
+        resourceId: entry.resourceId,
+        createdAt: entry.createdAt,
+      })),
     };
   }
 
@@ -347,6 +405,7 @@ export class ClubsService {
         hasResults: false,
         clubs: [],
         events: [],
+        tickets: [],
         promotions: [],
         products: [],
         emptyState: buildCustomerHomeEmptyState(location),
@@ -364,7 +423,7 @@ export class ClubsService {
       };
     }
 
-    const [events, promotions, products] = await Promise.all([
+    const [events, promotions, products, tickets] = await Promise.all([
       this.prisma.event.findMany({
         where: {
           clubId: { in: clubIds },
@@ -425,69 +484,114 @@ export class ClubsService {
           club: true,
         },
       }),
+      this.prisma.ticketType.findMany({
+        where: {
+          clubId: { in: clubIds },
+          status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] },
+          OR: [
+            { eventId: null },
+            {
+              event: {
+                status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+                endsAt: { gte: now },
+              },
+            },
+          ],
+        },
+        orderBy: [{ priceCents: 'asc' }],
+        take: 40,
+        include: { club: true, event: true },
+      }),
     ]);
 
     const payload = {
       message: 'Home del cliente obtenido correctamente.',
       location,
       hasResults: true,
-      clubs: clubs.slice(0, 8).map((club) => ({
-        id: club.id,
-        name: club.name,
-        description: club.description,
-        type: club.type,
-        profileImage: buildMediaUrl(club.profileImageUrl, this.config),
-        coverImage: buildMediaUrl(club.coverImageUrl, this.config),
-        address: toLocationAddress(club.addressJson),
-        contact: club.contactJson ?? {},
-        schedule: toScheduleSummary(club.scheduleJson),
-        isOpenNow: isClubOpenNow(club.scheduleJson, now),
-        status: club.status,
-      })),
-      events: events.map((event) => ({
-        id: event.id,
-        clubId: event.clubId,
-        clubName: event.club.name,
-        name: event.name,
-        description: event.description,
-        imageUrl: buildMediaUrl(event.imageUrl, this.config),
-        startsAt: event.startsAt,
-        endsAt: event.endsAt,
-        status: event.status,
-        capacity: event.capacity,
-        sold: event.ticketTypes[0]?.quantitySold ?? 0,
-        priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
-        currency: event.ticketTypes[0]?.currency ?? 'PEN',
-      })),
-      promotions: promotions.map((promotion) => ({
-        id: promotion.id,
-        clubId: promotion.clubId,
-        clubName: promotion.club.name,
-        eventId: promotion.eventId,
-        eventName: promotion.event?.name ?? null,
-        name: promotion.name,
-        description: promotion.description,
-        imageUrl: buildMediaUrl(promotion.imageUrl, this.config),
-        finalPrice: promotion.finalPriceCents / 100,
-        currency: promotion.currency,
-        startsAt: promotion.startsAt,
-        endsAt: promotion.endsAt,
-        status: promotion.status,
-        itemsCount: promotion.items.length,
-        scope: promotion.eventId ? 'EVENT' : 'CLUB',
-      })),
-      products: products.map((product) => ({
-        id: product.id,
-        clubId: product.clubId,
-        clubName: product.club.name,
-        name: product.name,
-        description: product.description,
-        imageUrl: buildMediaUrl(product.imageUrl, this.config),
-        price: product.priceCents / 100,
-        currency: product.currency,
-        stockQuantity: product.stockQuantity,
-        status: product.status,
-      })),
+      clubs: await Promise.all(
+        clubs.slice(0, 8).map(async (club) => ({
+          id: club.id,
+          name: club.name,
+          description: club.description,
+          type: club.type,
+          profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
+          coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
+          address: toLocationAddress(club.addressJson),
+          contact: club.contactJson ?? {},
+          schedule: toScheduleSummary(club.scheduleJson),
+          isOpenNow: isClubOpenNow(club.scheduleJson, now),
+          status: club.status,
+        })),
+      ),
+      events: await Promise.all(
+        events.map(async (event) => ({
+          id: event.id,
+          clubId: event.clubId,
+          clubName: event.club.name,
+          name: event.name,
+          description: event.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+          startsAt: event.startsAt,
+          endsAt: event.endsAt,
+          status: event.status,
+          capacity: event.capacity,
+          sold: event.ticketTypes[0]?.quantitySold ?? 0,
+          priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
+          currency: event.ticketTypes[0]?.currency ?? 'PEN',
+        })),
+      ),
+      tickets: await Promise.all(
+        tickets.map(async (ticket) => ({
+          id: ticket.id,
+          clubId: ticket.clubId,
+          clubName: ticket.club.name,
+          eventId: ticket.eventId,
+          eventName: ticket.event?.name ?? null,
+          imageUrl: await this.uploadsService.createReadableImageUrl(ticket.event?.imageUrl),
+          name: ticket.name,
+          description: ticket.description,
+          price: ticket.priceCents / 100,
+          currency: ticket.currency,
+          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold, 0),
+          perUserLimit: ticket.perUserLimit,
+          saleStartAt: ticket.saleStartAt,
+          saleEndAt: ticket.saleEndAt,
+          status: ticket.status,
+        })),
+      ),
+      promotions: await Promise.all(
+        promotions.map(async (promotion) => ({
+          id: promotion.id,
+          clubId: promotion.clubId,
+          clubName: promotion.club.name,
+          eventId: promotion.eventId,
+          eventName: promotion.event?.name ?? null,
+          name: promotion.name,
+          description: promotion.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(promotion.imageUrl),
+          finalPrice: promotion.finalPriceCents / 100,
+          currency: promotion.currency,
+          startsAt: promotion.startsAt,
+          endsAt: promotion.endsAt,
+          status: promotion.status,
+          itemsCount: promotion.items.length,
+          scope: promotion.eventId ? 'EVENT' : 'CLUB',
+        })),
+      ),
+      products: await Promise.all(
+        products.map(async (product) => ({
+          id: product.id,
+          clubId: product.clubId,
+          clubName: product.club.name,
+          name: product.name,
+          description: product.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(product.imageUrl),
+          price: product.priceCents / 100,
+          currency: product.currency,
+          stockQuantity: product.stockQuantity,
+          status: product.status,
+        })),
+      ),
       emptyState: null,
     };
     customerHomeCache.set(cacheKey, {
@@ -503,6 +607,457 @@ export class ClubsService {
     };
   }
 
+  async exploreCustomerContent(currentUser: AuthenticatedUser, query: CustomerExploreQueryDto) {
+    const search = query.q.trim();
+    const now = new Date();
+    const searchPattern = `%${search}%`;
+    const matchedClubRows = await this.prisma.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+      SELECT "id"
+      FROM "Club"
+      WHERE "status" = 'ACTIVE'::"ClubStatus"
+        AND (
+          "name" ILIKE ${searchPattern}
+          OR COALESCE("description", '') ILIKE ${searchPattern}
+          OR "type" ILIKE ${searchPattern}
+          OR COALESCE("addressJson"::text, '') ILIKE ${searchPattern}
+        )
+      ORDER BY "updatedAt" DESC
+      LIMIT 30
+    `);
+    const activeClubs = await this.prisma.club.findMany({
+      where: {
+        id: { in: matchedClubRows.map((club) => club.id) },
+        status: ClubStatus.ACTIVE,
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 30,
+    });
+    const matchedClubIds = activeClubs.map((club) => club.id);
+    const clubRelationFilter = {
+      status: ClubStatus.ACTIVE,
+    } as const;
+
+    const [events, promotions, products] = await Promise.all([
+      this.prisma.event.findMany({
+        where: {
+          club: clubRelationFilter,
+          status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+          endsAt: { gte: now },
+          OR: [
+            { clubId: { in: matchedClubIds } },
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+        orderBy: { startsAt: 'asc' },
+        take: 30,
+        include: {
+          club: true,
+          ticketTypes: {
+            where: { status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] } },
+            orderBy: { priceCents: 'asc' },
+            take: 1,
+          },
+        },
+      }),
+      this.prisma.promotion.findMany({
+        where: {
+          club: clubRelationFilter,
+          status: PromotionStatus.ACTIVE,
+          AND: [
+            { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+            { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            {
+              OR: [
+                { clubId: { in: matchedClubIds } },
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ],
+            },
+          ],
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 30,
+        include: { club: true, event: true, items: true },
+      }),
+      this.prisma.product.findMany({
+        where: {
+          club: clubRelationFilter,
+          status: ProductStatus.ACTIVE,
+          OR: [
+            { clubId: { in: matchedClubIds } },
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 30,
+        include: { club: true },
+      }),
+    ]);
+
+    const referencedClubIds = new Set([
+      ...matchedClubIds,
+      ...events.map((item) => item.clubId),
+      ...promotions.map((item) => item.clubId),
+      ...products.map((item) => item.clubId),
+    ]);
+    const extraClubIds = [...referencedClubIds].filter((id) => !matchedClubIds.includes(id));
+    const extraClubs = extraClubIds.length
+      ? await this.prisma.club.findMany({
+          where: { id: { in: extraClubIds }, status: ClubStatus.ACTIVE },
+        })
+      : [];
+    const clubs = [...activeClubs, ...extraClubs];
+
+    return {
+      message: 'Exploración nacional obtenida correctamente.',
+      query: search,
+      scope: 'PERU',
+      location: { district: '', province: '', department: '' },
+      hasResults: clubs.length + events.length + promotions.length + products.length > 0,
+      clubs: await Promise.all(
+        clubs.map(async (club) => ({
+          id: club.id,
+          name: club.name,
+          description: club.description,
+          type: club.type,
+          profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
+          coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
+          address: toLocationAddress(club.addressJson),
+          contact: club.contactJson ?? {},
+          schedule: toScheduleSummary(club.scheduleJson),
+          isOpenNow: isClubOpenNow(club.scheduleJson, now),
+          status: club.status,
+        })),
+      ),
+      events: await Promise.all(
+        events.map(async (event) => ({
+          id: event.id,
+          clubId: event.clubId,
+          clubName: event.club.name,
+          name: event.name,
+          description: event.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+          startsAt: event.startsAt,
+          endsAt: event.endsAt,
+          status: event.status,
+          capacity: event.capacity,
+          sold: event.ticketTypes[0]?.quantitySold ?? 0,
+          priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
+          currency: event.ticketTypes[0]?.currency ?? 'PEN',
+        })),
+      ),
+      tickets: [],
+      promotions: await Promise.all(
+        promotions.map(async (promotion) => ({
+          id: promotion.id,
+          clubId: promotion.clubId,
+          clubName: promotion.club.name,
+          eventId: promotion.eventId,
+          eventName: promotion.event?.name ?? null,
+          name: promotion.name,
+          description: promotion.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(promotion.imageUrl),
+          finalPrice: promotion.finalPriceCents / 100,
+          currency: promotion.currency,
+          status: promotion.status,
+          itemsCount: promotion.items.length,
+          scope: promotion.eventId ? 'EVENT' : 'CLUB',
+        })),
+      ),
+      products: await Promise.all(
+        products.map(async (product) => ({
+          id: product.id,
+          clubId: product.clubId,
+          clubName: product.club.name,
+          name: product.name,
+          description: product.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(product.imageUrl),
+          price: product.priceCents / 100,
+          currency: product.currency,
+          stockQuantity: product.stockQuantity,
+          status: product.status,
+        })),
+      ),
+      emptyState: null,
+      viewer: { id: currentUser.id, role: currentUser.role },
+    };
+  }
+
+  async getCustomerClubDetail(currentUser: AuthenticatedUser, clubId: string) {
+    const now = new Date();
+    const club = await this.prisma.club.findFirst({
+      where: {
+        id: clubId,
+        status: ClubStatus.ACTIVE,
+      },
+    });
+
+    if (!club) {
+      throw notFound('CLUB_NOT_FOUND', 'Discoteca no encontrada o no disponible.');
+    }
+
+    const [events, promotions, products, tickets] = await Promise.all([
+      this.prisma.event.findMany({
+        where: {
+          clubId,
+          status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+          endsAt: { gte: now },
+        },
+        orderBy: { startsAt: 'asc' },
+        include: {
+          club: true,
+          ticketTypes: {
+            where: { status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] } },
+            orderBy: { priceCents: 'asc' },
+            take: 1,
+          },
+        },
+      }),
+      this.prisma.promotion.findMany({
+        where: {
+          clubId,
+          status: PromotionStatus.ACTIVE,
+          AND: [
+            { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+            { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            {
+              OR: [
+                { eventId: null },
+                {
+                  event: {
+                    status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+                    endsAt: { gte: now },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        orderBy: { updatedAt: 'desc' },
+        include: { club: true, event: true, items: true },
+      }),
+      this.prisma.product.findMany({
+        where: {
+          clubId,
+          status: ProductStatus.ACTIVE,
+        },
+        orderBy: { updatedAt: 'desc' },
+        include: { club: true },
+      }),
+      this.prisma.ticketType.findMany({
+        where: {
+          clubId,
+          status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] },
+          OR: [
+            { eventId: null },
+            {
+              event: {
+                status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+                endsAt: { gte: now },
+              },
+            },
+          ],
+        },
+        orderBy: { priceCents: 'asc' },
+        include: { club: true, event: true },
+      }),
+    ]);
+
+    return {
+      message: 'Detalle de la discoteca obtenido correctamente.',
+      location: {
+        district: toLocationAddress(club.addressJson).distrito,
+        province: toLocationAddress(club.addressJson).provincia,
+        department: toLocationAddress(club.addressJson).departamento,
+      },
+      hasResults: true,
+      clubs: [
+        {
+          id: club.id,
+          name: club.name,
+          description: club.description,
+          type: club.type,
+          profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
+          coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
+          address: toLocationAddress(club.addressJson),
+          contact: club.contactJson ?? {},
+          schedule: toScheduleSummary(club.scheduleJson),
+          isOpenNow: isClubOpenNow(club.scheduleJson, now),
+          status: club.status,
+        },
+      ],
+      events: await Promise.all(
+        events.map(async (event) => ({
+          id: event.id,
+          clubId: event.clubId,
+          clubName: event.club.name,
+          name: event.name,
+          description: event.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+          startsAt: event.startsAt,
+          endsAt: event.endsAt,
+          status: event.status,
+          capacity: event.capacity,
+          sold: event.ticketTypes[0]?.quantitySold ?? 0,
+          priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
+          currency: event.ticketTypes[0]?.currency ?? 'PEN',
+        })),
+      ),
+      tickets: await Promise.all(
+        tickets.map(async (ticket) => ({
+          id: ticket.id,
+          clubId: ticket.clubId,
+          clubName: ticket.club.name,
+          eventId: ticket.eventId,
+          eventName: ticket.event?.name ?? null,
+          imageUrl: await this.uploadsService.createReadableImageUrl(ticket.event?.imageUrl),
+          name: ticket.name,
+          description: ticket.description,
+          price: ticket.priceCents / 100,
+          currency: ticket.currency,
+          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold, 0),
+          perUserLimit: ticket.perUserLimit,
+          saleStartAt: ticket.saleStartAt,
+          saleEndAt: ticket.saleEndAt,
+          status: ticket.status,
+        })),
+      ),
+      promotions: await Promise.all(
+        promotions.map(async (promotion) => ({
+          id: promotion.id,
+          clubId: promotion.clubId,
+          clubName: promotion.club.name,
+          eventId: promotion.eventId,
+          eventName: promotion.event?.name ?? null,
+          name: promotion.name,
+          description: promotion.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(promotion.imageUrl),
+          finalPrice: promotion.finalPriceCents / 100,
+          currency: promotion.currency,
+          startsAt: promotion.startsAt,
+          endsAt: promotion.endsAt,
+          status: promotion.status,
+          itemsCount: promotion.items.length,
+          scope: promotion.eventId ? 'EVENT' : 'CLUB',
+        })),
+      ),
+      products: await Promise.all(
+        products.map(async (product) => ({
+          id: product.id,
+          clubId: product.clubId,
+          clubName: product.club.name,
+          name: product.name,
+          description: product.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(product.imageUrl),
+          price: product.priceCents / 100,
+          currency: product.currency,
+          stockQuantity: product.stockQuantity,
+          status: product.status,
+        })),
+      ),
+      emptyState: null,
+      viewer: { id: currentUser.id, role: currentUser.role },
+    };
+  }
+
+  async getCustomerEventDetail(currentUser: AuthenticatedUser, eventId: string) {
+    const now = new Date();
+    const event = await this.prisma.event.findFirst({
+      where: {
+        id: eventId,
+        status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+        club: { status: ClubStatus.ACTIVE },
+      },
+      include: {
+        club: true,
+        ticketTypes: {
+          where: { status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] } },
+          orderBy: { priceCents: 'asc' },
+        },
+        promotions: {
+          where: {
+            status: PromotionStatus.ACTIVE,
+            AND: [
+              { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+              { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            ],
+          },
+          orderBy: { updatedAt: 'desc' },
+          include: { items: true },
+        },
+      },
+    });
+    if (!event) throw notFound('EVENT_NOT_FOUND', 'Evento no encontrado o no disponible.');
+
+    const club = event.club;
+    return {
+      message: 'Detalle del evento obtenido correctamente.',
+      viewer: { id: currentUser.id, role: currentUser.role },
+      event: {
+        id: event.id,
+        clubId: event.clubId,
+        clubName: club.name,
+        name: event.name,
+        description: event.description,
+        imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        status: event.status,
+        priceFrom: event.ticketTypes[0]?.priceCents ? event.ticketTypes[0].priceCents / 100 : null,
+        currency: event.ticketTypes[0]?.currency ?? 'PEN',
+      },
+      club: {
+        id: club.id,
+        name: club.name,
+        description: club.description,
+        type: club.type,
+        profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
+        coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
+        address: toLocationAddress(club.addressJson),
+        contact: club.contactJson ?? {},
+        schedule: toScheduleSummary(club.scheduleJson),
+        isOpenNow: isClubOpenNow(club.scheduleJson, now),
+        status: club.status,
+      },
+      tickets: await Promise.all(
+        event.ticketTypes.map(async (ticket) => ({
+          id: ticket.id,
+          clubId: ticket.clubId,
+          clubName: club.name,
+          eventId: event.id,
+          eventName: event.name,
+          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+          name: ticket.name,
+          description: ticket.description,
+          price: ticket.priceCents / 100,
+          currency: ticket.currency,
+          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold, 0),
+          perUserLimit: ticket.perUserLimit,
+          status: ticket.status,
+        })),
+      ),
+      promotions: await Promise.all(
+        event.promotions.map(async (promotion) => ({
+          id: promotion.id,
+          clubId: promotion.clubId,
+          clubName: club.name,
+          eventId: event.id,
+          eventName: event.name,
+          name: promotion.name,
+          description: promotion.description,
+          imageUrl: await this.uploadsService.createReadableImageUrl(promotion.imageUrl),
+          finalPrice: promotion.finalPriceCents / 100,
+          currency: promotion.currency,
+          status: promotion.status,
+          itemsCount: promotion.items.length,
+          scope: 'EVENT',
+        })),
+      ),
+    };
+  }
+
   async getClub(currentUser: AuthenticatedUser, clubId: string) {
     const club = await this.findVisibleClubOrFail(currentUser, clubId);
 
@@ -514,6 +1069,13 @@ export class ClubsService {
 
   async updateClub(currentUser: AuthenticatedUser, clubId: string, input: UpdateClubDto) {
     await this.assertCanManageClub(currentUser, clubId);
+    const previousClub = await this.prisma.club.findUnique({
+      where: { id: clubId },
+      select: { coverImageUrl: true, profileImageUrl: true },
+    });
+    if (!previousClub) {
+      throw notFound('CLUB_NOT_FOUND', 'No encontramos el club solicitado.');
+    }
 
     const data: Prisma.ClubUpdateInput = {};
 
@@ -540,11 +1102,11 @@ export class ClubsService {
     }
 
     if (input.coverImage !== undefined) {
-      data.coverImageUrl = normalizeOptionalText(input.coverImage);
+      data.coverImageUrl = extractObjectKeyFromUrl(input.coverImage, this.config);
     }
 
     if (input.profileImage !== undefined) {
-      const profileImageUrl = normalizeOptionalText(input.profileImage);
+      const profileImageUrl = extractObjectKeyFromUrl(input.profileImage, this.config);
       data.profileImageUrl = profileImageUrl;
     }
 
@@ -556,10 +1118,30 @@ export class ClubsService {
       data.scheduleJson = toNullableJson(normalizeSchedule(input.schedule));
     }
 
-    const club = await this.prisma.club.update({
-      where: { id: clubId },
-      data,
-      include: clubInclude,
+    const club = await this.prisma.$transaction(async (tx) => {
+      if (input.coverImageUploadId) {
+        const upload = await this.uploadsService.replaceUpload({
+          uploadId: input.coverImageUploadId,
+          userId: currentUser.id,
+          previousObjectKey: previousClub.coverImageUrl,
+          transaction: tx,
+        });
+        data.coverImageUrl = upload.objectKey;
+      }
+      if (input.profileImageUploadId) {
+        const upload = await this.uploadsService.replaceUpload({
+          uploadId: input.profileImageUploadId,
+          userId: currentUser.id,
+          previousObjectKey: previousClub.profileImageUrl,
+          transaction: tx,
+        });
+        data.profileImageUrl = upload.objectKey;
+      }
+      return tx.club.update({
+        where: { id: clubId },
+        data,
+        include: clubInclude,
+      });
     });
 
     return {
@@ -582,6 +1164,51 @@ export class ClubsService {
       message: 'Club activado correctamente.',
       club: toClubResponse(club, this.config),
     };
+  }
+
+  async getOperationalProfile(currentUser: AuthenticatedUser, clubId: string) {
+    await this.assertCanManageClub(currentUser, clubId);
+    const profile = await this.prisma.clubOperationalProfile.findUnique({ where: { clubId } });
+    return { profile };
+  }
+
+  async updateOperationalProfile(
+    currentUser: AuthenticatedUser,
+    clubId: string,
+    input: UpdateClubOperationalProfileDto,
+  ) {
+    await this.assertCanManageClub(currentUser, clubId);
+    const clean = (value: string | undefined) => value?.trim() || null;
+    const profile = await this.prisma.clubOperationalProfile.upsert({
+      where: { clubId },
+      create: {
+        clubId,
+        refundPolicy: clean(input.refundPolicy),
+        responsibleName: clean(input.responsibleName),
+        responsibleEmail: clean(input.responsibleEmail),
+        responsiblePhone: clean(input.responsiblePhone),
+        approvalDocumentUploadIds: input.approvalDocumentUploadIds ?? [],
+      },
+      update: {
+        ...(input.refundPolicy !== undefined ? { refundPolicy: clean(input.refundPolicy) } : {}),
+        ...(input.responsibleName !== undefined ? { responsibleName: clean(input.responsibleName) } : {}),
+        ...(input.responsibleEmail !== undefined ? { responsibleEmail: clean(input.responsibleEmail) } : {}),
+        ...(input.responsiblePhone !== undefined ? { responsiblePhone: clean(input.responsiblePhone) } : {}),
+        ...(input.approvalDocumentUploadIds !== undefined
+          ? { approvalDocumentUploadIds: input.approvalDocumentUploadIds }
+          : {}),
+      },
+    });
+    await this.prisma.auditLogEntry.create({
+      data: {
+        actorUserId: currentUser.id,
+        clubId,
+        action: 'UPDATE_OPERATIONAL_PROFILE',
+        resourceType: 'CLUB',
+        resourceId: clubId,
+      },
+    });
+    return { message: 'Configuración operativa actualizada.', profile };
   }
 
   async deactivateClub(currentUser: AuthenticatedUser, clubId: string) {
@@ -669,28 +1296,43 @@ export class ClubsService {
     };
   }
 
-  private getAdminDashboardClubWhere(currentUser: AuthenticatedUser) {
+  private async findAdminDashboardClub(currentUser: AuthenticatedUser) {
     if (currentUser.role === UserRole.SUPER_ADMIN) {
-      return {};
+      return this.prisma.club.findFirst({
+        orderBy: { createdAt: 'asc' },
+        include: buildAdminDashboardClubInclude(currentUser.id),
+      });
     }
 
     if (currentUser.role === UserRole.WORKER) {
-      return {
-        workers: {
-          some: {
-            userId: currentUser.id,
-          },
-        },
-      };
-    }
-
-    return {
-      admins: {
-        some: {
+      const relation = await this.prisma.clubWorker.findFirst({
+        where: {
           userId: currentUser.id,
         },
+        orderBy: { createdAt: 'asc' },
+        include: {
+          club: {
+            include: buildAdminDashboardClubInclude(currentUser.id),
+          },
+        },
+      });
+
+      return relation?.club ?? null;
+    }
+
+    const relation = await this.prisma.clubAdmin.findFirst({
+      where: {
+        userId: currentUser.id,
       },
-    };
+      orderBy: { createdAt: 'asc' },
+      include: {
+        club: {
+          include: buildAdminDashboardClubInclude(currentUser.id),
+        },
+      },
+    });
+
+    return relation?.club ?? null;
   }
 
   private async findVisibleClubOrFail(currentUser: AuthenticatedUser, clubId: string) {
@@ -714,34 +1356,17 @@ export class ClubsService {
     province: string;
     department: string;
   }) {
-    const locationAttempts = buildCustomerLocationAttempts(location);
+    const clubs = await this.prisma.club.findMany({
+      where: { status: ClubStatus.ACTIVE },
+      orderBy: [{ updatedAt: 'desc' }],
+      select: customerHomeClubSelect,
+    });
 
-    if (locationAttempts.length === 0) {
-      return this.prisma.club.findMany({
-        where: { status: ClubStatus.ACTIVE },
-        orderBy: [{ updatedAt: 'desc' }],
-        take: 8,
-        select: customerHomeClubSelect,
-      });
+    if (!location.district && !location.province && !location.department) {
+      return clubs.slice(0, 8);
     }
 
-    for (const attempt of locationAttempts) {
-      const clubs = await this.prisma.club.findMany({
-        where: {
-          status: ClubStatus.ACTIVE,
-          ...attempt.where,
-        },
-        orderBy: [{ updatedAt: 'desc' }],
-        take: 8,
-        select: customerHomeClubSelect,
-      });
-
-      if (clubs.length > 0) {
-        return clubs;
-      }
-    }
-
-    return [];
+    return clubs.filter((club) => matchesLocationQuery(club.addressJson, location)).slice(0, 8);
   }
 
   private async findClubOrFail(clubId: string) {
@@ -792,12 +1417,14 @@ const toNullableJson = (
 
 const normalizeBusinessType = (value?: string): string => value?.trim().toLowerCase() || 'club';
 
-const normalizeAddress = (value?: CreateClubDto['address']): Record<string, string> => ({
+const normalizeAddress = (value?: CreateClubDto['address']): Record<string, string | number> => ({
   direccion: value?.direccion?.trim() ?? '',
   distrito: value?.distrito?.trim() ?? '',
   provincia: value?.provincia?.trim() ?? '',
   departamento: value?.departamento?.trim() ?? '',
   pais: value?.pais?.trim() || 'Perú',
+  ...(value?.latitude !== undefined ? { latitude: value.latitude } : {}),
+  ...(value?.longitude !== undefined ? { longitude: value.longitude } : {}),
 });
 
 const normalizeCustomerLocationQuery = (query: CustomerHomeQueryDto) => ({
@@ -816,92 +1443,6 @@ const customerHomeCacheKey = (location: {
     normalizeComparable(location.province),
     normalizeComparable(location.department),
   ].join('|');
-
-const buildCustomerLocationWhere = (location: {
-  district: string;
-  province: string;
-  department: string;
-}): Prisma.ClubWhereInput => {
-  const conditions: Prisma.ClubWhereInput[] = [];
-
-  if (location.district) {
-    conditions.push({
-      addressJson: {
-        path: ['distrito'],
-        string_contains: location.district,
-      },
-    });
-  }
-
-  if (location.province) {
-    conditions.push({
-      addressJson: {
-        path: ['provincia'],
-        string_contains: location.province,
-      },
-    });
-  }
-
-  if (location.department) {
-    conditions.push({
-      addressJson: {
-        path: ['departamento'],
-        string_contains: location.department,
-      },
-    });
-  }
-
-  return conditions.length === 0 ? {} : { OR: conditions };
-};
-
-const buildCustomerLocationAttempts = (location: {
-  district: string;
-  province: string;
-  department: string;
-}) => {
-  const attempts: Array<{
-    key: 'district' | 'province' | 'department';
-    where: Prisma.ClubWhereInput;
-  }> = [];
-
-  if (location.district) {
-    attempts.push({
-      key: 'district',
-      where: {
-        addressJson: {
-          path: ['distrito'],
-          string_contains: location.district,
-        },
-      },
-    });
-  }
-
-  if (location.province) {
-    attempts.push({
-      key: 'province',
-      where: {
-        addressJson: {
-          path: ['provincia'],
-          string_contains: location.province,
-        },
-      },
-    });
-  }
-
-  if (location.department) {
-    attempts.push({
-      key: 'department',
-      where: {
-        addressJson: {
-          path: ['departamento'],
-          string_contains: location.department,
-        },
-      },
-    });
-  }
-
-  return attempts;
-};
 
 const normalizeContact = (contact?: CreateClubDto['contact']): Record<string, string> => ({
   phone: contact?.phone?.trim() ?? '',
@@ -1025,14 +1566,14 @@ const isClubOpenNow = (value: Prisma.JsonValue | null, now: Date) => {
   const currentMinutes = limaNow.getUTCHours() * 60 + limaNow.getUTCMinutes();
   const today = scheduleDayOrder[dayIndex];
   const yesterday = scheduleDayOrder[(dayIndex + 6) % 7];
-  const todayEntry =
-    entries.find((entry) => entry.day === today) ?? emptyScheduleEntry(today);
+  const todayEntry = entries.find((entry) => entry.day === today) ?? emptyScheduleEntry(today);
   const yesterdayEntry =
-    entries.find((entry) => entry.day === yesterday) ??
-    emptyScheduleEntry(yesterday);
+    entries.find((entry) => entry.day === yesterday) ?? emptyScheduleEntry(yesterday);
 
-  return isOpenWithinEntry(todayEntry, currentMinutes) ||
-    isOpenFromPreviousEntry(yesterdayEntry, currentMinutes);
+  return (
+    isOpenWithinEntry(todayEntry, currentMinutes) ||
+    isOpenFromPreviousEntry(yesterdayEntry, currentMinutes)
+  );
 };
 
 const emptyScheduleEntry = (day: string) => ({
@@ -1108,13 +1649,16 @@ const matchesLocationQuery = (
   }
 
   const address = parseAddressJson(value);
-  const districtMatch = !location.district || equalsNormalized(address.distrito, location.district);
-  const provinceMatch =
-    !location.province || equalsNormalized(address.provincia, location.province);
-  const departmentMatch =
-    !location.department || equalsNormalized(address.departamento, location.department);
+  const localityMatches = [
+    location.district ? equalsNormalized(address.distrito, location.district) : false,
+    location.province ? equalsNormalized(address.provincia, location.province) : false,
+  ];
 
-  return districtMatch || provinceMatch || departmentMatch;
+  if (location.district || location.province) {
+    return localityMatches.some(Boolean);
+  }
+
+  return location.department ? equalsNormalized(address.departamento, location.department) : true;
 };
 
 const equalsNormalized = (left: string, right: string) =>
@@ -1149,30 +1693,66 @@ const buildCustomerHomeEmptyState = (location: {
   };
 };
 
-const toClubResponse = (club: {
-  id: string;
-  name: string;
-  description: string | null;
-  type: string;
-  addressJson: Prisma.JsonValue | null;
-  contactJson: Prisma.JsonValue | null;
-  coverImageUrl: string | null;
-  profileImageUrl: string | null;
-  socialMediaJson: Prisma.JsonValue | null;
-  scheduleJson: Prisma.JsonValue | null;
-  status: ClubStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  admins?: Array<{
-    user: {
-      id: string;
-      fullName: string;
-      phoneCountryCode: string;
-      phoneNumber: string;
-      email: string | null;
-    };
-  }>;
-}, config: ConfigService) => ({
+const buildAdminDashboardClubInclude = (currentUserId: string) => ({
+  admins: {
+    include: {
+      user: true,
+    },
+  },
+  workers: {
+    where: {
+      userId: currentUserId,
+    },
+    take: 1,
+    include: {
+      user: true,
+    },
+  },
+  events: {
+    orderBy: { startsAt: 'asc' as const },
+    take: 6,
+    include: {
+      ticketTypes: {
+        where: {
+          status: {
+            in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT],
+          },
+        },
+        orderBy: { priceCents: 'asc' as const },
+        take: 1,
+      },
+    },
+  },
+});
+
+const toClubResponse = (
+  club: {
+    id: string;
+    name: string;
+    description: string | null;
+    type: string;
+    addressJson: Prisma.JsonValue | null;
+    contactJson: Prisma.JsonValue | null;
+    coverImageUrl: string | null;
+    profileImageUrl: string | null;
+    socialMediaJson: Prisma.JsonValue | null;
+    scheduleJson: Prisma.JsonValue | null;
+    status: ClubStatus;
+    createdAt: Date;
+    updatedAt: Date;
+    admins?: Array<{
+      user: {
+        id: string;
+        fullName: string;
+        phoneCountryCode: string;
+        phoneNumber: string;
+        email: string | null;
+        profileImageUrl: string | null;
+      };
+    }>;
+  },
+  config: ConfigService,
+) => ({
   id: club.id,
   name: club.name,
   description: club.description,
@@ -1200,5 +1780,6 @@ const toClubResponse = (club: {
     phoneCountryCode: admin.user.phoneCountryCode,
     phoneNumber: admin.user.phoneNumber,
     email: admin.user.email,
+    profileImage: buildMediaUrl(admin.user.profileImageUrl, config),
   })),
 });

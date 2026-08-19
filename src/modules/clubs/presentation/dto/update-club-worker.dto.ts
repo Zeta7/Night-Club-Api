@@ -16,4 +16,8 @@ export class UpdateClubWorkerDto {
   @MaxLength(80, { message: 'El rol del trabajador no puede exceder 80 caracteres.' })
   @IsOptional()
   roleLabel?: string;
+
+  @IsString() @MaxLength(100) @IsOptional() assignedDoor?: string;
+  @IsString() @MaxLength(100) @IsOptional() assignedZone?: string;
+  @IsString() @MaxLength(100) @IsOptional() assignedPoint?: string;
 }

@@ -6,6 +6,7 @@ import { ClubWorkersService } from '../application/club-workers.service';
 import { RegisterClubWorkerDto } from './dto/register-club-worker.dto';
 import { ReplaceClubWorkerPermissionsDto } from './dto/replace-club-worker-permissions.dto';
 import { UpdateClubWorkerDto } from './dto/update-club-worker.dto';
+import { AuthorizeWorkerDeviceDto, CloseWorkerShiftDto, StartWorkerShiftDto, SyncWorkerShiftDto } from './dto/worker-operations.dto';
 
 @ApiTags('Club Workers')
 @ApiBearerAuth()
@@ -13,6 +14,66 @@ import { UpdateClubWorkerDto } from './dto/update-club-worker.dto';
 @Controller('clubs/:clubId/workers')
 export class ClubWorkersController {
   constructor(private readonly clubWorkersService: ClubWorkersService) {}
+
+  @Post('me/shifts')
+  startMyShift(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Body() body: StartWorkerShiftDto,
+  ) {
+    return this.clubWorkersService.startShift(currentUser, clubId, body);
+  }
+
+  @Post('me/shifts/:shiftId/sync')
+  syncMyShift(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('shiftId') shiftId: string,
+    @Body() body: SyncWorkerShiftDto,
+  ) {
+    return this.clubWorkersService.syncShift(currentUser, clubId, shiftId, body);
+  }
+
+  @Get(':workerId/shifts')
+  listShifts(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('workerId') workerId: string) {
+    return this.clubWorkersService.listShifts(user, clubId, workerId);
+  }
+
+  @Post(':workerId/shifts/:shiftId/close')
+  closeShift(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('workerId') workerId: string,
+    @Param('shiftId') shiftId: string,
+    @Body() body: CloseWorkerShiftDto,
+  ) {
+    return this.clubWorkersService.closeShift(user, clubId, workerId, shiftId, body.reason);
+  }
+
+  @Post(':workerId/devices')
+  authorizeDevice(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('workerId') workerId: string,
+    @Body() body: AuthorizeWorkerDeviceDto,
+  ) {
+    return this.clubWorkersService.authorizeDevice(user, clubId, workerId, body);
+  }
+
+  @Delete(':workerId/devices/:deviceId')
+  revokeDevice(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('workerId') workerId: string,
+    @Param('deviceId') deviceId: string,
+  ) {
+    return this.clubWorkersService.revokeDevice(user, clubId, workerId, deviceId);
+  }
+
+  @Get(':workerId/report')
+  report(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('workerId') workerId: string) {
+    return this.clubWorkersService.workerReport(user, clubId, workerId);
+  }
 
   @Post()
   @ApiOperation({

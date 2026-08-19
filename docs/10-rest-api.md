@@ -116,6 +116,11 @@ Body sugerido:
 
 Devuelve el usuario autenticado.
 
+Regla de seguridad:
+
+- Esta ruta siempre debe responder con el usuario del access token actual.
+- Nunca debe aceptar un `userId` externo ni reutilizar datos de otra sesion cacheada.
+
 ### PATCH /users/me
 
 Actualiza el perfil del usuario autenticado.
@@ -129,6 +134,11 @@ Body sugerido:
   "imageUploadId": "uuid-del-upload"
 }
 ```
+
+Regla de seguridad:
+
+- Solo puede editar el usuario autenticado de la sesion actual.
+- Ningun cambio de perfil puede aplicarse sobre otro `userId`.
 
 ### POST /auth/password-reset/request
 
@@ -281,6 +291,13 @@ Lista clubes visibles segun rol.
 ### GET /clubs/{clubId}
 
 Obtiene detalle de club.
+
+### GET /clubs/customer/clubs/{clubId}
+
+Obtiene para un cliente autenticado el detalle de un club activo sin aplicar el filtro
+de su ubicacion actual. Devuelve el negocio junto con sus eventos, entradas,
+promociones y productos visibles. Este endpoint se usa al abrir desde Explorar una
+discoteca encontrada en cualquier ciudad del Peru.
 
 ### PATCH /clubs/{clubId}
 
@@ -527,6 +544,10 @@ Valida producto comprado.
 ### POST /clubs/{clubId}/validate/promotion
 
 Valida promocion comprada.
+
+Las respuestas de prevalidacion incluyen nombre, telefono y `attendeeImageUrl`
+del comprador. La imagen se entrega como URL legible; si el usuario no tiene
+foto, el cliente visual debe usar sus iniciales como respaldo.
 
 ## Capacity
 

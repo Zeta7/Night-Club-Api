@@ -3,9 +3,10 @@ import { IdentityModule } from '../identity/identity.module';
 import { PlatformService } from './application/platform.service';
 import { PlatformController } from './presentation/platform.controller';
 import { SuperAdminGuard } from './presentation/guards/super-admin.guard';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, AuditModule],
   controllers: [PlatformController],
   providers: [PlatformService, SuperAdminGuard],
 })

@@ -56,6 +56,23 @@ La autorizacion debe validar:
 - Permiso especifico cuando sea trabajador.
 - Estado de usuario y club.
 
+### Aislamiento estricto por sesion
+
+Reglas obligatorias:
+
+- Ningun endpoint autenticado puede devolver datos privados de otro usuario.
+- Un `ADMIN` solo puede leer o mutar recursos de clubes donde exista la relacion `club_admin`.
+- Un `WORKER` solo puede leer o mutar recursos del club al que fue vinculado y solo dentro de sus permisos.
+- Un `CUSTOMER` solo puede obtener su propio perfil, su propia sesion y catalogo publico visible.
+- `GET /auth/me` y `PATCH /users/me` siempre deben resolverse por el `userId` del token, nunca por parametros del cliente.
+- Los dashboards administrativos no deben usar selecciones ambiguas tipo `findFirst` sobre clubes sin anclar primero la relacion con el usuario autenticado.
+- Si el recurso solicitado no pertenece al actor autenticado, el backend debe responder `403` o `404` segun corresponda y nunca degradar a devolver datos de otro usuario.
+
+Reglas de cache:
+
+- Cualquier cache de respuestas autenticadas debe quedar segmentado por usuario o reconstruir en cada request los fragmentos dependientes del actor autenticado.
+- No se debe reutilizar entre sesiones informacion privada derivada del usuario anterior ni en mobile ni en backend.
+
 ## QR firmados
 
 Los QR deben contener un payload minimo y firmado.

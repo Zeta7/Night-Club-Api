@@ -98,6 +98,11 @@ export class AuthService {
     }
 
     if (user.phoneVerifiedAt) {
+      await this.prisma.wallet.upsert({
+        where: { userId: user.id },
+        update: {},
+        create: { userId: user.id },
+      });
       return {
         message: 'El telefono ya estaba confirmado.',
       };
@@ -123,6 +128,11 @@ export class AuthService {
           phoneVerifiedAt: new Date(),
           status: UserStatus.ACTIVE,
         },
+      }),
+      this.prisma.wallet.upsert({
+        where: { userId: user.id },
+        update: {},
+        create: { userId: user.id },
       }),
     ]);
 

@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   NoSuchKey,
   NotFound,
@@ -13,7 +14,10 @@ import { Prisma, UploadStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { buildMediaUrl, extractObjectKeyFromUrl } from '../../../shared/infrastructure/media/media-url';
+import {
+  buildMediaUrl,
+  extractObjectKeyFromUrl,
+} from '../../../shared/infrastructure/media/media-url';
 import {
   badRequest,
   conflict,
@@ -39,6 +43,30 @@ export class UploadsService {
   ) {
     this.s3Client = new S3Client({
       region: this.config.get<string>('AWS_REGION'),
+    });
+  }
+
+  async createReadableImageUrl(value: string | null | undefined) {
+    const normalized = value?.trim();
+    if (!normalized) return null;
+    const objectKey = extractObjectKeyFromUrl(normalized, this.config);
+    if (!objectKey) return normalized;
+    // Legacy images were stored as already-public root URLs. Only uploads
+    // managed by the application live below a folder and require signing.
+    if (/^https?:\/\//i.test(normalized) && !objectKey.includes('/')) {
+      return normalized;
+    }
+    return buildMediaUrl(objectKey, this.config);
+  }
+
+  async createPublicImageRedirect(objectKeyValue: string) {
+    const objectKey = extractObjectKeyFromUrl(objectKeyValue, this.config);
+    if (!objectKey || !objectKey.startsWith('media/')) {
+      throw notFound('MEDIA_NOT_FOUND', 'No encontramos la imagen solicitada.');
+    }
+    const bucket = this.getRequiredConfig('AWS_S3_BUCKET');
+    return getSignedUrl(this.s3Client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), {
+      expiresIn: SIGNED_URL_EXPIRES_IN_SECONDS,
     });
   }
 
@@ -107,7 +135,10 @@ export class UploadsService {
     }
 
     if (upload.status !== UploadStatus.PENDING) {
-      throw conflict('UPLOAD_NOT_PENDING', 'El upload ya no se encuentra pendiente de confirmacion.');
+      throw conflict(
+        'UPLOAD_NOT_PENDING',
+        'El upload ya no se encuentra pendiente de confirmacion.',
+      );
     }
 
     if (upload.expiresAt && upload.expiresAt.getTime() < Date.now()) {
@@ -213,7 +244,9 @@ export class UploadsService {
     userId: string;
     transaction?: UploadTransaction;
   }) {
-    const uniqueUploadIds = [...new Set(input.uploadIds.map((item) => item.trim()).filter(Boolean))];
+    const uniqueUploadIds = [
+      ...new Set(input.uploadIds.map((item) => item.trim()).filter(Boolean)),
+    ];
     if (uniqueUploadIds.length === 0) {
       return [];
     }
@@ -227,7 +260,10 @@ export class UploadsService {
     });
 
     if (uploads.length !== uniqueUploadIds.length) {
-      throw notFound('UPLOAD_NOT_FOUND', 'Uno o mas uploads no existen o no pertenecen al usuario.');
+      throw notFound(
+        'UPLOAD_NOT_FOUND',
+        'Uno o mas uploads no existen o no pertenecen al usuario.',
+      );
     }
 
     for (const upload of uploads) {
@@ -286,10 +322,7 @@ export class UploadsService {
     return nextUpload;
   }
 
-  async queueObjectDeletion(
-    objectKey: string | null | undefined,
-    transaction?: UploadTransaction,
-  ) {
+  async queueObjectDeletion(objectKey: string | null | undefined, transaction?: UploadTransaction) {
     const normalizedKey = extractObjectKeyFromUrl(objectKey, this.config);
     if (!normalizedKey) {
       return;
@@ -306,12 +339,12 @@ export class UploadsService {
     });
   }
 
-  private assertTemporaryUploadAvailable(upload: {
-    status: UploadStatus;
-    expiresAt: Date | null;
-  }) {
+  private assertTemporaryUploadAvailable(upload: { status: UploadStatus; expiresAt: Date | null }) {
     if (upload.status !== UploadStatus.TEMPORARY) {
-      throw conflict('UPLOAD_NOT_TEMPORARY', 'El upload no se encuentra disponible para ser usado.');
+      throw conflict(
+        'UPLOAD_NOT_TEMPORARY',
+        'El upload no se encuentra disponible para ser usado.',
+      );
     }
 
     if (upload.expiresAt && upload.expiresAt.getTime() < Date.now()) {
@@ -414,15 +447,24 @@ const resolveExtension = (fileName: string, contentType: string) => {
   }
 
   if ((extension === 'jpg' || extension === 'jpeg') && contentType !== 'image/jpeg') {
-    throw badRequest('UPLOAD_EXTENSION_MISMATCH', 'La extension no coincide con el tipo de imagen.');
+    throw badRequest(
+      'UPLOAD_EXTENSION_MISMATCH',
+      'La extension no coincide con el tipo de imagen.',
+    );
   }
 
   if (extension === 'png' && contentType !== 'image/png') {
-    throw badRequest('UPLOAD_EXTENSION_MISMATCH', 'La extension no coincide con el tipo de imagen.');
+    throw badRequest(
+      'UPLOAD_EXTENSION_MISMATCH',
+      'La extension no coincide con el tipo de imagen.',
+    );
   }
 
   if (extension === 'webp' && contentType !== 'image/webp') {
-    throw badRequest('UPLOAD_EXTENSION_MISMATCH', 'La extension no coincide con el tipo de imagen.');
+    throw badRequest(
+      'UPLOAD_EXTENSION_MISMATCH',
+      'La extension no coincide con el tipo de imagen.',
+    );
   }
 
   return extension === 'jpeg' ? 'jpg' : extension;
