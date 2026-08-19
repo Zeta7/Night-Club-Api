@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import {
   CreatePaymentInput,
   CreatePaymentResult,
@@ -29,6 +29,7 @@ type FlowPaymentStatus = {
 @Injectable()
 export class FlowPaymentGateway implements PaymentGateway {
   readonly provider = 'flow';
+  private readonly logger = new Logger(FlowPaymentGateway.name);
 
   constructor(private readonly config: ConfigService) {}
 
@@ -110,7 +111,7 @@ export class FlowPaymentGateway implements PaymentGateway {
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body,
     });
-    return this.read<T>(response);
+    return this.read<T>(response, path);
   }
 
   private async get<T>(path: string, unsigned: Record<string, string | number>): Promise<T> {
@@ -119,10 +120,10 @@ export class FlowPaymentGateway implements PaymentGateway {
       s: this.sign(unsigned),
     });
     const response = await fetch(`${this.baseUrl()}${path}?${query.toString()}`);
-    return this.read<T>(response);
+    return this.read<T>(response, path);
   }
 
-  private async read<T>(response: Response): Promise<T> {
+  private async read<T>(response: Response, path: string): Promise<T> {
     const text = await response.text();
     let data: unknown;
     try {
@@ -133,6 +134,11 @@ export class FlowPaymentGateway implements PaymentGateway {
     if (!response.ok || (data && typeof data === 'object' && 'code' in data)) {
       const detail =
         data && typeof data === 'object' && 'message' in data ? String(data.message) : text;
+      this.logger.error(
+        `Flow rechazó ${path}: status=${response.status}, baseUrl=${this.baseUrl()}, ` +
+          `apiKeyLength=${this.apiKeyDiagnostics().length}, ` +
+          `apiKeyFingerprint=${this.apiKeyDiagnostics().fingerprint}, detail=${detail}`,
+      );
       throw new Error(`FLOW_API_ERROR:${response.status}:${detail}`);
     }
     return data as T;
@@ -148,5 +154,13 @@ export class FlowPaymentGateway implements PaymentGateway {
     const value = this.config.get<string>(key)?.trim();
     if (!value) throw new Error(`${key}_REQUIRED`);
     return value;
+  }
+
+  private apiKeyDiagnostics() {
+    const apiKey = this.required('FLOW_API_KEY');
+    return {
+      length: apiKey.length,
+      fingerprint: createHash('sha256').update(apiKey).digest('hex').slice(0, 12),
+    };
   }
 }

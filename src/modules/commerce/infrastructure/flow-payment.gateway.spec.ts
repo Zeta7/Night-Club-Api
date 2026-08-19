@@ -47,7 +47,28 @@ describe('FlowPaymentGateway', () => {
     expect(result.checkoutUrl).toBe('https://sandbox.flow.cl/app/pay.php?token=tok-123');
     expect(result.externalPaymentId).toBe('tok-123');
     const request = fetchMock.mock.calls[0];
-    expect(String(request[1]?.body)).toContain('amount=12.34');
+    expect(request[0]).toBe('https://sandbox.flow.cl/api/payment/create');
+    expect(request[1]?.headers).toEqual({
+      'content-type': 'application/x-www-form-urlencoded',
+    });
+    const sent = new URLSearchParams(String(request[1]?.body));
+    expect(sent.get('apiKey')).toBe('test-api-key');
+    expect(sent.get('amount')).toBe('12.34');
+    expect(sent.get('currency')).toBe('PEN');
+    expect(sent.get('commerceOrder')).toBe('attempt-1');
+    expect(sent.get('email')).toBe('cliente@beerry.test');
+    expect(sent.get('urlConfirmation')).toBe('https://api.beerry.test/payments/flow/confirmation');
+    expect(sent.get('urlReturn')).toBe('https://api.beerry.test/payments/flow/return');
+    const unsigned = Object.fromEntries([...sent.entries()].filter(([key]) => key !== 's'));
+    const expectedSignature = createHmac('sha256', 'test-secret')
+      .update(
+        Object.keys(unsigned)
+          .sort()
+          .map((key) => `${key}${unsigned[key]}`)
+          .join(''),
+      )
+      .digest('hex');
+    expect(sent.get('s')).toBe(expectedSignature);
     expect(String(request[1]?.body)).not.toContain('test-secret');
   });
 
