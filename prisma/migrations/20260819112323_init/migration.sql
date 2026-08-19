@@ -83,6 +83,15 @@ CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PAID', 'FAILED', 'EXPIRED', 'CANC
 CREATE TYPE "PaymentAttemptStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', 'CANCELLED', 'REFUND_PENDING', 'REFUNDED', 'PARTIALLY_REFUNDED');
 
 -- CreateEnum
+CREATE TYPE "PaymentPurpose" AS ENUM ('ORDER_PAYMENT', 'WALLET_TOP_UP');
+
+-- CreateEnum
+CREATE TYPE "OrderPaymentMethod" AS ENUM ('FLOW', 'BEERRY_WALLET', 'SIMULATED');
+
+-- CreateEnum
+CREATE TYPE "WalletTopUpStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', 'REFUND_PENDING', 'REFUNDED', 'CHARGEDBACK');
+
+-- CreateEnum
 CREATE TYPE "PaymentProviderEventStatus" AS ENUM ('RECEIVED', 'PROCESSED', 'IGNORED', 'FAILED');
 
 -- CreateEnum
@@ -759,9 +768,11 @@ CREATE TABLE "Order" (
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
     "totalCents" INTEGER NOT NULL,
     "promotionalCreditUsedCents" INTEGER NOT NULL DEFAULT 0,
+    "walletBalanceUsedCents" INTEGER NOT NULL DEFAULT 0,
     "customerFundedCents" INTEGER NOT NULL DEFAULT 0,
     "currency" TEXT NOT NULL DEFAULT 'PEN',
     "simulatedPayment" BOOLEAN NOT NULL DEFAULT false,
+    "paymentMethod" "OrderPaymentMethod" NOT NULL DEFAULT 'SIMULATED',
     "paidAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -846,7 +857,9 @@ CREATE TABLE "CartItem" (
 -- CreateTable
 CREATE TABLE "PaymentAttempt" (
     "id" TEXT NOT NULL,
-    "orderId" TEXT NOT NULL,
+    "orderId" TEXT,
+    "walletTopUpId" TEXT,
+    "purpose" "PaymentPurpose" NOT NULL DEFAULT 'ORDER_PAYMENT',
     "provider" TEXT NOT NULL,
     "externalPaymentId" TEXT,
     "status" "PaymentAttemptStatus" NOT NULL DEFAULT 'PENDING',
@@ -862,6 +875,26 @@ CREATE TABLE "PaymentAttempt" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "PaymentAttempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "WalletTopUp" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "walletId" TEXT NOT NULL,
+    "amountCents" INTEGER NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'PEN',
+    "status" "WalletTopUpStatus" NOT NULL DEFAULT 'PENDING',
+    "idempotencyKey" TEXT NOT NULL,
+    "approvedAt" TIMESTAMP(3),
+    "rejectedAt" TIMESTAMP(3),
+    "refundedAt" TIMESTAMP(3),
+    "failureCode" TEXT,
+    "failureMessage" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "WalletTopUp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -1389,16 +1422,37 @@ CREATE INDEX "CartItem_itemType_itemId_idx" ON "CartItem"("itemType", "itemId");
 CREATE UNIQUE INDEX "CartItem_cartId_itemType_itemId_key" ON "CartItem"("cartId", "itemType", "itemId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "PaymentAttempt_walletTopUpId_key" ON "PaymentAttempt"("walletTopUpId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "PaymentAttempt_externalPaymentId_key" ON "PaymentAttempt"("externalPaymentId");
 
 -- CreateIndex
 CREATE INDEX "PaymentAttempt_orderId_createdAt_idx" ON "PaymentAttempt"("orderId", "createdAt");
 
 -- CreateIndex
+CREATE INDEX "PaymentAttempt_walletTopUpId_idx" ON "PaymentAttempt"("walletTopUpId");
+
+-- CreateIndex
+CREATE INDEX "PaymentAttempt_purpose_status_createdAt_idx" ON "PaymentAttempt"("purpose", "status", "createdAt");
+
+-- CreateIndex
 CREATE INDEX "PaymentAttempt_status_idx" ON "PaymentAttempt"("status");
 
 -- CreateIndex
 CREATE INDEX "PaymentAttempt_expiresAt_idx" ON "PaymentAttempt"("expiresAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "WalletTopUp_idempotencyKey_key" ON "WalletTopUp"("idempotencyKey");
+
+-- CreateIndex
+CREATE INDEX "WalletTopUp_userId_createdAt_idx" ON "WalletTopUp"("userId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "WalletTopUp_walletId_createdAt_idx" ON "WalletTopUp"("walletId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "WalletTopUp_status_createdAt_idx" ON "WalletTopUp"("status", "createdAt");
 
 -- CreateIndex
 CREATE INDEX "PaymentProviderEvent_paymentAttemptId_createdAt_idx" ON "PaymentProviderEvent"("paymentAttemptId", "createdAt");
@@ -1693,6 +1747,15 @@ ALTER TABLE "CartItem" ADD CONSTRAINT "CartItem_cartId_fkey" FOREIGN KEY ("cartI
 
 -- AddForeignKey
 ALTER TABLE "PaymentAttempt" ADD CONSTRAINT "PaymentAttempt_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentAttempt" ADD CONSTRAINT "PaymentAttempt_walletTopUpId_fkey" FOREIGN KEY ("walletTopUpId") REFERENCES "WalletTopUp"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WalletTopUp" ADD CONSTRAINT "WalletTopUp_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "WalletTopUp" ADD CONSTRAINT "WalletTopUp_walletId_fkey" FOREIGN KEY ("walletId") REFERENCES "Wallet"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PaymentProviderEvent" ADD CONSTRAINT "PaymentProviderEvent_paymentAttemptId_fkey" FOREIGN KEY ("paymentAttemptId") REFERENCES "PaymentAttempt"("id") ON DELETE CASCADE ON UPDATE CASCADE;
