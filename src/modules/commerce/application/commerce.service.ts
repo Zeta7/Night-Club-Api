@@ -560,6 +560,21 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     return this.topUpResponse(topUp, topUp.paymentAttempt);
   }
 
+  async getPaymentReturnContext(externalPaymentId: string) {
+    const attempt = await this.prisma.paymentAttempt.findUnique({
+      where: { externalPaymentId },
+      select: { id: true, provider: true, purpose: true, orderId: true, walletTopUpId: true },
+    });
+    if (!attempt) return null;
+    const isTopUp = attempt.purpose === 'WALLET_TOP_UP';
+    return {
+      attemptId: attempt.id,
+      provider: attempt.provider,
+      operationType: isTopUp ? 'WALLET_TOP_UP' : 'ORDER',
+      operationId: isTopUp ? attempt.walletTopUpId : attempt.orderId,
+    };
+  }
+
   async addCartItem(user: AuthenticatedUser, input: AddCartItemDto) {
     const source = await this.resolveCartSource(input.type, input.id, user.id);
     if (!source?.available) {

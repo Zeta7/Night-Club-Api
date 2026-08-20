@@ -91,6 +91,16 @@ describe('Module 18 - wallet top-ups', () => {
     expect(transactions[0].debitTotalCents).toBe(2500);
     expect(transactions[0].creditTotalCents).toBe(2500);
     expect(transactions[0].entries).toHaveLength(2);
+    const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
+      where: { id: created.paymentAttemptId },
+    });
+    await expect(
+      service.getPaymentReturnContext(attempt.externalPaymentId!),
+    ).resolves.toMatchObject({
+      attemptId: created.paymentAttemptId,
+      operationType: 'WALLET_TOP_UP',
+      operationId: created.topUpId,
+    });
   });
 
   it('does not change the wallet when Flow-equivalent confirmation is rejected', async () => {
