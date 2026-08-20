@@ -2,9 +2,9 @@
 import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { SimulatedPushNotificationChannel } from '../infrastructure/simulated-push-notification.channel';
-import { NotificationService } from './notification.service';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { SimulatedPushNotificationChannel } from '@modules/notification/infrastructure/simulated-push-notification.channel';
+import { NotificationService } from '@modules/notification/application/notification.service';
 
 describe('Notification center integration', () => {
   const prisma = new PrismaService(new ConfigService());
@@ -54,7 +54,10 @@ describe('Notification center integration', () => {
 
     const inbox = await service.list(user.id, false);
     expect(inbox.unreadCount).toBe(1);
-    expect(inbox.items[0]).toMatchObject({ title: 'Pago aprobado', deepLink: '/orders/order-test' });
+    expect(inbox.items[0]).toMatchObject({
+      title: 'Pago aprobado',
+      deepLink: '/orders/order-test',
+    });
 
     await service.dispatchPending();
     const delivery = await prisma.notificationDelivery.findUniqueOrThrow({
@@ -75,11 +78,9 @@ describe('Notification center integration', () => {
       pushEnabled: false,
     });
 
-    const notification = await service.notifyFromTemplate(
-      user.id,
-      'PAYMENT_REJECTED',
-      { orderId: 'order-disabled' },
-    );
+    const notification = await service.notifyFromTemplate(user.id, 'PAYMENT_REJECTED', {
+      orderId: 'order-disabled',
+    });
     expect(notification).toBeNull();
     expect((await service.list(user.id, false)).items).toHaveLength(0);
   });
@@ -87,11 +88,9 @@ describe('Notification center integration', () => {
   it('does not allow another user to mark a notification as read', async () => {
     const owner = await createUser('Owner');
     const other = await createUser('Other');
-    const notification = await service.notifyFromTemplate(
-      owner.id,
-      'QR_AVAILABLE',
-      { orderId: 'order-owner' },
-    );
+    const notification = await service.notifyFromTemplate(owner.id, 'QR_AVAILABLE', {
+      orderId: 'order-owner',
+    });
 
     await expect(service.markRead(other.id, notification!.id)).rejects.toBeDefined();
     expect((await service.list(owner.id, false)).unreadCount).toBe(1);

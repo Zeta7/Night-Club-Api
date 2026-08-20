@@ -3,12 +3,12 @@ import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { CommerceItemType } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '../../uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '../infrastructure/simulated-payment.gateway';
-import { CommerceService } from './commerce.service';
-import { NotificationService } from '../../notification/application/notification.service';
-import { SimulatedPushNotificationChannel } from '../../notification/infrastructure/simulated-push-notification.channel';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { CommerceService } from '@modules/commerce/application/commerce.service';
+import { NotificationService } from '@modules/notification/application/notification.service';
+import { SimulatedPushNotificationChannel } from '@modules/notification/infrastructure/simulated-push-notification.channel';
 
 jest.setTimeout(180_000);
 
@@ -69,7 +69,9 @@ describe('Inventory reservations integration', () => {
   }
 
   async function createProduct(stockQuantity: number) {
-    const club = await prisma.club.create({ data: { name: `Inventory ${suffix}`, status: 'ACTIVE' } });
+    const club = await prisma.club.create({
+      data: { name: `Inventory ${suffix}`, status: 'ACTIVE' },
+    });
     clubIds.push(club.id);
     const product = await prisma.product.create({
       data: {
@@ -85,7 +87,9 @@ describe('Inventory reservations integration', () => {
   }
 
   async function createTicketType(quantityTotal: number) {
-    const club = await prisma.club.create({ data: { name: `Tickets ${suffix}`, status: 'ACTIVE' } });
+    const club = await prisma.club.create({
+      data: { name: `Tickets ${suffix}`, status: 'ACTIVE' },
+    });
     clubIds.push(club.id);
     const ticketType = await prisma.ticketType.create({
       data: {
@@ -162,18 +166,32 @@ describe('Inventory reservations integration', () => {
     expect(adminSaleNotification.title).toBe('Nueva venta: producto');
     expect(adminSaleNotification.body).toContain(`Limited ${suffix} x1`);
     expect(adminSaleNotification.deepLink).toBe('/admin/sales');
-    expect(await prisma.notification.count({ where: { userId: saleAdmin.id, templateKey: 'ADMIN_NEW_SALE' } })).toBe(1);
+    expect(
+      await prisma.notification.count({
+        where: { userId: saleAdmin.id, templateKey: 'ADMIN_NEW_SALE' },
+      }),
+    ).toBe(1);
   });
 
   it('expires an abandoned order and releases its reservation without changing stock', async () => {
     const product = await createProduct(2);
     const [user] = await createUsers(1);
-    await service.addCartItem(user, { id: product.id, type: CommerceItemType.PRODUCT, quantity: 2 });
+    await service.addCartItem(user, {
+      id: product.id,
+      type: CommerceItemType.PRODUCT,
+      quantity: 2,
+    });
     const checkout = await service.checkout(user, { expectedTotalCents: 2000 });
     const past = new Date(Date.now() - 1000);
     await Promise.all([
-      prisma.paymentAttempt.update({ where: { id: checkout.paymentAttemptId }, data: { expiresAt: past } }),
-      prisma.inventoryReservation.updateMany({ where: { orderId: checkout.orderId }, data: { expiresAt: past } }),
+      prisma.paymentAttempt.update({
+        where: { id: checkout.paymentAttemptId },
+        data: { expiresAt: past },
+      }),
+      prisma.inventoryReservation.updateMany({
+        where: { orderId: checkout.orderId },
+        data: { expiresAt: past },
+      }),
     ]);
 
     await service.expirePendingOrders();
@@ -194,7 +212,11 @@ describe('Inventory reservations integration', () => {
     const users = await createUsers(2);
     await Promise.all(
       users.map((user) =>
-        service.addCartItem(user, { id: ticketType.id, type: CommerceItemType.TICKET, quantity: 1 }),
+        service.addCartItem(user, {
+          id: ticketType.id,
+          type: CommerceItemType.TICKET,
+          quantity: 1,
+        }),
       ),
     );
 
@@ -208,6 +230,8 @@ describe('Inventory reservations integration', () => {
       _sum: { quantity: true },
     });
     expect(reservations._sum.quantity).toBe(1);
-    expect((await prisma.ticketType.findUniqueOrThrow({ where: { id: ticketType.id } })).quantitySold).toBe(0);
+    expect(
+      (await prisma.ticketType.findUniqueOrThrow({ where: { id: ticketType.id } })).quantitySold,
+    ).toBe(0);
   });
 });

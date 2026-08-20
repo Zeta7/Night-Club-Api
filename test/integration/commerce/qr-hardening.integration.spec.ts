@@ -3,10 +3,10 @@ import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import { CommerceItemType, UserRole } from '@prisma/client';
-import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '../../uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '../infrastructure/simulated-payment.gateway';
-import { CommerceService } from './commerce.service';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { CommerceService } from '@modules/commerce/application/commerce.service';
 
 jest.setTimeout(180_000);
 
@@ -19,7 +19,9 @@ describe('Module 4 - hardened QR redemption', () => {
   const config = new ConfigService();
   const prisma = new PrismaService(config);
   const gateway = new SimulatedPaymentGateway();
-  const uploads = { createReadableImageUrl: jest.fn(async () => null) } as unknown as UploadsService;
+  const uploads = {
+    createReadableImageUrl: jest.fn(async () => null),
+  } as unknown as UploadsService;
   const service = new CommerceService(prisma, config, uploads, gateway, undefined);
   const suffix = randomUUID().slice(0, 8);
   let customerId: string;
@@ -36,14 +38,21 @@ describe('Module 4 - hardened QR redemption', () => {
     const [customerUser, adminUser] = await Promise.all([
       prisma.user.create({
         data: {
-          phoneCountryCode: '+51', phoneNumber: `91${Date.now().toString().slice(-7)}`,
-          passwordHash: 'test', fullName: `QR Customer ${suffix}`, status: 'ACTIVE',
+          phoneCountryCode: '+51',
+          phoneNumber: `91${Date.now().toString().slice(-7)}`,
+          passwordHash: 'test',
+          fullName: `QR Customer ${suffix}`,
+          status: 'ACTIVE',
         },
       }),
       prisma.user.create({
         data: {
-          phoneCountryCode: '+51', phoneNumber: `92${Date.now().toString().slice(-7)}`,
-          passwordHash: 'test', fullName: `QR Admin ${suffix}`, status: 'ACTIVE', role: 'ADMIN',
+          phoneCountryCode: '+51',
+          phoneNumber: `92${Date.now().toString().slice(-7)}`,
+          passwordHash: 'test',
+          fullName: `QR Admin ${suffix}`,
+          status: 'ACTIVE',
+          role: 'ADMIN',
         },
       }),
     ]);
@@ -61,15 +70,20 @@ describe('Module 4 - hardened QR redemption', () => {
     ]);
     const ticketType = await prisma.ticketType.create({
       data: {
-        clubId, name: `QR Entry ${suffix}`, priceCents: 2500,
-        quantityTotal: 50, status: 'ACTIVE',
+        clubId,
+        name: `QR Entry ${suffix}`,
+        priceCents: 2500,
+        quantityTotal: 50,
+        status: 'ACTIVE',
       },
     });
     ticketTypeId = ticketType.id;
   });
 
   afterAll(async () => {
-    await prisma.qrValidationAttempt.deleteMany({ where: { clubId: { in: [clubId, otherClubId] } } });
+    await prisma.qrValidationAttempt.deleteMany({
+      where: { clubId: { in: [clubId, otherClubId] } },
+    });
     await prisma.auditLogEntry.deleteMany({ where: { clubId: { in: [clubId, otherClubId] } } });
     await prisma.ticket.deleteMany({ where: { ownerUserId: customerId } });
     await prisma.order.deleteMany({ where: { userId: customerId } });
@@ -83,10 +97,18 @@ describe('Module 4 - hardened QR redemption', () => {
   });
 
   async function issueTicket() {
-    await service.addCartItem(customer(), { id: ticketTypeId, type: CommerceItemType.TICKET, quantity: 1 });
+    await service.addCartItem(customer(), {
+      id: ticketTypeId,
+      type: CommerceItemType.TICKET,
+      quantity: 1,
+    });
     const checkout = await service.checkout(customer(), { expectedTotalCents: 2500 });
-    const attempt = await prisma.paymentAttempt.findUniqueOrThrow({ where: { id: checkout.paymentAttemptId } });
-    await service.processPaymentEvent(gateway.createSimulatedEvent(attempt.externalPaymentId!, 'APPROVED'));
+    const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
+      where: { id: checkout.paymentAttemptId },
+    });
+    await service.processPaymentEvent(
+      gateway.createSimulatedEvent(attempt.externalPaymentId!, 'APPROVED'),
+    );
     return prisma.ticket.findFirstOrThrow({ where: { orderId: checkout.orderId } });
   }
 
@@ -96,9 +118,11 @@ describe('Module 4 - hardened QR redemption', () => {
     const manipulated = `${ticket.qrPayload.slice(0, -1)}${last === 'a' ? 'b' : 'a'}`;
     const result = await service.validateCode(admin(), clubId, 'TICKET', manipulated, true);
     expect(result.validation.isValid).toBe(false);
-    expect(await prisma.qrValidationAttempt.count({
-      where: { resourceId: ticket.id, outcome: 'INVALID', reasonCode: 'INVALID_SIGNATURE' },
-    })).toBe(1);
+    expect(
+      await prisma.qrValidationAttempt.count({
+        where: { resourceId: ticket.id, outcome: 'INVALID', reasonCode: 'INVALID_SIGNATURE' },
+      }),
+    ).toBe(1);
   });
 
   it('rejects a QR presented at another business', async () => {
@@ -116,7 +140,9 @@ describe('Module 4 - hardened QR redemption', () => {
     });
     const result = await service.validateCode(admin(), clubId, 'TICKET', ticket.qrPayload, true);
     expect(result.validation.isValid).toBe(false);
-    expect((await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } })).redemptionCount).toBe(0);
+    expect(
+      (await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } })).redemptionCount,
+    ).toBe(0);
   });
 
   it('allows only one winner when two devices redeem the same QR', async () => {
@@ -144,11 +170,21 @@ describe('Module 4 - hardened QR redemption', () => {
   it('supports a supervised reversal and records it', async () => {
     const ticket = await issueTicket();
     await service.validateCode(admin(), clubId, 'TICKET', ticket.code, true);
-    const reversal = await service.reverseRedemption(admin(), clubId, 'TICKET', ticket.id, 'Error operativo confirmado');
+    const reversal = await service.reverseRedemption(
+      admin(),
+      clubId,
+      'TICKET',
+      ticket.id,
+      'Error operativo confirmado',
+    );
     expect(reversal.reversed).toBe(true);
     const stored = await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } });
     expect(stored.status).toBe('AVAILABLE');
     expect(stored.redemptionCount).toBe(0);
-    expect(await prisma.qrValidationAttempt.count({ where: { resourceId: ticket.id, outcome: 'REVERSED' } })).toBe(1);
+    expect(
+      await prisma.qrValidationAttempt.count({
+        where: { resourceId: ticket.id, outcome: 'REVERSED' },
+      }),
+    ).toBe(1);
   });
 });

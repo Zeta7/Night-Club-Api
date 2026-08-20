@@ -1,6 +1,7 @@
+/// <reference types="jest" />
 import { ConfigService } from '@nestjs/config';
 import { createHmac } from 'node:crypto';
-import { FlowPaymentGateway } from './flow-payment.gateway';
+import { FlowPaymentGateway } from '@modules/commerce/infrastructure/flow-payment.gateway';
 
 describe('FlowPaymentGateway', () => {
   const values: Record<string, string> = {

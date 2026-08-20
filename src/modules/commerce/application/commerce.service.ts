@@ -1400,12 +1400,20 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
 
   private paymentPayerEmail(userId: string, optionalEmail?: string | null) {
     if (optionalEmail?.trim()) return optionalEmail.trim().toLowerCase();
-    const domain = this.config
-      .get<string>('FLOW_FALLBACK_EMAIL_DOMAIN', 'payments.beerry.app')
-      .trim()
-      .toLowerCase()
-      .replace(/^@/, '');
-    return `customer-${userId}@${domain}`;
+    if (this.paymentGateway.provider !== 'flow') {
+      return `simulated+${userId}@beerry.local`;
+    }
+    const fallbackEmail = this.config
+      .get<string>('FLOW_FALLBACK_PAYER_EMAIL')
+      ?.trim()
+      .toLowerCase();
+    if (!fallbackEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fallbackEmail)) {
+      throw badRequest(
+        'FLOW_FALLBACK_PAYER_EMAIL_REQUIRED',
+        'Configura un correo operativo válido para pagos de clientes sin email.',
+      );
+    }
+    return fallbackEmail;
   }
 
   async validateCode(

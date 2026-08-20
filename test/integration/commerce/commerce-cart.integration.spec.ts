@@ -3,10 +3,10 @@ import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { CommerceItemType } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '../../uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '../infrastructure/simulated-payment.gateway';
-import { CommerceService } from './commerce.service';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { CommerceService } from '@modules/commerce/application/commerce.service';
 
 describe('CommerceService persistent cart integration', () => {
   const config = new ConfigService();
@@ -40,7 +40,9 @@ describe('CommerceService persistent cart integration', () => {
     const user = await prisma.user.create({
       data: {
         phoneCountryCode: '+51',
-        phoneNumber: `9${Math.floor(Math.random() * 10000000).toString().padStart(8, '0')}`,
+        phoneNumber: `9${Math.floor(Math.random() * 10000000)
+          .toString()
+          .padStart(8, '0')}`,
         passwordHash: 'integration-test',
         fullName: `${label} ${suffix}`,
         status: 'ACTIVE',
@@ -69,7 +71,9 @@ describe('CommerceService persistent cart integration', () => {
   }
 
   async function createLimitedTicket(label: string) {
-    const club = await prisma.club.create({ data: { name: `${label} ${suffix}`, status: 'ACTIVE' } });
+    const club = await prisma.club.create({
+      data: { name: `${label} ${suffix}`, status: 'ACTIVE' },
+    });
     clubIds.push(club.id);
     const ticket = await prisma.ticketType.create({
       data: {
@@ -111,7 +115,9 @@ describe('CommerceService persistent cart integration', () => {
       quantity: 1,
     });
 
-    await expect(service.updateCartItem(attacker, cart.items[0].cartItemId, 2)).rejects.toBeDefined();
+    await expect(
+      service.updateCartItem(attacker, cart.items[0].cartItemId, 2),
+    ).rejects.toBeDefined();
   });
 
   it('rejects mixing businesses in the same cart', async () => {

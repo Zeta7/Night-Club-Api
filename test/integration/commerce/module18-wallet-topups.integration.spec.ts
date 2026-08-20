@@ -2,10 +2,10 @@
 import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '../../uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '../infrastructure/simulated-payment.gateway';
-import { CommerceService } from './commerce.service';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { CommerceService } from '@modules/commerce/application/commerce.service';
 
 jest.setTimeout(60_000);
 

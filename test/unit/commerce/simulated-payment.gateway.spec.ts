@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { SimulatedPaymentGateway } from './simulated-payment.gateway';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 
 describe('SimulatedPaymentGateway', () => {
   const gateway = new SimulatedPaymentGateway();

@@ -3,10 +3,10 @@ import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { UserRole, WorkerPermission } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { ClubsService } from '../../clubs/application/clubs.service';
-import { SimulatedPaymentGateway } from '../infrastructure/simulated-payment.gateway';
-import { CommerceService } from './commerce.service';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { ClubsService } from '@modules/clubs/application/clubs.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { CommerceService } from '@modules/commerce/application/commerce.service';
 
 jest.setTimeout(180_000);
 
@@ -37,33 +37,110 @@ describe('Module 8 - business administration', () => {
     await prisma.$connect();
     const stamp = Date.now().toString().slice(-7);
     const [adminUser, workerUser, customer] = await Promise.all([
-      prisma.user.create({ data: { phoneCountryCode: '+51', phoneNumber: `91${stamp}`, passwordHash: 'test', fullName: `Admin ${suffix}`, status: 'ACTIVE', role: 'ADMIN' } }),
-      prisma.user.create({ data: { phoneCountryCode: '+51', phoneNumber: `92${stamp}`, passwordHash: 'test', fullName: `Worker ${suffix}`, status: 'ACTIVE', role: 'WORKER' } }),
-      prisma.user.create({ data: { phoneCountryCode: '+51', phoneNumber: `93${stamp}`, passwordHash: 'test', fullName: `Customer ${suffix}`, email: `${suffix}@module8.test`, status: 'ACTIVE' } }),
+      prisma.user.create({
+        data: {
+          phoneCountryCode: '+51',
+          phoneNumber: `91${stamp}`,
+          passwordHash: 'test',
+          fullName: `Admin ${suffix}`,
+          status: 'ACTIVE',
+          role: 'ADMIN',
+        },
+      }),
+      prisma.user.create({
+        data: {
+          phoneCountryCode: '+51',
+          phoneNumber: `92${stamp}`,
+          passwordHash: 'test',
+          fullName: `Worker ${suffix}`,
+          status: 'ACTIVE',
+          role: 'WORKER',
+        },
+      }),
+      prisma.user.create({
+        data: {
+          phoneCountryCode: '+51',
+          phoneNumber: `93${stamp}`,
+          passwordHash: 'test',
+          fullName: `Customer ${suffix}`,
+          email: `${suffix}@module8.test`,
+          status: 'ACTIVE',
+        },
+      }),
     ]);
-    adminId = adminUser.id; workerId = workerUser.id; customerId = customer.id;
-    const club = await prisma.club.create({ data: { name: `Module 8 ${suffix}`, status: 'ACTIVE' } });
+    adminId = adminUser.id;
+    workerId = workerUser.id;
+    customerId = customer.id;
+    const club = await prisma.club.create({
+      data: { name: `Module 8 ${suffix}`, status: 'ACTIVE' },
+    });
     clubId = club.id;
     await prisma.clubAdmin.create({ data: { clubId, userId: adminId } });
     await prisma.clubWorker.create({
       data: {
-        clubId, userId: workerId, roleLabel: 'Supervisor',
-        permissions: [WorkerPermission.VIEW_SALES, WorkerPermission.REQUEST_REFUNDS, WorkerPermission.VIEW_OPERATIONS],
+        clubId,
+        userId: workerId,
+        roleLabel: 'Supervisor',
+        permissions: [
+          WorkerPermission.VIEW_SALES,
+          WorkerPermission.REQUEST_REFUNDS,
+          WorkerPermission.VIEW_OPERATIONS,
+        ],
       },
     });
-    const event = await prisma.event.create({ data: { clubId, name: `Event ${suffix}`, startsAt: new Date(), endsAt: new Date(Date.now() + 3_600_000), capacity: 100, status: 'IN_PROGRESS' } });
+    const event = await prisma.event.create({
+      data: {
+        clubId,
+        name: `Event ${suffix}`,
+        startsAt: new Date(),
+        endsAt: new Date(Date.now() + 3_600_000),
+        capacity: 100,
+        status: 'IN_PROGRESS',
+      },
+    });
     eventId = event.id;
-    const product = await prisma.product.create({ data: { clubId, name: `Low stock ${suffix}`, priceCents: 1500, stockQuantity: 3, status: 'ACTIVE' } });
+    const product = await prisma.product.create({
+      data: {
+        clubId,
+        name: `Low stock ${suffix}`,
+        priceCents: 1500,
+        stockQuantity: 3,
+        status: 'ACTIVE',
+      },
+    });
     productId = product.id;
     const order = await prisma.order.create({
       data: {
-        clubId, userId: customerId, status: 'PAID', totalCents: 3000, paidAt: new Date(),
-        items: { create: { clubId, itemType: 'PRODUCT', itemId: productId, nameSnapshot: product.name, quantity: 2, unitPriceCents: 1500, totalCents: 3000 } },
-        paymentAttempts: { create: { provider: 'simulated', status: 'APPROVED', amountCents: 3000, approvedAt: new Date() } },
+        clubId,
+        userId: customerId,
+        status: 'PAID',
+        totalCents: 3000,
+        paidAt: new Date(),
+        items: {
+          create: {
+            clubId,
+            itemType: 'PRODUCT',
+            itemId: productId,
+            nameSnapshot: product.name,
+            quantity: 2,
+            unitPriceCents: 1500,
+            totalCents: 3000,
+          },
+        },
+        paymentAttempts: {
+          create: {
+            provider: 'simulated',
+            status: 'APPROVED',
+            amountCents: 3000,
+            approvedAt: new Date(),
+          },
+        },
       },
     });
     orderId = order.id;
-    await prisma.qrValidationAttempt.create({ data: { clubId, actorUserId: workerId, outcome: 'VALID', codeFingerprint: suffix } });
+    await prisma.qrValidationAttempt.create({
+      data: { clubId, actorUserId: workerId, outcome: 'VALID', codeFingerprint: suffix },
+    });
   });
 
   afterAll(async () => {
@@ -101,11 +178,29 @@ describe('Module 8 - business administration', () => {
   });
 
   it('enforces worker permissions and creates one auditable refund request', async () => {
-    const request = await commerce.requestOrderRefund(worker(), clubId, orderId, 'El cliente solicitó la devolución de su compra.');
+    const request = await commerce.requestOrderRefund(
+      worker(),
+      clubId,
+      orderId,
+      'El cliente solicitó la devolución de su compra.',
+    );
     expect(request.refundRequest.status).toBe('REQUESTED');
-    expect((await prisma.order.findUniqueOrThrow({ where: { id: orderId } })).status).toBe('REFUND_PENDING');
-    expect(await prisma.auditLogEntry.count({ where: { resourceId: orderId, action: 'REQUEST_ORDER_REFUND' } })).toBe(1);
-    await expect(commerce.requestOrderRefund(worker(), clubId, orderId, 'Segundo intento de devolución no permitido.')).rejects.toBeDefined();
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: orderId } })).status).toBe(
+      'REFUND_PENDING',
+    );
+    expect(
+      await prisma.auditLogEntry.count({
+        where: { resourceId: orderId, action: 'REQUEST_ORDER_REFUND' },
+      }),
+    ).toBe(1);
+    await expect(
+      commerce.requestOrderRefund(
+        worker(),
+        clubId,
+        orderId,
+        'Segundo intento de devolución no permitido.',
+      ),
+    ).rejects.toBeDefined();
   });
 
   it('reports real stock, capacity, validations, workers and devices', async () => {
