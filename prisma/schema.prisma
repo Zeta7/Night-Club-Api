@@ -305,6 +305,7 @@ enum FinancialAccountOwnerType {
 
 enum LedgerTransactionType {
   SALE
+  TOP_UP
   REFUND
   CHARGEBACK
   SETTLEMENT

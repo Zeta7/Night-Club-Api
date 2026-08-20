@@ -533,11 +533,30 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getWalletTopUp(user: AuthenticatedUser, topUpId: string) {
-    const topUp = await this.prisma.walletTopUp.findFirst({
+    let topUp = await this.prisma.walletTopUp.findFirst({
       where: { id: topUpId, userId: user.id },
       include: { paymentAttempt: true },
     });
     if (!topUp) throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No se encontró la recarga.');
+    if (
+      topUp.status === 'PENDING' &&
+      topUp.paymentAttempt?.provider === this.paymentGateway.provider &&
+      topUp.paymentAttempt.externalPaymentId &&
+      this.paymentGateway.verifyPaymentToken
+    ) {
+      try {
+        const event = await this.paymentGateway.verifyPaymentToken(
+          topUp.paymentAttempt.externalPaymentId,
+        );
+        await this.processPaymentEvent(event);
+        topUp = await this.prisma.walletTopUp.findFirstOrThrow({
+          where: { id: topUpId, userId: user.id },
+          include: { paymentAttempt: true },
+        });
+      } catch {
+        // La consulta del estado no debe impedir que el cliente vea su recarga pendiente.
+      }
+    }
     return this.topUpResponse(topUp, topUp.paymentAttempt);
   }
 
@@ -810,8 +829,19 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         },
       });
     } catch (error) {
-      if ((error as { code?: string }).code === 'P2002') return;
-      throw error;
+      if ((error as { code?: string }).code === 'P2002') {
+        const existing = await this.prisma.paymentProviderEvent.findUnique({
+          where: {
+            provider_providerEventId: {
+              provider: event.provider,
+              providerEventId: event.providerEventId,
+            },
+          },
+        });
+        if (existing?.status === 'PROCESSED' || existing?.status === 'IGNORED') return;
+      } else {
+        throw error;
+      }
     }
     if (event.outcome === 'PENDING') {
       await this.finishProviderEvent(event, 'IGNORED');
@@ -1278,8 +1308,19 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         },
       });
     } catch (error) {
-      if ((error as { code?: string }).code === 'P2002') return;
-      throw error;
+      if ((error as { code?: string }).code === 'P2002') {
+        const existing = await this.prisma.paymentProviderEvent.findUnique({
+          where: {
+            provider_providerEventId: {
+              provider: event.provider,
+              providerEventId: event.providerEventId,
+            },
+          },
+        });
+        if (existing?.status === 'PROCESSED' || existing?.status === 'IGNORED') return;
+      } else {
+        throw error;
+      }
     }
     if (event.outcome === 'PENDING') {
       await this.finishProviderEvent(event, 'IGNORED');
