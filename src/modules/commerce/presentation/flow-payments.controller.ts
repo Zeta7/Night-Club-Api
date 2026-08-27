@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Header, Post, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { CommerceService } from '../application/commerce.service';
 import { FlowPaymentGateway } from '../infrastructure/flow-payment.gateway';
 
+@ApiTags('Flow Payments')
 @Controller('payments/flow')
 export class FlowPaymentsController {
   constructor(

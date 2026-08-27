@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post, Sse, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { CapacityService } from '../application/capacity.service';
 import { CorrectCapacityDto, RegisterCapacityExitDto, UpdateCapacitySettingsDto } from './dto/capacity.dto';
 
+@ApiTags('Capacity')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 @Controller('clubs/:clubId/events/:eventId/capacity')
 export class CapacityController {

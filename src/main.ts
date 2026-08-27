@@ -1,9 +1,9 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { setupOpenApi } from './shared/presentation/openapi/openapi.document';
 import { createValidationException } from './shared/presentation/validation-exception.factory';
 
 async function bootstrap() {
@@ -25,18 +25,7 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Beerry API')
-    .setDescription('API REST para la plataforma Beerry Platform.')
-    .setVersion('0.1.0')
-    .addBearerAuth()
-    .build();
-  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, swaggerDocument, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
+  setupOpenApi(app);
 
   const port = config.get<number>('PORT') ?? 3000;
   const host = config.get<string>('HOST') ?? '0.0.0.0';
