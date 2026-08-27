@@ -35,13 +35,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             userId: {
               type: "string",
               format: "uuid",
               description: "Campo user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             templateKey: {
               type: "string",
@@ -81,7 +81,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo read at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             createdAt: {
               type: "string",
@@ -123,7 +123,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo notification id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "1c6e8a42-9f35-4d70-b821-5a3c97e4d608",
       },
       read: {
         type: "boolean",
@@ -186,11 +186,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: false,
             },
             emailEnabled: {
-              type: "string",
-              format: "email",
+              type: "boolean",
               description:
                 "Campo email enabled expuesto por el runtime actual.",
-              example: "usuario@example.com",
+              example: false,
             },
           },
           required: [
@@ -249,11 +248,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: false,
             },
             emailEnabled: {
-              type: "string",
-              format: "email",
+              type: "boolean",
               description:
                 "Campo email enabled expuesto por el runtime actual.",
-              example: "usuario@example.com",
+              example: false,
             },
           },
           required: [
@@ -278,13 +276,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "b3f7c216-8a59-4d40-9e15-2c6a74f893bd",
       },
       userId: {
         type: "string",
         format: "uuid",
         description: "Campo user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
       createdAt: {
         type: "string",
@@ -297,12 +295,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       token: {
         type: "string",
         description: "Campo token expuesto por el runtime actual.",
-        example: "token-ficticio-no-valido",
+        example:
+          "dQw4w9WgXcQ:APA91bG7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0eT7uY2iO9pA4sD8fG1hJ5kL3zX6cV0bN2mQ",
       },
       platform: {
         type: "string",
@@ -317,7 +316,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "date-time",
         description: "Campo last seen at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
     },
     required: [
@@ -339,7 +338,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo device id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "b3f7c216-8a59-4d40-9e15-2c6a74f893bd",
       },
       enabled: {
         type: "boolean",
@@ -364,7 +363,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -375,19 +374,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -472,7 +471,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -483,19 +482,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -546,17 +545,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           accessToken: {
             type: "string",
             description: "Campo access token expuesto por el runtime actual.",
-            example: "token-ficticio-no-valido",
+            example:
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzYzc5ZjRhMi02ZTUxLTRiOGEtOWQyNy0xZjVhMGM4M2U2NDIifQ.W7sP2kQ9mR4vN8xL1cD6",
           },
           refreshToken: {
             type: "string",
             description: "Campo refresh token expuesto por el runtime actual.",
-            example: "token-ficticio-no-valido",
+            example: "rft_7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0",
           },
           tokenType: {
             type: "string",
             description: "Campo token type expuesto por el runtime actual.",
-            example: "token-ficticio-no-valido",
+            example: "Bearer",
           },
           accessExpiresIn: {
             type: "string",
@@ -596,17 +596,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           accessToken: {
             type: "string",
             description: "Campo access token expuesto por el runtime actual.",
-            example: "token-ficticio-no-valido",
+            example:
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzYzc5ZjRhMi02ZTUxLTRiOGEtOWQyNy0xZjVhMGM4M2U2NDIifQ.W7sP2kQ9mR4vN8xL1cD6",
           },
           refreshToken: {
             type: "string",
             description: "Campo refresh token expuesto por el runtime actual.",
-            example: "token-ficticio-no-valido",
+            example: "rft_7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0",
           },
           tokenType: {
             type: "string",
             description: "Campo token type expuesto por el runtime actual.",
-            example: "token-ficticio-no-valido",
+            example: "Bearer",
           },
           accessExpiresIn: {
             type: "string",
@@ -680,7 +681,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -691,19 +692,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -763,13 +764,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo upload id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "f7a2c864-1d39-4e5b-90a6-3c8d27b154ef",
       },
       uploadUrl: {
         type: "string",
         format: "uri",
         description: "Campo upload url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example:
+          "https://nightclub-platform-assets.s3.amazonaws.com/uploads/2026/08/nebula-cover.webp?X-Amz-Expires=300",
       },
       objectKey: {
         type: "string",
@@ -814,7 +816,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo upload id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "f7a2c864-1d39-4e5b-90a6-3c8d27b154ef",
       },
       status: {
         type: "string",
@@ -831,7 +833,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uri",
         nullable: true,
         description: "Campo url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example: "https://cdn.beerry.app/uploads/2026/08/nebula-cover.webp",
       },
     },
     required: ["message", "uploadId", "status", "objectKey", "url"],
@@ -847,7 +849,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           createdAt: {
             type: "string",
@@ -866,7 +868,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           assignedDoor: {
             type: "string",
@@ -894,7 +896,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uuid",
             description:
               "Campo opened by user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           closedByUserId: {
             type: "string",
@@ -902,20 +904,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo closed by user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           startedAt: {
             type: "string",
             format: "date-time",
             description: "Campo started at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endedAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo ended at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           closeReason: {
             type: "string",
@@ -927,27 +929,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Campo last activity at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           lastSyncAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo last sync at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           workerId: {
             type: "string",
             format: "uuid",
             description: "Campo worker id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
         },
         required: [
@@ -983,13 +985,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo shift id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "6a1d9f42-3c75-4e8b-b206-5d7a91c4f638",
       },
       syncedAt: {
         type: "string",
         format: "date-time",
         description: "Campo synced at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
     },
     required: ["shiftId", "syncedAt"],
@@ -1010,12 +1012,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
               },
               required: ["id", "name"],
@@ -1027,7 +1029,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -1046,7 +1048,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             assignedDoor: {
               type: "string",
@@ -1077,7 +1079,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               description:
                 "Campo opened by user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             closedByUserId: {
               type: "string",
@@ -1085,20 +1087,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo closed by user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             startedAt: {
               type: "string",
               format: "date-time",
               description: "Campo started at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endedAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo ended at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             closeReason: {
               type: "string",
@@ -1110,27 +1112,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Campo last activity at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             lastSyncAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo last sync at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             workerId: {
               type: "string",
               format: "uuid",
               description: "Campo worker id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
           },
           required: [
@@ -1168,7 +1170,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo shift id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "6a1d9f42-3c75-4e8b-b206-5d7a91c4f638",
       },
       status: {
         type: "string",
@@ -1178,7 +1180,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "date-time",
         description: "Campo ended at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
     },
     required: ["shiftId", "status", "endedAt"],
@@ -1194,7 +1196,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "b3f7c216-8a59-4d40-9e15-2c6a74f893bd",
           },
           createdAt: {
             type: "string",
@@ -1211,14 +1213,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "iPhone 15 Pro de Valeria",
           },
           updatedAt: {
             type: "string",
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           platform: {
             type: "string",
@@ -1229,20 +1231,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo last seen at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           revokedAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo revoked at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           workerId: {
             type: "string",
             format: "uuid",
             description: "Campo worker id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
           },
           fingerprint: {
             type: "string",
@@ -1253,7 +1255,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uuid",
             description:
               "Campo authorized by user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           revokedByUserId: {
             type: "string",
@@ -1261,13 +1263,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo revoked by user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           authorizedAt: {
             type: "string",
             format: "date-time",
             description: "Campo authorized at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
         },
         required: [
@@ -1299,7 +1301,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo device id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "b3f7c216-8a59-4d40-9e15-2c6a74f893bd",
       },
       status: {
         type: "string",
@@ -1316,7 +1318,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo worker id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
       },
       shifts: {
         type: "array",
@@ -1327,7 +1329,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -1346,7 +1348,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             assignedDoor: {
               type: "string",
@@ -1377,7 +1379,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               description:
                 "Campo opened by user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             closedByUserId: {
               type: "string",
@@ -1385,20 +1387,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo closed by user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             startedAt: {
               type: "string",
               format: "date-time",
               description: "Campo started at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endedAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo ended at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             closeReason: {
               type: "string",
@@ -1410,27 +1412,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Campo last activity at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             lastSyncAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo last sync at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             workerId: {
               type: "string",
               format: "uuid",
               description: "Campo worker id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
           },
           required: [
@@ -1477,7 +1479,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "b3f7c216-8a59-4d40-9e15-2c6a74f893bd",
             },
             createdAt: {
               type: "string",
@@ -1494,14 +1496,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "iPhone 15 Pro de Valeria",
             },
             updatedAt: {
               type: "string",
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             platform: {
               type: "string",
@@ -1512,20 +1514,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo last seen at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             revokedAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo revoked at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             workerId: {
               type: "string",
               format: "uuid",
               description: "Campo worker id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
             },
             fingerprint: {
               type: "string",
@@ -1536,7 +1538,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               description:
                 "Campo authorized by user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             revokedByUserId: {
               type: "string",
@@ -1544,14 +1546,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo revoked by user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             authorizedAt: {
               type: "string",
               format: "date-time",
               description:
                 "Campo authorized at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
           },
           required: [
@@ -1597,19 +1599,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           userId: {
             type: "string",
             format: "uuid",
             description: "Campo user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           status: {
             type: "string",
@@ -1640,7 +1642,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           assignedDoor: {
             type: "string",
@@ -1664,12 +1666,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
               },
               fullName: {
                 type: "string",
                 description: "Campo full name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               phoneCountryCode: {
                 type: "string",
@@ -1681,14 +1683,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo phone number expuesto por el runtime actual.",
-                example: "999999999",
+                example: "987654321",
               },
               email: {
                 type: "string",
                 format: "email",
                 nullable: true,
                 description: "Campo email expuesto por el runtime actual.",
-                example: "usuario@example.com",
+                example: "valeria.mendoza@correo.pe",
               },
               profileImage: {
                 type: "string",
@@ -1765,19 +1767,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             userId: {
               type: "string",
               format: "uuid",
               description: "Campo user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             status: {
               type: "string",
@@ -1808,7 +1810,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             assignedDoor: {
               type: "string",
@@ -1835,13 +1837,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -1853,14 +1855,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 profileImage: {
                   type: "string",
@@ -1936,19 +1938,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           userId: {
             type: "string",
             format: "uuid",
             description: "Campo user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           status: {
             type: "string",
@@ -1979,7 +1981,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           assignedDoor: {
             type: "string",
@@ -2003,12 +2005,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
               },
               fullName: {
                 type: "string",
                 description: "Campo full name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               phoneCountryCode: {
                 type: "string",
@@ -2020,14 +2022,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo phone number expuesto por el runtime actual.",
-                example: "999999999",
+                example: "987654321",
               },
               email: {
                 type: "string",
                 format: "email",
                 nullable: true,
                 description: "Campo email expuesto por el runtime actual.",
-                example: "usuario@example.com",
+                example: "valeria.mendoza@correo.pe",
               },
               profileImage: {
                 type: "string",
@@ -2102,19 +2104,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           userId: {
             type: "string",
             format: "uuid",
             description: "Campo user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           status: {
             type: "string",
@@ -2145,7 +2147,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           assignedDoor: {
             type: "string",
@@ -2169,12 +2171,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
               },
               fullName: {
                 type: "string",
                 description: "Campo full name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               phoneCountryCode: {
                 type: "string",
@@ -2186,14 +2188,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo phone number expuesto por el runtime actual.",
-                example: "999999999",
+                example: "987654321",
               },
               email: {
                 type: "string",
                 format: "email",
                 nullable: true,
                 description: "Campo email expuesto por el runtime actual.",
-                example: "usuario@example.com",
+                example: "valeria.mendoza@correo.pe",
               },
               profileImage: {
                 type: "string",
@@ -2279,12 +2281,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           description: {
             type: "string",
@@ -2366,7 +2368,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           admins: {
             type: "array",
@@ -2377,13 +2379,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -2395,14 +2397,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 profileImage: {
                   type: "string",
@@ -2465,12 +2467,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             description: {
               type: "string",
@@ -2553,7 +2555,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             admins: {
               type: "array",
@@ -2564,13 +2566,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                   },
                   fullName: {
                     type: "string",
                     description:
                       "Campo full name expuesto por el runtime actual.",
-                    example: "Ejemplo ficticio",
+                    example: "Valeria Mendoza",
                   },
                   phoneCountryCode: {
                     type: "string",
@@ -2582,14 +2584,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     description:
                       "Campo phone number expuesto por el runtime actual.",
-                    example: "999999999",
+                    example: "987654321",
                   },
                   email: {
                     type: "string",
                     format: "email",
                     nullable: true,
                     description: "Campo email expuesto por el runtime actual.",
-                    example: "usuario@example.com",
+                    example: "valeria.mendoza@correo.pe",
                   },
                   profileImage: {
                     type: "string",
@@ -2657,7 +2659,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               role: {
                 type: "string",
@@ -2684,7 +2686,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               role: {
                 type: "string",
@@ -2853,7 +2855,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               role: {
                 type: "string",
@@ -2916,24 +2918,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 description: {
                   type: "string",
@@ -2947,20 +2949,21 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example:
+                    "https://cdn.beerry.app/events/noche-latina/cover.webp",
                 },
                 startsAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Campo starts at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 endsAt: {
                   type: "string",
                   format: "date-time",
                   description: "Campo ends at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-20T05:00:00.000Z",
                 },
                 status: {
                   type: "string",
@@ -3024,33 +3027,33 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 eventId: {
                   type: "string",
                   format: "uuid",
                   nullable: true,
                   description: "Campo event id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 eventName: {
                   type: "string",
                   nullable: true,
                   description:
                     "Campo event name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 imageUrl: {
                   type: "string",
@@ -3058,12 +3061,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -3097,7 +3100,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo sale start at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-01T12:00:00.000Z",
                 },
                 saleEndAt: {
                   type: "string",
@@ -3105,7 +3108,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo sale end at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-20T05:00:00.000Z",
                 },
                 status: {
                   type: "string",
@@ -3144,38 +3147,38 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 eventId: {
                   type: "string",
                   format: "uuid",
                   nullable: true,
                   description: "Campo event id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 eventName: {
                   type: "string",
                   nullable: true,
                   description:
                     "Campo event name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Combo de bienvenida",
                 },
                 description: {
                   type: "string",
@@ -3189,7 +3192,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example:
+                    "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
                 },
                 finalPrice: {
                   type: "number",
@@ -3206,14 +3210,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo starts at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 endsAt: {
                   type: "string",
                   format: "date-time",
                   nullable: true,
                   description: "Campo ends at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-20T05:00:00.000Z",
                 },
                 status: {
                   type: "string",
@@ -3262,24 +3266,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Chilcano de maracuyá",
                 },
                 description: {
                   type: "string",
@@ -3293,7 +3297,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example:
+                    "https://cdn.beerry.app/products/chilcano-maracuya.webp",
                 },
                 price: {
                   type: "number",
@@ -3418,23 +3423,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             description: {
               type: "string",
@@ -3446,19 +3451,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
             },
             startsAt: {
               type: "string",
               format: "date-time",
               description: "Campo starts at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endsAt: {
               type: "string",
               format: "date-time",
               description: "Campo ends at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             status: {
               type: "string",
@@ -3533,36 +3538,36 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             eventName: {
               type: "string",
               nullable: true,
               description: "Campo event name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Combo de bienvenida",
             },
             description: {
               type: "string",
@@ -3574,7 +3579,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example:
+                "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
             },
             finalPrice: {
               type: "number",
@@ -3628,23 +3634,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Chilcano de maracuyá",
             },
             description: {
               type: "string",
@@ -3656,7 +3662,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
             },
             price: {
               type: "number",
@@ -3710,7 +3716,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           role: {
             type: "string",
@@ -3793,23 +3799,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             description: {
               type: "string",
@@ -3821,19 +3827,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
             },
             startsAt: {
               type: "string",
               format: "date-time",
               description: "Campo starts at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endsAt: {
               type: "string",
               format: "date-time",
               description: "Campo ends at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             status: {
               type: "string",
@@ -3896,43 +3902,43 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             eventName: {
               type: "string",
               nullable: true,
               description: "Campo event name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             imageUrl: {
               type: "string",
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Entrada VIP",
             },
             description: {
               type: "string",
@@ -3965,14 +3971,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo sale start at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-01T12:00:00.000Z",
             },
             saleEndAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo sale end at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             status: {
               type: "string",
@@ -4011,36 +4017,36 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             eventName: {
               type: "string",
               nullable: true,
               description: "Campo event name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Combo de bienvenida",
             },
             description: {
               type: "string",
@@ -4052,7 +4058,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example:
+                "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
             },
             finalPrice: {
               type: "number",
@@ -4067,14 +4074,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo starts at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endsAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo ends at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             status: {
               type: "string",
@@ -4122,23 +4129,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Chilcano de maracuyá",
             },
             description: {
               type: "string",
@@ -4150,7 +4157,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
             },
             price: {
               type: "number",
@@ -4204,7 +4211,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           role: {
             type: "string",
@@ -4246,7 +4253,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           role: {
             type: "string",
@@ -4266,23 +4273,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           clubName: {
             type: "string",
             description: "Campo club name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -4294,19 +4301,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -4366,41 +4373,41 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             eventId: {
               type: "string",
               format: "uuid",
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             eventName: {
               type: "string",
               description: "Campo event name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             imageUrl: {
               type: "string",
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Entrada VIP",
             },
             description: {
               type: "string",
@@ -4462,34 +4469,34 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             clubName: {
               type: "string",
               description: "Campo club name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             eventId: {
               type: "string",
               format: "uuid",
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             eventName: {
               type: "string",
               description: "Campo event name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Combo de bienvenida",
             },
             description: {
               type: "string",
@@ -4501,7 +4508,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example:
+                "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
             },
             finalPrice: {
               type: "number",
@@ -4564,12 +4572,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           description: {
             type: "string",
@@ -4651,7 +4659,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           admins: {
             type: "array",
@@ -4662,13 +4670,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -4680,14 +4688,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 profileImage: {
                   type: "string",
@@ -4748,12 +4756,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           description: {
             type: "string",
@@ -4835,7 +4843,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           admins: {
             type: "array",
@@ -4846,13 +4854,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -4864,14 +4872,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 profileImage: {
                   type: "string",
@@ -4948,12 +4956,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           description: {
             type: "string",
@@ -5035,7 +5043,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           admins: {
             type: "array",
@@ -5046,13 +5054,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -5064,14 +5072,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 profileImage: {
                   type: "string",
@@ -5132,12 +5140,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           description: {
             type: "string",
@@ -5219,7 +5227,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           admins: {
             type: "array",
@@ -5230,13 +5238,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -5248,14 +5256,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 profileImage: {
                   type: "string",
@@ -5316,18 +5324,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -5339,7 +5347,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -5353,19 +5361,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -5397,7 +5405,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -5406,12 +5414,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -5433,12 +5441,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -5481,7 +5489,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -5541,18 +5549,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             description: {
               type: "string",
@@ -5564,7 +5572,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
             },
             imageObjectKey: {
               type: "string",
@@ -5578,19 +5586,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo image public url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
             },
             startsAt: {
               type: "string",
               format: "date-time",
               description: "Campo starts at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endsAt: {
               type: "string",
               format: "date-time",
               description: "Campo ends at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             capacity: {
               type: "number",
@@ -5622,7 +5630,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             club: {
               type: "object",
@@ -5631,12 +5639,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 status: {
                   type: "string",
@@ -5658,12 +5666,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                   },
                   name: {
                     type: "string",
                     description: "Campo name expuesto por el runtime actual.",
-                    example: "Ejemplo ficticio",
+                    example: "Entrada VIP",
                   },
                   description: {
                     type: "string",
@@ -5708,7 +5716,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "date-time",
                     description:
                       "Fecha y hora de la última actualización en formato ISO 8601.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-08-28T14:15:00.000Z",
                   },
                 },
                 required: [
@@ -5767,18 +5775,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -5790,7 +5798,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -5804,19 +5812,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -5848,7 +5856,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -5857,12 +5865,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -5884,12 +5892,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -5932,7 +5940,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -5990,18 +5998,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -6013,7 +6021,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -6027,19 +6035,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -6071,7 +6079,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -6080,12 +6088,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -6107,12 +6115,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -6155,7 +6163,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -6213,18 +6221,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -6236,7 +6244,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -6250,19 +6258,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -6294,7 +6302,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -6303,12 +6311,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -6330,12 +6338,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -6378,7 +6386,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -6436,18 +6444,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -6459,7 +6467,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -6473,19 +6481,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -6517,7 +6525,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -6526,12 +6534,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -6553,12 +6561,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -6601,7 +6609,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -6659,18 +6667,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -6682,7 +6690,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -6696,19 +6704,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -6740,7 +6748,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -6749,12 +6757,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -6776,12 +6784,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -6824,7 +6832,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -6882,18 +6890,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -6905,7 +6913,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -6919,19 +6927,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -6963,7 +6971,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -6972,12 +6980,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -6999,12 +7007,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -7047,7 +7055,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -7217,12 +7225,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               type: {
                 type: "string",
@@ -7300,7 +7308,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                 },
               },
               required: ["type", "title", "text", "imageUrl"],
@@ -7319,18 +7327,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example:
+                    "https://cdn.beerry.app/events/noche-latina/cover.webp",
                 },
                 id: {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 description: {
                   type: "string",
@@ -7343,13 +7352,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Campo starts at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 endsAt: {
                   type: "string",
                   format: "date-time",
                   description: "Campo ends at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-20T05:00:00.000Z",
                 },
                 createdAt: {
                   type: "string",
@@ -7362,7 +7371,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 capacity: {
                   type: "number",
@@ -7414,13 +7423,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         type: "string",
                         format: "uuid",
                         description: "Identificador UUID del recurso.",
-                        example: "11111111-1111-4111-8111-111111111111",
+                        example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                       },
                       name: {
                         type: "string",
                         description:
                           "Campo name expuesto por el runtime actual.",
-                        example: "Ejemplo ficticio",
+                        example: "Entrada VIP",
                       },
                       description: {
                         type: "string",
@@ -7466,7 +7475,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         format: "date-time",
                         description:
                           "Fecha y hora de la última actualización en formato ISO 8601.",
-                        example: "2026-08-27T18:30:00.000Z",
+                        example: "2026-08-28T14:15:00.000Z",
                       },
                     },
                     required: [
@@ -7522,12 +7531,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 amount: {
                   type: "number",
@@ -7573,18 +7582,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             description: {
               type: "string",
@@ -7596,7 +7605,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
             },
             imageObjectKey: {
               type: "string",
@@ -7610,19 +7619,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo image public url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
             },
             startsAt: {
               type: "string",
               format: "date-time",
               description: "Campo starts at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endsAt: {
               type: "string",
               format: "date-time",
               description: "Campo ends at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             capacity: {
               type: "number",
@@ -7654,7 +7663,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             club: {
               type: "object",
@@ -7663,12 +7672,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 status: {
                   type: "string",
@@ -7690,12 +7699,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                   },
                   name: {
                     type: "string",
                     description: "Campo name expuesto por el runtime actual.",
-                    example: "Ejemplo ficticio",
+                    example: "Entrada VIP",
                   },
                   description: {
                     type: "string",
@@ -7740,7 +7749,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "date-time",
                     description:
                       "Fecha y hora de la última actualización en formato ISO 8601.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-08-28T14:15:00.000Z",
                   },
                 },
                 required: [
@@ -7799,18 +7808,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Noche Latina",
           },
           description: {
             type: "string",
@@ -7822,7 +7831,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -7836,19 +7845,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo image public url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/events/noche-latina/cover.webp",
           },
           startsAt: {
             type: "string",
             format: "date-time",
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           capacity: {
             type: "number",
@@ -7880,7 +7889,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -7889,12 +7898,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
               status: {
                 type: "string",
@@ -7916,12 +7925,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Entrada VIP",
                 },
                 description: {
                   type: "string",
@@ -7964,7 +7973,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
               },
               required: [
@@ -8044,7 +8053,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         nullable: true,
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
     },
     required: [
@@ -8075,7 +8084,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -8093,14 +8102,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             actorUserId: {
               type: "string",
               format: "uuid",
               description:
                 "Campo actor user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             reason: {
               type: "string",
@@ -8112,7 +8121,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               nullable: true,
               description: "Campo ticket id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "4a9e7c32-6b15-4d80-8f24-1c5e93a7b642",
             },
             workerShiftId: {
               type: "string",
@@ -8120,7 +8129,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo worker shift id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "2e8c5a71-9b34-4d60-a192-6f7e3c48b025",
             },
             delta: {
               type: "number",
@@ -8202,7 +8211,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         nullable: true,
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
     },
     required: [
@@ -8252,7 +8261,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         nullable: true,
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
     },
     required: [
@@ -8302,7 +8311,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         nullable: true,
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
     },
     required: [
@@ -8454,7 +8463,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             phoneCountryCode: {
               type: "string",
@@ -8465,19 +8474,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             phoneNumber: {
               type: "string",
               description: "Campo phone number expuesto por el runtime actual.",
-              example: "999999999",
+              example: "987654321",
             },
             email: {
               type: "string",
               format: "email",
               nullable: true,
               description: "Campo email expuesto por el runtime actual.",
-              example: "usuario@example.com",
+              example: "valeria.mendoza@correo.pe",
             },
             fullName: {
               type: "string",
               description: "Campo full name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Valeria Mendoza",
             },
             profileImage: {
               type: "string",
@@ -8508,7 +8517,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo phone verified at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             createdAt: {
               type: "string",
@@ -8521,7 +8530,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
           },
           required: [
@@ -8611,7 +8620,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -8622,19 +8631,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -8664,7 +8673,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo phone verified at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -8677,7 +8686,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -8714,7 +8723,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -8725,19 +8734,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -8767,7 +8776,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo phone verified at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -8780,7 +8789,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -8817,7 +8826,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -8828,19 +8837,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -8870,7 +8879,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo phone verified at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -8883,7 +8892,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -8920,7 +8929,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -8931,19 +8940,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -8973,7 +8982,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo phone verified at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -8986,7 +8995,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -9023,7 +9032,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -9034,19 +9043,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -9076,7 +9085,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo phone verified at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -9089,7 +9098,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -9127,12 +9136,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
               },
               required: ["id", "name"],
@@ -9147,13 +9156,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
                 role: {
                   type: "string",
@@ -9170,7 +9179,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -9183,7 +9192,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo expires at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             deviceFingerprint: {
               type: "string",
@@ -9196,7 +9205,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               nullable: true,
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             action: {
               type: "string",
@@ -9211,7 +9220,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Campo resource id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             metadata: {
               description: "Valor JSON dinámico expuesto por el runtime.",
@@ -9261,7 +9270,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               description:
                 "Campo actor user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
           },
           required: [
@@ -9327,7 +9336,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       createdAt: {
         type: "string",
@@ -9340,7 +9349,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       retentionDays: {
         type: "number",
@@ -9351,7 +9360,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uuid",
         nullable: true,
         description: "Campo updated by user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
     },
     required: [
@@ -9370,7 +9379,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       createdAt: {
         type: "string",
@@ -9383,7 +9392,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       retentionDays: {
         type: "number",
@@ -9394,7 +9403,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uuid",
         nullable: true,
         description: "Campo updated by user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
     },
     required: [
@@ -9426,7 +9435,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo broken entry id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
     },
     required: ["valid", "checked", "legacyUnchecked", "brokenEntryId"],
@@ -9446,18 +9455,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Chilcano de maracuyá",
           },
           description: {
             type: "string",
@@ -9469,7 +9478,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -9507,7 +9516,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -9547,18 +9556,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Chilcano de maracuyá",
             },
             description: {
               type: "string",
@@ -9570,7 +9579,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
             },
             imageObjectKey: {
               type: "string",
@@ -9609,7 +9618,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
           },
           required: [
@@ -9648,18 +9657,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Chilcano de maracuyá",
           },
           description: {
             type: "string",
@@ -9671,7 +9680,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -9709,7 +9718,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -9747,18 +9756,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Chilcano de maracuyá",
           },
           description: {
             type: "string",
@@ -9770,7 +9779,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -9808,7 +9817,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -9846,18 +9855,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Chilcano de maracuyá",
           },
           description: {
             type: "string",
@@ -9869,7 +9878,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -9907,7 +9916,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -9945,18 +9954,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Chilcano de maracuyá",
           },
           description: {
             type: "string",
@@ -9968,7 +9977,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/products/chilcano-maracuya.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -10006,7 +10015,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
         },
         required: [
@@ -10055,20 +10064,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -10077,7 +10086,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Combo de bienvenida",
           },
           description: {
             type: "string",
@@ -10089,7 +10098,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -10126,14 +10135,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -10146,7 +10155,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -10155,12 +10164,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -10174,24 +10183,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
               endsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo ends at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-20T05:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt", "endsAt"],
@@ -10208,7 +10217,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 itemType: {
                   type: "string",
@@ -10223,7 +10232,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo product id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 ticketTypeId: {
                   type: "string",
@@ -10231,7 +10240,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo ticket type id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 quantity: {
                   type: "integer",
@@ -10285,7 +10294,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 product: {
                   type: "object",
@@ -10294,12 +10303,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     imageUrl: {
                       type: "string",
@@ -10307,7 +10316,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo image url expuesto por el runtime actual.",
-                      example: "https://example.com/recurso",
+                      example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                     },
                     price: {
                       type: "number",
@@ -10332,12 +10341,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     price: {
                       type: "number",
@@ -10355,7 +10364,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo event id expuesto por el runtime actual.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                     },
                   },
                   required: ["id", "name", "price", "currency", "eventId"],
@@ -10432,20 +10441,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             scope: {
               type: "string",
@@ -10454,7 +10463,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Combo de bienvenida",
             },
             description: {
               type: "string",
@@ -10466,7 +10475,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo image url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example:
+                "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
             },
             imageObjectKey: {
               type: "string",
@@ -10503,14 +10513,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo starts at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             endsAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo ends at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             createdAt: {
               type: "string",
@@ -10523,7 +10533,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             club: {
               type: "object",
@@ -10532,12 +10542,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
               },
               required: ["id", "name"],
@@ -10551,25 +10561,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 startsAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Campo starts at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 endsAt: {
                   type: "string",
                   format: "date-time",
                   description: "Campo ends at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-20T05:00:00.000Z",
                 },
               },
               required: ["id", "name", "startsAt", "endsAt"],
@@ -10586,7 +10596,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                   },
                   itemType: {
                     type: "string",
@@ -10601,7 +10611,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo product id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                   },
                   ticketTypeId: {
                     type: "string",
@@ -10609,7 +10619,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo ticket type id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                   },
                   quantity: {
                     type: "integer",
@@ -10665,7 +10675,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "date-time",
                     description:
                       "Fecha y hora de la última actualización en formato ISO 8601.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-08-28T14:15:00.000Z",
                   },
                   product: {
                     type: "object",
@@ -10674,13 +10684,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         type: "string",
                         format: "uuid",
                         description: "Identificador UUID del recurso.",
-                        example: "11111111-1111-4111-8111-111111111111",
+                        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                       },
                       name: {
                         type: "string",
                         description:
                           "Campo name expuesto por el runtime actual.",
-                        example: "Ejemplo ficticio",
+                        example: "Nébula Club",
                       },
                       imageUrl: {
                         type: "string",
@@ -10688,7 +10698,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         nullable: true,
                         description:
                           "Campo image url expuesto por el runtime actual.",
-                        example: "https://example.com/recurso",
+                        example:
+                          "https://cdn.beerry.app/clubs/nebula/cover.webp",
                       },
                       price: {
                         type: "number",
@@ -10714,13 +10725,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         type: "string",
                         format: "uuid",
                         description: "Identificador UUID del recurso.",
-                        example: "11111111-1111-4111-8111-111111111111",
+                        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                       },
                       name: {
                         type: "string",
                         description:
                           "Campo name expuesto por el runtime actual.",
-                        example: "Ejemplo ficticio",
+                        example: "Nébula Club",
                       },
                       price: {
                         type: "number",
@@ -10738,7 +10749,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         nullable: true,
                         description:
                           "Campo event id expuesto por el runtime actual.",
-                        example: "11111111-1111-4111-8111-111111111111",
+                        example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                       },
                     },
                     required: ["id", "name", "price", "currency", "eventId"],
@@ -10814,20 +10825,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -10836,7 +10847,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Combo de bienvenida",
           },
           description: {
             type: "string",
@@ -10848,7 +10859,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -10885,14 +10896,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -10905,7 +10916,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -10914,12 +10925,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -10933,24 +10944,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
               endsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo ends at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-20T05:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt", "endsAt"],
@@ -10967,7 +10978,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 itemType: {
                   type: "string",
@@ -10982,7 +10993,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo product id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 ticketTypeId: {
                   type: "string",
@@ -10990,7 +11001,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo ticket type id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 quantity: {
                   type: "integer",
@@ -11044,7 +11055,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 product: {
                   type: "object",
@@ -11053,12 +11064,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     imageUrl: {
                       type: "string",
@@ -11066,7 +11077,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo image url expuesto por el runtime actual.",
-                      example: "https://example.com/recurso",
+                      example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                     },
                     price: {
                       type: "number",
@@ -11091,12 +11102,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     price: {
                       type: "number",
@@ -11114,7 +11125,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo event id expuesto por el runtime actual.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                     },
                   },
                   required: ["id", "name", "price", "currency", "eventId"],
@@ -11189,20 +11200,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -11211,7 +11222,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Combo de bienvenida",
           },
           description: {
             type: "string",
@@ -11223,7 +11234,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -11260,14 +11271,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -11280,7 +11291,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -11289,12 +11300,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -11308,24 +11319,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
               endsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo ends at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-20T05:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt", "endsAt"],
@@ -11342,7 +11353,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 itemType: {
                   type: "string",
@@ -11357,7 +11368,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo product id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 ticketTypeId: {
                   type: "string",
@@ -11365,7 +11376,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo ticket type id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 quantity: {
                   type: "integer",
@@ -11419,7 +11430,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 product: {
                   type: "object",
@@ -11428,12 +11439,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     imageUrl: {
                       type: "string",
@@ -11441,7 +11452,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo image url expuesto por el runtime actual.",
-                      example: "https://example.com/recurso",
+                      example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                     },
                     price: {
                       type: "number",
@@ -11466,12 +11477,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     price: {
                       type: "number",
@@ -11489,7 +11500,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo event id expuesto por el runtime actual.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                     },
                   },
                   required: ["id", "name", "price", "currency", "eventId"],
@@ -11564,20 +11575,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -11586,7 +11597,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Combo de bienvenida",
           },
           description: {
             type: "string",
@@ -11598,7 +11609,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -11635,14 +11646,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -11655,7 +11666,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -11664,12 +11675,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -11683,24 +11694,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
               endsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo ends at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-20T05:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt", "endsAt"],
@@ -11717,7 +11728,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 itemType: {
                   type: "string",
@@ -11732,7 +11743,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo product id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 ticketTypeId: {
                   type: "string",
@@ -11740,7 +11751,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo ticket type id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 quantity: {
                   type: "integer",
@@ -11794,7 +11805,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 product: {
                   type: "object",
@@ -11803,12 +11814,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     imageUrl: {
                       type: "string",
@@ -11816,7 +11827,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo image url expuesto por el runtime actual.",
-                      example: "https://example.com/recurso",
+                      example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                     },
                     price: {
                       type: "number",
@@ -11841,12 +11852,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     price: {
                       type: "number",
@@ -11864,7 +11875,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo event id expuesto por el runtime actual.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                     },
                   },
                   required: ["id", "name", "price", "currency", "eventId"],
@@ -11939,20 +11950,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "d2a7f951-8c43-4e60-b195-6f3d28a7c014",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -11961,7 +11972,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Combo de bienvenida",
           },
           description: {
             type: "string",
@@ -11973,7 +11984,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo image url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example: "https://cdn.beerry.app/promotions/combo-bienvenida.webp",
           },
           imageObjectKey: {
             type: "string",
@@ -12010,14 +12021,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo starts at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           endsAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo ends at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           createdAt: {
             type: "string",
@@ -12030,7 +12041,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -12039,12 +12050,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -12058,24 +12069,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
               endsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo ends at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-20T05:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt", "endsAt"],
@@ -12092,7 +12103,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 itemType: {
                   type: "string",
@@ -12107,7 +12118,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo product id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 ticketTypeId: {
                   type: "string",
@@ -12115,7 +12126,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo ticket type id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
                 },
                 quantity: {
                   type: "integer",
@@ -12169,7 +12180,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 product: {
                   type: "object",
@@ -12178,12 +12189,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     imageUrl: {
                       type: "string",
@@ -12191,7 +12202,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo image url expuesto por el runtime actual.",
-                      example: "https://example.com/recurso",
+                      example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                     },
                     price: {
                       type: "number",
@@ -12216,12 +12227,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       type: "string",
                       format: "uuid",
                       description: "Identificador UUID del recurso.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                     },
                     name: {
                       type: "string",
                       description: "Campo name expuesto por el runtime actual.",
-                      example: "Ejemplo ficticio",
+                      example: "Nébula Club",
                     },
                     price: {
                       type: "number",
@@ -12239,7 +12250,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       nullable: true,
                       description:
                         "Campo event id expuesto por el runtime actual.",
-                      example: "11111111-1111-4111-8111-111111111111",
+                      example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                     },
                   },
                   required: ["id", "name", "price", "currency", "eventId"],
@@ -12325,20 +12336,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -12347,7 +12358,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -12388,14 +12399,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -12414,7 +12425,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -12423,12 +12434,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -12442,18 +12453,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -12506,20 +12517,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             scope: {
               type: "string",
@@ -12528,7 +12539,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Entrada VIP",
             },
             description: {
               type: "string",
@@ -12573,14 +12584,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo sale start at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-01T12:00:00.000Z",
             },
             saleEndAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo sale end at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             status: {
               type: "string",
@@ -12599,7 +12610,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             club: {
               type: "object",
@@ -12608,12 +12619,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
               },
               required: ["id", "name"],
@@ -12627,19 +12638,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 startsAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Campo starts at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
               },
               required: ["id", "name", "startsAt"],
@@ -12691,20 +12702,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -12713,7 +12724,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -12754,14 +12765,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -12780,7 +12791,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -12789,12 +12800,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -12808,18 +12819,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -12870,20 +12881,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -12892,7 +12903,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -12933,14 +12944,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -12959,7 +12970,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -12968,12 +12979,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -12987,18 +12998,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -13049,20 +13060,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -13071,7 +13082,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -13112,14 +13123,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -13138,7 +13149,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -13147,12 +13158,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -13166,18 +13177,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -13239,20 +13250,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -13261,7 +13272,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -13302,14 +13313,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -13328,7 +13339,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -13337,12 +13348,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -13356,18 +13367,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -13420,20 +13431,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
             },
             clubId: {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             eventId: {
               type: "string",
               format: "uuid",
               nullable: true,
               description: "Campo event id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
             },
             scope: {
               type: "string",
@@ -13442,7 +13453,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Entrada VIP",
             },
             description: {
               type: "string",
@@ -13487,14 +13498,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo sale start at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-01T12:00:00.000Z",
             },
             saleEndAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo sale end at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-20T05:00:00.000Z",
             },
             status: {
               type: "string",
@@ -13513,7 +13524,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             club: {
               type: "object",
@@ -13522,12 +13533,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
               },
               required: ["id", "name"],
@@ -13541,19 +13552,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
                 },
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Noche Latina",
                 },
                 startsAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Campo starts at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
               },
               required: ["id", "name", "startsAt"],
@@ -13605,20 +13616,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -13627,7 +13638,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -13668,14 +13679,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -13694,7 +13705,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -13703,12 +13714,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -13722,18 +13733,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -13784,20 +13795,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -13806,7 +13817,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -13847,14 +13858,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -13873,7 +13884,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -13882,12 +13893,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -13901,18 +13912,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -13963,20 +13974,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "e5c2a831-7d49-4b60-a918-3f6e25d7c104",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           eventId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo event id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
           },
           scope: {
             type: "string",
@@ -13985,7 +13996,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Entrada VIP",
           },
           description: {
             type: "string",
@@ -14026,14 +14037,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo sale start at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-01T12:00:00.000Z",
           },
           saleEndAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo sale end at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-20T05:00:00.000Z",
           },
           status: {
             type: "string",
@@ -14052,7 +14063,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           club: {
             type: "object",
@@ -14061,12 +14072,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Nébula Club",
               },
             },
             required: ["id", "name"],
@@ -14080,18 +14091,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
               },
               name: {
                 type: "string",
                 description: "Campo name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Noche Latina",
               },
               startsAt: {
                 type: "string",
                 format: "date-time",
                 description: "Campo starts at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["id", "name", "startsAt"],
@@ -14155,7 +14166,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             phoneCountryCode: {
               type: "string",
@@ -14166,19 +14177,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             phoneNumber: {
               type: "string",
               description: "Campo phone number expuesto por el runtime actual.",
-              example: "999999999",
+              example: "987654321",
             },
             email: {
               type: "string",
               format: "email",
               nullable: true,
               description: "Campo email expuesto por el runtime actual.",
-              example: "usuario@example.com",
+              example: "valeria.mendoza@correo.pe",
             },
             fullName: {
               type: "string",
               description: "Campo full name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Valeria Mendoza",
             },
             role: {
               type: "string",
@@ -14229,7 +14240,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           phoneCountryCode: {
             type: "string",
@@ -14240,19 +14251,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           phoneNumber: {
             type: "string",
             description: "Campo phone number expuesto por el runtime actual.",
-            example: "999999999",
+            example: "987654321",
           },
           email: {
             type: "string",
             format: "email",
             nullable: true,
             description: "Campo email expuesto por el runtime actual.",
-            example: "usuario@example.com",
+            example: "valeria.mendoza@correo.pe",
           },
           fullName: {
             type: "string",
             description: "Campo full name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           profileImage: {
             type: "string",
@@ -14308,7 +14319,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       currency: {
         type: "string",
@@ -14328,7 +14339,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       credit: {
         type: "object",
@@ -14349,7 +14360,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "date-time",
                 nullable: true,
                 description: "Campo expires at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: ["amount", "expiresAt"],
@@ -14390,7 +14401,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             type: {
               type: "string",
@@ -14427,7 +14438,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uuid",
               nullable: true,
               description: "Campo reference id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -14440,7 +14451,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo completed at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
           },
           required: [
@@ -14494,7 +14505,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo club id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
       },
       currency: {
         type: "string",
@@ -14558,7 +14569,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo order id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
       },
       balanced: {
         type: "boolean",
@@ -14609,7 +14620,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "date",
         description: "Campo date expuesto por el runtime actual.",
-        example: "2026-08-27",
+        example: "2026-09-19",
       },
       balanced: {
         type: "boolean",
@@ -14747,7 +14758,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo order id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
       },
       orderStatus: {
         type: "string",
@@ -14769,7 +14780,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uuid",
         nullable: true,
         description: "Campo payment attempt id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
       },
       paymentStatus: {
         type: "string",
@@ -14806,7 +14817,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uri",
         nullable: true,
         description: "Campo checkout url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example:
+          "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
       },
       total: {
         type: "number",
@@ -14846,13 +14858,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -14895,14 +14907,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -14914,13 +14926,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "uuid",
                   description:
                     "Campo cart item id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 id: {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 type: {
                   type: "string",
@@ -14936,20 +14948,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   nullable: true,
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 priceCents: {
                   type: "integer",
@@ -14968,7 +14980,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                 },
                 available: {
                   type: "boolean",
@@ -15047,13 +15059,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -15096,14 +15108,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -15115,13 +15127,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "uuid",
                   description:
                     "Campo cart item id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 id: {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 type: {
                   type: "string",
@@ -15137,20 +15149,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   nullable: true,
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 priceCents: {
                   type: "integer",
@@ -15169,7 +15181,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                 },
                 available: {
                   type: "boolean",
@@ -15248,13 +15260,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -15297,14 +15309,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -15316,13 +15328,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "uuid",
                   description:
                     "Campo cart item id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 id: {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 type: {
                   type: "string",
@@ -15338,20 +15350,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   nullable: true,
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 priceCents: {
                   type: "integer",
@@ -15370,7 +15382,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                 },
                 available: {
                   type: "boolean",
@@ -15449,13 +15461,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -15498,14 +15510,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           clubId: {
             type: "string",
             format: "uuid",
             nullable: true,
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           items: {
             type: "array",
@@ -15517,13 +15529,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "uuid",
                   description:
                     "Campo cart item id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 id: {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 type: {
                   type: "string",
@@ -15539,20 +15551,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   nullable: true,
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 clubName: {
                   type: "string",
                   description:
                     "Campo club name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Nébula Club",
                 },
                 priceCents: {
                   type: "integer",
@@ -15571,7 +15583,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example: "https://cdn.beerry.app/clubs/nebula/cover.webp",
                 },
                 available: {
                   type: "boolean",
@@ -15648,7 +15660,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo club id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
       },
       statuses: {
         type: "object",
@@ -15685,7 +15697,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo order id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
       },
       orderStatus: {
         type: "string",
@@ -15707,7 +15719,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uuid",
         nullable: true,
         description: "Campo payment attempt id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
       },
       paymentStatus: {
         type: "string",
@@ -15744,7 +15756,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uri",
         nullable: true,
         description: "Campo checkout url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example:
+          "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
       },
       total: {
         type: "number",
@@ -15782,7 +15795,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo top up id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       status: {
         type: "string",
@@ -15813,7 +15826,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uuid",
         nullable: true,
         description: "Campo payment attempt id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
       },
       paymentStatus: {
         type: "string",
@@ -15843,7 +15856,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uri",
         nullable: true,
         description: "Campo checkout url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example:
+          "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
       },
       createdAt: {
         type: "string",
@@ -15856,7 +15870,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         nullable: true,
         description: "Campo approved at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:05:00.000Z",
       },
     },
     required: [
@@ -15885,7 +15899,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Campo top up id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             status: {
               type: "string",
@@ -15917,7 +15931,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo payment attempt id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
             },
             paymentStatus: {
               type: "string",
@@ -15949,7 +15963,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "uri",
               nullable: true,
               description: "Campo checkout url expuesto por el runtime actual.",
-              example: "https://example.com/recurso",
+              example:
+                "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
             },
             createdAt: {
               type: "string",
@@ -15962,7 +15977,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo approved at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:05:00.000Z",
             },
           },
           required: [
@@ -15992,7 +16007,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo top up id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       status: {
         type: "string",
@@ -16023,7 +16038,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uuid",
         nullable: true,
         description: "Campo payment attempt id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
       },
       paymentStatus: {
         type: "string",
@@ -16053,7 +16068,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "uri",
         nullable: true,
         description: "Campo checkout url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example:
+          "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
       },
       createdAt: {
         type: "string",
@@ -16066,7 +16082,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         nullable: true,
         description: "Campo approved at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:05:00.000Z",
       },
     },
     required: [
@@ -16120,7 +16136,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 phoneCountryCode: {
                   type: "string",
@@ -16132,20 +16148,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   description:
                     "Campo phone number expuesto por el runtime actual.",
-                  example: "999999999",
+                  example: "987654321",
                 },
                 email: {
                   type: "string",
                   format: "email",
                   nullable: true,
                   description: "Campo email expuesto por el runtime actual.",
-                  example: "usuario@example.com",
+                  example: "valeria.mendoza@correo.pe",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
               },
               required: [
@@ -16167,7 +16183,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                   },
                   createdAt: {
                     type: "string",
@@ -16195,14 +16211,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "date-time",
                     description:
                       "Fecha y hora de la última actualización en formato ISO 8601.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-08-28T14:15:00.000Z",
                   },
                   clubId: {
                     type: "string",
                     format: "uuid",
                     description:
                       "Campo club id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                   },
                   reason: {
                     type: "string",
@@ -16213,14 +16229,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "uuid",
                     description:
                       "Campo order id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                   },
                   requestedAt: {
                     type: "string",
                     format: "date-time",
                     description:
                       "Campo requested at expuesto por el runtime actual.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-09-19T22:00:00.000Z",
                   },
                   reviewedAt: {
                     type: "string",
@@ -16228,14 +16244,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo reviewed at expuesto por el runtime actual.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-09-19T22:00:00.000Z",
                   },
                   requestedByUserId: {
                     type: "string",
                     format: "uuid",
                     description:
                       "Campo requested by user id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                   },
                   resolutionNote: {
                     type: "string",
@@ -16249,7 +16265,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo completed at expuesto por el runtime actual.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-09-19T22:00:00.000Z",
                   },
                 },
                 required: [
@@ -16280,7 +16296,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                   },
                   createdAt: {
                     type: "string",
@@ -16294,7 +16310,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "uuid",
                     description:
                       "Campo club id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                   },
                   totalCents: {
                     type: "integer",
@@ -16307,7 +16323,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "uuid",
                     description:
                       "Campo order id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                   },
                   itemType: {
                     type: "string",
@@ -16321,13 +16337,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "uuid",
                     description:
                       "Campo item id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                   },
                   nameSnapshot: {
                     type: "string",
                     description:
                       "Campo name snapshot expuesto por el runtime actual.",
-                    example: "Ejemplo ficticio",
+                    example: "Chilcano de maracuyá",
                   },
                   quantity: {
                     type: "integer",
@@ -16368,7 +16384,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     type: "string",
                     format: "uuid",
                     description: "Identificador UUID del recurso.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                   },
                   createdAt: {
                     type: "string",
@@ -16397,7 +16413,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     format: "date-time",
                     description:
                       "Fecha y hora de la última actualización en formato ISO 8601.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-08-28T14:15:00.000Z",
                   },
                   purpose: {
                     type: "string",
@@ -16412,7 +16428,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo expires at expuesto por el runtime actual.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-09-19T22:00:00.000Z",
                   },
                   currency: {
                     type: "string",
@@ -16425,7 +16441,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo order id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                   },
                   walletTopUpId: {
                     type: "string",
@@ -16433,7 +16449,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo wallet top up id expuesto por el runtime actual.",
-                    example: "11111111-1111-4111-8111-111111111111",
+                    example: "5d7a1c84-3e69-4f20-8b15-6c2e97a4d038",
                   },
                   provider: {
                     type: "string",
@@ -16457,7 +16473,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo failure code expuesto por el runtime actual.",
-                    example: "CODE-EXAMPLE",
+                    example: "PAYMENT_DECLINED",
                   },
                   failureMessage: {
                     type: "string",
@@ -16479,7 +16495,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo approved at expuesto por el runtime actual.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-09-19T22:05:00.000Z",
                   },
                   failedAt: {
                     type: "string",
@@ -16487,7 +16503,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description:
                       "Campo failed at expuesto por el runtime actual.",
-                    example: "2026-08-27T18:30:00.000Z",
+                    example: "2026-09-19T22:00:00.000Z",
                   },
                 },
                 required: [
@@ -16518,13 +16534,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
             },
             userId: {
               type: "string",
               format: "uuid",
               description: "Campo user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             createdAt: {
               type: "string",
@@ -16552,7 +16568,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             currency: {
               type: "string",
@@ -16562,7 +16578,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Campo club id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
             },
             totalCents: {
               type: "integer",
@@ -16610,7 +16626,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               nullable: true,
               description: "Campo paid at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:05:00.000Z",
             },
           },
           required: [
@@ -16657,7 +16673,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 format: "uuid",
                 description: "Identificador UUID del recurso.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
               },
               phoneCountryCode: {
                 type: "string",
@@ -16669,19 +16685,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo phone number expuesto por el runtime actual.",
-                example: "999999999",
+                example: "987654321",
               },
               email: {
                 type: "string",
                 format: "email",
                 nullable: true,
                 description: "Campo email expuesto por el runtime actual.",
-                example: "usuario@example.com",
+                example: "valeria.mendoza@correo.pe",
               },
               fullName: {
                 type: "string",
                 description: "Campo full name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
             },
             required: [
@@ -16703,7 +16719,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 createdAt: {
                   type: "string",
@@ -16730,13 +16746,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 clubId: {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 reason: {
                   type: "string",
@@ -16746,14 +16762,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Campo order id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                 },
                 requestedAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Campo requested at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 reviewedAt: {
                   type: "string",
@@ -16761,14 +16777,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo reviewed at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 requestedByUserId: {
                   type: "string",
                   format: "uuid",
                   description:
                     "Campo requested by user id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
                 },
                 resolutionNote: {
                   type: "string",
@@ -16782,7 +16798,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo completed at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
               },
               required: [
@@ -16813,7 +16829,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                 },
                 createdAt: {
                   type: "string",
@@ -16825,7 +16841,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 totalCents: {
                   type: "integer",
@@ -16837,7 +16853,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Campo order id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                 },
                 itemType: {
                   type: "string",
@@ -16850,13 +16866,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Campo item id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 nameSnapshot: {
                   type: "string",
                   description:
                     "Campo name snapshot expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Chilcano de maracuyá",
                 },
                 quantity: {
                   type: "integer",
@@ -16896,7 +16912,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 createdAt: {
                   type: "string",
@@ -16924,7 +16940,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 purpose: {
                   type: "string",
@@ -16938,7 +16954,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo expires at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
                 currency: {
                   type: "string",
@@ -16949,7 +16965,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "uuid",
                   nullable: true,
                   description: "Campo order id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                 },
                 walletTopUpId: {
                   type: "string",
@@ -16957,7 +16973,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo wallet top up id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5d7a1c84-3e69-4f20-8b15-6c2e97a4d038",
                 },
                 provider: {
                   type: "string",
@@ -16980,7 +16996,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo failure code expuesto por el runtime actual.",
-                  example: "CODE-EXAMPLE",
+                  example: "PAYMENT_DECLINED",
                 },
                 failureMessage: {
                   type: "string",
@@ -17002,7 +17018,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo approved at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:05:00.000Z",
                 },
                 failedAt: {
                   type: "string",
@@ -17010,7 +17026,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo failed at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:00:00.000Z",
                 },
               },
               required: [
@@ -17041,13 +17057,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           userId: {
             type: "string",
             format: "uuid",
             description: "Campo user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           createdAt: {
             type: "string",
@@ -17075,7 +17091,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           currency: {
             type: "string",
@@ -17085,7 +17101,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           totalCents: {
             type: "integer",
@@ -17132,7 +17148,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo paid at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:05:00.000Z",
           },
         },
         required: [
@@ -17176,7 +17192,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Identificador UUID del recurso.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           createdAt: {
             type: "string",
@@ -17203,13 +17219,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             description:
               "Fecha y hora de la última actualización en formato ISO 8601.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-08-28T14:15:00.000Z",
           },
           clubId: {
             type: "string",
             format: "uuid",
             description: "Campo club id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
           },
           reason: {
             type: "string",
@@ -17219,27 +17235,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Campo order id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           requestedAt: {
             type: "string",
             format: "date-time",
             description: "Campo requested at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           reviewedAt: {
             type: "string",
             format: "date-time",
             nullable: true,
             description: "Campo reviewed at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
           requestedByUserId: {
             type: "string",
             format: "uuid",
             description:
               "Campo requested by user id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
           },
           resolutionNote: {
             type: "string",
@@ -17252,7 +17268,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo completed at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
         },
         required: [
@@ -17283,7 +17299,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "date-time",
         description: "Campo generated at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
       salesToday: {
         type: "object",
@@ -17319,7 +17335,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 createdAt: {
                   type: "string",
@@ -17336,14 +17352,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Chilcano de maracuyá",
                 },
                 updatedAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 description: {
                   type: "string",
@@ -17359,7 +17375,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 imageUrl: {
                   type: "string",
@@ -17367,7 +17383,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example:
+                    "https://cdn.beerry.app/products/chilcano-maracuya.webp",
                 },
                 priceCents: {
                   type: "integer",
@@ -17409,7 +17426,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "5b8e1c93-2d64-4fa7-a318-9c6e42d075bf",
                 },
                 createdAt: {
                   type: "string",
@@ -17426,14 +17443,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 name: {
                   type: "string",
                   description: "Campo name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Chilcano de maracuyá",
                 },
                 updatedAt: {
                   type: "string",
                   format: "date-time",
                   description:
                     "Fecha y hora de la última actualización en formato ISO 8601.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-08-28T14:15:00.000Z",
                 },
                 description: {
                   type: "string",
@@ -17449,7 +17466,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Campo club id expuesto por el runtime actual.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e",
                 },
                 imageUrl: {
                   type: "string",
@@ -17457,7 +17474,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description:
                     "Campo image url expuesto por el runtime actual.",
-                  example: "https://example.com/recurso",
+                  example:
+                    "https://cdn.beerry.app/products/chilcano-maracuya.webp",
                 },
                 priceCents: {
                   type: "integer",
@@ -17504,12 +17522,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             capacity: {
               type: "number",
@@ -17574,12 +17592,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             status: {
               type: "string",
@@ -17612,7 +17630,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
           },
           required: ["id", "name", "status", "permissions", "updatedAt"],
@@ -17634,13 +17652,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "b3f7c216-8a59-4d40-9e15-2c6a74f893bd",
             },
             userId: {
               type: "string",
               format: "uuid",
               description: "Campo user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             platform: {
               type: "string",
@@ -17655,7 +17673,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "date-time",
               description: "Campo last seen at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
           },
           required: [
@@ -17695,7 +17713,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Campo order id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
           },
           orderStatus: {
             type: "string",
@@ -17718,7 +17736,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo payment attempt id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
           },
           paymentStatus: {
             type: "string",
@@ -17756,7 +17774,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo checkout url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example:
+              "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
           },
           total: {
             type: "number",
@@ -17795,7 +17814,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Campo top up id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
           },
           status: {
             type: "string",
@@ -17817,7 +17836,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo payment attempt id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9",
           },
           paymentStatus: {
             type: "string",
@@ -17848,7 +17867,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "uri",
             nullable: true,
             description: "Campo checkout url expuesto por el runtime actual.",
-            example: "https://example.com/recurso",
+            example:
+              "https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7",
           },
           createdAt: {
             type: "string",
@@ -17861,7 +17881,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             format: "date-time",
             nullable: true,
             description: "Campo approved at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:05:00.000Z",
           },
         },
         required: [
@@ -17910,7 +17930,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -17926,7 +17946,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -17943,7 +17963,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
             },
             required: [
@@ -17994,7 +18014,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18007,7 +18027,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo attendee image url expuesto por el runtime actual.",
-                example: "https://example.com/recurso",
+                example: "https://cdn.beerry.app/users/valeria/profile.webp",
               },
               accessTypeLabel: {
                 type: "string",
@@ -18018,7 +18038,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18035,13 +18055,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
               validatedByName: {
                 type: "string",
                 description:
                   "Campo validated by name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               validatedAt: {
                 type: "string",
@@ -18049,7 +18069,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo validated at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: [
@@ -18103,7 +18123,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18116,7 +18136,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo attendee image url expuesto por el runtime actual.",
-                example: "https://example.com/recurso",
+                example: "https://cdn.beerry.app/users/valeria/profile.webp",
               },
               accessTypeLabel: {
                 type: "string",
@@ -18127,7 +18147,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18144,7 +18164,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
               validatedByName: {
                 description: "Valor JSON dinámico expuesto por el runtime.",
@@ -18159,7 +18179,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "date-time",
                 description:
                   "Campo validated at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: [
@@ -18211,7 +18231,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           attendeeName: {
             type: "string",
             description: "Campo attendee name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           attendeeReference: {
             type: "string",
@@ -18226,7 +18246,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           accessName: {
             type: "string",
             description: "Campo access name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Valeria Mendoza",
           },
           eventDateLabel: {
             type: "string",
@@ -18242,7 +18262,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: "string",
             format: "uuid",
             description: "Campo transaction id expuesto por el runtime actual.",
-            example: "11111111-1111-4111-8111-111111111111",
+            example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
           },
         },
         required: [
@@ -18295,7 +18315,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18311,7 +18331,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18328,7 +18348,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
             },
             required: [
@@ -18379,7 +18399,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18392,7 +18412,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo attendee image url expuesto por el runtime actual.",
-                example: "https://example.com/recurso",
+                example: "https://cdn.beerry.app/users/valeria/profile.webp",
               },
               accessTypeLabel: {
                 type: "string",
@@ -18403,7 +18423,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18420,13 +18440,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
               validatedByName: {
                 type: "string",
                 description:
                   "Campo validated by name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               validatedAt: {
                 type: "string",
@@ -18434,7 +18454,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo validated at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: [
@@ -18488,7 +18508,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18501,7 +18521,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo attendee image url expuesto por el runtime actual.",
-                example: "https://example.com/recurso",
+                example: "https://cdn.beerry.app/users/valeria/profile.webp",
               },
               accessTypeLabel: {
                 type: "string",
@@ -18512,7 +18532,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18529,7 +18549,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
               validatedByName: {
                 description: "Valor JSON dinámico expuesto por el runtime.",
@@ -18544,7 +18564,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "date-time",
                 description:
                   "Campo validated at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: [
@@ -18600,7 +18620,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18616,7 +18636,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18633,7 +18653,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
             },
             required: [
@@ -18684,7 +18704,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18697,7 +18717,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo attendee image url expuesto por el runtime actual.",
-                example: "https://example.com/recurso",
+                example: "https://cdn.beerry.app/users/valeria/profile.webp",
               },
               accessTypeLabel: {
                 type: "string",
@@ -18708,7 +18728,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18725,13 +18745,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
               validatedByName: {
                 type: "string",
                 description:
                   "Campo validated by name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               validatedAt: {
                 type: "string",
@@ -18739,7 +18759,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo validated at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: [
@@ -18793,7 +18813,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo attendee name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               attendeeReference: {
                 type: "string",
@@ -18806,7 +18826,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description:
                   "Campo attendee image url expuesto por el runtime actual.",
-                example: "https://example.com/recurso",
+                example: "https://cdn.beerry.app/users/valeria/profile.webp",
               },
               accessTypeLabel: {
                 type: "string",
@@ -18817,7 +18837,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 type: "string",
                 description:
                   "Campo access name expuesto por el runtime actual.",
-                example: "Ejemplo ficticio",
+                example: "Valeria Mendoza",
               },
               eventDateLabel: {
                 type: "string",
@@ -18834,7 +18854,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "uuid",
                 description:
                   "Campo transaction id expuesto por el runtime actual.",
-                example: "11111111-1111-4111-8111-111111111111",
+                example: "0f8c2a75-6d41-4b93-a527-9e3d16c8f204",
               },
               validatedByName: {
                 description: "Valor JSON dinámico expuesto por el runtime.",
@@ -18849,7 +18869,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 format: "date-time",
                 description:
                   "Campo validated at expuesto por el runtime actual.",
-                example: "2026-08-27T18:30:00.000Z",
+                example: "2026-09-19T22:00:00.000Z",
               },
             },
             required: [
@@ -18890,7 +18910,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo resource id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       kind: {
         type: "string",
@@ -18936,19 +18956,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             actorUserId: {
               type: "string",
               format: "uuid",
               description:
                 "Campo actor user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             actorName: {
               type: "string",
               description: "Campo actor name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Valeria Mendoza",
             },
             actorRole: {
               type: "string",
@@ -18969,18 +18989,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Campo resource id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             accessName: {
               type: "string",
               description: "Campo access name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Valeria Mendoza",
             },
             eventName: {
               type: "string",
               nullable: true,
               description: "Campo event name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Noche Latina",
             },
             createdAt: {
               type: "string",
@@ -19033,13 +19053,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       code: {
         type: "string",
         description: "Campo code expuesto por el runtime actual.",
-        example: "CODE-EXAMPLE",
+        example: "BRY-8K4M2P",
       },
       shareUrl: {
         type: "string",
         format: "uri",
         description: "Campo share url expuesto por el runtime actual.",
-        example: "https://example.com/recurso",
+        example: "https://beerry.app/eventos/noche-latina",
       },
       program: {
         type: "object",
@@ -19080,13 +19100,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           name: {
             type: "string",
             description: "Campo name expuesto por el runtime actual.",
-            example: "Ejemplo ficticio",
+            example: "Nébula Club",
           },
           associatedAt: {
             type: "string",
             format: "date-time",
             description: "Campo associated at expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
         },
         required: ["name", "associatedAt"],
@@ -19103,19 +19123,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             name: {
               type: "string",
               description: "Campo name expuesto por el runtime actual.",
-              example: "Ejemplo ficticio",
+              example: "Nébula Club",
             },
             associatedAt: {
               type: "string",
               format: "date-time",
               description:
                 "Campo associated at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             hasPurchased: {
               type: "boolean",
@@ -19138,7 +19158,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -19165,20 +19185,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             expiresAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo expires at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             orderId: {
               type: "string",
               format: "uuid",
               description: "Campo order id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
             },
             amountCents: {
               type: "integer",
@@ -19190,27 +19210,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "date-time",
               description: "Campo available at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             referralId: {
               type: "string",
               format: "uuid",
               description: "Campo referral id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7b2d5e91-4a68-4c30-9f15-2e8a63d7b049",
             },
             beneficiaryUserId: {
               type: "string",
               format: "uuid",
               description:
                 "Campo beneficiary user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             buyerUserId: {
               type: "string",
               format: "uuid",
               description:
                 "Campo buyer user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             eligibleBaseCents: {
               type: "integer",
@@ -19240,14 +19260,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo available since expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             reversedAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo reversed at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             reversalReason: {
               type: "string",
@@ -19312,7 +19332,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description:
               "Campo next expiration expuesto por el runtime actual.",
-            example: "2026-08-27T18:30:00.000Z",
+            example: "2026-09-19T22:00:00.000Z",
           },
         },
         required: [
@@ -19343,12 +19363,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       code: {
         type: "string",
         description: "Campo code expuesto por el runtime actual.",
-        example: "CODE-EXAMPLE",
+        example: "BRY-8K4M2P",
       },
       referrerName: {
         type: "string",
         description: "Campo referrer name expuesto por el runtime actual.",
-        example: "Ejemplo ficticio",
+        example: "Valeria Mendoza",
       },
     },
     required: ["code", "referrerName"],
@@ -19361,7 +19381,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       createdAt: {
         type: "string",
@@ -19373,13 +19393,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo referrer user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
       referredUserId: {
         type: "string",
         format: "uuid",
         description: "Campo referred user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
       captureMethod: {
         type: "string",
@@ -19390,20 +19410,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       codeSnapshot: {
         type: "string",
         description: "Campo code snapshot expuesto por el runtime actual.",
-        example: "CODE-EXAMPLE",
+        example: "VALERIA25",
       },
       associatedAt: {
         type: "string",
         format: "date-time",
         description: "Campo associated at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
       lockedAt: {
         type: "string",
         format: "date-time",
         nullable: true,
         description: "Campo locked at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
       firstPaidOrderId: {
         type: "string",
@@ -19411,7 +19431,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         nullable: true,
         description:
           "Campo first paid order id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
       },
     },
     required: [
@@ -19434,7 +19454,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
       },
       createdAt: {
         type: "string",
@@ -19453,7 +19473,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       amountCents: {
         type: "integer",
@@ -19466,7 +19486,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         nullable: true,
         description: "Campo completed at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
       idempotencyKey: {
         type: "string",
@@ -19476,13 +19496,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Campo from wallet id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "5d7a1c84-3e69-4f20-8b15-6c2e97a4d038",
       },
       toWalletId: {
         type: "string",
         format: "uuid",
         description: "Campo to wallet id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "5d7a1c84-3e69-4f20-8b15-6c2e97a4d038",
       },
       note: {
         type: "string",
@@ -19517,7 +19537,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
       },
       createdAt: {
         type: "string",
@@ -19530,7 +19550,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       enabled: {
         type: "boolean",
@@ -19542,21 +19562,21 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         nullable: true,
         description: "Campo starts at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
       endsAt: {
         type: "string",
         format: "date-time",
         nullable: true,
         description: "Campo ends at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-20T05:00:00.000Z",
       },
       updatedByUserId: {
         type: "string",
         format: "uuid",
         nullable: true,
         description: "Campo updated by user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
       version: {
         type: "number",
@@ -19680,7 +19700,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: "string",
         format: "uuid",
         description: "Identificador UUID del recurso.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742",
       },
       createdAt: {
         type: "string",
@@ -19693,7 +19713,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         description:
           "Fecha y hora de la última actualización en formato ISO 8601.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-08-28T14:15:00.000Z",
       },
       enabled: {
         type: "boolean",
@@ -19705,21 +19725,21 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         format: "date-time",
         nullable: true,
         description: "Campo starts at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-19T22:00:00.000Z",
       },
       endsAt: {
         type: "string",
         format: "date-time",
         nullable: true,
         description: "Campo ends at expuesto por el runtime actual.",
-        example: "2026-08-27T18:30:00.000Z",
+        example: "2026-09-20T05:00:00.000Z",
       },
       updatedByUserId: {
         type: "string",
         format: "uuid",
         nullable: true,
         description: "Campo updated by user id expuesto por el runtime actual.",
-        example: "11111111-1111-4111-8111-111111111111",
+        example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
       },
       version: {
         type: "number",
@@ -19851,7 +19871,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
                 },
                 totalCents: {
                   type: "integer",
@@ -19864,7 +19884,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   format: "date-time",
                   nullable: true,
                   description: "Campo paid at expuesto por el runtime actual.",
-                  example: "2026-08-27T18:30:00.000Z",
+                  example: "2026-09-19T22:05:00.000Z",
                 },
               },
               required: ["id", "totalCents", "paidAt"],
@@ -19878,13 +19898,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
               },
               required: ["id", "fullName"],
@@ -19898,13 +19918,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   type: "string",
                   format: "uuid",
                   description: "Identificador UUID del recurso.",
-                  example: "11111111-1111-4111-8111-111111111111",
+                  example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
                 },
                 fullName: {
                   type: "string",
                   description:
                     "Campo full name expuesto por el runtime actual.",
-                  example: "Ejemplo ficticio",
+                  example: "Valeria Mendoza",
                 },
               },
               required: ["id", "fullName"],
@@ -19915,7 +19935,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "uuid",
               description: "Identificador UUID del recurso.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10",
             },
             createdAt: {
               type: "string",
@@ -19942,20 +19962,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: "date-time",
               description:
                 "Fecha y hora de la última actualización en formato ISO 8601.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-08-28T14:15:00.000Z",
             },
             expiresAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo expires at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             orderId: {
               type: "string",
               format: "uuid",
               description: "Campo order id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "c4e91a67-3b58-4fd2-8a06-7d25e9c1b340",
             },
             amountCents: {
               type: "integer",
@@ -19967,27 +19987,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: "string",
               format: "date-time",
               description: "Campo available at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             referralId: {
               type: "string",
               format: "uuid",
               description: "Campo referral id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "7b2d5e91-4a68-4c30-9f15-2e8a63d7b049",
             },
             beneficiaryUserId: {
               type: "string",
               format: "uuid",
               description:
                 "Campo beneficiary user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             buyerUserId: {
               type: "string",
               format: "uuid",
               description:
                 "Campo buyer user id expuesto por el runtime actual.",
-              example: "11111111-1111-4111-8111-111111111111",
+              example: "3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642",
             },
             eligibleBaseCents: {
               type: "integer",
@@ -20017,14 +20037,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description:
                 "Campo available since expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             reversedAt: {
               type: "string",
               format: "date-time",
               nullable: true,
               description: "Campo reversed at expuesto por el runtime actual.",
-              example: "2026-08-27T18:30:00.000Z",
+              example: "2026-09-19T22:00:00.000Z",
             },
             reversalReason: {
               type: "string",

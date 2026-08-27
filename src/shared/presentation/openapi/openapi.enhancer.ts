@@ -12,6 +12,153 @@ type SchemaObject = Exclude<SchemasObject[string], ReferenceObject>;
 
 const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'patch', 'options', 'head'] as const;
 
+const UUID_EXAMPLES: Record<string, string> = {
+  id: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+  userId: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+  clubId: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+  eventId: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+  productId: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+  promotionId: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+  orderId: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+  paymentAttemptId: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
+  uploadId: 'f7a2c864-1d39-4e5b-90a6-3c8d27b154ef',
+  workerId: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
+  shiftId: '6a1d9f42-3c75-4e8b-b206-5d7a91c4f638',
+  deviceId: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
+  ticketTypeId: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+  ticketId: '4a9e7c32-6b15-4d80-8f24-1c5e93a7b642',
+  notificationId: '1c6e8a42-9f35-4d70-b821-5a3c97e4d608',
+  referralId: '7b2d5e91-4a68-4c30-9f15-2e8a63d7b049',
+  transactionId: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+  walletId: '5d7a1c84-3e69-4f20-8b15-6c2e97a4d038',
+};
+
+function uuidExample(name: string): string {
+  if (UUID_EXAMPLES[name]) return UUID_EXAMPLES[name];
+  const match = Object.keys(UUID_EXAMPLES).find(
+    (key) => key !== 'id' && name.toLowerCase().includes(key.replace(/Id$/, '').toLowerCase()),
+  );
+  return (match && UUID_EXAMPLES[match]) || UUID_EXAMPLES.id;
+}
+
+function uriExample(name: string, context: string[] = []): string {
+  if (/uploadUrl/i.test(name)) {
+    return 'https://nightclub-platform-assets.s3.amazonaws.com/uploads/2026/08/nebula-cover.webp?X-Amz-Expires=300';
+  }
+  if (/checkoutUrl/i.test(name)) {
+    return 'https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7';
+  }
+  if (/shareUrl/i.test(name)) return 'https://beerry.app/eventos/noche-latina';
+  if (/proofUrl/i.test(name)) {
+    return 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf';
+  }
+  if (/attendee|profile|user/i.test(name)) {
+    return 'https://cdn.beerry.app/users/valeria/profile.webp';
+  }
+  const fields = new Set(context);
+  if (fields.has('type') && fields.has('url')) return 'https://instagram.com/nebula.club';
+  if (fields.has('objectKey')) {
+    return 'https://cdn.beerry.app/uploads/2026/08/nebula-cover.webp';
+  }
+  if (fields.has('stockQuantity')) {
+    return 'https://cdn.beerry.app/products/chilcano-maracuya.webp';
+  }
+  if (fields.has('pricingMode') || fields.has('itemsCount')) {
+    return 'https://cdn.beerry.app/promotions/combo-bienvenida.webp';
+  }
+  if (fields.has('startsAt') || fields.has('endsAt')) {
+    return 'https://cdn.beerry.app/events/noche-latina/cover.webp';
+  }
+  return 'https://cdn.beerry.app/clubs/nebula/cover.webp';
+}
+
+function tokenExample(name: string, context: string[] = []): string {
+  if (/tokenType/i.test(name)) return 'Bearer';
+  if (/refresh/i.test(name)) return 'rft_7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0';
+  if (/access/i.test(name)) {
+    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzYzc5ZjRhMi02ZTUxLTRiOGEtOWQyNy0xZjVhMGM4M2U2NDIifQ.W7sP2kQ9mR4vN8xL1cD6';
+  }
+  const fields = new Set(context);
+  if (fields.has('platform') || fields.has('deviceId')) {
+    return 'dQw4w9WgXcQ:APA91bG7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0eT7uY2iO9pA4sD8fG1hJ5kL3zX6cV0bN2mQ';
+  }
+  return 'tok_8f3d1c7a6b2e4f90a5d8c1e7';
+}
+
+function dateTimeExample(name: string): string {
+  if (/createdAt/i.test(name)) return '2026-08-27T18:30:00.000Z';
+  if (/updatedAt/i.test(name)) return '2026-08-28T14:15:00.000Z';
+  if (/approvedAt|paidAt/i.test(name)) return '2026-09-19T22:05:00.000Z';
+  if (/endsAt|saleEndAt|\bto\b/i.test(name)) return '2026-09-20T05:00:00.000Z';
+  if (/saleStartAt/i.test(name)) return '2026-09-01T12:00:00.000Z';
+  return '2026-09-19T22:00:00.000Z';
+}
+
+function stringExample(name: string, context: string[] = []): string {
+  const examples: Record<string, string> = {
+    action: 'ORDER_REFUNDED',
+    assignedDoor: 'Acceso norte',
+    assignedPoint: 'Barra central',
+    assignedZone: 'Pista principal',
+    bankAccountHolder: 'Inversiones Nébula S.A.C.',
+    bankAccountNumber: '19123456789012',
+    bankAccountType: 'CORRIENTE',
+    bankName: 'Banco de Crédito del Perú',
+    correlationId: 'req_01J6M8R4Q2AX7NV5K3ZT9C1BDE',
+    currency: 'PEN',
+    department: 'Lima',
+    deviceFingerprint: 'ios-4f8d2a91c7e6b305',
+    district: 'Miraflores',
+    fingerprint: 'sha256:4f8d2a91c7e6b3059c1a7e24d8b6f3c0',
+    idempotencyKey: 'checkout-20260919-valeria-0042',
+    legalName: 'Inversiones Nébula S.A.C.',
+    note: 'Ajuste autorizado durante el cierre de caja.',
+    password: 'NocheSegura#2026',
+    paymentReference: 'FLOW-20260919-847215',
+    platform: 'ios',
+    province: 'Lima',
+    q: 'música latina',
+    qrCode: 'BRY-TKT-8K4M2P',
+    query: 'Valeria Mendoza',
+    reason: 'Ajuste autorizado por cierre de caja.',
+    refundPolicy: 'Se aceptan solicitudes hasta 48 horas antes del evento.',
+    resourceType: 'ORDER',
+    responsibleName: 'Valeria Mendoza',
+    responsiblePhone: '+51987654321',
+    search: 'Valeria Mendoza',
+    status: 'PENDING',
+    taxDocumentNumber: '20601234567',
+    taxDocumentType: 'RUC',
+  };
+  if (examples[name]) return examples[name];
+  const fields = new Set(context);
+  if (name === 'code') {
+    return fields.has('qrCode') || fields.has('confirm') ? 'BRY-TKT-8K4M2P' : 'VALERIA25';
+  }
+  if (name === 'description') {
+    if (fields.has('stockQuantity')) return 'Chilcano de maracuyá preparado en barra.';
+    if (fields.has('pricingMode') || fields.has('items')) {
+      return 'Incluye dos chilcanos de maracuyá a precio promocional.';
+    }
+    if (fields.has('quantityTotal') || fields.has('perUserLimit')) {
+      return 'Acceso a la zona VIP durante el evento.';
+    }
+    if (fields.has('startsAt') || fields.has('endsAt')) {
+      return 'Evento de música latina con acceso general y zona VIP.';
+    }
+    return 'Discoteca con pista principal, zona VIP y servicio de barra.';
+  }
+  if (name === 'name') {
+    if (fields.has('platform') || fields.has('fingerprint')) return 'iPhone 15 Pro de Valeria';
+    if (fields.has('stockQuantity')) return 'Chilcano de maracuyá';
+    if (fields.has('pricingMode') || fields.has('itemsCount')) return 'Combo de bienvenida';
+    if (fields.has('quantityTotal') || fields.has('perUserLimit')) return 'Entrada VIP';
+    if (fields.has('startsAt') || fields.has('endsAt')) return 'Noche Latina';
+    return 'Nébula Club';
+  }
+  return 'Noche Latina';
+}
+
 export const OPENAPI_PUBLIC_OPERATION_ALLOWLIST = [
   'HealthController_check',
   'AuthController_register',
@@ -426,7 +573,8 @@ function sharedSchemas(): Record<string, SchemaObject> {
         },
         details: {
           type: 'array',
-          description: 'Detalles adicionales; en validación usa objetos ValidationErrorDetail.',
+          description:
+            'Detalles adicionales. En errores de validación usa objetos ValidationErrorDetail.',
           items: {
             oneOf: [
               { $ref: '#/components/schemas/ValidationErrorDetail' },
@@ -547,7 +695,7 @@ function descriptionFor(
         operation.tags?.[0] ?? 'API',
       )}`;
   const sideEffect = ['post', 'put', 'patch', 'delete'].includes(method)
-    ? 'Puede producir cambios persistentes; cuando el body acepta idempotencyKey, las repeticiones usan esa clave conforme al runtime.'
+    ? 'Puede producir cambios persistentes. Si el body acepta idempotencyKey, las repeticiones reutilizan esa clave según el comportamiento actual.'
     : 'No modifica el recurso consultado.';
   const details = OPERATION_DETAILS[operation.operationId!] ?? '';
   return `${operation.summary}. Devuelve el payload directo que emite actualmente la aplicación, sin envelope de éxito. ${access} ${sideEffect} ${details}`.trim();
@@ -555,15 +703,15 @@ function descriptionFor(
 
 const OPERATION_DETAILS: Record<string, string> = {
   UploadsController_createPresignedUploadUrl:
-    'Inicia una carga directa a S3: admite JPEG, PNG y WebP de hasta 10 MB y devuelve uploadUrl, objectKey, headers y una vigencia de 300 segundos. NestJS no recibe el binario; el cliente debe hacer PUT a S3 usando exactamente el Content-Type indicado.',
+    'Inicia una carga directa a S3. Admite JPEG, PNG y WebP de hasta 10 MB y devuelve uploadUrl, objectKey, headers y una vigencia de 300 segundos. NestJS no recibe el binario. El cliente debe hacer PUT a S3 usando exactamente el Content-Type indicado.',
   UploadsController_confirmUpload:
-    'Confirma el objeto subido previamente a S3 mediante POST /uploads/{uploadId}/confirm; valida tamaño y MIME antes de devolver objectKey y la URL pública actual.',
+    'Confirma el objeto subido previamente a S3 mediante POST /uploads/{uploadId}/confirm. Valida el tamaño y el MIME antes de devolver objectKey y la URL pública actual.',
   CommerceController_exportClubOrders:
-    'Entrega text/csv como descarga mediante Content-Disposition; aplica los mismos filtros que el listado de órdenes.',
+    'Entrega text/csv como descarga mediante Content-Disposition. Aplica los mismos filtros que el listado de órdenes.',
   CapacityController_stream:
     'Mantiene un stream text/event-stream y emite capacity.updated cuando cambia la revisión del aforo.',
   CapacityController_history:
-    'Devuelve como máximo los 500 movimientos más recientes; no es una respuesta paginada.',
+    'Devuelve como máximo los 500 movimientos más recientes. La respuesta no está paginada.',
   NotificationController_list:
     'El listado está acotado por el servicio y no publica metadata de paginación.',
   WalletsController_clubWithdrawals: 'El listado es acotado y no publica metadata de paginación.',
@@ -572,7 +720,7 @@ const OPERATION_DETAILS: Record<string, string> = {
   ClubWorkersController_listShifts:
     'Devuelve como máximo 100 turnos y no publica metadata de paginación.',
   FlowPaymentsController_confirmation:
-    'Flow envía token obligatorio mediante application/x-www-form-urlencoded; el callback verifica y procesa el evento de pago.',
+    'Flow envía un token obligatorio mediante application/x-www-form-urlencoded. El callback verifica y procesa el evento de pago.',
   FlowPaymentsController_returnPost:
     'Acepta token opcional mediante application/x-www-form-urlencoded y devuelve HTML no almacenable.',
   FlowPaymentsController_returnGet:
@@ -660,7 +808,7 @@ function authorizationRule(operationId: string, path: string, tag: string): stri
       return 'Permite ADMIN o SUPER_ADMIN con ownership, o un trabajador activo con permiso VIEW_OPERATIONS.';
     }
     if (operationId === 'CommerceController_auditLogs') {
-      return 'Permite ADMIN o SUPER_ADMIN con ownership; un trabajador activo sólo puede consultar sus propios registros.';
+      return 'Permite ADMIN o SUPER_ADMIN con ownership. Un trabajador activo sólo puede consultar sus propios registros.';
     }
     return 'Permite ADMIN o SUPER_ADMIN con ownership, o un trabajador activo con permiso VIEW_SALES.';
   }
@@ -707,15 +855,14 @@ function normalizeParameters(operation: OperationObject): void {
 
 function parameterExample(name: string, schema: SchemaObject): unknown {
   if (schema.enum?.length) return schema.enum[0];
-  if (schema.format === 'uuid') return '11111111-1111-4111-8111-111111111111';
-  if (schema.format === 'date-time') return '2026-08-01T00:00:00.000Z';
-  if (schema.format === 'date') return '2026-08-27';
+  if (schema.format === 'uuid') return uuidExample(name);
+  if (schema.format === 'date-time') return dateTimeExample(name);
+  if (schema.format === 'date') return '2026-09-19';
   if (name === 'page') return 1;
   if (name === 'pageSize') return schema.default ?? 20;
   if (name === 'unreadOnly') return true;
-  if (name === 'token') return 'flow-token-ficticio';
-  if (name === 'code') return 'REF-EXAMPLE';
-  return 'ejemplo';
+  if (name === 'token') return tokenExample('flowToken');
+  return stringExample(name);
 }
 
 function normalizeRequestBody(
@@ -749,7 +896,7 @@ function normalizeRequestBody(
     }
     const sizeBytes = schema?.properties?.sizeBytes as SchemaObject | undefined;
     if (sizeBytes)
-      sizeBytes.description = 'Tamaño del archivo en bytes; máximo 10 MB (10 485 760 bytes).';
+      sizeBytes.description = 'Tamaño del archivo en bytes. El máximo es 10 MB (10 485 760 bytes).';
   }
 }
 
@@ -772,8 +919,12 @@ function closeRequestSchema(name: string, document: OpenAPIObject, visited: Set<
     }
     const property = raw as SchemaObject;
     property.description ??= requestPropertyDescription(propertyName);
-    normalizeRequestPropertyMetadata(propertyName, property);
-    property.example ??= requestPropertyExample(propertyName, property);
+    normalizeRequestPropertyMetadata(propertyName, property, Object.keys(schema.properties ?? {}));
+    property.example ??= requestPropertyExample(
+      propertyName,
+      property,
+      Object.keys(schema.properties ?? {}),
+    );
     for (const item of property.allOf ?? []) {
       if (isReference(item)) closeRequestSchema(item.$ref.split('/').pop()!, document, visited);
     }
@@ -783,27 +934,35 @@ function closeRequestSchema(name: string, document: OpenAPIObject, visited: Set<
   }
 }
 
-function normalizeRequestPropertyMetadata(name: string, schema: SchemaObject): void {
+function normalizeRequestPropertyMetadata(
+  name: string,
+  schema: SchemaObject,
+  context: string[] = [],
+): void {
   if (/(^id$|Id$)/.test(name) && !['correlationId', 'externalPaymentId'].includes(name)) {
     schema.type = 'string';
     schema.format = 'uuid';
-    schema.example = '11111111-1111-4111-8111-111111111111';
+    schema.example = uuidExample(name);
     delete schema.allOf;
     return;
   }
   if (/At$/.test(name) && schema.type === 'string') {
     schema.format = 'date-time';
-    schema.example = '2026-08-27T18:30:00.000Z';
+    schema.example = dateTimeExample(name);
     return;
   }
   if (/email/i.test(name) && schema.type === 'string') {
     schema.format = 'email';
-    schema.example = 'usuario@example.com';
+    schema.example = 'valeria.mendoza@correo.pe';
     return;
   }
   if (/(^url$|Url$)/.test(name) && schema.type === 'string') {
     schema.format = 'uri';
-    schema.example = 'https://example.com/recurso';
+    schema.example = uriExample(name, context);
+    return;
+  }
+  if (/phoneNumber/i.test(name) && schema.type === 'string') {
+    schema.example = '987654321';
   }
 }
 
@@ -811,8 +970,8 @@ function flowRequestBody(required: boolean): RequestBodyObject {
   return {
     required,
     description: required
-      ? 'Callback form-urlencoded de Flow; token obligatorio.'
-      : 'Retorno form-urlencoded de Flow; el token es opcional según el runtime.',
+      ? 'Callback form-urlencoded de Flow. El token es obligatorio.'
+      : 'Retorno form-urlencoded de Flow. El token es opcional según el comportamiento actual.',
     content: {
       'application/x-www-form-urlencoded': {
         schema: {
@@ -823,7 +982,7 @@ function flowRequestBody(required: boolean): RequestBodyObject {
             token: {
               type: 'string',
               description: 'Token opaco de Flow.',
-              example: 'flow-token-ficticio',
+              example: tokenExample('flowToken'),
             },
           },
         },
@@ -842,23 +1001,29 @@ function requestPropertyDescription(name: string): string {
     assignedDoor: 'Puerta asignada al trabajador.',
     assignedZone: 'Zona asignada al trabajador.',
     assignedPoint: 'Punto operativo asignado al trabajador.',
-    token: 'Token ficticio o del proveedor; nunca usar un valor real en ejemplos.',
+    token: 'Token opaco emitido por el proveedor correspondiente.',
   };
   return known[name] ?? `Valor de ${translateWords(name)} aceptado por el runtime.`;
 }
 
-function requestPropertyExample(name: string, schema: SchemaObject): unknown {
+function requestPropertyExample(
+  name: string,
+  schema: SchemaObject,
+  context: string[] = [],
+): unknown {
   if (schema.enum?.length) return schema.enum[0];
-  if (schema.format === 'uuid') return '11111111-1111-4111-8111-111111111111';
-  if (schema.format === 'email') return 'usuario@example.com';
-  if (schema.format === 'date-time') return '2026-08-27T18:30:00.000Z';
+  if (schema.format === 'uuid') return uuidExample(name);
+  if (schema.format === 'email') return 'valeria.mendoza@correo.pe';
+  if (schema.format === 'date-time') return dateTimeExample(name);
+  if (schema.format === 'date') return '2026-09-19';
+  if (schema.format === 'uri') return uriExample(name, context);
   if (/Cents$/.test(name)) return 1500;
-  if (/token/i.test(name)) return 'token-ficticio-no-valido';
-  if (/phoneNumber/i.test(name)) return '999999999';
+  if (/token/i.test(name)) return tokenExample(name, context);
+  if (/phoneNumber/i.test(name)) return '987654321';
   if (/phoneCountryCode/i.test(name)) return '+51';
   if (schema.type === 'boolean') return false;
   if (schema.type === 'integer' || schema.type === 'number') return schema.minimum ?? 1;
-  if (schema.type === 'string') return 'ejemplo';
+  if (schema.type === 'string') return stringExample(name, context);
   return undefined;
 }
 
@@ -888,7 +1053,7 @@ function normalizeResponses(
         'text/csv': {
           schema: {
             type: 'string',
-            example: 'orderId,status,totalCents\n11111111-1111-4111-8111-111111111111,PAID,1500',
+            example: 'orderId,status,totalCents\nc4e91a67-3b58-4fd2-8a06-7d25e9c1b340,PAID,18500',
           },
         },
       },
@@ -897,7 +1062,7 @@ function normalizeResponses(
   if (operationId === 'CapacityController_stream') {
     operation.responses[successStatus] = {
       description:
-        'Stream SSE; emite eventos capacity.updated cada vez que cambia la revisión del aforo.',
+        'Stream SSE que emite eventos capacity.updated cada vez que cambia la revisión del aforo.',
       content: {
         'text/event-stream': {
           schema: {
@@ -923,7 +1088,11 @@ function normalizeResponses(
       },
       content: {
         'text/html': {
-          schema: { type: 'string', example: '<!doctype html><html lang="es">...</html>' },
+          schema: {
+            type: 'string',
+            example:
+              '<!doctype html><html lang="es"><head><title>Volviendo a Beerry</title></head><body>Redirigiendo a la aplicación.</body></html>',
+          },
         },
       },
     };
@@ -1067,7 +1236,7 @@ function errorDescription(status: string): string {
 
 function successResponse(operationId: string): ResponseObject {
   return {
-    description: 'Operación completada; payload directo emitido por el runtime actual.',
+    description: 'Operación completada. Devuelve el payload directo emitido por el runtime actual.',
     content: {
       'application/json': {
         schema: { $ref: `#/components/schemas/${operationId}Response` },
