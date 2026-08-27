@@ -30,7 +30,7 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
   let builder = new DocumentBuilder()
     .setTitle('Beerry API')
     .setDescription(
-      'Contrato REST de Beerry Platform. Las respuestas exitosas son payloads directos; los errores compartidos usan el envelope { data, meta, error }.',
+      'Contrato REST de Beerry Platform. Las respuestas exitosas son payloads directos. Los errores compartidos usan el envelope { data, meta, error }.',
     )
     .setVersion('0.1.0')
     .addBearerAuth(
