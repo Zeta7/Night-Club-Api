@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { NotificationService } from '../application/notification.service';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -8,6 +9,8 @@ import {
   UpdateNotificationPreferenceDto,
 } from './notification.dto';
 
+@ApiTags('Notification')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 @Controller('me')
 export class NotificationController {

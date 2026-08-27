@@ -823,11 +823,11 @@ El agente debe entregar:
 
 El agente puede actualizar únicamente esta sección durante la ejecución:
 
-- [ ] Fase 0 — Línea base
-- [ ] Fase 1 — Metadata y generación
-- [ ] Fase 2 — Contratos compartidos
-- [ ] Fase 3 — Requests, queries y seguridad
-- [ ] Fase 4 — Responses y errores
-- [ ] Fase 5 — Protocolos especiales
-- [ ] Fase 6 — Auditoría del JSON generado
-- [ ] Fase 7 — Barrido y cierre
+- [x] Fase 0 — Línea base (148 operaciones, 124 paths y 148 operation IDs únicos preservados en inventario temporal no versionado)
+- [x] Fase 1 — Metadata y generación (plugin activo; `pnpm docs:generate` produce `dist/openapi.json` desde la configuración runtime y preserva los 148 operation IDs)
+- [x] Fase 2 — Contratos compartidos (errores, validación, paginación, tags y referencia Health/Auth)
+- [x] Fase 3 — Requests, queries y seguridad (60 bodies, 35 queries recuperadas y matriz 134/14)
+- [x] Fase 4 — Responses y errores (148 schemas nominales inferidos del runtime y catálogo de códigos alcanzables)
+- [x] Fase 5 — Protocolos especiales (CSV, SSE, HTML, form-urlencoded y flujo S3)
+- [x] Fase 6 — Auditoría del JSON generado (cero refs rotos, schemas vacíos, metadata o contratos exitosos faltantes)
+- [x] Fase 7 — Barrido y cierre (build y generación reproducible correctos; auditoría recursiva y doble revisión sin bloqueantes; lint limitado por ESLint 10 con configuración legacy)

@@ -72,7 +72,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Cerrar sesion actual (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
     description:

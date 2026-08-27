@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { CommerceService } from '../application/commerce.service';
@@ -12,6 +13,8 @@ import { ClubOrdersQueryDto } from './club-orders-query.dto';
 import { RequestRefundDto } from './request-refund.dto';
 import { WalletTopUpDto } from './wallet-top-up.dto';
 
+@ApiTags('Commerce')
+@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 @Controller()
 export class CommerceController {
