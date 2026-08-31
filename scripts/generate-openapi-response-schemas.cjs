@@ -10,6 +10,7 @@ const program = ts.createProgram(parsed.fileNames, parsed.options);
 const checker = program.getTypeChecker();
 const schemas = {};
 const errorCodes = {};
+const prismaSchema = fs.readFileSync(path.join(ROOT, 'prisma', 'schema.prisma'), 'utf8');
 
 const HTTP_DECORATORS = new Set(['Get', 'Post', 'Put', 'Patch', 'Delete', 'Sse']);
 const ERROR_HELPERS = {
@@ -59,6 +60,12 @@ const WALLET_TOP_UP_STATUSES = [
   'CHARGEDBACK',
 ];
 const PAYMENT_PROVIDERS = ['flow', 'simulated', 'beerry_wallet'];
+const RESPONSE_SCHEMA_EXCLUSIONS = new Set([
+  'CapacityController_stream',
+  'CommerceController_exportClubOrders',
+  'FlowPaymentsController_returnGet',
+  'FlowPaymentsController_returnPost',
+]);
 
 function decoratorsOf(node) {
   return ts.canHaveDecorators(node) ? (ts.getDecorators(node) ?? []) : [];
@@ -242,6 +249,7 @@ function exampleFor(name, schema, context) {
 function schemaForKnownProperty(name, type, schema) {
   const nullable =
     NULLABLE_RESPONSE_PROPERTIES.has(name) ||
+    Boolean(type.flags & ts.TypeFlags.Null) ||
     (type.isUnion?.() && type.types.some((item) => item.flags & ts.TypeFlags.Null))
       ? { nullable: true }
       : {};
@@ -272,6 +280,13 @@ function schemaForKnownProperty(name, type, schema) {
     return { type: 'string', ...nullable };
   }
   if (/Cents$/.test(name)) return { type: 'integer', format: 'int64', ...nullable };
+  if (name === 'approvalDocumentUploadIds') {
+    return {
+      type: 'array',
+      items: { type: 'string', format: 'uuid' },
+      ...nullable,
+    };
+  }
   if (
     /Count$/.test(name) ||
     /^(count|quantity|page|pageSize|totalPages|revision|expiresIn)$/.test(name)
@@ -323,11 +338,274 @@ function dynamicValueSchema(description = 'Valor JSON dinámico expuesto por el 
   };
 }
 
+function documentedObject(properties, optional = []) {
+  const propertyNames = Object.keys(properties);
+  for (const [name, schema] of Object.entries(properties)) {
+    schema.description ??= descriptionFor(name);
+    const example = exampleFor(name, schema, propertyNames);
+    if (example !== undefined && schema.example === undefined) schema.example = example;
+  }
+  return {
+    type: 'object',
+    properties,
+    required: propertyNames.filter((name) => !optional.includes(name)),
+    additionalProperties: false,
+  };
+}
+
+function stringSchema(options = {}) {
+  return { type: 'string', ...options };
+}
+
+function integerSchema(options = {}) {
+  return { type: 'integer', format: 'int64', ...options };
+}
+
+function dateTimeSchema(nullable = false) {
+  return { type: 'string', format: 'date-time', ...(nullable ? { nullable: true } : {}) };
+}
+
+function prismaEnumValues(name) {
+  const match = prismaSchema.match(new RegExp(`enum\\s+${name}\\s*\\{([\\s\\S]*?)\\n\\}`));
+  if (!match) return undefined;
+  return match[1]
+    .split(/\r?\n/)
+    .map((line) => line.trim().split(/\s+/)[0])
+    .filter((value) => value && !value.startsWith('//') && !value.startsWith('@@'));
+}
+
+function prismaModelFields(name) {
+  const match = prismaSchema.match(new RegExp(`model\\s+${name}\\s*\\{([\\s\\S]*?)\\n\\}`));
+  if (!match) throw new Error(`Prisma model ${name} was not found.`);
+  return match[1]
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\s+(\w+)\s+(\w+)(\[\]|\?)?/))
+    .filter(Boolean)
+    .map((field) => ({
+      name: field[1],
+      type: field[2],
+      isList: field[3] === '[]',
+      isNullable: field[3] === '?',
+    }));
+}
+
+function prismaFieldSchema(field) {
+  const nullable = field.isNullable ? { nullable: true } : {};
+  const enumValues = prismaEnumValues(field.type);
+  if (enumValues) return stringSchema({ enum: enumValues, ...nullable });
+  if (field.type === 'DateTime') return dateTimeSchema(field.isNullable);
+  if (field.type === 'Int' || field.type === 'BigInt') return integerSchema(nullable);
+  if (field.type === 'Float' || field.type === 'Decimal') {
+    return { type: 'number', format: 'double', ...nullable };
+  }
+  if (field.type === 'Boolean') return { type: 'boolean', ...nullable };
+  if (field.type === 'Json') return dynamicValueSchema();
+  if (field.type === 'Bytes') return stringSchema({ format: 'byte', ...nullable });
+  if (field.type !== 'String') return undefined;
+
+  let format;
+  if (
+    field.name === 'id' ||
+    /(?:club|user|order|paymentAttempt|reversalOf|withdrawalRequest|transaction|account)Id$/.test(
+      field.name,
+    )
+  ) {
+    format = 'uuid';
+  } else if (/Url$/.test(field.name)) {
+    format = 'uri';
+  } else if (field.name === 'email') {
+    format = 'email';
+  }
+  return stringSchema({ ...(format ? { format } : {}), ...nullable });
+}
+
+function prismaRecordSchema(modelName, options = {}) {
+  const omitted = new Set(options.omit ?? []);
+  const properties = {};
+  for (const field of prismaModelFields(modelName)) {
+    if (field.isList || omitted.has(field.name)) continue;
+    const schema = prismaFieldSchema(field);
+    if (schema) properties[field.name] = schema;
+  }
+  Object.assign(properties, options.relations, options.additionalProperties);
+  return documentedObject(properties);
+}
+
+function publicFinancialProfileSchema(nullable = false) {
+  return {
+    ...prismaRecordSchema('ClubFinancialProfile', {
+      omit: ['bankAccountEncrypted'],
+      additionalProperties: {
+        maskedBankAccount: stringSchema({ example: '•••• 9012' }),
+      },
+    }),
+    ...(nullable ? { nullable: true } : {}),
+  };
+}
+
+function withdrawalSchema(includePlatformRelations = false) {
+  return prismaRecordSchema('WithdrawalRequest', {
+    relations: includePlatformRelations
+      ? {
+          club: prismaRecordSchema('Club'),
+          requestedBy: prismaRecordSchema('User', {
+            additionalProperties: {
+              passwordHash: stringSchema({
+                description: 'Hash de contraseña que el runtime actual incluye en esta relación.',
+                example: '$2b$12$hash.bcrypt.sanitizado',
+              }),
+            },
+          }),
+        }
+      : undefined,
+  });
+}
+
+function financialAccountSchema() {
+  return prismaRecordSchema('FinancialAccount');
+}
+
+function ledgerEntrySchema(relation) {
+  return prismaRecordSchema('LedgerEntry', {
+    relations: {
+      ...(relation === 'account' ? { account: financialAccountSchema() } : {}),
+      ...(relation === 'transaction' ? { transaction: ledgerTransactionSchema() } : {}),
+    },
+  });
+}
+
+function ledgerTransactionSchema(includeEntries = false) {
+  return prismaRecordSchema('LedgerTransaction', {
+    relations: includeEntries
+      ? { entries: { type: 'array', items: ledgerEntrySchema('account') } }
+      : undefined,
+  });
+}
+
+function openApiResponseSchemaOverride(operationId) {
+  switch (operationId) {
+    case 'WalletsController_financialProfile':
+      return publicFinancialProfileSchema(true);
+    case 'WalletsController_upsertFinancialProfile':
+      return publicFinancialProfileSchema();
+    case 'WalletsController_requestWithdrawal':
+    case 'WalletsController_reviewWithdrawal':
+    case 'WalletsController_processWithdrawal':
+    case 'WalletsController_payWithdrawal':
+    case 'WalletsController_failWithdrawal':
+      return withdrawalSchema();
+    case 'WalletsController_clubWithdrawals':
+      return documentedObject({ items: { type: 'array', items: withdrawalSchema() } });
+    case 'WalletsController_platformWithdrawals':
+      return documentedObject({
+        items: { type: 'array', items: withdrawalSchema(true) },
+      });
+    case 'WalletsController_getClubLedger':
+      return documentedObject({
+        clubId: stringSchema({ format: 'uuid' }),
+        currency: stringSchema(),
+        balances: documentedObject({
+          pendingCents: integerSchema(),
+          availableCents: integerSchema(),
+          heldCents: integerSchema(),
+          withdrawnCents: integerSchema(),
+        }),
+        movements: { type: 'array', items: ledgerEntrySchema('transaction') },
+      });
+    case 'WalletsController_reconcileOrder':
+      return documentedObject({
+        orderId: stringSchema({ format: 'uuid' }),
+        balanced: { type: 'boolean' },
+        debitTotalCents: integerSchema(),
+        creditTotalCents: integerSchema(),
+        differenceCents: integerSchema(),
+        transactions: { type: 'array', items: ledgerTransactionSchema(true) },
+      });
+    default:
+      return undefined;
+  }
+}
+
 function nullableSchema(schema) {
   if (schema.allOf?.some((item) => item.$ref === '#/components/schemas/JsonValue')) return schema;
   if (schema.oneOf) return { ...schema, oneOf: schema.oneOf.map(nullableSchema) };
   if (schema.type) return { ...schema, nullable: true };
   return dynamicValueSchema();
+}
+
+function isDynamicSchema(schema) {
+  return schema.allOf?.some((item) => item.$ref === '#/components/schemas/JsonValue');
+}
+
+function isNullOnlySchema(schema) {
+  return isDynamicSchema(schema) && schema.description === 'Valor null expuesto por el runtime.';
+}
+
+function mergeObjectSchemas(variants) {
+  const names = [...new Set(variants.flatMap((variant) => Object.keys(variant.properties ?? {})))];
+  const properties = {};
+  const required = [];
+
+  for (const name of names) {
+    const present = variants
+      .map((variant) => variant.properties?.[name])
+      .filter((schema) => schema !== undefined);
+    properties[name] = mergeSchemaVariants(present);
+    if (
+      present.length === variants.length &&
+      variants.every((variant) => variant.required?.includes(name))
+    ) {
+      required.push(name);
+    }
+  }
+
+  return {
+    type: 'object',
+    properties,
+    ...(required.length ? { required } : {}),
+    additionalProperties: variants.every((variant) => variant.additionalProperties === false)
+      ? false
+      : true,
+  };
+}
+
+function mergeSchemaVariants(variants) {
+  const unique = [...new Map(variants.map((item) => [JSON.stringify(item), item])).values()];
+  if (unique.length === 1) return unique[0];
+
+  const withoutNull = unique.filter((schema) => !isNullOnlySchema(schema));
+  if (withoutNull.length !== unique.length && withoutNull.length > 0) {
+    return nullableSchema(mergeSchemaVariants(withoutNull));
+  }
+
+  const dynamic = unique.find(isDynamicSchema);
+  if (dynamic) return dynamic;
+
+  if (unique.every((schema) => schema.type === 'object')) {
+    return mergeObjectSchemas(unique);
+  }
+
+  if (unique.every((schema) => schema.type === 'array')) {
+    return {
+      type: 'array',
+      items: mergeSchemaVariants(unique.map((schema) => schema.items)),
+      ...(unique.some((schema) => schema.nullable) ? { nullable: true } : {}),
+    };
+  }
+
+  const types = new Set(unique.map((schema) => schema.type));
+  if (types.size === 1 && !types.has(undefined)) {
+    const [first] = unique;
+    const merged = { ...first };
+    const enumValues = unique.flatMap((schema) => schema.enum ?? []);
+    if (enumValues.length) merged.enum = [...new Set(enumValues)];
+    else delete merged.enum;
+    if (unique.some((schema) => schema.nullable)) merged.nullable = true;
+    if (unique.some((schema) => schema.format !== first.format)) delete merged.format;
+    return merged;
+  }
+
+  return { oneOf: unique };
 }
 
 function typeToSchema(type, location, depth = 0, stack = new Set()) {
@@ -375,12 +653,11 @@ function typeToSchema(type, location, depth = 0, stack = new Set()) {
     }
     const variants = meaningful.map((item) => typeToSchema(item, location, depth, stack));
     const unique = [...new Map(variants.map((item) => [JSON.stringify(item), item])).values()];
-    const dynamic = unique.find((item) =>
-      item.allOf?.some((part) => part.$ref === '#/components/schemas/JsonValue'),
-    );
+    const dynamic = unique.find(isDynamicSchema);
     if (dynamic) return dynamic;
     if (unique.length === 1) return hasNull ? nullableSchema(unique[0]) : unique[0];
-    return { oneOf: hasNull ? unique.map(nullableSchema) : unique };
+    const merged = mergeSchemaVariants(unique);
+    return hasNull ? nullableSchema(merged) : merged;
   }
 
   const promised = checker.getPromisedTypeOfPromise(type);
@@ -398,7 +675,19 @@ function typeToSchema(type, location, depth = 0, stack = new Set()) {
   const rendered = checker.typeToString(type, location);
   if (symbolName === 'Date' || rendered === 'Date') return { type: 'string', format: 'date-time' };
   if (symbolName === 'URL') return { type: 'string', format: 'uri' };
-  if (/Json(Value|Object|Array)/.test(rendered)) return dynamicValueSchema();
+  if (
+    [
+      'JsonValue',
+      'JsonObject',
+      'JsonArray',
+      'InputJsonValue',
+      'InputJsonObject',
+      'InputJsonArray',
+    ].includes(symbolName) ||
+    /^(?:Prisma\.)?(?:Input)?Json(?:Value|Object|Array)$/.test(rendered)
+  ) {
+    return dynamicValueSchema();
+  }
   if (depth >= 7) {
     return {
       type: 'object',
@@ -423,6 +712,7 @@ function typeToSchema(type, location, depth = 0, stack = new Set()) {
   for (const property of typeProperties) {
     const declaration = property.valueDeclaration ?? property.declarations?.[0] ?? location;
     const propertyType = checker.getTypeOfSymbolAtLocation(property, declaration);
+    if (propertyType.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Never)) continue;
     const schema = schemaForKnownProperty(
       property.name,
       propertyType,
@@ -525,7 +815,11 @@ for (const sourceFile of program
             description: 'Secuencia de eventos Server-Sent Events emitida por el runtime.',
           }
         : typeToSchema(checker.getReturnTypeOfSignature(signature), member);
-      schemas[`${operationId}Response`] = refinePaymentResponseSchema(operationId, responseSchema);
+      if (!RESPONSE_SCHEMA_EXCLUSIONS.has(operationId)) {
+        schemas[`${operationId}Response`] =
+          openApiResponseSchemaOverride(operationId) ??
+          refinePaymentResponseSchema(operationId, responseSchema);
+      }
       errorCodes[operationId] = collectErrorCodes(member);
     }
   });
@@ -547,7 +841,23 @@ const output =
   `export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = ${JSON.stringify(schemas, null, 2)};\n\n` +
   `export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = ${JSON.stringify(errorCodes, null, 2)};\n`;
 async function writeGeneratedSchemas() {
-  const formatted = await prettier.format(output, { filepath: target });
+  const prettierConfig = (await prettier.resolveConfig(target)) ?? {};
+  const formatted = await prettier.format(output, { ...prettierConfig, filepath: target });
+
+  if (process.argv.includes('--check')) {
+    const current = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : undefined;
+    if (current !== formatted) {
+      process.stderr.write(
+        `OpenAPI response schemas are out of date. Run \"pnpm docs:build\" and commit ${target}.\n`,
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    process.stdout.write(`Verified ${Object.keys(schemas).length} response schemas in ${target}\n`);
+    return;
+  }
+
   fs.writeFileSync(target, formatted, 'utf8');
   process.stdout.write(`Generated ${Object.keys(schemas).length} response schemas in ${target}\n`);
 }

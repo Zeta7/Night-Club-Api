@@ -15,11 +15,11 @@ export class ClubTicketsController {
 
   @Post()
   @ApiOperation({
-    summary: 'Crear tipo de entrada general de discoteca (ADMIN, SUPER_ADMIN)',
+    summary: 'Crear tipo de entrada general de local nocturno (ADMIN, SUPER_ADMIN)',
     description:
-      'Crea entradas que pertenecen directamente al club/discoteca y no a un evento especifico. Ejemplo: cover general, entrada de noche regular o acceso libre por dia.',
+      'Crea entradas generales del local nocturno sin asociarlas a un evento específico.',
   })
-  @ApiResponse({ status: 201, description: 'Entrada de discoteca creada correctamente.' })
+  @ApiResponse({ status: 201, description: 'Entrada del local nocturno creada correctamente.' })
   createClubTicketType(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
@@ -29,8 +29,8 @@ export class ClubTicketsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar entradas generales de discoteca (ADMIN, SUPER_ADMIN)' })
-  @ApiResponse({ status: 200, description: 'Entradas de discoteca obtenidas correctamente.' })
+  @ApiOperation({ summary: 'Listar entradas generales de local nocturno (ADMIN, SUPER_ADMIN)' })
+  @ApiResponse({ status: 200, description: 'Entradas del local nocturno obtenidas correctamente.' })
   listClubTicketTypes(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,

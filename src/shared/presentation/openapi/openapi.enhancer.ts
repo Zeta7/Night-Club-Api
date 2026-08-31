@@ -146,7 +146,7 @@ function stringExample(name: string, context: string[] = []): string {
     if (fields.has('startsAt') || fields.has('endsAt')) {
       return 'Evento de música latina con acceso general y zona VIP.';
     }
-    return 'Discoteca con pista principal, zona VIP y servicio de barra.';
+    return 'Local nocturno con pista principal, zona VIP y servicio de barra.';
   }
   if (name === 'name') {
     if (fields.has('platform') || fields.has('fingerprint')) return 'iPhone 15 Pro de Valeria';
@@ -242,27 +242,27 @@ const SUMMARY_OVERRIDES: Record<string, string> = {
   PlatformController_changeUserStatus: 'Cambiar el estado de un usuario',
   ClubWorkersController_startMyShift: 'Iniciar mi turno',
   ClubWorkersController_syncMyShift: 'Sincronizar mi turno',
-  ClubsController_getAdminDashboard: 'Obtener el panel administrativo de una discoteca',
+  ClubsController_getAdminDashboard: 'Obtener el panel administrativo de un local nocturno',
   ClubsController_getCustomerHome: 'Obtener el inicio para clientes',
   ClubsController_exploreCustomerContent: 'Explorar contenido para clientes',
-  ClubsController_getCustomerClubDetail: 'Obtener el detalle público de una discoteca',
+  ClubsController_getCustomerClubDetail: 'Obtener el detalle público de un local nocturno',
   ClubsController_getCustomerEventDetail: 'Obtener el detalle de un evento para clientes',
-  ClubsController_getOperationalProfile: 'Obtener el perfil operativo de una discoteca',
-  ClubsController_updateOperationalProfile: 'Actualizar el perfil operativo de una discoteca',
+  ClubsController_getOperationalProfile: 'Obtener el perfil operativo de un local nocturno',
+  ClubsController_updateOperationalProfile: 'Actualizar el perfil operativo de un local nocturno',
   UploadsController_createPresignedUploadUrl: 'Crear una URL de carga firmada',
   AdminEventsController_getAdminEventsDashboard: 'Obtener el panel administrativo de eventos',
-  ClubEventsController_listClubEvents: 'Listar los eventos de una discoteca',
+  ClubEventsController_listClubEvents: 'Listar los eventos de un local nocturno',
   ClubEventsController_startSale: 'Iniciar la venta de un evento',
   PublicEventsController_listPublicEvents: 'Listar eventos públicos',
   PublicEventsController_getPublicEvent: 'Obtener un evento público',
-  CapacityController_configure: 'Configurar el aforo de una discoteca',
-  CapacityController_correct: 'Corregir el aforo de una discoteca',
-  ClubTicketsController_createClubTicketType: 'Crear un tipo de entrada de discoteca',
-  ClubTicketsController_listClubTicketTypes: 'Listar tipos de entrada de discoteca',
-  ClubTicketsController_updateTicketType: 'Actualizar un tipo de entrada de discoteca',
-  ClubTicketsController_deleteTicketType: 'Eliminar un tipo de entrada de discoteca',
-  ClubTicketsController_deactivateTicketType: 'Desactivar un tipo de entrada de discoteca',
-  ClubTicketsController_activateTicketType: 'Activar un tipo de entrada de discoteca',
+  CapacityController_configure: 'Configurar el aforo de un local nocturno',
+  CapacityController_correct: 'Corregir el aforo de un local nocturno',
+  ClubTicketsController_createClubTicketType: 'Crear un tipo de entrada para un local nocturno',
+  ClubTicketsController_listClubTicketTypes: 'Listar tipos de entrada de un local nocturno',
+  ClubTicketsController_updateTicketType: 'Actualizar un tipo de entrada de un local nocturno',
+  ClubTicketsController_deleteTicketType: 'Eliminar un tipo de entrada de un local nocturno',
+  ClubTicketsController_deactivateTicketType: 'Desactivar un tipo de entrada de un local nocturno',
+  ClubTicketsController_activateTicketType: 'Activar un tipo de entrada de un local nocturno',
   EventTicketsController_createEventTicketType: 'Crear un tipo de entrada de evento',
   EventTicketsController_listEventTicketTypes: 'Listar tipos de entrada de evento',
   EventTicketsController_updateEventTicketType: 'Actualizar un tipo de entrada de evento',
@@ -270,11 +270,11 @@ const SUMMARY_OVERRIDES: Record<string, string> = {
   EventTicketsController_deactivateEventTicketType: 'Desactivar un tipo de entrada de evento',
   EventTicketsController_activateEventTicketType: 'Activar un tipo de entrada de evento',
   UsersController_updateMyProfile: 'Actualizar mi perfil',
-  WalletsController_getClubLedger: 'Obtener el libro mayor de una discoteca',
+  WalletsController_getClubLedger: 'Obtener el libro mayor de un local nocturno',
   WalletsController_reconcileOrder: 'Conciliar una orden',
   WalletsController_dailyDifferences: 'Obtener las diferencias diarias',
   WalletsController_upsertFinancialProfile: 'Crear o actualizar el perfil financiero',
-  WalletsController_clubWithdrawals: 'Listar retiros de una discoteca',
+  WalletsController_clubWithdrawals: 'Listar retiros de un local nocturno',
   WalletsController_platformWithdrawals: 'Listar retiros de la plataforma',
   WalletsController_payWithdrawal: 'Marcar un retiro como pagado',
   WalletsController_failWithdrawal: 'Marcar un retiro como fallido',
@@ -287,11 +287,11 @@ const SUMMARY_OVERRIDES: Record<string, string> = {
   CommerceController_createWalletTopUp: 'Crear una recarga de billetera',
   CommerceController_walletTopUps: 'Listar recargas de billetera',
   CommerceController_walletTopUp: 'Obtener una recarga de billetera',
-  CommerceController_clubOrders: 'Listar órdenes de una discoteca',
-  CommerceController_exportClubOrders: 'Exportar órdenes de una discoteca',
-  CommerceController_clubOrderDetail: 'Obtener el detalle de una orden de discoteca',
+  CommerceController_clubOrders: 'Listar órdenes de un local nocturno',
+  CommerceController_exportClubOrders: 'Exportar órdenes de un local nocturno',
+  CommerceController_clubOrderDetail: 'Obtener el detalle de una orden de un local nocturno',
   CommerceController_payment: 'Obtener el estado del pago de una orden',
-  CommerceController_operations: 'Obtener el panel operativo de una discoteca',
+  CommerceController_operations: 'Obtener el panel operativo de un local nocturno',
   CommerceController_tickets: 'Listar mis entradas',
   CommerceController_consumables: 'Listar mis consumibles',
   CommerceController_auditLogs: 'Listar validaciones auditadas',
@@ -307,7 +307,7 @@ const SUMMARY_OVERRIDES: Record<string, string> = {
   AuditController_policy: 'Obtener la política de auditoría',
   AuditController_verify: 'Verificar la integridad de auditoría',
   WalletsController_getMine: 'Obtener mi billetera',
-  WalletsController_financialProfile: 'Obtener el perfil financiero de una discoteca',
+  WalletsController_financialProfile: 'Obtener el perfil financiero de un local nocturno',
   ReferralsController_mine: 'Obtener mi programa de referidos',
   ReferralsController_preview: 'Previsualizar un código de referido',
   ReferralsController_associate: 'Asociar un referido',
@@ -325,8 +325,8 @@ const WORDS: Record<string, string> = {
   dashboard: 'panel',
   events: 'eventos',
   event: 'evento',
-  club: 'discoteca',
-  clubs: 'discotecas',
+  club: 'local nocturno',
+  clubs: 'locales nocturnos',
   customer: 'cliente',
   content: 'contenido',
   detail: 'detalle',
@@ -390,7 +390,7 @@ const WORDS: Record<string, string> = {
 };
 
 const PARAMETER_DESCRIPTIONS: Record<string, string> = {
-  clubId: 'UUID de la discoteca.',
+  clubId: 'UUID del local nocturno.',
   eventId: 'UUID del evento.',
   userId: 'UUID del usuario.',
   workerId: 'UUID del trabajador.',
@@ -419,7 +419,7 @@ const PARAMETER_DESCRIPTIONS: Record<string, string> = {
   to: 'Fin inclusivo del intervalo en formato ISO 8601.',
   date: 'Fecha de conciliación en formato ISO 8601.',
   unreadOnly:
-    'Filtra notificaciones no leídas. Por la transformación runtime actual, cualquier string no vacío —incluido "false"— se interpreta como true.',
+    'Filtra notificaciones no leídas. Cualquier texto no vacío, incluso "false", se interpreta como true.',
   category: 'Categoría de notificación.',
   readStatus: 'Estado de lectura de las notificaciones.',
   action: 'Acción de auditoría.',
@@ -514,7 +514,7 @@ export function enhanceOpenApiDocument(document: OpenAPIObject): OpenAPIObject {
         usedSummaries,
         operation.tags[0],
       );
-      operation.description = descriptionFor(operation, path, method, isPublic);
+      operation.description = descriptionFor(operation, path, isPublic);
       operation.security = isPublic ? [] : [{ bearer: [] }];
       normalizeParameters(operation);
       normalizeRequestBody(operation, operationId, document);
@@ -542,10 +542,9 @@ function sharedSchemas(): Record<string, SchemaObject> {
         },
       ],
     },
-    ValidationErrorDetail: {
+    ApiErrorDetail: {
       type: 'object',
-      additionalProperties: false,
-      required: ['field', 'messages'],
+      additionalProperties: true,
       properties: {
         field: { type: 'string', description: 'Ruta del campo inválido.', example: 'email' },
         messages: {
@@ -574,13 +573,8 @@ function sharedSchemas(): Record<string, SchemaObject> {
         details: {
           type: 'array',
           description:
-            'Detalles adicionales. En errores de validación usa objetos ValidationErrorDetail.',
-          items: {
-            oneOf: [
-              { $ref: '#/components/schemas/ValidationErrorDetail' },
-              { type: 'object', additionalProperties: true },
-            ],
-          },
+            'Detalles adicionales. En errores de validación usa los campos conocidos de ApiErrorDetail.',
+          items: { $ref: '#/components/schemas/ApiErrorDetail' },
         },
       },
     },
@@ -621,17 +615,6 @@ function sharedSchemas(): Record<string, SchemaObject> {
           description: 'Mensaje genérico que evita exponer el error interno.',
           example: 'Internal server error',
         },
-      },
-    },
-    Pagination: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['page', 'pageSize', 'total', 'totalPages'],
-      properties: {
-        page: { type: 'integer', minimum: 1, example: 1 },
-        pageSize: { type: 'integer', minimum: 1, example: 20 },
-        total: { type: 'integer', minimum: 0, example: 42 },
-        totalPages: { type: 'integer', minimum: 1, example: 3 },
       },
     },
   };
@@ -681,123 +664,104 @@ function uniqueSummary(summary: string, used: Set<string>, tag: string): string 
   return unique;
 }
 
-function descriptionFor(
-  operation: OperationObject,
-  path: string,
-  method: (typeof HTTP_METHODS)[number],
-  isPublic: boolean,
-): string {
+function descriptionFor(operation: OperationObject, path: string, isPublic: boolean): string {
   const access = isPublic
-    ? 'Acceso público: no requiere access token.'
-    : `Requiere access token bearer. ${authorizationRule(
-        operation.operationId!,
-        path,
-        operation.tags?.[0] ?? 'API',
-      )}`;
-  const sideEffect = ['post', 'put', 'patch', 'delete'].includes(method)
-    ? 'Puede producir cambios persistentes. Si el body acepta idempotencyKey, las repeticiones reutilizan esa clave según el comportamiento actual.'
-    : 'No modifica el recurso consultado.';
+    ? 'Acceso público.'
+    : authorizationRule(operation.operationId!, path, operation.tags?.[0] ?? 'API');
   const details = OPERATION_DETAILS[operation.operationId!] ?? '';
-  return `${operation.summary}. Devuelve el payload directo que emite actualmente la aplicación, sin envelope de éxito. ${access} ${sideEffect} ${details}`.trim();
+  return [access, details].filter(Boolean).join(' ');
 }
 
 const OPERATION_DETAILS: Record<string, string> = {
   UploadsController_createPresignedUploadUrl:
-    'Inicia una carga directa a S3. Admite JPEG, PNG y WebP de hasta 10 MB y devuelve uploadUrl, objectKey, headers y una vigencia de 300 segundos. NestJS no recibe el binario. El cliente debe hacer PUT a S3 usando exactamente el Content-Type indicado.',
-  UploadsController_confirmUpload:
-    'Confirma el objeto subido previamente a S3 mediante POST /uploads/{uploadId}/confirm. Valida el tamaño y el MIME antes de devolver objectKey y la URL pública actual.',
+    'Genera los datos para cargar JPEG, PNG o WebP de hasta 10 MB directamente a S3. La URL vence en 5 minutos.',
+  UploadsController_confirmUpload: 'Valida el archivo cargado y devuelve su clave y URL pública.',
   CommerceController_exportClubOrders:
-    'Entrega text/csv como descarga mediante Content-Disposition. Aplica los mismos filtros que el listado de órdenes.',
-  CapacityController_stream:
-    'Mantiene un stream text/event-stream y emite capacity.updated cuando cambia la revisión del aforo.',
-  CapacityController_history:
-    'Devuelve como máximo los 500 movimientos más recientes. La respuesta no está paginada.',
-  NotificationController_list:
-    'El listado está acotado por el servicio y no publica metadata de paginación.',
-  WalletsController_clubWithdrawals: 'El listado es acotado y no publica metadata de paginación.',
-  WalletsController_platformWithdrawals:
-    'Devuelve como máximo 200 retiros y no publica metadata de paginación.',
-  ClubWorkersController_listShifts:
-    'Devuelve como máximo 100 turnos y no publica metadata de paginación.',
-  FlowPaymentsController_confirmation:
-    'Flow envía un token obligatorio mediante application/x-www-form-urlencoded. El callback verifica y procesa el evento de pago.',
+    'Descarga un CSV con los mismos filtros del listado de órdenes.',
+  CapacityController_stream: 'Abre un stream SSE y emite capacity.updated cuando cambia el aforo.',
+  CapacityController_history: 'Devuelve los últimos 500 movimientos sin paginación.',
+  NotificationController_list: 'Devuelve un listado limitado y sin paginación.',
+  WalletsController_clubWithdrawals: 'Devuelve un listado limitado y sin paginación.',
+  WalletsController_platformWithdrawals: 'Devuelve hasta 200 retiros sin paginación.',
+  ClubWorkersController_listShifts: 'Devuelve hasta 100 turnos sin paginación.',
+  FlowPaymentsController_confirmation: 'Recibe el token de Flow y procesa el evento de pago.',
   FlowPaymentsController_returnPost:
-    'Acepta token opcional mediante application/x-www-form-urlencoded y devuelve HTML no almacenable.',
+    'Acepta un token opcional y devuelve una página HTML sin caché.',
   FlowPaymentsController_returnGet:
-    'Acepta token opcional en query y devuelve HTML con Cache-Control no-store, max-age=0.',
+    'Acepta un token opcional en la URL y devuelve una página HTML sin caché.',
 };
 
 function authorizationRule(operationId: string, path: string, tag: string): string {
   if (operationId.startsWith('PlatformController_') || operationId.startsWith('AuditController_')) {
-    return 'Exige rol SUPER_ADMIN.';
+    return 'Solo para SUPER_ADMIN.';
   }
   if (operationId.startsWith('AdminEventsController_')) {
-    return 'Exige rol ADMIN o SUPER_ADMIN.';
+    return 'Solo para ADMIN o SUPER_ADMIN.';
   }
-  if (path.includes('/platform/referrals/')) return 'Exige rol SUPER_ADMIN.';
-  if (tag === 'Notification') return 'Limita la operación al usuario autenticado.';
+  if (path.includes('/platform/referrals/')) return 'Solo para SUPER_ADMIN.';
+  if (tag === 'Notification') return 'Solo para el usuario autenticado.';
   if (tag === 'Users') {
     return operationId === 'UsersController_updateMyProfile'
-      ? 'Limita la actualización al perfil del usuario autenticado.'
-      : 'Exige rol ADMIN o SUPER_ADMIN.';
+      ? 'Solo para el usuario autenticado.'
+      : 'Solo para ADMIN o SUPER_ADMIN.';
   }
-  if (tag === 'Uploads') return 'Limita la carga al usuario autenticado que la inició.';
+  if (tag === 'Uploads') return 'Solo para el usuario que inició la carga.';
   if (/ClubWorkersController_(startMyShift|syncMyShift)/.test(operationId)) {
-    return 'Exige un trabajador activo y limita el turno y dispositivo al usuario autenticado.';
+    return 'Solo para el trabajador activo asignado al turno y dispositivo.';
   }
   if (operationId.startsWith('ClubWorkersController_')) {
-    return 'Exige rol ADMIN o SUPER_ADMIN, pertenencia a la discoteca y los permisos operativos aplicables.';
+    return 'Solo para ADMIN o SUPER_ADMIN con acceso al local nocturno.';
   }
   if (operationId.startsWith('ClubsController_')) {
     if (/getCustomer|exploreCustomer/.test(operationId)) {
-      return 'Devuelve únicamente contenido visible para el usuario autenticado.';
+      return 'Muestra solo contenido visible para el usuario autenticado.';
     }
-    if (/activateClub|deactivateClub/.test(operationId)) return 'Exige rol SUPER_ADMIN.';
-    if (operationId === 'ClubsController_createClub') return 'Exige rol ADMIN o SUPER_ADMIN.';
+    if (/activateClub|deactivateClub/.test(operationId)) return 'Solo para SUPER_ADMIN.';
+    if (operationId === 'ClubsController_createClub') return 'Solo para ADMIN o SUPER_ADMIN.';
     if (operationId === 'ClubsController_getAdminDashboard') {
-      return 'Exige rol ADMIN, SUPER_ADMIN o WORKER y limita el panel a una discoteca vinculada al usuario.';
+      return 'Para ADMIN, SUPER_ADMIN o WORKER vinculados al local nocturno.';
     }
     if (/listClubs|getClub/.test(operationId)) {
-      return 'Filtra la visibilidad por rol: SUPER_ADMIN ve todas, ADMIN las que administra y los demás usuarios sólo las activas.';
+      return 'La visibilidad depende del rol y del acceso al local nocturno.';
     }
-    return 'Exige rol ADMIN o SUPER_ADMIN y ownership de la discoteca.';
+    return 'Solo para ADMIN o SUPER_ADMIN con acceso al local nocturno.';
   }
   if (
     ['Club Events', 'Club Products', 'Club Promotions', 'Club Tickets', 'Event Tickets'].includes(
       tag,
     )
   ) {
-    return 'Exige rol ADMIN o SUPER_ADMIN y ownership de la discoteca asociada.';
+    return 'Solo para ADMIN o SUPER_ADMIN con acceso al local nocturno.';
   }
   if (tag === 'Capacity') {
     const mutatesCapacity = /_(configure|exit|correct)$/.test(operationId);
     return mutatesCapacity
-      ? 'Exige rol ADMIN o SUPER_ADMIN, o un trabajador autorizado con permiso MANAGE_CAPACITY.'
-      : 'Exige rol ADMIN o SUPER_ADMIN, o un trabajador autorizado con permiso VIEW_CAPACITY.';
+      ? 'Para ADMIN, SUPER_ADMIN o trabajadores con permiso MANAGE_CAPACITY.'
+      : 'Para ADMIN, SUPER_ADMIN o trabajadores con permiso VIEW_CAPACITY.';
   }
   if (operationId.startsWith('WalletsController_')) {
     if (operationId === 'WalletsController_getMine') {
-      return 'Limita la billetera al usuario autenticado.';
+      return 'Solo para el usuario autenticado.';
     }
-    if (operationId === 'WalletsController_dailyDifferences') return 'Exige rol SUPER_ADMIN.';
+    if (operationId === 'WalletsController_dailyDifferences') return 'Solo para SUPER_ADMIN.';
     if (
       /platformWithdrawals|reviewWithdrawal|processWithdrawal|payWithdrawal|failWithdrawal/.test(
         operationId,
       )
     ) {
-      return 'Exige rol SUPER_ADMIN.';
+      return 'Solo para SUPER_ADMIN.';
     }
-    return 'Exige rol ADMIN o SUPER_ADMIN y ownership de la discoteca o recurso financiero.';
+    return 'Solo para ADMIN o SUPER_ADMIN con acceso al local nocturno o recurso financiero.';
   }
   if (path.includes('/validate/') || path.includes('/redemptions/')) {
-    return 'Exige un trabajador o administrador autorizado y verifica discoteca, turno, dispositivo y permisos operativos.';
+    return 'Para trabajadores o administradores autorizados en el local nocturno.';
   }
-  if (/CommerceController_(simulatePayment)/.test(operationId)) return 'Exige rol SUPER_ADMIN.';
+  if (/CommerceController_(simulatePayment)/.test(operationId)) return 'Solo para SUPER_ADMIN.';
   if (operationId === 'CommerceController_reservationMetrics') {
-    return 'Permite ADMIN o SUPER_ADMIN con ownership, o un trabajador activo con permiso VIEW_DASHBOARD.';
+    return 'Para ADMIN, SUPER_ADMIN o trabajadores con permiso VIEW_DASHBOARD.';
   }
   if (operationId === 'CommerceController_requestRefund') {
-    return 'Permite ADMIN o SUPER_ADMIN con ownership, o un trabajador activo con permiso REQUEST_REFUNDS.';
+    return 'Para ADMIN, SUPER_ADMIN o trabajadores con permiso REQUEST_REFUNDS.';
   }
   if (
     /CommerceController_(clubOrders|exportClubOrders|clubOrderDetail|operations|auditLogs)/.test(
@@ -805,20 +769,20 @@ function authorizationRule(operationId: string, path: string, tag: string): stri
     )
   ) {
     if (operationId === 'CommerceController_operations') {
-      return 'Permite ADMIN o SUPER_ADMIN con ownership, o un trabajador activo con permiso VIEW_OPERATIONS.';
+      return 'Para ADMIN, SUPER_ADMIN o trabajadores con permiso VIEW_OPERATIONS.';
     }
     if (operationId === 'CommerceController_auditLogs') {
-      return 'Permite ADMIN o SUPER_ADMIN con ownership. Un trabajador activo sólo puede consultar sus propios registros.';
+      return 'Para ADMIN, SUPER_ADMIN o trabajadores que consulten sus propios registros.';
     }
-    return 'Permite ADMIN o SUPER_ADMIN con ownership, o un trabajador activo con permiso VIEW_SALES.';
+    return 'Para ADMIN, SUPER_ADMIN o trabajadores con permiso VIEW_SALES.';
   }
   if (operationId.startsWith('CommerceController_')) {
-    return 'Limita carritos, órdenes, pagos, entradas, consumibles y recargas al usuario autenticado.';
+    return 'Solo para el usuario autenticado.';
   }
   if (operationId.startsWith('ReferralsController_')) {
-    return 'Limita el programa, las recompensas y las transferencias al usuario autenticado.';
+    return 'Solo para el usuario autenticado.';
   }
-  return 'Permite la operación a cualquier usuario autenticado.';
+  return 'Requiere autenticación.';
 }
 
 function normalizeParameters(operation: OperationObject): void {
@@ -877,8 +841,7 @@ function normalizeRequestBody(
   }
   if (!operation.requestBody || isReference(operation.requestBody)) return;
   const requestBody = operation.requestBody as RequestBodyObject;
-  requestBody.description ??=
-    'Cuerpo validado con whitelist y rechazo de propiedades desconocidas.';
+  requestBody.description ??= 'Solo acepta las propiedades documentadas; rechaza cualquier otra.';
   for (const media of Object.values(requestBody.content) as Array<{
     schema?: SchemaObject | ReferenceObject;
   }>) {
@@ -970,11 +933,12 @@ function flowRequestBody(required: boolean): RequestBodyObject {
   return {
     required,
     description: required
-      ? 'Callback form-urlencoded de Flow. El token es obligatorio.'
-      : 'Retorno form-urlencoded de Flow. El token es opcional según el comportamiento actual.',
+      ? 'Datos enviados por Flow. El token es obligatorio.'
+      : 'Datos de retorno enviados por Flow. El token es opcional.',
     content: {
       'application/x-www-form-urlencoded': {
         schema: {
+          title: required ? 'FlowConfirmationRequest' : 'FlowReturnRequest',
           type: 'object',
           additionalProperties: false,
           ...(required ? { required: ['token'] } : {}),
@@ -1042,7 +1006,7 @@ function normalizeResponses(
 
   if (operationId === 'CommerceController_exportClubOrders') {
     operation.responses[successStatus] = {
-      description: 'CSV UTF-8 con las órdenes visibles para la discoteca.',
+      description: 'CSV UTF-8 con las órdenes visibles para el local nocturno.',
       headers: {
         'Content-Disposition': {
           description: 'Fuerza la descarga con el nombre ventas-beerry.csv.',
@@ -1148,7 +1112,7 @@ function normalizeResponses(
       operation,
       '403',
       'SUPER_ADMIN_REQUIRED',
-      'El rol, permiso u ownership no autoriza la operación.',
+      'El rol, permiso o acceso asignado no autoriza la operación.',
     );
   }
 
@@ -1226,7 +1190,7 @@ function errorDescription(status: string): string {
   const descriptions: Record<string, string> = {
     '400': 'La entrada o una regla de solicitud no es válida.',
     '401': 'Las credenciales o el token no son válidos.',
-    '403': 'El rol, permiso u ownership no autoriza la operación.',
+    '403': 'El rol, permiso o acceso asignado no autoriza la operación.',
     '404': 'El recurso requerido no existe o no es visible.',
     '409': 'El estado actual impide completar la operación.',
     '503': 'Un proveedor requerido no está disponible.',
@@ -1236,7 +1200,7 @@ function errorDescription(status: string): string {
 
 function successResponse(operationId: string): ResponseObject {
   return {
-    description: 'Operación completada. Devuelve el payload directo emitido por el runtime actual.',
+    description: 'Operación completada correctamente.',
     content: {
       'application/json': {
         schema: { $ref: `#/components/schemas/${operationId}Response` },

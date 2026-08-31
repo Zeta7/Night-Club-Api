@@ -53,7 +53,7 @@ export class ClubsController {
   @ApiOperation({
     summary: 'Obtener home del cliente por ubicacion (AUTENTICADO)',
     description:
-      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve el contenido del inicio del cliente filtrado por la ciudad/zona enviada desde mobile y solo considera discotecas activas con eventos, promociones y productos visibles.',
+      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve el contenido del inicio del cliente filtrado por la ciudad/zona enviada desde mobile y solo considera locales nocturnos activos con eventos, promociones y productos visibles.',
   })
   @ApiResponse({ status: 200, description: 'Home del cliente obtenido correctamente.' })
   getCustomerHome(
