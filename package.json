@@ -7,6 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "docs:build": "node scripts/build-openapi.cjs",
+    "docs:check": "node scripts/build-openapi.cjs --check",
     "docs:schemas": "node scripts/generate-openapi-response-schemas.cjs",
     "docs:generate": "node dist/src/generate-openapi.js",
     "start": "nest start",

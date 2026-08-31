@@ -33,6 +33,7 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
       'Contrato REST de Beerry Platform. Las respuestas exitosas son payloads directos. Los errores compartidos usan el envelope { data, meta, error }.',
     )
     .setVersion('0.1.0')
+    .addServer('/api/v1', 'Prefijo canónico de la API v1.')
     .addBearerAuth(
       {
         type: 'http',
@@ -47,7 +48,9 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
     builder = builder.addTag(name, description);
   }
 
-  return enhanceOpenApiDocument(SwaggerModule.createDocument(app, builder.build()));
+  return enhanceOpenApiDocument(
+    SwaggerModule.createDocument(app, builder.build(), { ignoreGlobalPrefix: true }),
+  );
 }
 
 export function setupOpenApi(app: INestApplication): OpenAPIObject {

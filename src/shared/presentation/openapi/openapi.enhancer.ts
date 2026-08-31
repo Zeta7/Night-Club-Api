@@ -542,10 +542,9 @@ function sharedSchemas(): Record<string, SchemaObject> {
         },
       ],
     },
-    ValidationErrorDetail: {
+    ApiErrorDetail: {
       type: 'object',
-      additionalProperties: false,
-      required: ['field', 'messages'],
+      additionalProperties: true,
       properties: {
         field: { type: 'string', description: 'Ruta del campo inválido.', example: 'email' },
         messages: {
@@ -574,13 +573,8 @@ function sharedSchemas(): Record<string, SchemaObject> {
         details: {
           type: 'array',
           description:
-            'Detalles adicionales. En errores de validación usa objetos ValidationErrorDetail.',
-          items: {
-            oneOf: [
-              { $ref: '#/components/schemas/ValidationErrorDetail' },
-              { type: 'object', additionalProperties: true },
-            ],
-          },
+            'Detalles adicionales. En errores de validación usa los campos conocidos de ApiErrorDetail.',
+          items: { $ref: '#/components/schemas/ApiErrorDetail' },
         },
       },
     },
@@ -621,17 +615,6 @@ function sharedSchemas(): Record<string, SchemaObject> {
           description: 'Mensaje genérico que evita exponer el error interno.',
           example: 'Internal server error',
         },
-      },
-    },
-    Pagination: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['page', 'pageSize', 'total', 'totalPages'],
-      properties: {
-        page: { type: 'integer', minimum: 1, example: 1 },
-        pageSize: { type: 'integer', minimum: 1, example: 20 },
-        total: { type: 'integer', minimum: 0, example: 42 },
-        totalPages: { type: 'integer', minimum: 1, example: 3 },
       },
     },
   };
@@ -975,6 +958,7 @@ function flowRequestBody(required: boolean): RequestBodyObject {
     content: {
       'application/x-www-form-urlencoded': {
         schema: {
+          title: required ? 'FlowConfirmationRequest' : 'FlowReturnRequest',
           type: 'object',
           additionalProperties: false,
           ...(required ? { required: ['token'] } : {}),
