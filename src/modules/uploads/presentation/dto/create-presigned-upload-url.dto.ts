@@ -19,7 +19,7 @@ export class CreatePresignedUploadUrlDto {
   @Max(10 * 1024 * 1024, { message: 'La imagen no debe superar 10 MB.' })
   sizeBytes!: number;
 
-  @ApiPropertyOptional({ example: 'discoteca-safary', maxLength: 120 })
+  @ApiPropertyOptional({ example: 'local-nocturno-nebula', maxLength: 120 })
   @IsOptional()
   @IsString({ message: 'La carpeta del upload debe ser texto.' })
   @MaxLength(120, { message: 'La carpeta del upload no debe superar 120 caracteres.' })

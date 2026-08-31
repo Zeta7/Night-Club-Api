@@ -17,7 +17,7 @@ export class CreateTicketTypeDto {
   @MaxLength(120, { message: 'El nombre de la entrada no debe superar 120 caracteres.' })
   name!: string;
 
-  @ApiPropertyOptional({ example: 'Acceso general a la discoteca o evento.' })
+  @ApiPropertyOptional({ example: 'Acceso general al local nocturno o evento.' })
   @IsString({ message: 'La descripcion debe ser texto.' })
   @IsOptional()
   description?: string;

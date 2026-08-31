@@ -145,7 +145,7 @@ export class CreateClubDto {
   @IsIn(businessTypes, { message: 'El tipo de negocio no es valido.' })
   type!: (typeof businessTypes)[number];
 
-  @ApiPropertyOptional({ example: 'Discoteca ubicada en el centro de la ciudad.' })
+  @ApiPropertyOptional({ example: 'Local nocturno ubicado en el centro de la ciudad.' })
   @IsString({ message: 'La descripcion debe ser texto.' })
   @IsOptional()
   description?: string;
