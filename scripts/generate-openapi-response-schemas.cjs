@@ -10,7 +10,8 @@ const program = ts.createProgram(parsed.fileNames, parsed.options);
 const checker = program.getTypeChecker();
 const schemas = {};
 const errorCodes = {};
-const prismaSchema = fs.readFileSync(path.join(ROOT, 'prisma', 'schema.prisma'), 'utf8');
+const NEVER_SCHEMA = Object.freeze({ 'x-generated-never': true });
+const NULL_SCHEMA = Object.freeze({ 'x-generated-null': true });
 
 const HTTP_DECORATORS = new Set(['Get', 'Post', 'Put', 'Patch', 'Delete', 'Sse']);
 const ERROR_HELPERS = {
@@ -60,6 +61,30 @@ const WALLET_TOP_UP_STATUSES = [
   'CHARGEDBACK',
 ];
 const PAYMENT_PROVIDERS = ['flow', 'simulated', 'beerry_wallet'];
+const FINANCIAL_ACCOUNT_OWNER_TYPES = ['CUSTOMER', 'CLUB', 'PLATFORM', 'PROVIDER'];
+const LEDGER_TRANSACTION_TYPES = [
+  'SALE',
+  'TOP_UP',
+  'REFUND',
+  'CHARGEBACK',
+  'SETTLEMENT',
+  'WITHDRAWAL',
+  'ADJUSTMENT',
+];
+const LEDGER_ENTRY_DIRECTIONS = ['DEBIT', 'CREDIT'];
+const FINANCIAL_BALANCE_BUCKETS = ['PENDING', 'AVAILABLE', 'HELD', 'WITHDRAWN'];
+const WITHDRAWAL_STATUSES = [
+  'REQUESTED',
+  'UNDER_REVIEW',
+  'APPROVED',
+  'REJECTED',
+  'PROCESSING',
+  'PAID',
+  'FAILED',
+];
+const USER_ROLES = ['SUPER_ADMIN', 'ADMIN', 'WORKER', 'CUSTOMER'];
+const USER_STATUSES = ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'];
+const CLUB_STATUSES = ['PENDING_APPROVAL', 'ACTIVE', 'INACTIVE'];
 const RESPONSE_SCHEMA_EXCLUSIONS = new Set([
   'CapacityController_stream',
   'CommerceController_exportClubOrders',
@@ -331,10 +356,14 @@ function refinePaymentResponseSchema(operationId, schema) {
   return schema;
 }
 
-function dynamicValueSchema(description = 'Valor JSON dinámico expuesto por el runtime.') {
+function dynamicValueSchema(
+  description = 'Valor JSON dinámico expuesto por el runtime.',
+  nullable = false,
+) {
   return {
     description,
     allOf: [{ $ref: '#/components/schemas/JsonValue' }],
+    ...(nullable ? { nullable: true } : {}),
   };
 }
 
@@ -365,125 +394,161 @@ function dateTimeSchema(nullable = false) {
   return { type: 'string', format: 'date-time', ...(nullable ? { nullable: true } : {}) };
 }
 
-function prismaEnumValues(name) {
-  const match = prismaSchema.match(new RegExp(`enum\\s+${name}\\s*\\{([\\s\\S]*?)\\n\\}`));
-  if (!match) return undefined;
-  return match[1]
-    .split(/\r?\n/)
-    .map((line) => line.trim().split(/\s+/)[0])
-    .filter((value) => value && !value.startsWith('//') && !value.startsWith('@@'));
-}
-
-function prismaModelFields(name) {
-  const match = prismaSchema.match(new RegExp(`model\\s+${name}\\s*\\{([\\s\\S]*?)\\n\\}`));
-  if (!match) throw new Error(`Prisma model ${name} was not found.`);
-  return match[1]
-    .split(/\r?\n/)
-    .map((line) => line.match(/^\s+(\w+)\s+(\w+)(\[\]|\?)?/))
-    .filter(Boolean)
-    .map((field) => ({
-      name: field[1],
-      type: field[2],
-      isList: field[3] === '[]',
-      isNullable: field[3] === '?',
-    }));
-}
-
-function prismaFieldSchema(field) {
-  const nullable = field.isNullable ? { nullable: true } : {};
-  const enumValues = prismaEnumValues(field.type);
-  if (enumValues) return stringSchema({ enum: enumValues, ...nullable });
-  if (field.type === 'DateTime') return dateTimeSchema(field.isNullable);
-  if (field.type === 'Int' || field.type === 'BigInt') return integerSchema(nullable);
-  if (field.type === 'Float' || field.type === 'Decimal') {
-    return { type: 'number', format: 'double', ...nullable };
-  }
-  if (field.type === 'Boolean') return { type: 'boolean', ...nullable };
-  if (field.type === 'Json') return dynamicValueSchema();
-  if (field.type === 'Bytes') return stringSchema({ format: 'byte', ...nullable });
-  if (field.type !== 'String') return undefined;
-
-  let format;
-  if (
-    field.name === 'id' ||
-    /(?:club|user|order|paymentAttempt|reversalOf|withdrawalRequest|transaction|account)Id$/.test(
-      field.name,
-    )
-  ) {
-    format = 'uuid';
-  } else if (/Url$/.test(field.name)) {
-    format = 'uri';
-  } else if (field.name === 'email') {
-    format = 'email';
-  }
-  return stringSchema({ ...(format ? { format } : {}), ...nullable });
-}
-
-function prismaRecordSchema(modelName, options = {}) {
-  const omitted = new Set(options.omit ?? []);
-  const properties = {};
-  for (const field of prismaModelFields(modelName)) {
-    if (field.isList || omitted.has(field.name)) continue;
-    const schema = prismaFieldSchema(field);
-    if (schema) properties[field.name] = schema;
-  }
-  Object.assign(properties, options.relations, options.additionalProperties);
-  return documentedObject(properties);
-}
-
 function publicFinancialProfileSchema(nullable = false) {
   return {
-    ...prismaRecordSchema('ClubFinancialProfile', {
-      omit: ['bankAccountEncrypted'],
-      additionalProperties: {
-        maskedBankAccount: stringSchema({ example: '•••• 9012' }),
-      },
+    ...documentedObject({
+      id: stringSchema({ format: 'uuid' }),
+      clubId: stringSchema({ format: 'uuid' }),
+      legalName: stringSchema(),
+      taxDocumentType: stringSchema(),
+      taxDocumentNumber: stringSchema(),
+      bankName: stringSchema(),
+      bankAccountType: stringSchema(),
+      bankAccountLast4: stringSchema({ example: '9012' }),
+      bankAccountHolder: stringSchema(),
+      verifiedAt: dateTimeSchema(true),
+      createdAt: dateTimeSchema(),
+      updatedAt: dateTimeSchema(),
+      maskedBankAccount: stringSchema({ example: '•••• 9012' }),
     }),
     ...(nullable ? { nullable: true } : {}),
   };
 }
 
 function withdrawalSchema(includePlatformRelations = false) {
-  return prismaRecordSchema('WithdrawalRequest', {
-    relations: includePlatformRelations
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    clubId: stringSchema({ format: 'uuid' }),
+    requestedByUserId: stringSchema({ format: 'uuid' }),
+    reviewedByUserId: stringSchema({ format: 'uuid', nullable: true }),
+    amountCents: integerSchema(),
+    currency: stringSchema(),
+    status: stringSchema({ enum: WITHDRAWAL_STATUSES }),
+    bankAccountLast4: stringSchema({ example: '9012' }),
+    requestNote: stringSchema({ nullable: true }),
+    rejectionReason: stringSchema({ nullable: true }),
+    paymentReference: stringSchema({ nullable: true }),
+    proofUrl: stringSchema({ format: 'uri', nullable: true }),
+    requestedAt: dateTimeSchema(),
+    reviewedAt: dateTimeSchema(true),
+    approvedAt: dateTimeSchema(true),
+    processingAt: dateTimeSchema(true),
+    paidAt: dateTimeSchema(true),
+    failedAt: dateTimeSchema(true),
+    createdAt: dateTimeSchema(),
+    updatedAt: dateTimeSchema(),
+    ...(includePlatformRelations
       ? {
-          club: prismaRecordSchema('Club'),
-          requestedBy: prismaRecordSchema('User', {
-            additionalProperties: {
-              passwordHash: stringSchema({
-                description: 'Hash de contraseña que el runtime actual incluye en esta relación.',
-                example: '$2b$12$hash.bcrypt.sanitizado',
-              }),
-            },
-          }),
+          club: platformWithdrawalClubSchema(),
+          requestedBy: platformWithdrawalRequesterSchema(),
         }
-      : undefined,
+      : {}),
   });
 }
 
 function financialAccountSchema() {
-  return prismaRecordSchema('FinancialAccount');
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    code: stringSchema(),
+    ownerType: stringSchema({ enum: FINANCIAL_ACCOUNT_OWNER_TYPES }),
+    userId: stringSchema({ format: 'uuid', nullable: true }),
+    clubId: stringSchema({ format: 'uuid', nullable: true }),
+    provider: stringSchema({ nullable: true }),
+    currency: stringSchema(),
+    pendingCents: integerSchema(),
+    availableCents: integerSchema(),
+    heldCents: integerSchema(),
+    withdrawnCents: integerSchema(),
+    createdAt: dateTimeSchema(),
+    updatedAt: dateTimeSchema(),
+  });
 }
 
 function ledgerEntrySchema(relation) {
-  return prismaRecordSchema('LedgerEntry', {
-    relations: {
-      ...(relation === 'account' ? { account: financialAccountSchema() } : {}),
-      ...(relation === 'transaction' ? { transaction: ledgerTransactionSchema() } : {}),
-    },
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    transactionId: stringSchema({ format: 'uuid' }),
+    accountId: stringSchema({ format: 'uuid' }),
+    direction: stringSchema({ enum: LEDGER_ENTRY_DIRECTIONS }),
+    bucket: stringSchema({ enum: FINANCIAL_BALANCE_BUCKETS }),
+    amountCents: integerSchema(),
+    description: stringSchema(),
+    createdAt: dateTimeSchema(),
+    ...(relation === 'account' ? { account: financialAccountSchema() } : {}),
+    ...(relation === 'transaction' ? { transaction: ledgerTransactionSchema() } : {}),
   });
 }
 
 function ledgerTransactionSchema(includeEntries = false) {
-  return prismaRecordSchema('LedgerTransaction', {
-    relations: includeEntries
-      ? { entries: { type: 'array', items: ledgerEntrySchema('account') } }
-      : undefined,
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    reference: stringSchema(),
+    type: stringSchema({ enum: LEDGER_TRANSACTION_TYPES }),
+    orderId: stringSchema({ format: 'uuid', nullable: true }),
+    paymentAttemptId: stringSchema({ format: 'uuid', nullable: true }),
+    providerEventId: stringSchema({ nullable: true }),
+    reversalOfId: stringSchema({ format: 'uuid', nullable: true }),
+    withdrawalRequestId: stringSchema({ format: 'uuid', nullable: true }),
+    currency: stringSchema(),
+    debitTotalCents: integerSchema(),
+    creditTotalCents: integerSchema(),
+    description: stringSchema(),
+    metadata: dynamicValueSchema('Metadata contable JSON expuesta por el runtime.', true),
+    postedAt: dateTimeSchema(),
+    createdAt: dateTimeSchema(),
+    ...(includeEntries ? { entries: { type: 'array', items: ledgerEntrySchema('account') } } : {}),
   });
 }
 
-function openApiResponseSchemaOverride(operationId) {
+function platformWithdrawalClubSchema() {
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    name: stringSchema(),
+    description: stringSchema({ nullable: true }),
+    type: stringSchema(),
+    addressJson: dynamicValueSchema('Dirección JSON almacenada por el runtime.', true),
+    contactJson: dynamicValueSchema('Contacto JSON almacenado por el runtime.', true),
+    coverImageUrl: stringSchema({ format: 'uri', nullable: true }),
+    profileImageUrl: stringSchema({ format: 'uri', nullable: true }),
+    socialMediaJson: dynamicValueSchema('Redes sociales JSON almacenadas por el runtime.', true),
+    scheduleJson: dynamicValueSchema('Horario JSON almacenado por el runtime.', true),
+    status: stringSchema({ enum: CLUB_STATUSES }),
+    createdAt: dateTimeSchema(),
+    updatedAt: dateTimeSchema(),
+  });
+}
+
+function platformWithdrawalRequesterSchema() {
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    phoneCountryCode: stringSchema(),
+    phoneNumber: stringSchema(),
+    phoneVerifiedAt: dateTimeSchema(true),
+    email: stringSchema({ format: 'email', nullable: true }),
+    emailVerifiedAt: dateTimeSchema(true),
+    passwordHash: stringSchema({
+      description: 'Hash de contraseña que el runtime actual incluye en esta relación.',
+      example: '$2b$12$hash.bcrypt.sanitizado',
+    }),
+    fullName: stringSchema(),
+    profileImageUrl: stringSchema({ format: 'uri', nullable: true }),
+    role: stringSchema({ enum: USER_ROLES }),
+    status: stringSchema({ enum: USER_STATUSES }),
+    createdAt: dateTimeSchema(),
+    updatedAt: dateTimeSchema(),
+  });
+}
+
+function openApiResponseSchemaOverride(operationId, inferredSchema, contracts) {
   switch (operationId) {
+    case 'ClubsController_getAdminDashboard':
+    case 'AdminEventsController_getAdminEventsDashboard':
+      return hasClubResponseSchema(operationId, inferredSchema);
+    case 'ClubsController_getCustomerHome':
+      return contracts.customerHome;
+    case 'ClubsController_exploreCustomerContent':
+    case 'ClubsController_getCustomerClubDetail':
+      return customerDiscoveryResponseSchema(operationId, inferredSchema, contracts.customerHome);
     case 'WalletsController_financialProfile':
       return publicFinancialProfileSchema(true);
     case 'WalletsController_upsertFinancialProfile':
@@ -527,50 +592,204 @@ function openApiResponseSchemaOverride(operationId) {
 }
 
 function nullableSchema(schema) {
-  if (schema.allOf?.some((item) => item.$ref === '#/components/schemas/JsonValue')) return schema;
+  if (isNullOnlySchema(schema)) return schema;
+  if (isDynamicSchema(schema)) return { ...schema, nullable: true };
   if (schema.oneOf) return { ...schema, oneOf: schema.oneOf.map(nullableSchema) };
+  if (schema.anyOf) return { ...schema, anyOf: schema.anyOf.map(nullableSchema) };
   if (schema.type) return { ...schema, nullable: true };
   return dynamicValueSchema();
 }
 
 function isDynamicSchema(schema) {
-  return schema.allOf?.some((item) => item.$ref === '#/components/schemas/JsonValue');
+  return schema?.allOf?.some((item) => item.$ref === '#/components/schemas/JsonValue');
 }
 
 function isNullOnlySchema(schema) {
-  return isDynamicSchema(schema) && schema.description === 'Valor null expuesto por el runtime.';
+  return (
+    schema === NULL_SCHEMA ||
+    schema?.['x-generated-null'] === true ||
+    (isDynamicSchema(schema) && schema.description === 'Valor null expuesto por el runtime.')
+  );
 }
 
-function mergeObjectSchemas(variants) {
-  const names = [...new Set(variants.flatMap((variant) => Object.keys(variant.properties ?? {})))];
-  const properties = {};
-  const required = [];
+function isNeverSchema(schema) {
+  return schema === NEVER_SCHEMA || schema?.['x-generated-never'] === true;
+}
+
+function nullOnlySchema(schema) {
+  return { ...nullableSchema(schema), enum: [null] };
+}
+
+function literalValues(schema) {
+  return Array.isArray(schema?.enum) && schema.enum.length > 0 ? schema.enum : undefined;
+}
+
+function hasDisjointLiteralProperty(variants) {
+  const commonRequiredNames = variants[0].required?.filter((name) =>
+    variants.every((variant) => variant.required?.includes(name)),
+  );
+
+  return commonRequiredNames?.some((name) => {
+    const values = variants.map((variant) => literalValues(variant.properties?.[name]));
+    if (values.some((value) => !value)) return false;
+    const seen = new Set();
+    for (const variantValues of values) {
+      for (const value of variantValues) {
+        const key = JSON.stringify(value);
+        if (seen.has(key)) return false;
+        seen.add(key);
+      }
+    }
+    return true;
+  });
+}
+
+function hasDisjointRequiredProperties(variants) {
+  return variants.every((left, leftIndex) =>
+    variants.every((right, rightIndex) => {
+      if (leftIndex >= rightIndex) return true;
+      const leftProperties = new Set(Object.keys(left.properties ?? {}));
+      const rightProperties = new Set(Object.keys(right.properties ?? {}));
+      return (
+        left.required?.some((name) => !rightProperties.has(name)) ||
+        right.required?.some((name) => !leftProperties.has(name))
+      );
+    }),
+  );
+}
+
+function harmonizeObjectUnionVariants(variants) {
+  const normalized = variants.map((variant) => ({
+    ...variant,
+    properties: { ...variant.properties },
+  }));
+  const names = [...new Set(normalized.flatMap((variant) => Object.keys(variant.properties)))];
 
   for (const name of names) {
-    const present = variants
-      .map((variant) => variant.properties?.[name])
+    const present = normalized
+      .map((variant) => variant.properties[name])
       .filter((schema) => schema !== undefined);
-    properties[name] = mergeSchemaVariants(present);
-    if (
-      present.length === variants.length &&
-      variants.every((variant) => variant.required?.includes(name))
-    ) {
-      required.push(name);
+    const concrete = present.filter((schema) => !isNullOnlySchema(schema));
+    if (concrete.length > 0 && concrete.length < present.length) {
+      const replacement = nullOnlySchema(mergeSchemaVariants(concrete));
+      for (const variant of normalized) {
+        if (isNullOnlySchema(variant.properties[name])) variant.properties[name] = replacement;
+      }
+    }
+
+    const arrays = present.filter((schema) => schema.type === 'array');
+    const concreteItems = arrays
+      .map((schema) => schema.items)
+      .filter((schema) => schema && !isNeverSchema(schema));
+    if (concreteItems.length > 0) {
+      const replacement = mergeSchemaVariants(concreteItems);
+      for (const variant of normalized) {
+        const property = variant.properties[name];
+        if (property?.type === 'array' && isNeverSchema(property.items)) {
+          variant.properties[name] = { ...property, items: replacement, maxItems: 0 };
+        }
+      }
     }
   }
 
+  return normalized;
+}
+
+function objectUnionSchema(rawVariants) {
+  const variants = harmonizeObjectUnionVariants(rawVariants);
+  const keyword =
+    hasDisjointLiteralProperty(variants) || hasDisjointRequiredProperties(variants)
+      ? 'oneOf'
+      : 'anyOf';
+  return { [keyword]: variants };
+}
+
+function unionVariants(schema) {
+  return schema.oneOf ?? schema.anyOf ?? [];
+}
+
+function variantWithLiteral(schema, propertyName, value) {
+  return unionVariants(schema).find((variant) =>
+    variant.properties?.[propertyName]?.enum?.some((item) => item === value),
+  );
+}
+
+function hasClubResponseSchema(operationId, inferredSchema) {
+  const variants = unionVariants(inferredSchema);
+  if (variants.length !== 2) {
+    throw new Error(`${operationId} must expose exactly its without-club and with-club variants.`);
+  }
+  const normalized = variants.map((variant) => {
+    const club = variant.properties?.club;
+    const hasClub = Boolean(club && club.enum?.[0] !== null);
+    return {
+      ...variant,
+      properties: {
+        ...variant.properties,
+        hasClub: {
+          ...variant.properties.hasClub,
+          enum: [hasClub],
+          example: hasClub,
+        },
+      },
+    };
+  });
+  return objectUnionSchema(normalized);
+}
+
+function customerHomeResponseSchema(inferredSchema) {
+  const variants = unionVariants(inferredSchema).filter(
+    (variant) => variant.properties?.message && variant.properties?.hasResults,
+  );
+  if (variants.length !== 2) {
+    throw new Error('Customer Home must expose exactly its empty and populated payload variants.');
+  }
+  const empty = variants.find((variant) => variant.properties.tickets?.maxItems === 0);
+  const populated = variants.find((variant) => variant.properties.tickets?.maxItems !== 0);
+  if (!empty || !populated) {
+    throw new Error('Customer Home must expose an empty and a populated tickets collection.');
+  }
+  const withLiteral = (variant, value) => ({
+    ...variant,
+    properties: {
+      ...variant.properties,
+      hasResults: { ...variant.properties.hasResults, enum: [value], example: value },
+    },
+  });
+  return objectUnionSchema([withLiteral(empty, false), withLiteral(populated, true)]);
+}
+
+function customerDiscoveryResponseSchema(operationId, inferredSchema, customerHomeSchema) {
+  const populatedHome = variantWithLiteral(customerHomeSchema, 'hasResults', true);
+  const emptyHome = variantWithLiteral(customerHomeSchema, 'hasResults', false);
+  const ticketItem = populatedHome?.properties?.tickets?.items;
+  const emptyState = emptyHome?.properties?.emptyState;
+  if (!ticketItem || !emptyState) {
+    throw new Error(`${operationId} requires the canonical Customer Home item schemas.`);
+  }
+
   return {
-    type: 'object',
-    properties,
-    ...(required.length ? { required } : {}),
-    additionalProperties: variants.every((variant) => variant.additionalProperties === false)
-      ? false
-      : true,
+    ...inferredSchema,
+    properties: {
+      ...inferredSchema.properties,
+      ...(operationId === 'ClubsController_exploreCustomerContent'
+        ? {
+            tickets: {
+              ...inferredSchema.properties.tickets,
+              items: ticketItem,
+              maxItems: 0,
+            },
+          }
+        : {}),
+      emptyState: nullOnlySchema(emptyState),
+    },
   };
 }
 
 function mergeSchemaVariants(variants) {
-  const unique = [...new Map(variants.map((item) => [JSON.stringify(item), item])).values()];
+  const possible = variants.filter((schema) => !isNeverSchema(schema));
+  if (possible.length === 0) return NEVER_SCHEMA;
+  const unique = [...new Map(possible.map((item) => [JSON.stringify(item), item])).values()];
   if (unique.length === 1) return unique[0];
 
   const withoutNull = unique.filter((schema) => !isNullOnlySchema(schema));
@@ -582,7 +801,7 @@ function mergeSchemaVariants(variants) {
   if (dynamic) return dynamic;
 
   if (unique.every((schema) => schema.type === 'object')) {
-    return mergeObjectSchemas(unique);
+    return objectUnionSchema(unique);
   }
 
   if (unique.every((schema) => schema.type === 'array')) {
@@ -611,7 +830,7 @@ function mergeSchemaVariants(variants) {
 function typeToSchema(type, location, depth = 0, stack = new Set()) {
   const flags = type.flags;
   if (flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return dynamicValueSchema();
-  if (flags & ts.TypeFlags.Never) return dynamicValueSchema();
+  if (flags & ts.TypeFlags.Never) return NEVER_SCHEMA;
   if (flags & ts.TypeFlags.StringLike) {
     if (type.isStringLiteral?.()) return { type: 'string', enum: [type.value] };
     return { type: 'string' };
@@ -627,7 +846,7 @@ function typeToSchema(type, location, depth = 0, stack = new Set()) {
       : { type: 'boolean' };
   }
   if (flags & ts.TypeFlags.BigIntLike) return { type: 'integer', format: 'int64' };
-  if (flags & ts.TypeFlags.Null) return dynamicValueSchema('Valor null expuesto por el runtime.');
+  if (flags & ts.TypeFlags.Null) return NULL_SCHEMA;
   if (flags & ts.TypeFlags.Undefined) return dynamicValueSchema();
 
   if (type.isUnion?.()) {
@@ -654,7 +873,7 @@ function typeToSchema(type, location, depth = 0, stack = new Set()) {
     const variants = meaningful.map((item) => typeToSchema(item, location, depth, stack));
     const unique = [...new Map(variants.map((item) => [JSON.stringify(item), item])).values()];
     const dynamic = unique.find(isDynamicSchema);
-    if (dynamic) return dynamic;
+    if (dynamic) return hasNull ? nullableSchema(dynamic) : dynamic;
     if (unique.length === 1) return hasNull ? nullableSchema(unique[0]) : unique[0];
     const merged = mergeSchemaVariants(unique);
     return hasNull ? nullableSchema(merged) : merged;
@@ -793,6 +1012,8 @@ function collectErrorCodes(root) {
   );
 }
 
+const controllerOperations = [];
+
 for (const sourceFile of program
   .getSourceFiles()
   .filter(
@@ -815,14 +1036,32 @@ for (const sourceFile of program
             description: 'Secuencia de eventos Server-Sent Events emitida por el runtime.',
           }
         : typeToSchema(checker.getReturnTypeOfSignature(signature), member);
-      if (!RESPONSE_SCHEMA_EXCLUSIONS.has(operationId)) {
-        schemas[`${operationId}Response`] =
-          openApiResponseSchemaOverride(operationId) ??
-          refinePaymentResponseSchema(operationId, responseSchema);
-      }
-      errorCodes[operationId] = collectErrorCodes(member);
+      controllerOperations.push({
+        operationId,
+        responseSchema,
+        collectedErrorCodes: collectErrorCodes(member),
+      });
     }
   });
+}
+
+const customerHomeOperation = controllerOperations.find(
+  ({ operationId }) => operationId === 'ClubsController_getCustomerHome',
+);
+if (!customerHomeOperation) {
+  throw new Error('The canonical Customer Home operation is required for response generation.');
+}
+const contracts = {
+  customerHome: customerHomeResponseSchema(customerHomeOperation.responseSchema),
+};
+
+for (const { operationId, responseSchema, collectedErrorCodes } of controllerOperations) {
+  if (!RESPONSE_SCHEMA_EXCLUSIONS.has(operationId)) {
+    schemas[`${operationId}Response`] =
+      openApiResponseSchemaOverride(operationId, responseSchema, contracts) ??
+      refinePaymentResponseSchema(operationId, responseSchema);
+  }
+  errorCodes[operationId] = collectedErrorCodes;
 }
 
 const target = path.join(

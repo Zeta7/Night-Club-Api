@@ -72,6 +72,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   $ref: '#/components/schemas/JsonValue',
                 },
               ],
+              nullable: true,
             },
             readAt: {
               type: 'string',
@@ -2499,243 +2500,932 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   ClubsController_getAdminDashboardResponse: {
-    type: 'object',
-    properties: {
-      message: {
-        type: 'string',
-        description: 'Mensaje legible que resume el resultado.',
-      },
-      hasClub: {
-        type: 'boolean',
-        description: 'Campo has club expuesto por el runtime actual.',
-        example: false,
-      },
-      club: {
+    oneOf: [
+      {
         type: 'object',
         properties: {
-          id: {
+          message: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Mensaje legible que resume el resultado.',
           },
-          name: {
-            type: 'string',
-            description: 'Campo name expuesto por el runtime actual.',
-            example: 'Nébula Club',
+          hasClub: {
+            type: 'boolean',
+            description: 'Campo has club expuesto por el runtime actual.',
+            example: false,
+            enum: [false],
           },
-          description: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo description expuesto por el runtime actual.',
-          },
-          type: {
-            type: 'string',
-            description: 'Campo type expuesto por el runtime actual.',
-          },
-          status: {
-            type: 'string',
-            enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'ACTIVE',
-          },
-          profileImage: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo profile image expuesto por el runtime actual.',
-          },
-          coverImage: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo cover image expuesto por el runtime actual.',
-          },
-          address: {
-            description: 'Valor JSON dinámico expuesto por el runtime.',
-            allOf: [
-              {
-                $ref: '#/components/schemas/JsonValue',
-              },
-            ],
-          },
-          contact: {
-            description: 'Valor JSON dinámico expuesto por el runtime.',
-            allOf: [
-              {
-                $ref: '#/components/schemas/JsonValue',
-              },
-            ],
-          },
-          socialMedia: {
-            description: 'Valor JSON dinámico expuesto por el runtime.',
-            allOf: [
-              {
-                $ref: '#/components/schemas/JsonValue',
-              },
-            ],
-          },
-          schedule: {
-            description: 'Valor JSON dinámico expuesto por el runtime.',
-            allOf: [
-              {
-                $ref: '#/components/schemas/JsonValue',
-              },
-            ],
-          },
-        },
-        required: [
-          'id',
-          'name',
-          'description',
-          'type',
-          'status',
-          'profileImage',
-          'coverImage',
-          'address',
-          'contact',
-          'socialMedia',
-          'schedule',
-        ],
-        additionalProperties: false,
-        description: 'Campo club expuesto por el runtime actual.',
-        nullable: true,
-      },
-      emptyState: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-            description: 'Campo title expuesto por el runtime actual.',
-          },
-          text: {
-            type: 'string',
-            description: 'Campo text expuesto por el runtime actual.',
-          },
-          actionLabel: {
-            type: 'string',
-            description: 'Campo action label expuesto por el runtime actual.',
-          },
-        },
-        required: ['title', 'text', 'actionLabel'],
-        additionalProperties: false,
-        description: 'Campo empty state expuesto por el runtime actual.',
-      },
-      features: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            icon: {
-              type: 'string',
-              description: 'Campo icon expuesto por el runtime actual.',
-            },
-            title: {
-              type: 'string',
-              description: 'Campo title expuesto por el runtime actual.',
-            },
-            text: {
-              type: 'string',
-              description: 'Campo text expuesto por el runtime actual.',
-            },
-          },
-          required: ['icon', 'title', 'text'],
-          additionalProperties: false,
-        },
-        description: 'Campo features expuesto por el runtime actual.',
-      },
-      workerContext: {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          roleLabel: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo role label expuesto por el runtime actual.',
-          },
-          status: {
-            type: 'string',
-            enum: ['ACTIVE', 'INACTIVE'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'ACTIVE',
-          },
-          permissions: {
-            type: 'array',
-            items: {
-              type: 'string',
-              enum: [
-                'VALIDATE_TICKETS',
-                'VALIDATE_PRODUCTS',
-                'VALIDATE_PROMOTIONS',
-                'VIEW_CAPACITY',
-                'MANAGE_CAPACITY',
-                'VIEW_DASHBOARD',
-                'VIEW_EVENT_ATTENDANCE',
-                'VIEW_SALES',
-                'REQUEST_REFUNDS',
-                'VIEW_OPERATIONS',
-                'MANAGE_BUSINESS_CONFIG',
-              ],
-            },
-            description: 'Campo permissions expuesto por el runtime actual.',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
-          },
-          user: {
+          club: {
             type: 'object',
             properties: {
               id: {
                 type: 'string',
                 format: 'uuid',
                 description: 'Identificador UUID del recurso.',
+                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              },
+              name: {
+                type: 'string',
+                description: 'Campo name expuesto por el runtime actual.',
+                example: 'Nébula Club',
+              },
+              description: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo description expuesto por el runtime actual.',
+              },
+              type: {
+                type: 'string',
+                description: 'Campo type expuesto por el runtime actual.',
+              },
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'ACTIVE',
+              },
+              profileImage: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo profile image expuesto por el runtime actual.',
+              },
+              coverImage: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo cover image expuesto por el runtime actual.',
+              },
+              address: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+              contact: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+              socialMedia: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+              schedule: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+            },
+            required: [
+              'id',
+              'name',
+              'description',
+              'type',
+              'status',
+              'profileImage',
+              'coverImage',
+              'address',
+              'contact',
+              'socialMedia',
+              'schedule',
+            ],
+            additionalProperties: false,
+            description: 'Campo club expuesto por el runtime actual.',
+            nullable: true,
+            enum: [null],
+          },
+          emptyState: {
+            type: 'object',
+            properties: {
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              text: {
+                type: 'string',
+                description: 'Campo text expuesto por el runtime actual.',
+              },
+              actionLabel: {
+                type: 'string',
+                description: 'Campo action label expuesto por el runtime actual.',
+              },
+            },
+            required: ['title', 'text', 'actionLabel'],
+            additionalProperties: false,
+            description: 'Campo empty state expuesto por el runtime actual.',
+          },
+          features: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                icon: {
+                  type: 'string',
+                  description: 'Campo icon expuesto por el runtime actual.',
+                },
+                title: {
+                  type: 'string',
+                  description: 'Campo title expuesto por el runtime actual.',
+                },
+                text: {
+                  type: 'string',
+                  description: 'Campo text expuesto por el runtime actual.',
+                },
+              },
+              required: ['icon', 'title', 'text'],
+              additionalProperties: false,
+            },
+            description: 'Campo features expuesto por el runtime actual.',
+          },
+        },
+        required: ['message', 'hasClub', 'club', 'emptyState', 'features'],
+        additionalProperties: false,
+      },
+      {
+        type: 'object',
+        properties: {
+          message: {
+            type: 'string',
+            description: 'Mensaje legible que resume el resultado.',
+          },
+          hasClub: {
+            type: 'boolean',
+            description: 'Campo has club expuesto por el runtime actual.',
+            example: true,
+            enum: [true],
+          },
+          club: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Identificador UUID del recurso.',
+                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              },
+              name: {
+                type: 'string',
+                description: 'Campo name expuesto por el runtime actual.',
+                example: 'Nébula Club',
+              },
+              description: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo description expuesto por el runtime actual.',
+              },
+              type: {
+                type: 'string',
+                description: 'Campo type expuesto por el runtime actual.',
+              },
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'ACTIVE',
+              },
+              profileImage: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo profile image expuesto por el runtime actual.',
+              },
+              coverImage: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo cover image expuesto por el runtime actual.',
+              },
+              address: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+              contact: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+              socialMedia: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+              schedule: {
+                description: 'Valor JSON dinámico expuesto por el runtime.',
+                allOf: [
+                  {
+                    $ref: '#/components/schemas/JsonValue',
+                  },
+                ],
+              },
+            },
+            required: [
+              'id',
+              'name',
+              'description',
+              'type',
+              'status',
+              'profileImage',
+              'coverImage',
+              'address',
+              'contact',
+              'socialMedia',
+              'schedule',
+            ],
+            additionalProperties: false,
+            description: 'Campo club expuesto por el runtime actual.',
+          },
+          workerContext: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Identificador UUID del recurso.',
+                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              },
+              clubId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo club id expuesto por el runtime actual.',
+                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              },
+              userId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo user id expuesto por el runtime actual.',
                 example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
               },
-              fullName: {
+              roleLabel: {
                 type: 'string',
-                description: 'Campo full name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              phoneCountryCode: {
-                type: 'string',
-                description: 'Campo phone country code expuesto por el runtime actual.',
-                example: '+51',
-              },
-              phoneNumber: {
-                type: 'string',
-                description: 'Campo phone number expuesto por el runtime actual.',
-                example: '987654321',
-              },
-              email: {
-                type: 'string',
-                format: 'email',
                 nullable: true,
-                description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
+                description: 'Campo role label expuesto por el runtime actual.',
+              },
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'ACTIVE',
+              },
+              permissions: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  enum: [
+                    'VALIDATE_TICKETS',
+                    'VALIDATE_PRODUCTS',
+                    'VALIDATE_PROMOTIONS',
+                    'VIEW_CAPACITY',
+                    'MANAGE_CAPACITY',
+                    'VIEW_DASHBOARD',
+                    'VIEW_EVENT_ATTENDANCE',
+                    'VIEW_SALES',
+                    'REQUEST_REFUNDS',
+                    'VIEW_OPERATIONS',
+                    'MANAGE_BUSINESS_CONFIG',
+                  ],
+                },
+                description: 'Campo permissions expuesto por el runtime actual.',
+              },
+              createdAt: {
+                type: 'string',
+                format: 'date-time',
+                description: 'Fecha y hora de creación en formato ISO 8601.',
+                example: '2026-08-27T18:30:00.000Z',
+              },
+              updatedAt: {
+                type: 'string',
+                format: 'date-time',
+                description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                example: '2026-08-28T14:15:00.000Z',
+              },
+              user: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: 'Identificador UUID del recurso.',
+                    example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  },
+                  fullName: {
+                    type: 'string',
+                    description: 'Campo full name expuesto por el runtime actual.',
+                    example: 'Valeria Mendoza',
+                  },
+                  phoneCountryCode: {
+                    type: 'string',
+                    description: 'Campo phone country code expuesto por el runtime actual.',
+                    example: '+51',
+                  },
+                  phoneNumber: {
+                    type: 'string',
+                    description: 'Campo phone number expuesto por el runtime actual.',
+                    example: '987654321',
+                  },
+                  email: {
+                    type: 'string',
+                    format: 'email',
+                    nullable: true,
+                    description: 'Campo email expuesto por el runtime actual.',
+                    example: 'valeria.mendoza@correo.pe',
+                  },
+                  role: {
+                    type: 'string',
+                    enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
+                    description: 'Campo role expuesto por el runtime actual.',
+                    example: 'WORKER',
+                  },
+                  status: {
+                    type: 'string',
+                    enum: ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'],
+                    description: 'Estado actual expuesto por el runtime.',
+                    example: 'PENDING_PHONE_CONFIRMATION',
+                  },
+                },
+                required: [
+                  'id',
+                  'fullName',
+                  'phoneCountryCode',
+                  'phoneNumber',
+                  'email',
+                  'role',
+                  'status',
+                ],
+                additionalProperties: false,
+                description: 'Campo user expuesto por el runtime actual.',
+              },
+            },
+            required: [
+              'id',
+              'clubId',
+              'userId',
+              'roleLabel',
+              'status',
+              'permissions',
+              'createdAt',
+              'updatedAt',
+              'user',
+            ],
+            additionalProperties: false,
+            nullable: true,
+            description: 'Campo worker context expuesto por el runtime actual.',
+          },
+          summary: {
+            type: 'object',
+            properties: {
+              capacity: {
+                type: 'object',
+                properties: {
+                  current: {
+                    type: 'number',
+                    description: 'Campo current expuesto por el runtime actual.',
+                  },
+                  total: {
+                    type: 'number',
+                    description: 'Campo total expuesto por el runtime actual.',
+                    example: 1,
+                  },
+                },
+                required: ['current', 'total'],
+                additionalProperties: false,
+                description: 'Campo capacity expuesto por el runtime actual.',
+              },
+              counts: {
+                type: 'object',
+                properties: {
+                  events: {
+                    type: 'number',
+                    description: 'Campo events expuesto por el runtime actual.',
+                  },
+                  activeEvents: {
+                    type: 'number',
+                    description: 'Campo active events expuesto por el runtime actual.',
+                  },
+                  promotions: {
+                    type: 'number',
+                    description: 'Campo promotions expuesto por el runtime actual.',
+                  },
+                  products: {
+                    type: 'number',
+                    description: 'Campo products expuesto por el runtime actual.',
+                  },
+                },
+                required: ['events', 'activeEvents', 'promotions', 'products'],
+                additionalProperties: false,
+                description: 'Campo counts expuesto por el runtime actual.',
+              },
+            },
+            required: ['capacity', 'counts'],
+            additionalProperties: false,
+            description: 'Campo summary expuesto por el runtime actual.',
+          },
+          metrics: {
+            type: 'object',
+            properties: {
+              sales: {
+                type: 'object',
+                properties: {
+                  amount: {
+                    type: 'number',
+                    description: 'Campo amount expuesto por el runtime actual.',
+                  },
+                  currency: {
+                    type: 'string',
+                    description: 'Campo currency expuesto por el runtime actual.',
+                  },
+                  trendPercent: {
+                    type: 'number',
+                    description: 'Campo trend percent expuesto por el runtime actual.',
+                  },
+                },
+                required: ['amount', 'currency', 'trendPercent'],
+                additionalProperties: false,
+                description: 'Campo sales expuesto por el runtime actual.',
+              },
+              purchases: {
+                type: 'number',
+                description: 'Campo purchases expuesto por el runtime actual.',
+              },
+              validatedQr: {
+                type: 'number',
+                description: 'Campo validated qr expuesto por el runtime actual.',
+              },
+              customers: {
+                type: 'number',
+                description: 'Campo customers expuesto por el runtime actual.',
+              },
+            },
+            required: ['sales', 'purchases', 'validatedQr', 'customers'],
+            additionalProperties: false,
+            description: 'Campo metrics expuesto por el runtime actual.',
+          },
+          upcomingEvents: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                capacity: {
+                  type: 'number',
+                  description: 'Campo capacity expuesto por el runtime actual.',
+                },
+                sold: {
+                  type: 'number',
+                  description: 'Campo sold expuesto por el runtime actual.',
+                },
+                priceFrom: {
+                  type: 'number',
+                  description: 'Campo price from expuesto por el runtime actual.',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'CANCELLED',
+                    'POSTPONED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'DRAFT',
+                },
+              },
+              required: [
+                'id',
+                'name',
+                'imageUrl',
+                'startsAt',
+                'endsAt',
+                'capacity',
+                'sold',
+                'priceFrom',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo upcoming events expuesto por el runtime actual.',
+          },
+          quickActions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                key: {
+                  type: 'string',
+                  description: 'Campo key expuesto por el runtime actual.',
+                },
+                label: {
+                  type: 'string',
+                  description: 'Campo label expuesto por el runtime actual.',
+                },
+                icon: {
+                  type: 'string',
+                  description: 'Campo icon expuesto por el runtime actual.',
+                },
+              },
+              required: ['key', 'label', 'icon'],
+              additionalProperties: false,
+            },
+            description: 'Campo quick actions expuesto por el runtime actual.',
+          },
+          alerts: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                severity: {
+                  type: 'string',
+                  description: 'Campo severity expuesto por el runtime actual.',
+                },
+                resourceId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo resource id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                title: {
+                  type: 'string',
+                  description: 'Campo title expuesto por el runtime actual.',
+                },
+                value: {
+                  type: 'number',
+                  description: 'Campo value expuesto por el runtime actual.',
+                },
+              },
+              required: ['type', 'severity', 'resourceId', 'title', 'value'],
+              additionalProperties: false,
+            },
+            description: 'Campo alerts expuesto por el runtime actual.',
+          },
+          latestSales: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                customerName: {
+                  type: 'string',
+                  description: 'Campo customer name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                amount: {
+                  type: 'number',
+                  description: 'Campo amount expuesto por el runtime actual.',
+                },
+                amountCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Importe expresado en céntimos.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'PENDING',
+                    'FAILED',
+                    'CANCELLED',
+                    'PAID',
+                    'EXPIRED',
+                    'REFUND_PENDING',
+                    'REFUNDED',
+                    'PARTIALLY_REFUNDED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'PENDING',
+                },
+                paymentStatus: {
+                  type: 'string',
+                  enum: [
+                    'PENDING',
+                    'CANCELLED',
+                    'EXPIRED',
+                    'REFUND_PENDING',
+                    'REFUNDED',
+                    'PARTIALLY_REFUNDED',
+                    'APPROVED',
+                    'REJECTED',
+                  ],
+                  description: 'Campo payment status expuesto por el runtime actual.',
+                  example: 'PENDING',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                paidAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo paid at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:05:00.000Z',
+                },
+                category: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo category expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                items: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        format: 'uuid',
+                        description: 'Identificador UUID del recurso.',
+                        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                      },
+                      type: {
+                        type: 'string',
+                        enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                        description: 'Campo type expuesto por el runtime actual.',
+                        example: 'PROMOTION',
+                      },
+                      name: {
+                        type: 'string',
+                        description: 'Campo name expuesto por el runtime actual.',
+                        example: 'Nébula Club',
+                      },
+                      quantity: {
+                        type: 'integer',
+                        format: 'int32',
+                        description: 'Campo quantity expuesto por el runtime actual.',
+                      },
+                      totalCents: {
+                        type: 'integer',
+                        format: 'int64',
+                        description: 'Importe total expresado en céntimos.',
+                        example: 1500,
+                      },
+                    },
+                    required: ['id', 'type', 'name', 'quantity', 'totalCents'],
+                    additionalProperties: false,
+                  },
+                  description: 'Campo items expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'id',
+                'customerName',
+                'amount',
+                'amountCents',
+                'currency',
+                'status',
+                'paymentStatus',
+                'createdAt',
+                'paidAt',
+                'category',
+                'items',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo latest sales expuesto por el runtime actual.',
+          },
+          topProducts: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                stockQuantity: {
+                  type: 'number',
+                  description: 'Campo stock quantity expuesto por el runtime actual.',
+                  example: 1,
+                },
+                price: {
+                  type: 'number',
+                  description: 'Campo price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
+                },
+              },
+              required: ['id', 'name', 'stockQuantity', 'price', 'currency', 'status', 'imageUrl'],
+              additionalProperties: false,
+            },
+            description: 'Campo top products expuesto por el runtime actual.',
+          },
+          topPromotions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Combo de bienvenida',
+                },
+                finalPrice: {
+                  type: 'number',
+                  description: 'Campo final price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+                itemsCount: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo items count expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
+                },
+              },
+              required: [
+                'id',
+                'name',
+                'finalPrice',
+                'currency',
+                'status',
+                'itemsCount',
+                'imageUrl',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo top promotions expuesto por el runtime actual.',
+          },
+          recentActivity: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                actorName: {
+                  type: 'string',
+                  description: 'Campo actor name expuesto por el runtime actual.',
+                  example: 'Valeria Mendoza',
+                },
+                action: {
+                  type: 'string',
+                  description: 'Campo action expuesto por el runtime actual.',
+                },
+                resourceType: {
+                  type: 'string',
+                  description: 'Campo resource type expuesto por el runtime actual.',
+                },
+                resourceId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo resource id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+              },
+              required: ['id', 'actorName', 'action', 'resourceType', 'resourceId', 'createdAt'],
+              additionalProperties: false,
+            },
+            description: 'Campo recent activity expuesto por el runtime actual.',
+          },
+        },
+        required: [
+          'message',
+          'hasClub',
+          'club',
+          'workerContext',
+          'summary',
+          'metrics',
+          'upcomingEvents',
+          'quickActions',
+          'alerts',
+          'latestSales',
+          'topProducts',
+          'topPromotions',
+          'recentActivity',
+        ],
+        additionalProperties: false,
+      },
+    ],
+  },
+  ClubsController_getCustomerHomeResponse: {
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          viewer: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Identificador UUID del recurso.',
+                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
               },
               role: {
                 type: 'string',
@@ -2743,694 +3433,1270 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 description: 'Campo role expuesto por el runtime actual.',
                 example: 'WORKER',
               },
-              status: {
+            },
+            required: ['id', 'role'],
+            additionalProperties: false,
+            description: 'Campo viewer expuesto por el runtime actual.',
+          },
+          message: {
+            type: 'string',
+            description: 'Mensaje legible que resume el resultado.',
+          },
+          location: {
+            type: 'object',
+            properties: {
+              district: {
                 type: 'string',
-                enum: ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'PENDING_PHONE_CONFIRMATION',
+                description: 'Campo district expuesto por el runtime actual.',
+              },
+              province: {
+                type: 'string',
+                description: 'Campo province expuesto por el runtime actual.',
+              },
+              department: {
+                type: 'string',
+                description: 'Campo department expuesto por el runtime actual.',
               },
             },
-            required: [
-              'id',
-              'fullName',
-              'phoneCountryCode',
-              'phoneNumber',
-              'email',
-              'role',
-              'status',
-            ],
+            required: ['district', 'province', 'department'],
             additionalProperties: false,
-            description: 'Campo user expuesto por el runtime actual.',
+            description: 'Campo location expuesto por el runtime actual.',
+          },
+          hasResults: {
+            type: 'boolean',
+            description: 'Campo has results expuesto por el runtime actual.',
+            example: false,
+            enum: [false],
+          },
+          clubs: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                profileImage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo profile image expuesto por el runtime actual.',
+                },
+                coverImage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo cover image expuesto por el runtime actual.',
+                },
+                address: {
+                  type: 'object',
+                  properties: {
+                    direccion: {
+                      type: 'string',
+                      description: 'Campo direccion expuesto por el runtime actual.',
+                    },
+                    distrito: {
+                      type: 'string',
+                      description: 'Campo distrito expuesto por el runtime actual.',
+                    },
+                    provincia: {
+                      type: 'string',
+                      description: 'Campo provincia expuesto por el runtime actual.',
+                    },
+                    departamento: {
+                      type: 'string',
+                      description: 'Campo departamento expuesto por el runtime actual.',
+                    },
+                    pais: {
+                      type: 'string',
+                      description: 'Campo pais expuesto por el runtime actual.',
+                    },
+                  },
+                  required: ['direccion', 'distrito', 'provincia', 'departamento', 'pais'],
+                  additionalProperties: false,
+                  description: 'Campo address expuesto por el runtime actual.',
+                },
+                contact: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                },
+                schedule: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      day: {
+                        type: 'string',
+                        description: 'Campo day expuesto por el runtime actual.',
+                      },
+                      isOpen: {
+                        type: 'boolean',
+                        description: 'Campo is open expuesto por el runtime actual.',
+                        example: false,
+                      },
+                      openTime: {
+                        type: 'string',
+                        description: 'Campo open time expuesto por el runtime actual.',
+                      },
+                      closeTime: {
+                        type: 'string',
+                        description: 'Campo close time expuesto por el runtime actual.',
+                      },
+                    },
+                    required: ['day', 'isOpen', 'openTime', 'closeTime'],
+                    additionalProperties: false,
+                  },
+                  description: 'Campo schedule expuesto por el runtime actual.',
+                },
+                isOpenNow: {
+                  type: 'boolean',
+                  description: 'Campo is open now expuesto por el runtime actual.',
+                  example: false,
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+              },
+              required: [
+                'id',
+                'name',
+                'description',
+                'type',
+                'profileImage',
+                'coverImage',
+                'address',
+                'contact',
+                'schedule',
+                'isOpenNow',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo clubs expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          events: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'CANCELLED',
+                    'POSTPONED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'DRAFT',
+                },
+                capacity: {
+                  type: 'number',
+                  description: 'Campo capacity expuesto por el runtime actual.',
+                },
+                sold: {
+                  type: 'number',
+                  description: 'Campo sold expuesto por el runtime actual.',
+                },
+                priceFrom: {
+                  type: 'number',
+                  nullable: true,
+                  description: 'Campo price from expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'name',
+                'description',
+                'imageUrl',
+                'startsAt',
+                'endsAt',
+                'status',
+                'capacity',
+                'sold',
+                'priceFrom',
+                'currency',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo events expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          tickets: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                eventId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo event id expuesto por el runtime actual.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                eventName: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo event name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Entrada VIP',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                price: {
+                  type: 'number',
+                  description: 'Campo price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                quantityAvailable: {
+                  type: 'number',
+                  description: 'Campo quantity available expuesto por el runtime actual.',
+                  example: 1,
+                },
+                perUserLimit: {
+                  type: 'number',
+                  nullable: true,
+                  description: 'Campo per user limit expuesto por el runtime actual.',
+                },
+                saleStartAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo sale start at expuesto por el runtime actual.',
+                  example: '2026-09-01T12:00:00.000Z',
+                },
+                saleEndAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo sale end at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'eventId',
+                'eventName',
+                'imageUrl',
+                'name',
+                'description',
+                'price',
+                'currency',
+                'quantityAvailable',
+                'perUserLimit',
+                'saleStartAt',
+                'saleEndAt',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo tickets expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          promotions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                eventId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo event id expuesto por el runtime actual.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                eventName: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo event name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Combo de bienvenida',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
+                },
+                finalPrice: {
+                  type: 'number',
+                  description: 'Campo final price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+                itemsCount: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo items count expuesto por el runtime actual.',
+                },
+                scope: {
+                  type: 'string',
+                  description: 'Campo scope expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'eventId',
+                'eventName',
+                'name',
+                'description',
+                'imageUrl',
+                'finalPrice',
+                'currency',
+                'startsAt',
+                'endsAt',
+                'status',
+                'itemsCount',
+                'scope',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo promotions expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          products: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
+                },
+                price: {
+                  type: 'number',
+                  description: 'Campo price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                stockQuantity: {
+                  type: 'number',
+                  description: 'Campo stock quantity expuesto por el runtime actual.',
+                  example: 1,
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'name',
+                'description',
+                'imageUrl',
+                'price',
+                'currency',
+                'stockQuantity',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo products expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          emptyState: {
+            type: 'object',
+            properties: {
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              text: {
+                type: 'string',
+                description: 'Campo text expuesto por el runtime actual.',
+              },
+              sections: {
+                type: 'object',
+                properties: {
+                  clubs: {
+                    type: 'string',
+                    description: 'Campo clubs expuesto por el runtime actual.',
+                  },
+                  events: {
+                    type: 'string',
+                    description: 'Campo events expuesto por el runtime actual.',
+                  },
+                  promotions: {
+                    type: 'string',
+                    description: 'Campo promotions expuesto por el runtime actual.',
+                  },
+                  products: {
+                    type: 'string',
+                    description: 'Campo products expuesto por el runtime actual.',
+                  },
+                },
+                required: ['clubs', 'events', 'promotions', 'products'],
+                additionalProperties: false,
+                description: 'Campo sections expuesto por el runtime actual.',
+              },
+            },
+            required: ['title', 'text', 'sections'],
+            additionalProperties: false,
+            description: 'Campo empty state expuesto por el runtime actual.',
           },
         },
         required: [
-          'id',
-          'clubId',
-          'userId',
-          'roleLabel',
-          'status',
-          'permissions',
-          'createdAt',
-          'updatedAt',
-          'user',
+          'viewer',
+          'message',
+          'location',
+          'hasResults',
+          'clubs',
+          'events',
+          'tickets',
+          'promotions',
+          'products',
+          'emptyState',
         ],
         additionalProperties: false,
-        nullable: true,
-        description: 'Campo worker context expuesto por el runtime actual.',
       },
-      summary: {
+      {
         type: 'object',
         properties: {
-          capacity: {
+          viewer: {
             type: 'object',
             properties: {
-              current: {
-                type: 'number',
-                description: 'Campo current expuesto por el runtime actual.',
-              },
-              total: {
-                type: 'number',
-                description: 'Campo total expuesto por el runtime actual.',
-                example: 1,
-              },
-            },
-            required: ['current', 'total'],
-            additionalProperties: false,
-            description: 'Campo capacity expuesto por el runtime actual.',
-          },
-          counts: {
-            type: 'object',
-            properties: {
-              events: {
-                type: 'number',
-                description: 'Campo events expuesto por el runtime actual.',
-              },
-              activeEvents: {
-                type: 'number',
-                description: 'Campo active events expuesto por el runtime actual.',
-              },
-              promotions: {
-                type: 'number',
-                description: 'Campo promotions expuesto por el runtime actual.',
-              },
-              products: {
-                type: 'number',
-                description: 'Campo products expuesto por el runtime actual.',
-              },
-            },
-            required: ['events', 'activeEvents', 'promotions', 'products'],
-            additionalProperties: false,
-            description: 'Campo counts expuesto por el runtime actual.',
-          },
-        },
-        required: ['capacity', 'counts'],
-        additionalProperties: false,
-        description: 'Campo summary expuesto por el runtime actual.',
-      },
-      metrics: {
-        type: 'object',
-        properties: {
-          sales: {
-            type: 'object',
-            properties: {
-              amount: {
-                type: 'number',
-                description: 'Campo amount expuesto por el runtime actual.',
-              },
-              currency: {
+              id: {
                 type: 'string',
-                description: 'Campo currency expuesto por el runtime actual.',
+                format: 'uuid',
+                description: 'Identificador UUID del recurso.',
+                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
               },
-              trendPercent: {
-                type: 'number',
-                description: 'Campo trend percent expuesto por el runtime actual.',
+              role: {
+                type: 'string',
+                enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
+                description: 'Campo role expuesto por el runtime actual.',
+                example: 'WORKER',
               },
             },
-            required: ['amount', 'currency', 'trendPercent'],
+            required: ['id', 'role'],
             additionalProperties: false,
-            description: 'Campo sales expuesto por el runtime actual.',
+            description: 'Campo viewer expuesto por el runtime actual.',
           },
-          purchases: {
-            type: 'number',
-            description: 'Campo purchases expuesto por el runtime actual.',
+          message: {
+            type: 'string',
+            description: 'Mensaje legible que resume el resultado.',
           },
-          validatedQr: {
-            type: 'number',
-            description: 'Campo validated qr expuesto por el runtime actual.',
+          location: {
+            type: 'object',
+            properties: {
+              district: {
+                type: 'string',
+                description: 'Campo district expuesto por el runtime actual.',
+              },
+              province: {
+                type: 'string',
+                description: 'Campo province expuesto por el runtime actual.',
+              },
+              department: {
+                type: 'string',
+                description: 'Campo department expuesto por el runtime actual.',
+              },
+            },
+            required: ['district', 'province', 'department'],
+            additionalProperties: false,
+            description: 'Campo location expuesto por el runtime actual.',
           },
-          customers: {
-            type: 'number',
-            description: 'Campo customers expuesto por el runtime actual.',
+          hasResults: {
+            type: 'boolean',
+            description: 'Campo has results expuesto por el runtime actual.',
+            example: true,
+            enum: [true],
           },
-        },
-        required: ['sales', 'purchases', 'validatedQr', 'customers'],
-        additionalProperties: false,
-        description: 'Campo metrics expuesto por el runtime actual.',
-      },
-      upcomingEvents: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-            },
-            name: {
-              type: 'string',
-              description: 'Campo name expuesto por el runtime actual.',
-              example: 'Noche Latina',
-            },
-            imageUrl: {
-              type: 'string',
-              format: 'uri',
-              nullable: true,
-              description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
-            },
-            startsAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Campo starts at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            endsAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Campo ends at expuesto por el runtime actual.',
-              example: '2026-09-20T05:00:00.000Z',
-            },
-            capacity: {
-              type: 'number',
-              description: 'Campo capacity expuesto por el runtime actual.',
-            },
-            sold: {
-              type: 'number',
-              description: 'Campo sold expuesto por el runtime actual.',
-            },
-            priceFrom: {
-              type: 'number',
-              description: 'Campo price from expuesto por el runtime actual.',
-            },
-            status: {
-              type: 'string',
-              enum: [
-                'DRAFT',
-                'PUBLISHED',
-                'SALE_ACTIVE',
-                'SOLD_OUT',
-                'IN_PROGRESS',
-                'FINISHED',
-                'CANCELLED',
-                'POSTPONED',
-              ],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'DRAFT',
-            },
-          },
-          required: [
-            'id',
-            'name',
-            'imageUrl',
-            'startsAt',
-            'endsAt',
-            'capacity',
-            'sold',
-            'priceFrom',
-            'status',
-          ],
-          additionalProperties: false,
-        },
-        description: 'Campo upcoming events expuesto por el runtime actual.',
-      },
-      quickActions: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            key: {
-              type: 'string',
-              description: 'Campo key expuesto por el runtime actual.',
-            },
-            label: {
-              type: 'string',
-              description: 'Campo label expuesto por el runtime actual.',
-            },
-            icon: {
-              type: 'string',
-              description: 'Campo icon expuesto por el runtime actual.',
-            },
-          },
-          required: ['key', 'label', 'icon'],
-          additionalProperties: false,
-        },
-        description: 'Campo quick actions expuesto por el runtime actual.',
-      },
-      alerts: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            type: {
-              type: 'string',
-              description: 'Campo type expuesto por el runtime actual.',
-            },
-            severity: {
-              type: 'string',
-              description: 'Campo severity expuesto por el runtime actual.',
-            },
-            resourceId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo resource id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            title: {
-              type: 'string',
-              description: 'Campo title expuesto por el runtime actual.',
-            },
-            value: {
-              type: 'number',
-              description: 'Campo value expuesto por el runtime actual.',
-            },
-          },
-          required: ['type', 'severity', 'resourceId', 'title', 'value'],
-          additionalProperties: false,
-        },
-        description: 'Campo alerts expuesto por el runtime actual.',
-      },
-      latestSales: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            customerName: {
-              type: 'string',
-              description: 'Campo customer name expuesto por el runtime actual.',
-              example: 'Nébula Club',
-            },
-            amount: {
-              type: 'number',
-              description: 'Campo amount expuesto por el runtime actual.',
-            },
-            amountCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Importe expresado en céntimos.',
-              example: 1500,
-            },
-            currency: {
-              type: 'string',
-              description: 'Campo currency expuesto por el runtime actual.',
-            },
-            status: {
-              type: 'string',
-              enum: [
-                'PENDING',
-                'FAILED',
-                'CANCELLED',
-                'PAID',
-                'EXPIRED',
-                'REFUND_PENDING',
-                'REFUNDED',
-                'PARTIALLY_REFUNDED',
-              ],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'PENDING',
-            },
-            paymentStatus: {
-              type: 'string',
-              enum: [
-                'PENDING',
-                'APPROVED',
-                'REJECTED',
-                'EXPIRED',
-                'CANCELLED',
-                'REFUND_PENDING',
-                'REFUNDED',
-                'PARTIALLY_REFUNDED',
-              ],
-              description: 'Campo payment status expuesto por el runtime actual.',
-              example: 'PENDING',
-              nullable: true,
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-            paidAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo paid at expuesto por el runtime actual.',
-              example: '2026-09-19T22:05:00.000Z',
-            },
-            category: {
-              type: 'string',
-              enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-              description: 'Campo category expuesto por el runtime actual.',
-              example: 'PROMOTION',
-            },
+          clubs: {
+            type: 'array',
             items: {
-              type: 'array',
-              items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                profileImage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo profile image expuesto por el runtime actual.',
+                },
+                coverImage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo cover image expuesto por el runtime actual.',
+                },
+                address: {
+                  type: 'object',
+                  properties: {
+                    direccion: {
+                      type: 'string',
+                      description: 'Campo direccion expuesto por el runtime actual.',
+                    },
+                    distrito: {
+                      type: 'string',
+                      description: 'Campo distrito expuesto por el runtime actual.',
+                    },
+                    provincia: {
+                      type: 'string',
+                      description: 'Campo provincia expuesto por el runtime actual.',
+                    },
+                    departamento: {
+                      type: 'string',
+                      description: 'Campo departamento expuesto por el runtime actual.',
+                    },
+                    pais: {
+                      type: 'string',
+                      description: 'Campo pais expuesto por el runtime actual.',
+                    },
+                  },
+                  required: ['direccion', 'distrito', 'provincia', 'departamento', 'pais'],
+                  additionalProperties: false,
+                  description: 'Campo address expuesto por el runtime actual.',
+                },
+                contact: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                },
+                schedule: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      day: {
+                        type: 'string',
+                        description: 'Campo day expuesto por el runtime actual.',
+                      },
+                      isOpen: {
+                        type: 'boolean',
+                        description: 'Campo is open expuesto por el runtime actual.',
+                        example: false,
+                      },
+                      openTime: {
+                        type: 'string',
+                        description: 'Campo open time expuesto por el runtime actual.',
+                      },
+                      closeTime: {
+                        type: 'string',
+                        description: 'Campo close time expuesto por el runtime actual.',
+                      },
+                    },
+                    required: ['day', 'isOpen', 'openTime', 'closeTime'],
+                    additionalProperties: false,
+                  },
+                  description: 'Campo schedule expuesto por el runtime actual.',
+                },
+                isOpenNow: {
+                  type: 'boolean',
+                  description: 'Campo is open now expuesto por el runtime actual.',
+                  example: false,
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+              },
+              required: [
+                'id',
+                'name',
+                'description',
+                'type',
+                'profileImage',
+                'coverImage',
+                'address',
+                'contact',
+                'schedule',
+                'isOpenNow',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo clubs expuesto por el runtime actual.',
+          },
+          events: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'CANCELLED',
+                    'POSTPONED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'DRAFT',
+                },
+                capacity: {
+                  type: 'number',
+                  description: 'Campo capacity expuesto por el runtime actual.',
+                },
+                sold: {
+                  type: 'number',
+                  description: 'Campo sold expuesto por el runtime actual.',
+                },
+                priceFrom: {
+                  type: 'number',
+                  nullable: true,
+                  description: 'Campo price from expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'name',
+                'description',
+                'imageUrl',
+                'startsAt',
+                'endsAt',
+                'status',
+                'capacity',
+                'sold',
+                'priceFrom',
+                'currency',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo events expuesto por el runtime actual.',
+          },
+          tickets: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                eventId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo event id expuesto por el runtime actual.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                eventName: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo event name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Entrada VIP',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                price: {
+                  type: 'number',
+                  description: 'Campo price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                quantityAvailable: {
+                  type: 'number',
+                  description: 'Campo quantity available expuesto por el runtime actual.',
+                  example: 1,
+                },
+                perUserLimit: {
+                  type: 'number',
+                  nullable: true,
+                  description: 'Campo per user limit expuesto por el runtime actual.',
+                },
+                saleStartAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo sale start at expuesto por el runtime actual.',
+                  example: '2026-09-01T12:00:00.000Z',
+                },
+                saleEndAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo sale end at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'eventId',
+                'eventName',
+                'imageUrl',
+                'name',
+                'description',
+                'price',
+                'currency',
+                'quantityAvailable',
+                'perUserLimit',
+                'saleStartAt',
+                'saleEndAt',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo tickets expuesto por el runtime actual.',
+          },
+          promotions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                eventId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo event id expuesto por el runtime actual.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                eventName: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo event name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Combo de bienvenida',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
+                },
+                finalPrice: {
+                  type: 'number',
+                  description: 'Campo final price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+                itemsCount: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo items count expuesto por el runtime actual.',
+                },
+                scope: {
+                  type: 'string',
+                  description: 'Campo scope expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'eventId',
+                'eventName',
+                'name',
+                'description',
+                'imageUrl',
+                'finalPrice',
+                'currency',
+                'startsAt',
+                'endsAt',
+                'status',
+                'itemsCount',
+                'scope',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo promotions expuesto por el runtime actual.',
+          },
+          products: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
+                },
+                price: {
+                  type: 'number',
+                  description: 'Campo price expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                stockQuantity: {
+                  type: 'number',
+                  description: 'Campo stock quantity expuesto por el runtime actual.',
+                  example: 1,
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+              },
+              required: [
+                'id',
+                'clubId',
+                'clubName',
+                'name',
+                'description',
+                'imageUrl',
+                'price',
+                'currency',
+                'stockQuantity',
+                'status',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo products expuesto por el runtime actual.',
+          },
+          emptyState: {
+            type: 'object',
+            properties: {
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              text: {
+                type: 'string',
+                description: 'Campo text expuesto por el runtime actual.',
+              },
+              sections: {
                 type: 'object',
                 properties: {
-                  id: {
+                  clubs: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                    description: 'Campo clubs expuesto por el runtime actual.',
                   },
-                  type: {
+                  events: {
                     type: 'string',
-                    enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                    description: 'Campo type expuesto por el runtime actual.',
-                    example: 'PROMOTION',
+                    description: 'Campo events expuesto por el runtime actual.',
                   },
-                  name: {
+                  promotions: {
                     type: 'string',
-                    description: 'Campo name expuesto por el runtime actual.',
-                    example: 'Nébula Club',
+                    description: 'Campo promotions expuesto por el runtime actual.',
                   },
-                  quantity: {
-                    type: 'integer',
-                    format: 'int32',
-                    description: 'Campo quantity expuesto por el runtime actual.',
-                  },
-                  totalCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    description: 'Importe total expresado en céntimos.',
-                    example: 1500,
+                  products: {
+                    type: 'string',
+                    description: 'Campo products expuesto por el runtime actual.',
                   },
                 },
-                required: ['id', 'type', 'name', 'quantity', 'totalCents'],
+                required: ['clubs', 'events', 'promotions', 'products'],
                 additionalProperties: false,
-              },
-              description: 'Campo items expuesto por el runtime actual.',
-            },
-          },
-          required: [
-            'id',
-            'customerName',
-            'amount',
-            'amountCents',
-            'currency',
-            'status',
-            'paymentStatus',
-            'createdAt',
-            'paidAt',
-            'category',
-            'items',
-          ],
-          additionalProperties: false,
-        },
-        description: 'Campo latest sales expuesto por el runtime actual.',
-      },
-      topProducts: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
-            },
-            name: {
-              type: 'string',
-              description: 'Campo name expuesto por el runtime actual.',
-              example: 'Chilcano de maracuyá',
-            },
-            stockQuantity: {
-              type: 'number',
-              description: 'Campo stock quantity expuesto por el runtime actual.',
-              example: 1,
-            },
-            price: {
-              type: 'number',
-              description: 'Campo price expuesto por el runtime actual.',
-            },
-            currency: {
-              type: 'string',
-              description: 'Campo currency expuesto por el runtime actual.',
-            },
-            status: {
-              type: 'string',
-              enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'ACTIVE',
-            },
-            imageUrl: {
-              type: 'string',
-              format: 'uri',
-              nullable: true,
-              description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
-            },
-          },
-          required: ['id', 'name', 'stockQuantity', 'price', 'currency', 'status', 'imageUrl'],
-          additionalProperties: false,
-        },
-        description: 'Campo top products expuesto por el runtime actual.',
-      },
-      topPromotions: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
-            },
-            name: {
-              type: 'string',
-              description: 'Campo name expuesto por el runtime actual.',
-              example: 'Combo de bienvenida',
-            },
-            finalPrice: {
-              type: 'number',
-              description: 'Campo final price expuesto por el runtime actual.',
-            },
-            currency: {
-              type: 'string',
-              description: 'Campo currency expuesto por el runtime actual.',
-            },
-            status: {
-              type: 'string',
-              enum: ['ACTIVE', 'INACTIVE'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'ACTIVE',
-            },
-            itemsCount: {
-              type: 'integer',
-              format: 'int32',
-              description: 'Campo items count expuesto por el runtime actual.',
-            },
-            imageUrl: {
-              type: 'string',
-              format: 'uri',
-              nullable: true,
-              description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
-            },
-          },
-          required: ['id', 'name', 'finalPrice', 'currency', 'status', 'itemsCount', 'imageUrl'],
-          additionalProperties: false,
-        },
-        description: 'Campo top promotions expuesto por el runtime actual.',
-      },
-      recentActivity: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            actorName: {
-              type: 'string',
-              description: 'Campo actor name expuesto por el runtime actual.',
-              example: 'Valeria Mendoza',
-            },
-            action: {
-              type: 'string',
-              description: 'Campo action expuesto por el runtime actual.',
-            },
-            resourceType: {
-              type: 'string',
-              description: 'Campo resource type expuesto por el runtime actual.',
-            },
-            resourceId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo resource id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-          },
-          required: ['id', 'actorName', 'action', 'resourceType', 'resourceId', 'createdAt'],
-          additionalProperties: false,
-        },
-        description: 'Campo recent activity expuesto por el runtime actual.',
-      },
-    },
-    required: ['message', 'hasClub', 'club'],
-    additionalProperties: false,
-  },
-  ClubsController_getCustomerHomeResponse: {
-    type: 'object',
-    properties: {
-      viewer: {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          role: {
-            type: 'string',
-            enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
-            description: 'Campo role expuesto por el runtime actual.',
-            example: 'WORKER',
-          },
-        },
-        required: ['id', 'role'],
-        additionalProperties: false,
-        description: 'Campo viewer expuesto por el runtime actual.',
-      },
-      message: {
-        type: 'string',
-        description: 'Mensaje legible que resume el resultado.',
-      },
-      location: {
-        type: 'object',
-        properties: {
-          district: {
-            type: 'string',
-            description: 'Campo district expuesto por el runtime actual.',
-          },
-          province: {
-            type: 'string',
-            description: 'Campo province expuesto por el runtime actual.',
-          },
-          department: {
-            type: 'string',
-            description: 'Campo department expuesto por el runtime actual.',
-          },
-        },
-        required: ['district', 'province', 'department'],
-        additionalProperties: false,
-        description: 'Campo location expuesto por el runtime actual.',
-      },
-      hasResults: {
-        type: 'boolean',
-        description: 'Campo has results expuesto por el runtime actual.',
-        example: false,
-      },
-      clubs: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      events: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      tickets: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      promotions: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      products: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      emptyState: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-            description: 'Campo title expuesto por el runtime actual.',
-          },
-          text: {
-            type: 'string',
-            description: 'Campo text expuesto por el runtime actual.',
-          },
-          sections: {
-            type: 'object',
-            properties: {
-              clubs: {
-                type: 'string',
-                description: 'Campo clubs expuesto por el runtime actual.',
-              },
-              events: {
-                type: 'string',
-                description: 'Campo events expuesto por el runtime actual.',
-              },
-              promotions: {
-                type: 'string',
-                description: 'Campo promotions expuesto por el runtime actual.',
-              },
-              products: {
-                type: 'string',
-                description: 'Campo products expuesto por el runtime actual.',
+                description: 'Campo sections expuesto por el runtime actual.',
               },
             },
-            required: ['clubs', 'events', 'promotions', 'products'],
+            required: ['title', 'text', 'sections'],
             additionalProperties: false,
-            description: 'Campo sections expuesto por el runtime actual.',
+            description: 'Campo empty state expuesto por el runtime actual.',
+            nullable: true,
+            enum: [null],
           },
         },
-        required: ['title', 'text', 'sections'],
+        required: [
+          'viewer',
+          'message',
+          'location',
+          'hasResults',
+          'clubs',
+          'events',
+          'tickets',
+          'promotions',
+          'products',
+          'emptyState',
+        ],
         additionalProperties: false,
-        description: 'Campo empty state expuesto por el runtime actual.',
-        nullable: true,
       },
-    },
-    required: ['viewer'],
-    additionalProperties: false,
+    ],
   },
   ClubsController_exploreCustomerContentResponse: {
     type: 'object',
@@ -3706,14 +4972,115 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       tickets: {
         type: 'array',
         items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Identificador UUID del recurso.',
+              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
             },
+            clubId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Campo club id expuesto por el runtime actual.',
+              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            eventId: {
+              type: 'string',
+              format: 'uuid',
+              nullable: true,
+              description: 'Campo event id expuesto por el runtime actual.',
+              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            },
+            eventName: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event name expuesto por el runtime actual.',
+              example: 'Noche Latina',
+            },
+            imageUrl: {
+              type: 'string',
+              format: 'uri',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+              example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Entrada VIP',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            price: {
+              type: 'number',
+              description: 'Campo price expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            quantityAvailable: {
+              type: 'number',
+              description: 'Campo quantity available expuesto por el runtime actual.',
+              example: 1,
+            },
+            perUserLimit: {
+              type: 'number',
+              nullable: true,
+              description: 'Campo per user limit expuesto por el runtime actual.',
+            },
+            saleStartAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo sale start at expuesto por el runtime actual.',
+              example: '2026-09-01T12:00:00.000Z',
+            },
+            saleEndAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo sale end at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+          },
+          required: [
+            'id',
+            'clubId',
+            'clubName',
+            'eventId',
+            'eventName',
+            'imageUrl',
+            'name',
+            'description',
+            'price',
+            'currency',
+            'quantityAvailable',
+            'perUserLimit',
+            'saleStartAt',
+            'saleEndAt',
+            'status',
           ],
+          additionalProperties: false,
         },
         description: 'Campo tickets expuesto por el runtime actual.',
+        maxItems: 0,
       },
       promotions: {
         type: 'array',
@@ -3886,12 +5253,46 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo products expuesto por el runtime actual.',
       },
       emptyState: {
-        description: 'Valor null expuesto por el runtime.',
-        allOf: [
-          {
-            $ref: '#/components/schemas/JsonValue',
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
           },
-        ],
+          text: {
+            type: 'string',
+            description: 'Campo text expuesto por el runtime actual.',
+          },
+          sections: {
+            type: 'object',
+            properties: {
+              clubs: {
+                type: 'string',
+                description: 'Campo clubs expuesto por el runtime actual.',
+              },
+              events: {
+                type: 'string',
+                description: 'Campo events expuesto por el runtime actual.',
+              },
+              promotions: {
+                type: 'string',
+                description: 'Campo promotions expuesto por el runtime actual.',
+              },
+              products: {
+                type: 'string',
+                description: 'Campo products expuesto por el runtime actual.',
+              },
+            },
+            required: ['clubs', 'events', 'promotions', 'products'],
+            additionalProperties: false,
+            description: 'Campo sections expuesto por el runtime actual.',
+          },
+        },
+        required: ['title', 'text', 'sections'],
+        additionalProperties: false,
+        description: 'Campo empty state expuesto por el runtime actual.',
+        nullable: true,
+        enum: [null],
       },
       viewer: {
         type: 'object',
@@ -4492,12 +5893,46 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo products expuesto por el runtime actual.',
       },
       emptyState: {
-        description: 'Valor null expuesto por el runtime.',
-        allOf: [
-          {
-            $ref: '#/components/schemas/JsonValue',
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
           },
-        ],
+          text: {
+            type: 'string',
+            description: 'Campo text expuesto por el runtime actual.',
+          },
+          sections: {
+            type: 'object',
+            properties: {
+              clubs: {
+                type: 'string',
+                description: 'Campo clubs expuesto por el runtime actual.',
+              },
+              events: {
+                type: 'string',
+                description: 'Campo events expuesto por el runtime actual.',
+              },
+              promotions: {
+                type: 'string',
+                description: 'Campo promotions expuesto por el runtime actual.',
+              },
+              products: {
+                type: 'string',
+                description: 'Campo products expuesto por el runtime actual.',
+              },
+            },
+            required: ['clubs', 'events', 'promotions', 'products'],
+            additionalProperties: false,
+            description: 'Campo sections expuesto por el runtime actual.',
+          },
+        },
+        required: ['title', 'text', 'sections'],
+        additionalProperties: false,
+        description: 'Campo empty state expuesto por el runtime actual.',
+        nullable: true,
+        enum: [null],
       },
       viewer: {
         type: 'object',
@@ -7574,110 +9009,630 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   AdminEventsController_getAdminEventsDashboardResponse: {
-    type: 'object',
-    properties: {
-      message: {
-        type: 'string',
-        description: 'Mensaje legible que resume el resultado.',
-      },
-      hasClub: {
-        type: 'boolean',
-        description: 'Campo has club expuesto por el runtime actual.',
-        example: false,
-      },
-      summary: {
+    oneOf: [
+      {
         type: 'object',
         properties: {
-          activeEvents: {
-            type: 'number',
-            description: 'Campo active events expuesto por el runtime actual.',
-          },
-          publishedEvents: {
-            type: 'number',
-            description: 'Campo published events expuesto por el runtime actual.',
-          },
-          ticketsSold: {
-            type: 'number',
-            description: 'Campo tickets sold expuesto por el runtime actual.',
-          },
-          salesAmount: {
-            type: 'number',
-            description: 'Campo sales amount expuesto por el runtime actual.',
-          },
-          currency: {
+          message: {
             type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
+            description: 'Mensaje legible que resume el resultado.',
+          },
+          hasClub: {
+            type: 'boolean',
+            description: 'Campo has club expuesto por el runtime actual.',
+            example: false,
+            enum: [false],
+          },
+          summary: {
+            type: 'object',
+            properties: {
+              activeEvents: {
+                type: 'number',
+                description: 'Campo active events expuesto por el runtime actual.',
+              },
+              publishedEvents: {
+                type: 'number',
+                description: 'Campo published events expuesto por el runtime actual.',
+              },
+              ticketsSold: {
+                type: 'number',
+                description: 'Campo tickets sold expuesto por el runtime actual.',
+              },
+              salesAmount: {
+                type: 'number',
+                description: 'Campo sales amount expuesto por el runtime actual.',
+              },
+              currency: {
+                type: 'string',
+                description: 'Campo currency expuesto por el runtime actual.',
+              },
+            },
+            required: ['activeEvents', 'publishedEvents', 'ticketsSold', 'salesAmount', 'currency'],
+            additionalProperties: false,
+            description: 'Campo summary expuesto por el runtime actual.',
+          },
+          alerts: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                title: {
+                  type: 'string',
+                  description: 'Campo title expuesto por el runtime actual.',
+                },
+                text: {
+                  type: 'string',
+                  description: 'Campo text expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+              },
+              required: ['type', 'title', 'text', 'imageUrl'],
+              additionalProperties: false,
+            },
+            description: 'Campo alerts expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          events: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                updatedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                  example: '2026-08-28T14:15:00.000Z',
+                },
+                capacity: {
+                  type: 'number',
+                  description: 'Campo capacity expuesto por el runtime actual.',
+                },
+                sold: {
+                  type: 'number',
+                  description: 'Campo sold expuesto por el runtime actual.',
+                },
+                salesAmount: {
+                  type: 'number',
+                  description: 'Campo sales amount expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                status: {
+                  type: 'string',
+                  description: 'Estado actual expuesto por el runtime.',
+                },
+                rawStatus: {
+                  type: 'string',
+                  enum: [
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'CANCELLED',
+                    'POSTPONED',
+                  ],
+                  description: 'Campo raw status expuesto por el runtime actual.',
+                  example: 'DRAFT',
+                },
+                progress: {
+                  type: 'number',
+                  description: 'Campo progress expuesto por el runtime actual.',
+                },
+                ticketTypes: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        format: 'uuid',
+                        description: 'Identificador UUID del recurso.',
+                        example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                      },
+                      name: {
+                        type: 'string',
+                        description: 'Campo name expuesto por el runtime actual.',
+                        example: 'Entrada VIP',
+                      },
+                      description: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Campo description expuesto por el runtime actual.',
+                      },
+                      price: {
+                        type: 'number',
+                        description: 'Campo price expuesto por el runtime actual.',
+                      },
+                      currency: {
+                        type: 'string',
+                        description: 'Campo currency expuesto por el runtime actual.',
+                      },
+                      quantityTotal: {
+                        type: 'number',
+                        description: 'Campo quantity total expuesto por el runtime actual.',
+                        example: 1,
+                      },
+                      quantitySold: {
+                        type: 'number',
+                        description: 'Campo quantity sold expuesto por el runtime actual.',
+                        example: 1,
+                      },
+                      status: {
+                        type: 'string',
+                        description: 'Estado actual expuesto por el runtime.',
+                      },
+                      createdAt: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de creación en formato ISO 8601.',
+                        example: '2026-08-27T18:30:00.000Z',
+                      },
+                      updatedAt: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                        example: '2026-08-28T14:15:00.000Z',
+                      },
+                    },
+                    required: [
+                      'id',
+                      'name',
+                      'description',
+                      'price',
+                      'currency',
+                      'quantityTotal',
+                      'quantitySold',
+                      'status',
+                      'createdAt',
+                      'updatedAt',
+                    ],
+                    additionalProperties: false,
+                  },
+                  description: 'Campo ticket types expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'imageUrl',
+                'id',
+                'name',
+                'description',
+                'startsAt',
+                'endsAt',
+                'createdAt',
+                'updatedAt',
+                'capacity',
+                'sold',
+                'salesAmount',
+                'currency',
+                'status',
+                'rawStatus',
+                'progress',
+                'ticketTypes',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo events expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          topEvents: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                rank: {
+                  type: 'number',
+                  description: 'Campo rank expuesto por el runtime actual.',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                amount: {
+                  type: 'number',
+                  description: 'Campo amount expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+              },
+              required: ['rank', 'id', 'name', 'amount', 'currency'],
+              additionalProperties: false,
+            },
+            description: 'Campo top events expuesto por el runtime actual.',
+            maxItems: 0,
           },
         },
-        required: ['activeEvents', 'publishedEvents', 'ticketsSold', 'salesAmount', 'currency'],
+        required: ['message', 'hasClub', 'summary', 'alerts', 'events', 'topEvents'],
         additionalProperties: false,
-        description: 'Campo summary expuesto por el runtime actual.',
       },
-      alerts: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      events: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      topEvents: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
-            },
-          ],
-        },
-      },
-      club: {
+      {
         type: 'object',
         properties: {
-          id: {
+          message: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Mensaje legible que resume el resultado.',
           },
-          name: {
-            type: 'string',
-            description: 'Campo name expuesto por el runtime actual.',
-            example: 'Nébula Club',
+          hasClub: {
+            type: 'boolean',
+            description: 'Campo has club expuesto por el runtime actual.',
+            example: true,
+            enum: [true],
           },
-          type: {
-            type: 'string',
-            description: 'Campo type expuesto por el runtime actual.',
+          club: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Identificador UUID del recurso.',
+                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              },
+              name: {
+                type: 'string',
+                description: 'Campo name expuesto por el runtime actual.',
+                example: 'Nébula Club',
+              },
+              type: {
+                type: 'string',
+                description: 'Campo type expuesto por el runtime actual.',
+              },
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'ACTIVE',
+              },
+            },
+            required: ['id', 'name', 'type', 'status'],
+            additionalProperties: false,
+            description: 'Campo club expuesto por el runtime actual.',
           },
-          status: {
-            type: 'string',
-            enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'ACTIVE',
+          summary: {
+            type: 'object',
+            properties: {
+              activeEvents: {
+                type: 'number',
+                description: 'Campo active events expuesto por el runtime actual.',
+              },
+              publishedEvents: {
+                type: 'number',
+                description: 'Campo published events expuesto por el runtime actual.',
+              },
+              ticketsSold: {
+                type: 'number',
+                description: 'Campo tickets sold expuesto por el runtime actual.',
+              },
+              salesAmount: {
+                type: 'number',
+                description: 'Campo sales amount expuesto por el runtime actual.',
+              },
+              currency: {
+                type: 'string',
+                description: 'Campo currency expuesto por el runtime actual.',
+              },
+            },
+            required: ['activeEvents', 'publishedEvents', 'ticketsSold', 'salesAmount', 'currency'],
+            additionalProperties: false,
+            description: 'Campo summary expuesto por el runtime actual.',
+          },
+          alerts: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                title: {
+                  type: 'string',
+                  description: 'Campo title expuesto por el runtime actual.',
+                },
+                text: {
+                  type: 'string',
+                  description: 'Campo text expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+              },
+              required: ['type', 'title', 'text', 'imageUrl'],
+              additionalProperties: false,
+            },
+            description: 'Campo alerts expuesto por el runtime actual.',
+          },
+          events: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                startsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo starts at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                endsAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo ends at expuesto por el runtime actual.',
+                  example: '2026-09-20T05:00:00.000Z',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                updatedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                  example: '2026-08-28T14:15:00.000Z',
+                },
+                capacity: {
+                  type: 'number',
+                  description: 'Campo capacity expuesto por el runtime actual.',
+                },
+                sold: {
+                  type: 'number',
+                  description: 'Campo sold expuesto por el runtime actual.',
+                },
+                salesAmount: {
+                  type: 'number',
+                  description: 'Campo sales amount expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                status: {
+                  type: 'string',
+                  description: 'Estado actual expuesto por el runtime.',
+                },
+                rawStatus: {
+                  type: 'string',
+                  enum: [
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'CANCELLED',
+                    'POSTPONED',
+                  ],
+                  description: 'Campo raw status expuesto por el runtime actual.',
+                  example: 'DRAFT',
+                },
+                progress: {
+                  type: 'number',
+                  description: 'Campo progress expuesto por el runtime actual.',
+                },
+                ticketTypes: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        format: 'uuid',
+                        description: 'Identificador UUID del recurso.',
+                        example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                      },
+                      name: {
+                        type: 'string',
+                        description: 'Campo name expuesto por el runtime actual.',
+                        example: 'Entrada VIP',
+                      },
+                      description: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Campo description expuesto por el runtime actual.',
+                      },
+                      price: {
+                        type: 'number',
+                        description: 'Campo price expuesto por el runtime actual.',
+                      },
+                      currency: {
+                        type: 'string',
+                        description: 'Campo currency expuesto por el runtime actual.',
+                      },
+                      quantityTotal: {
+                        type: 'number',
+                        description: 'Campo quantity total expuesto por el runtime actual.',
+                        example: 1,
+                      },
+                      quantitySold: {
+                        type: 'number',
+                        description: 'Campo quantity sold expuesto por el runtime actual.',
+                        example: 1,
+                      },
+                      status: {
+                        type: 'string',
+                        description: 'Estado actual expuesto por el runtime.',
+                      },
+                      createdAt: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de creación en formato ISO 8601.',
+                        example: '2026-08-27T18:30:00.000Z',
+                      },
+                      updatedAt: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                        example: '2026-08-28T14:15:00.000Z',
+                      },
+                    },
+                    required: [
+                      'id',
+                      'name',
+                      'description',
+                      'price',
+                      'currency',
+                      'quantityTotal',
+                      'quantitySold',
+                      'status',
+                      'createdAt',
+                      'updatedAt',
+                    ],
+                    additionalProperties: false,
+                  },
+                  description: 'Campo ticket types expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'imageUrl',
+                'id',
+                'name',
+                'description',
+                'startsAt',
+                'endsAt',
+                'createdAt',
+                'updatedAt',
+                'capacity',
+                'sold',
+                'salesAmount',
+                'currency',
+                'status',
+                'rawStatus',
+                'progress',
+                'ticketTypes',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo events expuesto por el runtime actual.',
+          },
+          topEvents: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                rank: {
+                  type: 'number',
+                  description: 'Campo rank expuesto por el runtime actual.',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                amount: {
+                  type: 'number',
+                  description: 'Campo amount expuesto por el runtime actual.',
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+              },
+              required: ['rank', 'id', 'name', 'amount', 'currency'],
+              additionalProperties: false,
+            },
+            description: 'Campo top events expuesto por el runtime actual.',
           },
         },
-        required: ['id', 'name', 'type', 'status'],
+        required: ['message', 'hasClub', 'club', 'summary', 'alerts', 'events', 'topEvents'],
         additionalProperties: false,
-        description: 'Campo club expuesto por el runtime actual.',
       },
-    },
-    required: ['message', 'hasClub', 'summary', 'alerts', 'events', 'topEvents'],
-    additionalProperties: false,
+    ],
   },
   PublicEventsController_listPublicEventsResponse: {
     type: 'object',
@@ -9251,6 +11206,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   $ref: '#/components/schemas/JsonValue',
                 },
               ],
+              nullable: true,
             },
             ipAddress: {
               type: 'string',
@@ -9419,31 +11375,61 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   AuditController_verifyResponse: {
-    type: 'object',
-    properties: {
-      valid: {
-        type: 'boolean',
-        description: 'Campo valid expuesto por el runtime actual.',
-        example: false,
+    anyOf: [
+      {
+        type: 'object',
+        properties: {
+          valid: {
+            type: 'boolean',
+            description: 'Campo valid expuesto por el runtime actual.',
+            example: false,
+          },
+          checked: {
+            type: 'number',
+            description: 'Campo checked expuesto por el runtime actual.',
+          },
+          legacyUnchecked: {
+            type: 'number',
+            description: 'Campo legacy unchecked expuesto por el runtime actual.',
+          },
+          brokenEntryId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Campo broken entry id expuesto por el runtime actual.',
+            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+        },
+        required: ['valid', 'checked', 'legacyUnchecked', 'brokenEntryId'],
+        additionalProperties: false,
       },
-      checked: {
-        type: 'number',
-        description: 'Campo checked expuesto por el runtime actual.',
+      {
+        type: 'object',
+        properties: {
+          valid: {
+            type: 'boolean',
+            description: 'Campo valid expuesto por el runtime actual.',
+            example: false,
+          },
+          checked: {
+            type: 'number',
+            description: 'Campo checked expuesto por el runtime actual.',
+          },
+          legacyUnchecked: {
+            type: 'number',
+            description: 'Campo legacy unchecked expuesto por el runtime actual.',
+          },
+          brokenEntryId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo broken entry id expuesto por el runtime actual.',
+            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+        },
+        required: ['valid', 'checked', 'legacyUnchecked', 'brokenEntryId'],
+        additionalProperties: false,
       },
-      legacyUnchecked: {
-        type: 'number',
-        description: 'Campo legacy unchecked expuesto por el runtime actual.',
-      },
-      brokenEntryId: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Campo broken entry id expuesto por el runtime actual.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-        nullable: true,
-      },
-    },
-    required: ['valid', 'checked', 'legacyUnchecked', 'brokenEntryId'],
-    additionalProperties: false,
+    ],
   },
   ClubProductsController_createProductResponse: {
     type: 'object',
@@ -14500,12 +16486,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Campo description expuesto por el runtime actual.',
                 },
                 metadata: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  description: 'Metadata contable JSON expuesta por el runtime.',
                   allOf: [
                     {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 postedAt: {
                   type: 'string',
@@ -14675,12 +16662,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo description expuesto por el runtime actual.',
             },
             metadata: {
-              description: 'Valor JSON dinámico expuesto por el runtime.',
+              description: 'Metadata contable JSON expuesta por el runtime.',
               allOf: [
                 {
                   $ref: '#/components/schemas/JsonValue',
                 },
               ],
+              nullable: true,
             },
             postedAt: {
               type: 'string',
@@ -14980,6 +16968,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       bankAccountHolder: {
@@ -15068,6 +17057,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       bankAccountHolder: {
@@ -15133,12 +17123,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       requestedByUserId: {
         type: 'string',
+        format: 'uuid',
         description: 'Campo requested by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       reviewedByUserId: {
         type: 'string',
+        format: 'uuid',
         nullable: true,
         description: 'Campo reviewed by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       amountCents: {
         type: 'integer',
@@ -15158,6 +17152,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -15282,12 +17277,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             requestedByUserId: {
               type: 'string',
+              format: 'uuid',
               description: 'Campo requested by user id expuesto por el runtime actual.',
+              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             reviewedByUserId: {
               type: 'string',
+              format: 'uuid',
               nullable: true,
               description: 'Campo reviewed by user id expuesto por el runtime actual.',
+              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             amountCents: {
               type: 'integer',
@@ -15315,6 +17314,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             bankAccountLast4: {
               type: 'string',
+              example: '9012',
               description: 'Campo bank account last4 expuesto por el runtime actual.',
             },
             requestNote: {
@@ -15445,12 +17445,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             requestedByUserId: {
               type: 'string',
+              format: 'uuid',
               description: 'Campo requested by user id expuesto por el runtime actual.',
+              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             reviewedByUserId: {
               type: 'string',
+              format: 'uuid',
               nullable: true,
               description: 'Campo reviewed by user id expuesto por el runtime actual.',
+              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             amountCents: {
               type: 'integer',
@@ -15478,6 +17482,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             bankAccountLast4: {
               type: 'string',
+              example: '9012',
               description: 'Campo bank account last4 expuesto por el runtime actual.',
             },
             requestNote: {
@@ -15579,20 +17584,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Campo type expuesto por el runtime actual.',
                 },
                 addressJson: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  description: 'Dirección JSON almacenada por el runtime.',
                   allOf: [
                     {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 contactJson: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  description: 'Contacto JSON almacenado por el runtime.',
                   allOf: [
                     {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 coverImageUrl: {
                   type: 'string',
@@ -15609,20 +17616,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   example: 'https://cdn.beerry.app/users/valeria/profile.webp',
                 },
                 socialMediaJson: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  description: 'Redes sociales JSON almacenadas por el runtime.',
                   allOf: [
                     {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 scheduleJson: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  description: 'Horario JSON almacenado por el runtime.',
                   allOf: [
                     {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 status: {
                   type: 'string',
@@ -15742,12 +17751,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                referralCode: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo referral code expuesto por el runtime actual.',
-                  example: 'VALERIA25',
-                },
               },
               required: [
                 'id',
@@ -15763,7 +17766,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 'status',
                 'createdAt',
                 'updatedAt',
-                'referralCode',
               ],
               additionalProperties: false,
               description: 'Campo requested by expuesto por el runtime actual.',
@@ -15818,12 +17820,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       requestedByUserId: {
         type: 'string',
+        format: 'uuid',
         description: 'Campo requested by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       reviewedByUserId: {
         type: 'string',
+        format: 'uuid',
         nullable: true,
         description: 'Campo reviewed by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       amountCents: {
         type: 'integer',
@@ -15843,6 +17849,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -15962,12 +17969,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       requestedByUserId: {
         type: 'string',
+        format: 'uuid',
         description: 'Campo requested by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       reviewedByUserId: {
         type: 'string',
+        format: 'uuid',
         nullable: true,
         description: 'Campo reviewed by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       amountCents: {
         type: 'integer',
@@ -15987,6 +17998,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -16106,12 +18118,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       requestedByUserId: {
         type: 'string',
+        format: 'uuid',
         description: 'Campo requested by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       reviewedByUserId: {
         type: 'string',
+        format: 'uuid',
         nullable: true,
         description: 'Campo reviewed by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       amountCents: {
         type: 'integer',
@@ -16131,6 +18147,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -16250,12 +18267,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       requestedByUserId: {
         type: 'string',
+        format: 'uuid',
         description: 'Campo requested by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       reviewedByUserId: {
         type: 'string',
+        format: 'uuid',
         nullable: true,
         description: 'Campo reviewed by user id expuesto por el runtime actual.',
+        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
       },
       amountCents: {
         type: 'integer',
@@ -16275,6 +18296,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
+        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -16479,192 +18501,1072 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_cartResponse: {
-    type: 'object',
-    properties: {
-      id: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-      },
-      clubId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-      },
-      items: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
             },
-          ],
+            description: 'Campo items expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
         },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
+        additionalProperties: false,
       },
-      totalCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe total expresado en céntimos.',
-        example: 1500,
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo items expuesto por el runtime actual.',
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          hasUnavailableItems: {
+            type: 'boolean',
+            description: 'Campo has unavailable items expuesto por el runtime actual.',
+            example: false,
+          },
+        },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency', 'hasUnavailableItems'],
+        additionalProperties: false,
       },
-      currency: {
-        type: 'string',
-        description: 'Campo currency expuesto por el runtime actual.',
-      },
-      hasUnavailableItems: {
-        type: 'boolean',
-        description: 'Campo has unavailable items expuesto por el runtime actual.',
-        example: false,
-      },
-    },
-    required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
-    additionalProperties: false,
+    ],
   },
   CommerceController_addCartItemResponse: {
-    type: 'object',
-    properties: {
-      id: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-      },
-      clubId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-      },
-      items: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
             },
-          ],
+            description: 'Campo items expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
         },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
+        additionalProperties: false,
       },
-      totalCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe total expresado en céntimos.',
-        example: 1500,
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo items expuesto por el runtime actual.',
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          hasUnavailableItems: {
+            type: 'boolean',
+            description: 'Campo has unavailable items expuesto por el runtime actual.',
+            example: false,
+          },
+        },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency', 'hasUnavailableItems'],
+        additionalProperties: false,
       },
-      currency: {
-        type: 'string',
-        description: 'Campo currency expuesto por el runtime actual.',
-      },
-      hasUnavailableItems: {
-        type: 'boolean',
-        description: 'Campo has unavailable items expuesto por el runtime actual.',
-        example: false,
-      },
-    },
-    required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
-    additionalProperties: false,
+    ],
   },
   CommerceController_updateCartItemResponse: {
-    type: 'object',
-    properties: {
-      id: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-      },
-      clubId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-      },
-      items: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
             },
-          ],
+            description: 'Campo items expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
         },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
+        additionalProperties: false,
       },
-      totalCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe total expresado en céntimos.',
-        example: 1500,
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo items expuesto por el runtime actual.',
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          hasUnavailableItems: {
+            type: 'boolean',
+            description: 'Campo has unavailable items expuesto por el runtime actual.',
+            example: false,
+          },
+        },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency', 'hasUnavailableItems'],
+        additionalProperties: false,
       },
-      currency: {
-        type: 'string',
-        description: 'Campo currency expuesto por el runtime actual.',
-      },
-      hasUnavailableItems: {
-        type: 'boolean',
-        description: 'Campo has unavailable items expuesto por el runtime actual.',
-        example: false,
-      },
-    },
-    required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
-    additionalProperties: false,
+    ],
   },
   CommerceController_deleteCartItemResponse: {
-    type: 'object',
-    properties: {
-      id: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-      },
-      clubId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-      },
-      items: {
-        type: 'array',
-        items: {
-          description: 'Valor JSON dinámico expuesto por el runtime.',
-          allOf: [
-            {
-              $ref: '#/components/schemas/JsonValue',
+    oneOf: [
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
             },
-          ],
+            description: 'Campo items expuesto por el runtime actual.',
+            maxItems: 0,
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
         },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
+        additionalProperties: false,
       },
-      totalCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe total expresado en céntimos.',
-        example: 1500,
+      {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Identificador UUID del recurso.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          clubId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo club id expuesto por el runtime actual.',
+            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                cartItemId: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Campo cart item id expuesto por el runtime actual.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                id: {
+                  type: 'string',
+                  format: 'uuid',
+                  description: 'Identificador UUID del recurso.',
+                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                type: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                quantity: {
+                  type: 'integer',
+                  format: 'int32',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                clubId: {
+                  type: 'string',
+                  format: 'uuid',
+                  nullable: true,
+                  description: 'Campo club id expuesto por el runtime actual.',
+                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+                },
+                clubName: {
+                  type: 'string',
+                  description: 'Campo club name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                priceCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                imageUrl: {
+                  type: 'string',
+                  format: 'uri',
+                  nullable: true,
+                  description: 'Campo image url expuesto por el runtime actual.',
+                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
+                },
+                available: {
+                  type: 'boolean',
+                  description: 'Campo available expuesto por el runtime actual.',
+                  example: false,
+                },
+                availabilityMessage: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo availability message expuesto por el runtime actual.',
+                },
+                lineTotalCents: {
+                  type: 'integer',
+                  format: 'int64',
+                  description: 'Campo line total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: [
+                'cartItemId',
+                'id',
+                'type',
+                'quantity',
+                'name',
+                'clubId',
+                'clubName',
+                'priceCents',
+                'currency',
+                'imageUrl',
+                'available',
+                'availabilityMessage',
+                'lineTotalCents',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo items expuesto por el runtime actual.',
+          },
+          totalCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe total expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          hasUnavailableItems: {
+            type: 'boolean',
+            description: 'Campo has unavailable items expuesto por el runtime actual.',
+            example: false,
+          },
+        },
+        required: ['id', 'clubId', 'items', 'totalCents', 'currency', 'hasUnavailableItems'],
+        additionalProperties: false,
       },
-      currency: {
-        type: 'string',
-        description: 'Campo currency expuesto por el runtime actual.',
-      },
-      hasUnavailableItems: {
-        type: 'boolean',
-        description: 'Campo has unavailable items expuesto por el runtime actual.',
-        example: false,
-      },
-    },
-    required: ['id', 'clubId', 'items', 'totalCents', 'currency'],
-    additionalProperties: false,
+    ],
   },
   CommerceController_reservationMetricsResponse: {
     type: 'object',
@@ -17456,6 +20358,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         $ref: '#/components/schemas/JsonValue',
                       },
                     ],
+                    nullable: true,
                   },
                   approvedAt: {
                     type: 'string',
@@ -17943,6 +20846,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 approvedAt: {
                   type: 'string',
@@ -18601,217 +21505,459 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_simulatePaymentResponse: {
-    type: 'object',
-    properties: {
-      message: {
-        type: 'string',
-        description: 'Mensaje legible que resume el resultado.',
-      },
-      orderId: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Campo order id expuesto por el runtime actual.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-      },
-      orderStatus: {
-        type: 'string',
-        description: 'Campo order status expuesto por el runtime actual.',
-        enum: [
-          'PENDING',
-          'PAID',
-          'FAILED',
-          'EXPIRED',
-          'CANCELLED',
-          'REFUND_PENDING',
-          'REFUNDED',
-          'PARTIALLY_REFUNDED',
-        ],
-        example: 'PENDING',
-      },
-      paymentAttemptId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo payment attempt id expuesto por el runtime actual.',
-        example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
-      },
-      paymentStatus: {
-        type: 'string',
-        nullable: true,
-        description: 'Campo payment status expuesto por el runtime actual.',
-        enum: [
-          'PENDING',
-          'APPROVED',
-          'REJECTED',
-          'EXPIRED',
-          'CANCELLED',
-          'REFUND_PENDING',
-          'REFUNDED',
-          'PARTIALLY_REFUNDED',
-        ],
-        example: 'PENDING',
-      },
-      paymentProvider: {
-        type: 'string',
-        nullable: true,
-        description: 'Campo payment provider expuesto por el runtime actual.',
-        enum: ['flow', 'simulated', 'beerry_wallet'],
-        example: 'flow',
-      },
-      paymentMethod: {
-        type: 'string',
-        nullable: true,
-        description: 'Campo payment method expuesto por el runtime actual.',
-        enum: ['FLOW', 'BEERRY_WALLET', 'SIMULATED'],
-        example: 'FLOW',
-      },
-      checkoutUrl: {
-        type: 'string',
-        format: 'uri',
-        nullable: true,
-        description: 'Campo checkout url expuesto por el runtime actual.',
-        example: 'https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7',
-      },
-      total: {
-        type: 'number',
-        description: 'Campo total expuesto por el runtime actual.',
-        example: 1,
-      },
-      currency: {
-        type: 'string',
-        description: 'Campo currency expuesto por el runtime actual.',
-      },
-      generatedCount: {
-        type: 'integer',
-        format: 'int32',
-        description: 'Campo generated count expuesto por el runtime actual.',
-      },
-      topUpId: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Campo top up id expuesto por el runtime actual.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-      },
-      status: {
-        type: 'string',
-        description: 'Estado actual expuesto por el runtime.',
-      },
-      amountCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe expresado en céntimos.',
-        example: 1500,
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      approvedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo approved at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
-      },
-    },
-    required: ['paymentAttemptId', 'paymentStatus', 'paymentProvider', 'checkoutUrl', 'currency'],
-    additionalProperties: false,
-  },
-  CommerceController_validateTicketResponse: {
-    type: 'object',
-    properties: {
-      validation: {
+    oneOf: [
+      {
         type: 'object',
         properties: {
-          isValid: {
-            type: 'boolean',
-            description: 'Campo is valid expuesto por el runtime actual.',
-            example: false,
-          },
-          statusLabel: {
-            type: 'string',
-            description: 'Campo status label expuesto por el runtime actual.',
-          },
-          title: {
-            type: 'string',
-            description: 'Campo title expuesto por el runtime actual.',
-          },
           message: {
             type: 'string',
             description: 'Mensaje legible que resume el resultado.',
           },
-          attendeeName: {
-            type: 'string',
-            description: 'Campo attendee name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          attendeeReference: {
-            type: 'string',
-            description: 'Campo attendee reference expuesto por el runtime actual.',
-          },
-          accessTypeLabel: {
-            type: 'string',
-            description: 'Campo access type label expuesto por el runtime actual.',
-          },
-          accessName: {
-            type: 'string',
-            description: 'Campo access name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          eventDateLabel: {
-            type: 'string',
-            description: 'Campo event date label expuesto por el runtime actual.',
-          },
-          scanTimeLabel: {
-            type: 'string',
-            description: 'Campo scan time label expuesto por el runtime actual.',
-          },
-          transactionId: {
+          orderId: {
             type: 'string',
             format: 'uuid',
-            description: 'Campo transaction id expuesto por el runtime actual.',
-            example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+            description: 'Campo order id expuesto por el runtime actual.',
+            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
           },
-          attendeeImageUrl: {
+          orderStatus: {
+            type: 'string',
+            description: 'Campo order status expuesto por el runtime actual.',
+            enum: [
+              'PENDING',
+              'PAID',
+              'FAILED',
+              'EXPIRED',
+              'CANCELLED',
+              'REFUND_PENDING',
+              'REFUNDED',
+              'PARTIALLY_REFUNDED',
+            ],
+            example: 'PENDING',
+          },
+          paymentAttemptId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo payment attempt id expuesto por el runtime actual.',
+            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
+          },
+          paymentStatus: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo payment status expuesto por el runtime actual.',
+            enum: [
+              'PENDING',
+              'APPROVED',
+              'REJECTED',
+              'EXPIRED',
+              'CANCELLED',
+              'REFUND_PENDING',
+              'REFUNDED',
+              'PARTIALLY_REFUNDED',
+            ],
+            example: 'PENDING',
+          },
+          paymentProvider: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo payment provider expuesto por el runtime actual.',
+            enum: ['flow', 'simulated', 'beerry_wallet'],
+            example: 'flow',
+          },
+          paymentMethod: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo payment method expuesto por el runtime actual.',
+            enum: ['FLOW', 'BEERRY_WALLET', 'SIMULATED'],
+            example: 'FLOW',
+          },
+          checkoutUrl: {
             type: 'string',
             format: 'uri',
             nullable: true,
-            description: 'Campo attendee image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+            description: 'Campo checkout url expuesto por el runtime actual.',
+            example: 'https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7',
           },
-          validatedByName: {
-            type: 'string',
-            description: 'Campo validated by name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
+          total: {
+            type: 'number',
+            description: 'Campo total expuesto por el runtime actual.',
+            example: 1,
           },
-          validatedAt: {
+          currency: {
             type: 'string',
-            format: 'date-time',
-            nullable: true,
-            description: 'Campo validated at expuesto por el runtime actual.',
-            example: '2026-09-19T22:00:00.000Z',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          generatedCount: {
+            type: 'integer',
+            format: 'int32',
+            description: 'Campo generated count expuesto por el runtime actual.',
           },
         },
         required: [
-          'isValid',
-          'statusLabel',
-          'title',
           'message',
-          'attendeeName',
-          'attendeeReference',
-          'accessTypeLabel',
-          'accessName',
-          'eventDateLabel',
-          'scanTimeLabel',
-          'transactionId',
+          'orderId',
+          'orderStatus',
+          'paymentAttemptId',
+          'paymentStatus',
+          'paymentProvider',
+          'paymentMethod',
+          'checkoutUrl',
+          'total',
+          'currency',
         ],
         additionalProperties: false,
       },
-    },
-    required: ['validation'],
-    additionalProperties: false,
+      {
+        type: 'object',
+        properties: {
+          topUpId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Campo top up id expuesto por el runtime actual.',
+            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          status: {
+            type: 'string',
+            description: 'Estado actual expuesto por el runtime.',
+          },
+          amountCents: {
+            type: 'integer',
+            format: 'int64',
+            description: 'Importe expresado en céntimos.',
+            example: 1500,
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          paymentAttemptId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            description: 'Campo payment attempt id expuesto por el runtime actual.',
+            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
+          },
+          paymentStatus: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo payment status expuesto por el runtime actual.',
+            enum: [
+              'PENDING',
+              'APPROVED',
+              'REJECTED',
+              'EXPIRED',
+              'CANCELLED',
+              'REFUND_PENDING',
+              'REFUNDED',
+              'PARTIALLY_REFUNDED',
+            ],
+            example: 'PENDING',
+          },
+          paymentProvider: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo payment provider expuesto por el runtime actual.',
+            enum: ['flow', 'simulated', 'beerry_wallet'],
+            example: 'flow',
+          },
+          checkoutUrl: {
+            type: 'string',
+            format: 'uri',
+            nullable: true,
+            description: 'Campo checkout url expuesto por el runtime actual.',
+            example: 'https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
+          },
+          approvedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Campo approved at expuesto por el runtime actual.',
+            example: '2026-09-19T22:05:00.000Z',
+          },
+        },
+        required: [
+          'topUpId',
+          'status',
+          'amountCents',
+          'currency',
+          'paymentAttemptId',
+          'paymentStatus',
+          'paymentProvider',
+          'checkoutUrl',
+          'createdAt',
+          'approvedAt',
+        ],
+        additionalProperties: false,
+      },
+    ],
+  },
+  CommerceController_validateTicketResponse: {
+    anyOf: [
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              attendeeImageUrl: {
+                type: 'string',
+                format: 'uri',
+                nullable: true,
+                description: 'Campo attendee image url expuesto por el runtime actual.',
+                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+              validatedByName: {
+                type: 'string',
+                description: 'Campo validated by name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              validatedAt: {
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+                description: 'Campo validated at expuesto por el runtime actual.',
+                example: '2026-09-19T22:00:00.000Z',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'attendeeImageUrl',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+              'validatedByName',
+              'validatedAt',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              attendeeImageUrl: {
+                type: 'string',
+                format: 'uri',
+                nullable: true,
+                description: 'Campo attendee image url expuesto por el runtime actual.',
+                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'attendeeImageUrl',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+    ],
   },
   CommerceController_validateDetectedCodeResponse: {
     type: 'object',
@@ -18890,192 +22036,528 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_validateProductResponse: {
-    type: 'object',
-    properties: {
-      validation: {
+    anyOf: [
+      {
         type: 'object',
         properties: {
-          isValid: {
-            type: 'boolean',
-            description: 'Campo is valid expuesto por el runtime actual.',
-            example: false,
-          },
-          statusLabel: {
-            type: 'string',
-            description: 'Campo status label expuesto por el runtime actual.',
-          },
-          title: {
-            type: 'string',
-            description: 'Campo title expuesto por el runtime actual.',
-          },
-          message: {
-            type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          attendeeName: {
-            type: 'string',
-            description: 'Campo attendee name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          attendeeReference: {
-            type: 'string',
-            description: 'Campo attendee reference expuesto por el runtime actual.',
-          },
-          accessTypeLabel: {
-            type: 'string',
-            description: 'Campo access type label expuesto por el runtime actual.',
-          },
-          accessName: {
-            type: 'string',
-            description: 'Campo access name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          eventDateLabel: {
-            type: 'string',
-            description: 'Campo event date label expuesto por el runtime actual.',
-          },
-          scanTimeLabel: {
-            type: 'string',
-            description: 'Campo scan time label expuesto por el runtime actual.',
-          },
-          transactionId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo transaction id expuesto por el runtime actual.',
-            example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-          },
-          attendeeImageUrl: {
-            type: 'string',
-            format: 'uri',
-            nullable: true,
-            description: 'Campo attendee image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-          },
-          validatedByName: {
-            type: 'string',
-            description: 'Campo validated by name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          validatedAt: {
-            type: 'string',
-            format: 'date-time',
-            nullable: true,
-            description: 'Campo validated at expuesto por el runtime actual.',
-            example: '2026-09-19T22:00:00.000Z',
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
           },
         },
-        required: [
-          'isValid',
-          'statusLabel',
-          'title',
-          'message',
-          'attendeeName',
-          'attendeeReference',
-          'accessTypeLabel',
-          'accessName',
-          'eventDateLabel',
-          'scanTimeLabel',
-          'transactionId',
-        ],
+        required: ['validation'],
         additionalProperties: false,
       },
-    },
-    required: ['validation'],
-    additionalProperties: false,
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              attendeeImageUrl: {
+                type: 'string',
+                format: 'uri',
+                nullable: true,
+                description: 'Campo attendee image url expuesto por el runtime actual.',
+                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+              validatedByName: {
+                type: 'string',
+                description: 'Campo validated by name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              validatedAt: {
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+                description: 'Campo validated at expuesto por el runtime actual.',
+                example: '2026-09-19T22:00:00.000Z',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'attendeeImageUrl',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+              'validatedByName',
+              'validatedAt',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              attendeeImageUrl: {
+                type: 'string',
+                format: 'uri',
+                nullable: true,
+                description: 'Campo attendee image url expuesto por el runtime actual.',
+                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'attendeeImageUrl',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+    ],
   },
   CommerceController_validatePromotionResponse: {
-    type: 'object',
-    properties: {
-      validation: {
+    anyOf: [
+      {
         type: 'object',
         properties: {
-          isValid: {
-            type: 'boolean',
-            description: 'Campo is valid expuesto por el runtime actual.',
-            example: false,
-          },
-          statusLabel: {
-            type: 'string',
-            description: 'Campo status label expuesto por el runtime actual.',
-          },
-          title: {
-            type: 'string',
-            description: 'Campo title expuesto por el runtime actual.',
-          },
-          message: {
-            type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          attendeeName: {
-            type: 'string',
-            description: 'Campo attendee name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          attendeeReference: {
-            type: 'string',
-            description: 'Campo attendee reference expuesto por el runtime actual.',
-          },
-          accessTypeLabel: {
-            type: 'string',
-            description: 'Campo access type label expuesto por el runtime actual.',
-          },
-          accessName: {
-            type: 'string',
-            description: 'Campo access name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          eventDateLabel: {
-            type: 'string',
-            description: 'Campo event date label expuesto por el runtime actual.',
-          },
-          scanTimeLabel: {
-            type: 'string',
-            description: 'Campo scan time label expuesto por el runtime actual.',
-          },
-          transactionId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo transaction id expuesto por el runtime actual.',
-            example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-          },
-          attendeeImageUrl: {
-            type: 'string',
-            format: 'uri',
-            nullable: true,
-            description: 'Campo attendee image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-          },
-          validatedByName: {
-            type: 'string',
-            description: 'Campo validated by name expuesto por el runtime actual.',
-            example: 'Valeria Mendoza',
-          },
-          validatedAt: {
-            type: 'string',
-            format: 'date-time',
-            nullable: true,
-            description: 'Campo validated at expuesto por el runtime actual.',
-            example: '2026-09-19T22:00:00.000Z',
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
           },
         },
-        required: [
-          'isValid',
-          'statusLabel',
-          'title',
-          'message',
-          'attendeeName',
-          'attendeeReference',
-          'accessTypeLabel',
-          'accessName',
-          'eventDateLabel',
-          'scanTimeLabel',
-          'transactionId',
-        ],
+        required: ['validation'],
         additionalProperties: false,
       },
-    },
-    required: ['validation'],
-    additionalProperties: false,
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              attendeeImageUrl: {
+                type: 'string',
+                format: 'uri',
+                nullable: true,
+                description: 'Campo attendee image url expuesto por el runtime actual.',
+                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+              validatedByName: {
+                type: 'string',
+                description: 'Campo validated by name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              validatedAt: {
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+                description: 'Campo validated at expuesto por el runtime actual.',
+                example: '2026-09-19T22:00:00.000Z',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'attendeeImageUrl',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+              'validatedByName',
+              'validatedAt',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+      {
+        type: 'object',
+        properties: {
+          validation: {
+            type: 'object',
+            properties: {
+              isValid: {
+                type: 'boolean',
+                description: 'Campo is valid expuesto por el runtime actual.',
+                example: false,
+              },
+              statusLabel: {
+                type: 'string',
+                description: 'Campo status label expuesto por el runtime actual.',
+              },
+              title: {
+                type: 'string',
+                description: 'Campo title expuesto por el runtime actual.',
+              },
+              message: {
+                type: 'string',
+                description: 'Mensaje legible que resume el resultado.',
+              },
+              attendeeName: {
+                type: 'string',
+                description: 'Campo attendee name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              attendeeReference: {
+                type: 'string',
+                description: 'Campo attendee reference expuesto por el runtime actual.',
+              },
+              attendeeImageUrl: {
+                type: 'string',
+                format: 'uri',
+                nullable: true,
+                description: 'Campo attendee image url expuesto por el runtime actual.',
+                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
+              },
+              accessTypeLabel: {
+                type: 'string',
+                description: 'Campo access type label expuesto por el runtime actual.',
+              },
+              accessName: {
+                type: 'string',
+                description: 'Campo access name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              eventDateLabel: {
+                type: 'string',
+                description: 'Campo event date label expuesto por el runtime actual.',
+              },
+              scanTimeLabel: {
+                type: 'string',
+                description: 'Campo scan time label expuesto por el runtime actual.',
+              },
+              transactionId: {
+                type: 'string',
+                format: 'uuid',
+                description: 'Campo transaction id expuesto por el runtime actual.',
+                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              },
+            },
+            required: [
+              'isValid',
+              'statusLabel',
+              'title',
+              'message',
+              'attendeeName',
+              'attendeeReference',
+              'attendeeImageUrl',
+              'accessTypeLabel',
+              'accessName',
+              'eventDateLabel',
+              'scanTimeLabel',
+              'transactionId',
+            ],
+            additionalProperties: false,
+            description: 'Campo validation expuesto por el runtime actual.',
+          },
+        },
+        required: ['validation'],
+        additionalProperties: false,
+      },
+    ],
   },
   CommerceController_ticketsResponse: {
     type: 'object',
@@ -19140,6 +22622,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 contactJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -19148,6 +22631,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 coverImageUrl: {
                   type: 'string',
@@ -19163,6 +22647,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 scheduleJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -19171,6 +22656,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
               },
               required: [
@@ -19633,6 +23119,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 contactJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -19641,6 +23128,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 coverImageUrl: {
                   type: 'string',
@@ -19656,6 +23144,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
                 scheduleJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -19664,6 +23153,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       $ref: '#/components/schemas/JsonValue',
                     },
                   ],
+                  nullable: true,
                 },
               },
               required: [

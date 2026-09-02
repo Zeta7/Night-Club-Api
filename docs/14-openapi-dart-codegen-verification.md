@@ -2,22 +2,23 @@
 
 ## Estado
 
-- Fecha: 2026-08-31.
+- Fecha: 2026-09-01.
 - Alcance: documentación OpenAPI únicamente.
 - Documento local aceptado: `dist/openapi.json`.
-- SHA-256 local: `0CC9AA54E5397DD28875AD5B65E46784811ACAD0A0B9C2C038886F503D2B2282`.
+- SHA-256 local: `672A581CCC10F9D7D3F2E927E2D0059E2099C740A3B11E403F33B0C54A1C5A2A`.
 
 ## Contraste local y desplegado
 
-| Métrica                           | Local aceptado | Desplegado antes de publicar |
-| --------------------------------- | -------------: | ---------------------------: |
-| Paths                             |            124 |                          124 |
-| Operaciones                       |            148 |                          148 |
-| `operationId` únicos              |            148 |                          148 |
-| Schemas                           |            207 |                          212 |
-| Request schemas cerrados y vacíos |              0 |                           27 |
-| `servers`                         |      `/api/v1` |                      ausente |
-| Paths con `/api/v1` embebido      |              0 |                          124 |
+| Métrica                           | Local aceptado | Snapshot desplegada 2026-08-31 |
+| --------------------------------- | -------------: | -----------------------------: |
+| Paths                             |            124 |                            124 |
+| Operaciones                       |            148 |                            148 |
+| `operationId` únicos              |            148 |                            148 |
+| Schemas                           |            207 |                            212 |
+| Schemas JSON de respuesta         |            144 |                  no verificado |
+| Request schemas cerrados y vacíos |              0 |                             27 |
+| `servers`                         |      `/api/v1` |                        ausente |
+| Paths con `/api/v1` embebido      |              0 |                            124 |
 
 El documento desplegado medido tenía SHA-256
 `A084C2209B6DAE2240EDF0058BD4AC40C8A63593DC827DB64679EC50BFF3C113`.
@@ -34,8 +35,15 @@ su origen.
 
 - `pnpm docs:build`: correcto.
 - `pnpm docs:check`: correcto; 124 paths, 148 operaciones, 148 IDs únicos, 207
-  schemas, cero referencias rotas, cero responses raíz `JsonValue` y cero unions
-  raíz no consumibles.
+  schemas y cero referencias rotas. El gate cubre los 144 schemas JSON de
+  respuesta, rechaza `JsonValue` fuera de la allowlist revisada o con nulabilidad
+  distinta de la forma aceptada, exige que los objetos sean cerrados o mapas con
+  valor tipado, rechaza marcadores internos y variantes `oneOf` que no sean
+  demostrablemente disjuntas.
+- El documento conserva ocho `oneOf` y cuatro `anyOf` en respuestas raíz. Entre
+  ellos están las ramas reales de Dashboard, Customer Home, Admin Events,
+  carrito y `simulatePayment`; `hasClub` y `hasResults` permanecen como booleanos
+  literales por rama.
 - El build TypeScript incluido en ambos comandos es correcto. El lint dirigido no
   inicia: la instalación resuelve ESLint 10.8.0, pero el repositorio conserva
   `.eslintrc.js` y no contiene el `eslint.config.*` requerido por esa versión.
@@ -47,19 +55,24 @@ su origen.
   schema inline, pero completó el package y no produjo errores de validación ni
   compilación.
 - `dart pub get`: correcto.
-- `dart run build_runner build --delete-conflicting-outputs`: correcto; 684
-  outputs. La versión actual de `build_runner` avisa que ese flag ya fue retirado
-  y lo ignora.
-- `dart analyze`: cero errores, 46 warnings generados por las plantillas
-  `dart-dio` (45 imports sin uso y un parámetro interno sin uso); por ello retorna
-  código 1. `dart analyze --no-fatal-warnings` retorna código 0.
-- Deserialización temporal de nueve fixtures sanitizados: correcta para los
-  perfiles financieros, las cinco transiciones de retiro, la solicitud de retiro,
-  el dashboard admin vacío y el carrito vacío.
+- `dart run build_runner build`: correcto; 728 outputs.
+- `dart analyze --no-fatal-warnings`: cero errores y 98 warnings generados por
+  las plantillas `dart-dio`, principalmente imports sin uso en APIs y wrappers
+  de uniones.
+- Deserialización temporal de trece fixtures sanitizados: doce correctos. Pasan
+  Notifications, Wallet, Referrals, Dashboard, Explore, detalle Customer,
+  detalle de evento, Admin Events, carrito, `simulatePayment`, tickets y
+  consumibles.
+- El fixture vacío de Customer Home expone una limitación de OpenAPI Generator:
+  el serializer `one_of` prueba ambas clases y no usa el literal
+  `hasResults: false`/`true` para seleccionar una. El OpenAPI sí contiene las dos
+  ramas disjuntas y el gate las comprueba; la adaptación determinista corresponde
+  al pipeline Mobile y no autoriza estrechar el contrato Backend.
 
-Los warnings del analizador no se suprimieron modificando el package generado ni
-estrechando el contrato. El código generado compila y no contiene errores de
-análisis.
+Los warnings y la ambigüedad de Customer Home no se ocultaron modificando el
+package generado ni estrechando el contrato. El SDK completo genera, compila y no
+contiene errores de análisis; Customer Home queda como incidencia explícita para
+la fase Mobile posterior.
 
 ## Límites externos
 
