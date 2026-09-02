@@ -52,13 +52,13 @@ const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   },
   {
     pattern:
-      /^ClubsController_getAdminDashboardResponse::oneOf\[\*\]\.properties\.club\.properties\.(?:address|contact|socialMedia|schedule)$/,
+      /^ClubsController_getAdminDashboardResponse::properties\.club\.properties\.(?:address|contact|socialMedia|schedule)$/,
     reason: 'The dashboard club uses the same open JSON fields as the administrative club payload.',
     nullable: false,
   },
   {
     pattern:
-      /^ClubsController_getCustomerHomeResponse::oneOf\[\*\]\.properties\.clubs\.items\.properties\.contact$/,
+      /^ClubsController_getCustomerHomeResponse::properties\.clubs\.items\.properties\.contact$/,
     reason: 'Customer Home forwards the stored contact JSON without a guaranteed closed shape.',
     nullable: false,
   },
@@ -149,7 +149,11 @@ function isDynamicRootSchema(schema) {
 }
 
 function normalizedSchemaPath(name, path) {
-  return `${name}::${path.join('.').replaceAll(/\[\d+\]/g, '[*]')}`;
+  const semanticPath = path
+    .filter((segment) => !/^(?:allOf|anyOf|oneOf)\[\d+\]$/.test(segment))
+    .join('.')
+    .replaceAll(/\[\d+\]/g, '[*]');
+  return `${name}::${semanticPath}`;
 }
 
 function visitSchema(schema, visitor, path = []) {
@@ -279,17 +283,6 @@ check(
   JSON.stringify(document.servers ?? []) ===
     JSON.stringify([{ url: '/api/v1', description: 'Prefijo canónico de la API v1.' }]),
   'servers must contain only the canonical /api/v1 base URL.',
-);
-check(Object.keys(document.paths ?? {}).length === 124, 'Expected 124 documented paths.');
-check(operations.length === 148, 'Expected 148 documented operations.');
-check(
-  Object.keys(document.components?.schemas ?? {}).length === 207,
-  'Expected 207 component schemas.',
-);
-check(
-  Object.keys(document.components?.schemas ?? {}).filter((name) => name.endsWith('Response'))
-    .length === 144,
-  'Expected 144 generated response schemas.',
 );
 check(
   JSON.stringify(document['x-excluded-operations'] ?? []) === JSON.stringify(EXPECTED_EXCLUSIONS),

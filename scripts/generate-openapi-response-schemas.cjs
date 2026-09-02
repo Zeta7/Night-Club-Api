@@ -549,6 +549,10 @@ function openApiResponseSchemaOverride(operationId, inferredSchema, contracts) {
     case 'ClubsController_exploreCustomerContent':
     case 'ClubsController_getCustomerClubDetail':
       return customerDiscoveryResponseSchema(operationId, inferredSchema, contracts.customerHome);
+    case 'CommerceController_updateProductDelivery':
+      return flattenedObjectUnionSchema(operationId, inferredSchema);
+    case 'CommerceController_consumables':
+      return consumablesResponseSchema(operationId, inferredSchema);
     case 'WalletsController_financialProfile':
       return publicFinancialProfileSchema(true);
     case 'WalletsController_upsertFinancialProfile':
@@ -706,6 +710,52 @@ function objectUnionSchema(rawVariants) {
 
 function unionVariants(schema) {
   return schema.oneOf ?? schema.anyOf ?? [];
+}
+
+function flattenedObjectUnionSchema(label, schema) {
+  const variants = unionVariants(schema);
+  if (variants.length < 2 || variants.some((variant) => variant.type !== 'object')) {
+    throw new Error(`${label} must expose an object union.`);
+  }
+
+  const names = [...new Set(variants.flatMap((variant) => Object.keys(variant.properties ?? {})))];
+  const properties = Object.fromEntries(
+    names.map((name) => {
+      const alternatives = variants
+        .map((variant) => variant.properties?.[name])
+        .filter((property) => property !== undefined)
+        .map((property) => {
+          if (property.nullable && property.enum?.length === 1 && property.enum[0] === null) {
+            const widened = { ...property };
+            delete widened.enum;
+            return widened;
+          }
+          return property;
+        });
+      return [name, mergeSchemaVariants(alternatives)];
+    }),
+  );
+  const optional = names.filter(
+    (name) => !variants.every((variant) => variant.required?.includes(name)),
+  );
+  return documentedObject(properties, optional);
+}
+
+function consumablesResponseSchema(operationId, inferredSchema) {
+  const collection = inferredSchema.properties?.items;
+  if (collection?.type !== 'array') {
+    throw new Error(`${operationId} must expose an items array.`);
+  }
+  return {
+    ...inferredSchema,
+    properties: {
+      ...inferredSchema.properties,
+      items: {
+        ...collection,
+        items: flattenedObjectUnionSchema(`${operationId} items`, collection.items),
+      },
+    },
+  };
 }
 
 function variantWithLiteral(schema, propertyName, value) {
