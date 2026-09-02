@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -12,6 +23,7 @@ import { ReverseRedemptionDto } from './reverse-redemption.dto';
 import { ClubOrdersQueryDto } from './club-orders-query.dto';
 import { RequestRefundDto } from './request-refund.dto';
 import { WalletTopUpDto } from './wallet-top-up.dto';
+import { UpdateProductDeliveryDto } from './update-product-delivery.dto';
 
 @ApiTags('Commerce')
 @ApiBearerAuth()
@@ -44,16 +56,21 @@ export class CommerceController {
     return this.service.updateCartItem(user, cartItemId, body.quantity);
   }
 
+  @Patch('cart/product-delivery')
+  updateProductDelivery(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: UpdateProductDeliveryDto,
+  ) {
+    return this.service.updateProductDelivery(user, body);
+  }
+
   @Delete('cart/items/:cartItemId')
   deleteCartItem(@CurrentUser() user: AuthenticatedUser, @Param('cartItemId') cartItemId: string) {
     return this.service.deleteCartItem(user, cartItemId);
   }
 
   @Get('clubs/:clubId/inventory/reservations/metrics')
-  reservationMetrics(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('clubId') clubId: string,
-  ) {
+  reservationMetrics(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string) {
     return this.service.getReservationMetrics(user, clubId);
   }
 

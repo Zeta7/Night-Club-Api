@@ -15,6 +15,7 @@ import {
   EventStatus,
   OrderStatus,
   ProductStatus,
+  ProductDeliveryMode,
   PromotionStatus,
   Prisma,
   RedeemableStatus,
@@ -36,6 +37,7 @@ import { AddCartItemDto } from '../presentation/add-cart-item.dto';
 import { NotificationService } from '../../notification/application/notification.service';
 import { LedgerService } from '../../wallets/application/ledger.service';
 import { ClubOrdersQueryDto } from '../presentation/club-orders-query.dto';
+import { UpdateProductDeliveryDto } from '../presentation/update-product-delivery.dto';
 import { CapacityService } from '../../events/application/capacity.service';
 import { ReferralsService } from '../../referrals/application/referrals.service';
 import {
@@ -44,6 +46,7 @@ import {
   PaymentOutcome,
   VerifiedPaymentEvent,
 } from './ports/payment-gateway.port';
+import { buildProductDeliveryPlan } from './product-delivery-plan';
 
 type ValidationKind = 'TICKET' | 'PRODUCT' | 'PROMOTION';
 
@@ -138,16 +141,16 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         : (input.paymentMethod ?? (this.paymentGateway.provider === 'flow' ? 'FLOW' : 'SIMULATED'));
     const created = await this.prisma.$transaction(async (tx) => {
       const reservationExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+      const cart = await tx.cart.findUnique({
+        where: { userId: user.id },
+        include: { items: { orderBy: { createdAt: 'asc' } } },
+      });
       const checkoutItems =
-        (
-          await tx.cart.findUnique({
-            where: { userId: user.id },
-            include: { items: { orderBy: { createdAt: 'asc' } } },
-          })
-        )?.items.map((item) => ({
+        cart?.items.map((item) => ({
           id: item.itemId,
           type: item.itemType,
           quantity: item.quantity,
+          productDeliveryMode: item.productDeliveryMode,
         })) ?? [];
       if (checkoutItems.length === 0) {
         throw badRequest('EMPTY_CART', 'Agrega al menos un artículo antes de comprar.');
@@ -165,6 +168,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         quantity: number;
         eventId: string | null;
         validUntil: Date | null;
+        productDeliveryMode: ProductDeliveryMode;
       }> = [];
 
       for (const item of checkoutItems) {
@@ -213,6 +217,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             quantity: item.quantity,
             eventId: source.eventId,
             validUntil: source.event?.endsAt ?? source.saleEndAt,
+            productDeliveryMode: item.productDeliveryMode,
           });
         } else if (item.type === CommerceItemType.PRODUCT) {
           await this.lockInventoryResource(tx, item.type, item.id);
@@ -249,6 +254,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             quantity: item.quantity,
             eventId: null,
             validUntil: null,
+            productDeliveryMode: item.productDeliveryMode,
           });
         } else {
           const source = await tx.promotion.findFirst({
@@ -279,6 +285,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             quantity: item.quantity,
             eventId: source.eventId,
             validUntil: source.endsAt ?? source.event?.endsAt ?? null,
+            productDeliveryMode: item.productDeliveryMode,
           });
         }
       }
@@ -322,6 +329,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           status: 'PENDING',
           simulatedPayment: requestedPaymentMethod === 'SIMULATED',
           paymentMethod: requestedPaymentMethod,
+          combineProducts: cart?.combineProducts ?? false,
         },
       });
       if (requestedPaymentMethod === 'BEERRY_WALLET' || promotionalCreditCents > 0) {
@@ -349,6 +357,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             itemId: item.id,
             nameSnapshot: item.name,
             quantity: item.quantity,
+            productDeliveryMode: item.productDeliveryMode,
             unitPriceCents: item.price,
             totalCents: item.price * item.quantity,
           },
@@ -427,7 +436,15 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       where: { userId: user.id },
       include: { items: { orderBy: { createdAt: 'asc' } } },
     });
-    if (!cart) return { id: null, clubId: null, items: [], totalCents: 0, currency: 'PEN' };
+    if (!cart)
+      return {
+        id: null,
+        clubId: null,
+        combineProducts: false,
+        items: [],
+        totalCents: 0,
+        currency: 'PEN',
+      };
 
     const items = await Promise.all(
       cart.items.map(async (item) => {
@@ -438,6 +455,8 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           id: item.itemId,
           type: item.itemType,
           quantity: item.quantity,
+          productDeliveryMode: item.productDeliveryMode,
+          combineProducts: cart.combineProducts,
           name: source?.name ?? 'Artículo no disponible',
           clubId: source?.clubId ?? cart.clubId,
           clubName: source?.clubName ?? '',
@@ -455,6 +474,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     return {
       id: cart.id,
       clubId: cart.clubId,
+      combineProducts: cart.combineProducts,
       items,
       totalCents: items.reduce((sum, item) => sum + item.lineTotalCents, 0),
       currency: items[0]?.currency ?? 'PEN',
@@ -637,6 +657,43 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     return this.getCart(user);
   }
 
+  async updateProductDelivery(user: AuthenticatedUser, input: UpdateProductDeliveryDto) {
+    const cart = await this.prisma.cart.findUnique({
+      where: { userId: user.id },
+      include: { items: true },
+    });
+    if (!cart) throw notFound('CART_NOT_FOUND', 'No se encontró tu carrito.');
+
+    const requestedItems = input.items ?? [];
+    const productItems = new Map(
+      cart.items
+        .filter((item) => item.itemType === CommerceItemType.PRODUCT)
+        .map((item) => [item.id, item]),
+    );
+    if (requestedItems.some((item) => !productItems.has(item.cartItemId))) {
+      throw badRequest(
+        'INVALID_PRODUCT_DELIVERY_ITEM',
+        'Solo puedes configurar productos que pertenecen a tu carrito.',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      if (input.combineProducts !== undefined) {
+        await tx.cart.update({
+          where: { id: cart.id },
+          data: { combineProducts: input.combineProducts },
+        });
+      }
+      for (const item of requestedItems) {
+        await tx.cartItem.update({
+          where: { id: item.cartItemId },
+          data: { productDeliveryMode: item.mode },
+        });
+      }
+    });
+    return this.getCart(user);
+  }
+
   async deleteCartItem(user: AuthenticatedUser, cartItemId: string) {
     const item = await this.prisma.cartItem.findFirst({
       where: { id: cartItemId, cart: { userId: user.id } },
@@ -647,7 +704,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       await tx.cartItem.delete({ where: { id: item.id } });
       const remaining = await tx.cartItem.count({ where: { cartId: item.cartId } });
       if (remaining === 0)
-        await tx.cart.update({ where: { id: item.cartId }, data: { clubId: null } });
+        await tx.cart.update({
+          where: { id: item.cartId },
+          data: { clubId: null, combineProducts: false },
+        });
     });
     return this.getCart(user);
   }
@@ -892,6 +952,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             where: { orderId, status: 'AVAILABLE' },
             data: { status: 'CANCELLED', revokedAt: refundedAt, revokedReason },
           }),
+          tx.productDelivery.updateMany({
+            where: { orderId, status: 'AVAILABLE' },
+            data: { status: 'CANCELLED', revokedAt: refundedAt, revokedReason },
+          }),
         ]);
         const wallet = await tx.wallet.findUnique({ where: { userId: order.userId } });
         if (wallet) {
@@ -996,7 +1060,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           }
           const remaining = await tx.cartItem.count({ where: { cartId: cart.id } });
           if (remaining === 0)
-            await tx.cart.update({ where: { id: cart.id }, data: { clubId: null } });
+            await tx.cart.update({
+              where: { id: cart.id },
+              data: { clubId: null, combineProducts: false },
+            });
         }
       } else {
         await tx.paymentAttempt.update({
@@ -1029,8 +1096,17 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
-  private async issueOrderResources(tx: any, order: { id: string; userId: string; items: any[] }) {
+  private async issueOrderResources(
+    tx: any,
+    order: { id: string; userId: string; combineProducts: boolean; items: any[] },
+  ) {
+    const productItems = order.items.filter((item) => item.itemType === CommerceItemType.PRODUCT);
+    for (const group of buildProductDeliveryPlan(order.combineProducts, productItems)) {
+      await this.createProductDelivery(tx, order, group);
+    }
+
     for (const item of order.items) {
+      if (item.itemType === CommerceItemType.PRODUCT) continue;
       for (let index = 0; index < item.quantity; index++) {
         const id = randomUUID();
         const code = this.backupCode();
@@ -1056,14 +1132,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             },
           });
         } else {
-          const promotion =
-            item.itemType === CommerceItemType.PROMOTION
-              ? await tx.promotion.findUnique({
-                  where: { id: item.itemId },
-                  include: { event: true },
-                })
-              : null;
-          const resource = item.itemType === CommerceItemType.PRODUCT ? 'PRODUCT' : 'PROMOTION';
+          const promotion = await tx.promotion.findUnique({
+            where: { id: item.itemId },
+            include: { event: true },
+          });
           await tx.consumableRight.create({
             data: {
               id,
@@ -1074,10 +1146,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
               ownerUserId: order.userId,
               sourceType: item.itemType,
               sourceId: item.itemId,
-              productId: item.itemType === CommerceItemType.PRODUCT ? item.itemId : null,
-              promotionId: item.itemType === CommerceItemType.PROMOTION ? item.itemId : null,
+              promotionId: item.itemId,
               code,
-              qrPayload: this.qr(resource, id, item.clubId, promotion?.eventId),
+              qrPayload: this.qr('PROMOTION', id, item.clubId, promotion?.eventId),
               signatureVersion: this.activeSigningVersion(),
               validFrom: promotion?.startsAt ?? promotion?.event?.startsAt ?? null,
               validUntil: promotion?.endsAt ?? promotion?.event?.endsAt ?? null,
@@ -1086,6 +1157,39 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         }
       }
     }
+  }
+
+  private async createProductDelivery(
+    tx: any,
+    order: { id: string; userId: string },
+    items: Array<{
+      id: string;
+      itemId: string;
+      clubId: string;
+      nameSnapshot: string;
+      quantity: number;
+    }>,
+  ) {
+    const id = randomUUID();
+    await tx.productDelivery.create({
+      data: {
+        id,
+        orderId: order.id,
+        clubId: items[0].clubId,
+        ownerUserId: order.userId,
+        code: this.backupCode(),
+        qrPayload: this.qr('PRODUCT', id, items[0].clubId),
+        signatureVersion: this.activeSigningVersion(),
+        items: {
+          create: items.map((item) => ({
+            orderItemId: item.id,
+            productId: item.itemId,
+            nameSnapshot: item.nameSnapshot,
+            quantity: item.quantity,
+          })),
+        },
+      },
+    });
   }
 
   private async notifyClubSale(
@@ -1484,6 +1588,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     if (!code) {
       throw badRequest('VALIDATION_CODE_REQUIRED', 'Ingresa un código válido.');
     }
+    if (kind === 'PRODUCT') {
+      const delivery = await this.validateProductDelivery(user, clubId, code, confirmUse);
+      if (delivery) return delivery;
+    }
     const signedResourceId = code.includes('.') ? this.untrustedSignedResourceId(code) : null;
 
     const ticket =
@@ -1793,6 +1901,133 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
+  private async validateProductDelivery(
+    user: AuthenticatedUser,
+    clubId: string,
+    code: string,
+    confirmUse: boolean,
+  ) {
+    const signedResourceId = code.includes('.') ? this.untrustedSignedResourceId(code) : null;
+    const delivery = await this.prisma.productDelivery.findFirst({
+      where: {
+        clubId,
+        OR: [
+          { code: code.toUpperCase() },
+          { qrPayload: code },
+          ...(signedResourceId ? [{ id: signedResourceId }] : []),
+        ],
+      },
+      include: { owner: true, club: true, order: true, items: { include: { product: true } } },
+    });
+    if (!delivery) return null;
+
+    const accessItems = delivery.items.map((item) => ({
+      productId: item.productId,
+      name: item.nameSnapshot || item.product.name,
+      quantity: item.quantity,
+    }));
+    const accessName = accessItems.map((item) => `${item.quantity} × ${item.name}`).join(' · ');
+    const attendeeImageUrl = await this.uploadsService.createReadableImageUrl(
+      delivery.owner.profileImageUrl,
+    );
+    const response = (overrides: Record<string, unknown>) => ({
+      validation: {
+        isValid: true,
+        statusLabel: confirmUse ? 'ENTREGADO CORRECTAMENTE' : 'LISTO PARA ENTREGAR',
+        title: confirmUse ? 'Productos entregados' : 'Entrega lista para confirmar',
+        message: confirmUse
+          ? 'La entrega se registró correctamente.'
+          : 'Confirma para entregar todos los productos de este QR.',
+        attendeeName: delivery.owner.fullName,
+        attendeeReference: `${delivery.owner.phoneCountryCode} ${delivery.owner.phoneNumber}`,
+        attendeeImageUrl,
+        accessTypeLabel: 'PRODUCTOS',
+        accessName,
+        accessItems,
+        eventDateLabel: 'Sin fecha de evento',
+        scanTimeLabel: this.timeLabel(new Date()),
+        transactionId: `#${delivery.order.id.slice(0, 12).toUpperCase()}`,
+        ...overrides,
+      },
+    });
+
+    if (code.includes('.') && !this.isSignedQrValid(code, 'PRODUCT', delivery.id, clubId)) {
+      await this.recordValidationAttempt(
+        user,
+        clubId,
+        code,
+        'INVALID',
+        'PRODUCT',
+        delivery.id,
+        'INVALID_SIGNATURE',
+      );
+      return this.invalidValidation('QR INVÁLIDO', 'La firma del código QR no es válida.');
+    }
+    if (delivery.status !== RedeemableStatus.AVAILABLE || delivery.revokedAt) {
+      const alreadyUsed = delivery.status === RedeemableStatus.USED;
+      await this.recordValidationAttempt(
+        user,
+        clubId,
+        code,
+        alreadyUsed ? 'REPEATED' : 'INVALID',
+        'PRODUCT',
+        delivery.id,
+        alreadyUsed ? 'ALREADY_REDEEMED' : `STATUS_${delivery.status}`,
+      );
+      return response({
+        isValid: false,
+        statusLabel: alreadyUsed ? 'PEDIDO YA ENTREGADO' : 'QR NO DISPONIBLE',
+        title: alreadyUsed ? 'Estos productos ya fueron entregados' : 'Entrega no autorizada',
+        message: alreadyUsed
+          ? 'Este QR no puede utilizarse nuevamente.'
+          : 'Este QR fue cancelado o ya no se encuentra disponible.',
+      });
+    }
+
+    if (confirmUse) {
+      const usedAt = new Date();
+      let redeemed = false;
+      await this.prisma.$transaction(async (tx) => {
+        const result = await tx.productDelivery.updateMany({
+          where: { id: delivery.id, status: RedeemableStatus.AVAILABLE, usedAt: null },
+          data: { status: RedeemableStatus.USED, usedAt },
+        });
+        if (result.count !== 1) return;
+        redeemed = true;
+        await tx.auditLogEntry.create({
+          data: {
+            actorUserId: user.id,
+            clubId,
+            action: 'DELIVER_PRODUCT',
+            resourceType: 'PRODUCT',
+            resourceId: delivery.id,
+            metadata: {
+              accessName,
+              accessItems,
+              ownerUserId: delivery.ownerUserId,
+              orderId: delivery.orderId,
+              validatedAt: usedAt.toISOString(),
+            },
+          },
+        });
+        await this.recordValidationAttempt(
+          user,
+          clubId,
+          code,
+          'VALID',
+          'PRODUCT',
+          delivery.id,
+          null,
+          tx,
+        );
+      });
+      if (!redeemed) {
+        throw conflict('CODE_ALREADY_REDEEMED', 'El pedido fue entregado por otro trabajador.');
+      }
+    }
+    return response({});
+  }
+
   async validateDetectedCode(
     user: AuthenticatedUser,
     clubId: string,
@@ -1818,6 +2053,20 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
     if (ticket) {
       return this.validateCode(user, clubId, 'TICKET', code, confirmUse);
+    }
+    const productDelivery = await this.prisma.productDelivery.findFirst({
+      where: {
+        clubId,
+        OR: [
+          { code: normalizedCode },
+          { qrPayload: code },
+          ...(signedResourceId ? [{ id: signedResourceId }] : []),
+        ],
+      },
+      select: { id: true },
+    });
+    if (productDelivery) {
+      return this.validateCode(user, clubId, 'PRODUCT', code, confirmUse);
     }
     const consumable = await this.prisma.consumableRight.findFirst({
       where: {
@@ -1898,6 +2147,44 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      if (kind === 'PRODUCT') {
+        const delivery = await tx.productDelivery.findFirst({
+          where: { id: resourceId, clubId },
+        });
+        if (delivery) {
+          if (delivery.status !== RedeemableStatus.USED) {
+            throw conflict(
+              'REDEMPTION_NOT_USED',
+              'Esta entrega no tiene un canje que pueda revertirse.',
+            );
+          }
+          await tx.productDelivery.update({
+            where: { id: resourceId },
+            data: { status: RedeemableStatus.AVAILABLE, usedAt: null },
+          });
+          await tx.auditLogEntry.create({
+            data: {
+              actorUserId: user.id,
+              clubId,
+              action: 'REVERSE_REDEMPTION',
+              resourceType: kind,
+              resourceId,
+              metadata: { reason: reason.trim(), previousStatus: delivery.status },
+            },
+          });
+          await this.recordValidationAttempt(
+            user,
+            clubId,
+            delivery.code,
+            'REVERSED',
+            kind,
+            resourceId,
+            'SUPERVISED_REVERSAL',
+            tx,
+          );
+          return { resourceId, kind, status: 'AVAILABLE', redemptionCount: 0, reversed: true };
+        }
+      }
       const resource =
         kind === 'TICKET'
           ? await tx.ticket.findFirst({ where: { id: resourceId, clubId } })
@@ -2415,12 +2702,39 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   }
 
   async listConsumables(user: AuthenticatedUser) {
-    return {
-      items: await this.prisma.consumableRight.findMany({
+    const [rights, deliveries] = await Promise.all([
+      this.prisma.consumableRight.findMany({
         where: { ownerUserId: user.id },
         include: { product: true, promotion: true, club: true, event: true },
         orderBy: { createdAt: 'desc' },
       }),
+      this.prisma.productDelivery.findMany({
+        where: { ownerUserId: user.id },
+        include: { club: true, items: { include: { product: true } } },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+    return {
+      items: [
+        ...rights,
+        ...deliveries.map((delivery) => ({
+          ...delivery,
+          sourceType: CommerceItemType.PRODUCT,
+          title:
+            delivery.items.length === 1
+              ? `${delivery.items[0].nameSnapshot} ×${delivery.items[0].quantity}`
+              : 'Entrega de productos',
+          contents: delivery.items.map((item) => ({
+            productId: item.productId,
+            name: item.nameSnapshot,
+            quantity: item.quantity,
+            imageUrl: item.product.imageUrl,
+          })),
+          product: delivery.items.length === 1 ? delivery.items[0].product : null,
+          promotion: null,
+          event: null,
+        })),
+      ].sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime()),
     };
   }
 }
