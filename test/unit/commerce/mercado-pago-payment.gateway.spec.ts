@@ -7,6 +7,7 @@ describe('MercadoPagoPaymentGateway Checkout Pro Orders API', () => {
   const configValues: Record<string, string> = {
     MERCADO_PAGO_NOTIFICATION_URL: 'https://api.beerry.app/api/v1/payments/mercado-pago/webhook',
     MOBILE_APP_SCHEME: 'beerry',
+    MERCADO_PAGO_TEST_PAYER_EMAIL: 'buyer@testuser.com',
   };
   const config = {
     get: jest.fn((name: string, fallback?: string) => configValues[name] ?? fallback),
@@ -85,7 +86,7 @@ describe('MercadoPagoPaymentGateway Checkout Pro Orders API', () => {
         },
       ],
     });
-    expect(body.payer).toBeUndefined();
+    expect(body.payer).toEqual({ email: 'buyer@testuser.com' });
     expect(body.back_urls).toBeUndefined();
     expect(body.notification_url).toBeUndefined();
     expect(result).toMatchObject({

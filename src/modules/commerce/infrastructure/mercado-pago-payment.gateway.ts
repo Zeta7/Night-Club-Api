@@ -53,6 +53,7 @@ export class MercadoPagoPaymentGateway {
     if (input.sellerExternalId && input.sellerExternalId !== seller.sellerExternalId)
       throw new Error('MERCADO_PAGO_SELLER_MISMATCH');
     const amount = money(input.amountCents);
+    const testPayerEmail = this.optionalTestPayerEmail();
     const response = await fetch('https://api.mercadopago.com/v1/orders', {
       method: 'POST',
       headers: {
@@ -66,6 +67,7 @@ export class MercadoPagoPaymentGateway {
         processing_mode: 'manual',
         total_amount: amount,
         external_reference: input.attemptId,
+        ...(testPayerEmail ? { payer: { email: testPayerEmail } } : {}),
         ...(input.clubId ? { marketplace_fee: money(input.marketplaceFeeCents!) } : {}),
         config: {
           online: {
@@ -382,6 +384,14 @@ export class MercadoPagoPaymentGateway {
   private required(name: string) {
     const value = this.config.get<string>(name)?.trim();
     if (!value) throw new Error(`${name}_REQUIRED`);
+    return value;
+  }
+
+  private optionalTestPayerEmail() {
+    const value = this.config.get<string>('MERCADO_PAGO_TEST_PAYER_EMAIL')?.trim().toLowerCase();
+    if (!value) return undefined;
+    if (!/^[^\s@]+@testuser\.com$/.test(value))
+      throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_INVALID');
     return value;
   }
 
