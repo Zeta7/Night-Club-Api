@@ -38,7 +38,9 @@ export class MercadoPagoOAuthCallbackController {
     private readonly config: ConfigService,
   ) {}
 
-  @Get('oauth/callback')
+  // `connect` is the canonical static redirect URI registered in Mercado Pago.
+  // Keep the previous path during rollout so already configured environments do not break.
+  @Get(['connect', 'oauth/callback'])
   @ApiExcludeEndpoint()
   @Header('Content-Type', 'text/html; charset=utf-8')
   async callback(@Query('state') state: string, @Query('code') code: string) {

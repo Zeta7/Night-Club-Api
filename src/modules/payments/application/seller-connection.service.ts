@@ -15,6 +15,7 @@ import { MercadoPagoOAuthClient } from '../infrastructure/mercado-pago-oauth.cli
 import { SellerCredentialCipher } from '../infrastructure/seller-credential-cipher';
 
 const PROVIDER = 'mercado_pago';
+const REQUIRED_SCOPES = ['read', 'write', 'offline_access'] as const;
 
 @Injectable()
 export class SellerConnectionService {
@@ -109,6 +110,7 @@ export class SellerConnectionService {
       return current;
     });
     const token = await this.oauth.exchangeCode(code);
+    const scopes = this.assertRequiredScopes(token.scope);
     const externalSellerId = String(token.user_id);
     const existingSeller = await this.prisma.marketplaceSellerConnection.findFirst({
       where: { provider: PROVIDER, externalSellerId, NOT: { clubId: oauthState.clubId } },
@@ -132,7 +134,7 @@ export class SellerConnectionService {
           ? this.cipher.encrypt(token.refresh_token)
           : null,
         tokenExpiresAt: expiresAt,
-        scopes: token.scope?.split(/\s+/).filter(Boolean) ?? [],
+        scopes,
         status: SellerConnectionStatus.CONNECTED,
         connectedAt: new Date(),
       },
@@ -144,7 +146,7 @@ export class SellerConnectionService {
           ? this.cipher.encrypt(token.refresh_token)
           : undefined,
         tokenExpiresAt: expiresAt,
-        scopes: token.scope?.split(/\s+/).filter(Boolean) ?? [],
+        scopes,
         status: SellerConnectionStatus.CONNECTED,
         connectedAt: new Date(),
         disconnectedAt: null,
@@ -194,11 +196,54 @@ export class SellerConnectionService {
         'MERCADO_PAGO_NOT_CONNECTED',
         'El negocio debe conectar Mercado Pago antes de recibir pagos.',
       );
-    if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date())
-      throw conflict(
-        'MERCADO_PAGO_REAUTHORIZATION_REQUIRED',
-        'La conexión de Mercado Pago venció y debe renovarse.',
-      );
+    if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date()) {
+      if (!connection.refreshTokenEncrypted) {
+        throw conflict(
+          'MERCADO_PAGO_REAUTHORIZATION_REQUIRED',
+          'La conexión de Mercado Pago venció y debe renovarse.',
+        );
+      }
+      try {
+        const refreshed = await this.oauth.refresh(
+          this.cipher.decrypt(connection.refreshTokenEncrypted),
+        );
+        if (String(refreshed.user_id) !== connection.externalSellerId)
+          throw new Error('MERCADO_PAGO_REFRESH_SELLER_MISMATCH');
+        const scopes = this.assertRequiredScopes(refreshed.scope, connection.scopes);
+        const tokenExpiresAt = refreshed.expires_in
+          ? new Date(Date.now() + refreshed.expires_in * 1000)
+          : null;
+        await this.prisma.marketplaceSellerConnection.update({
+          where: { id: connection.id },
+          data: {
+            accessTokenEncrypted: this.cipher.encrypt(refreshed.access_token),
+            refreshTokenEncrypted: refreshed.refresh_token
+              ? this.cipher.encrypt(refreshed.refresh_token)
+              : connection.refreshTokenEncrypted,
+            tokenExpiresAt,
+            scopes,
+            status: SellerConnectionStatus.CONNECTED,
+            lastError: null,
+          },
+        });
+        return {
+          accessToken: refreshed.access_token,
+          sellerExternalId: connection.externalSellerId,
+        };
+      } catch (error) {
+        await this.prisma.marketplaceSellerConnection.update({
+          where: { id: connection.id },
+          data: {
+            status: SellerConnectionStatus.REAUTHORIZATION_REQUIRED,
+            lastError: error instanceof Error ? error.message.slice(0, 500) : 'OAUTH_REFRESH_FAILED',
+          },
+        });
+        throw conflict(
+          'MERCADO_PAGO_REAUTHORIZATION_REQUIRED',
+          'Mercado Pago requiere que el negocio autorice nuevamente la conexión.',
+        );
+      }
+    }
     return {
       accessToken: this.cipher.decrypt(connection.accessTokenEncrypted),
       sellerExternalId: connection.externalSellerId,
@@ -222,6 +267,16 @@ export class SellerConnectionService {
     const value = this.config.get<string>('MERCADO_PAGO_OAUTH_STATE_SECRET')?.trim();
     if (!value || value.length < 32) throw new Error('MERCADO_PAGO_OAUTH_STATE_SECRET_REQUIRED');
     return value;
+  }
+  private assertRequiredScopes(value?: string, fallback: string[] = []) {
+    const scopes = value?.split(/[,\s]+/).filter(Boolean) ?? fallback;
+    const missing = REQUIRED_SCOPES.filter((scope) => !scopes.includes(scope));
+    if (missing.length)
+      throw conflict(
+        'MERCADO_PAGO_PERMISSIONS_REQUIRED',
+        `Mercado Pago no concedió los permisos requeridos: ${missing.join(', ')}.`,
+      );
+    return scopes;
   }
   private verifyStateSignature(state: string) {
     const [nonce, supplied] = state.split('.');
