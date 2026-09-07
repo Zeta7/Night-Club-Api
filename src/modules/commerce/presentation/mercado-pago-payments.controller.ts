@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Headers, Post, Query } from '@nestjs/common';
+import { Body, Controller, Headers, Logger, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { createHmac, timingSafeEqual } from 'node:crypto';
@@ -8,37 +8,13 @@ import { MercadoPagoPaymentGateway } from '../infrastructure/mercado-pago-paymen
 
 @Controller('payments/mercado-pago')
 export class MercadoPagoPaymentsController {
+  private readonly logger = new Logger(MercadoPagoPaymentsController.name);
+
   constructor(
     private readonly mercadoPago: MercadoPagoPaymentGateway,
     private readonly commerce: CommerceService,
     private readonly config: ConfigService,
   ) {}
-
-  @Get('return')
-  @Header('Content-Type', 'text/html; charset=utf-8')
-  @Header('Cache-Control', 'no-store, max-age=0')
-  @ApiExcludeEndpoint()
-  async paymentReturn(
-    @Query('external_reference') externalReference?: string,
-    @Query('preference_id') preferenceId?: string,
-    @Query('payment_id') paymentId?: string,
-  ) {
-    const reference = externalReference || preferenceId || paymentId || '';
-    const context = reference ? await this.commerce.getPaymentReturnContext(reference) : null;
-    const query = context
-      ? new URLSearchParams({
-          provider: 'mercado_pago',
-          attemptId: context.attemptId,
-          operationType: context.operationType,
-          operationId: context.operationId ?? '',
-        }).toString()
-      : new URLSearchParams({ provider: 'mercado_pago' }).toString();
-    const scheme = this.config
-      .get<string>('MOBILE_APP_SCHEME', 'beerry')
-      .replace(/[^a-zA-Z0-9+.-]/g, '');
-    const deepLink = `${scheme}://payments/result?${query}`;
-    return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Volver a Beerry</title></head><body><main><h1>Regresa a Beerry</h1><p>La aplicación verificará el estado directamente con el proveedor.</p><p><a href="${deepLink}">Abrir Beerry</a></p></main><script>location.replace(${JSON.stringify(deepLink)})</script></body></html>`;
-  }
 
   @Post('webhook')
   @ApiExcludeEndpoint()
@@ -49,18 +25,51 @@ export class MercadoPagoPaymentsController {
     @Body() body: Record<string, any>,
   ) {
     const dataId = queryDataId ?? String(body?.data?.id ?? '');
-    this.verifySignature(signature, requestId, dataId);
-    if (body?.type !== 'payment' || !dataId) return { received: true };
-    const sellerId = String(body.user_id ?? '');
-    if (!sellerId)
-      throw unauthorized(
-        'MERCADO_PAGO_SELLER_REQUIRED',
-        'La notificación no identifica al vendedor.',
+    this.logger.log(
+      JSON.stringify({
+        event: 'mercado_pago.webhook.received',
+        requestId: requestId ?? null,
+        type: typeof body?.type === 'string' ? body.type : null,
+        dataId: dataId || null,
+        sellerId: body?.user_id == null ? null : String(body.user_id),
+        hasSignature: Boolean(signature),
+      }),
+    );
+    try {
+      this.verifySignature(signature, requestId, dataId);
+      if (body?.type !== 'payment' || !dataId) return { received: true };
+      const sellerId = String(body.user_id ?? '');
+      if (!sellerId)
+        throw unauthorized(
+          'MERCADO_PAGO_SELLER_REQUIRED',
+          'La notificación no identifica al vendedor.',
+        );
+      const event = await this.mercadoPago.queryPayment(dataId, sellerId);
+      await this.commerce.bindAuthoritativeExternalPayment(event);
+      await this.commerce.processPaymentEvent(event);
+      this.logger.log(
+        JSON.stringify({
+          event: 'mercado_pago.webhook.processed',
+          requestId: requestId ?? null,
+          dataId,
+          sellerId,
+          attemptId: event.attemptId ?? null,
+          orderId: event.orderId ?? null,
+          outcome: event.outcome,
+        }),
       );
-    const event = await this.mercadoPago.queryPayment(dataId, sellerId);
-    await this.commerce.bindAuthoritativeExternalPayment(event);
-    await this.commerce.processPaymentEvent(event);
-    return { received: true };
+      return { received: true };
+    } catch (error) {
+      this.logger.error(
+        JSON.stringify({
+          event: 'mercado_pago.webhook.failed',
+          requestId: requestId ?? null,
+          dataId: dataId || null,
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+      throw error;
+    }
   }
 
   private verifySignature(

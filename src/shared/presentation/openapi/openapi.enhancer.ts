@@ -46,7 +46,7 @@ function uriExample(name: string, context: string[] = []): string {
     return 'https://nightclub-platform-assets.s3.amazonaws.com/uploads/2026/08/nebula-cover.webp?X-Amz-Expires=300';
   }
   if (/checkoutUrl/i.test(name)) {
-    return 'https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7';
+    return 'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456-test';
   }
   if (/shareUrl/i.test(name)) return 'https://beerry.app/eventos/noche-latina';
   if (/proofUrl/i.test(name)) {
@@ -114,7 +114,7 @@ function stringExample(name: string, context: string[] = []): string {
     legalName: 'Inversiones Nébula S.A.C.',
     note: 'Ajuste autorizado durante el cierre de caja.',
     password: 'NocheSegura#2026',
-    paymentReference: 'FLOW-20260919-847215',
+    paymentReference: 'MP-20260919-847215',
     platform: 'ios',
     province: 'Lima',
     q: 'música latina',
@@ -171,9 +171,7 @@ export const OPENAPI_PUBLIC_OPERATION_ALLOWLIST = [
   'AuthController_resetPassword',
   'PublicEventsController_listPublicEvents',
   'PublicEventsController_getPublicEvent',
-  'FlowPaymentsController_confirmation',
-  'FlowPaymentsController_returnGet',
-  'FlowPaymentsController_returnPost',
+  'MercadoPagoPaymentsController_webhook',
 ] as const;
 
 export const OPENAPI_EXCLUDED_OPERATION_ALLOWLIST = ['GET /api/v1/media/*path'] as const;
@@ -315,9 +313,7 @@ const SUMMARY_OVERRIDES: Record<string, string> = {
   ReferralsController_settings: 'Obtener la configuración de referidos',
   ReferralsController_updateSettings: 'Actualizar la configuración de referidos',
   ReferralsController_rewards: 'Listar recompensas de referidos',
-  FlowPaymentsController_confirmation: 'Confirmar un pago notificado por Flow',
-  FlowPaymentsController_returnGet: 'Mostrar el retorno de Flow mediante GET',
-  FlowPaymentsController_returnPost: 'Mostrar el retorno de Flow mediante POST',
+  MercadoPagoPaymentsController_webhook: 'Procesar una notificación firmada de Mercado Pago',
 };
 
 const WORDS: Record<string, string> = {
@@ -427,7 +423,7 @@ const PARAMETER_DESCRIPTIONS: Record<string, string> = {
   correlationId: 'Identificador de correlación del flujo auditado.',
   actorUserId: 'UUID del usuario que ejecutó la acción.',
   severity: 'Severidad del registro de auditoría.',
-  token: 'Token opaco enviado por Flow.',
+  token: 'Token opaco del proveedor de pagos.',
   q: 'Texto de búsqueda de contenido.',
   district: 'Distrito usado para localizar contenido.',
   province: 'Provincia usada para localizar contenido.',
@@ -506,9 +502,7 @@ export function enhanceOpenApiDocument(document: OpenAPIObject): OpenAPIObject {
       if (!operation) continue;
       const operationId = operation.operationId!;
       const isPublic = publicOperations.has(operationId);
-      operation.tags = [
-        (operation.tags?.[0] === 'FlowPayments' ? 'Flow Payments' : operation.tags?.[0]) ?? 'API',
-      ];
+      operation.tags = [operation.tags?.[0] ?? 'API'];
       operation.summary = uniqueSummary(
         summaryFor(operationId, operation.tags[0]),
         usedSummaries,
@@ -684,11 +678,8 @@ const OPERATION_DETAILS: Record<string, string> = {
   WalletsController_clubWithdrawals: 'Devuelve un listado limitado y sin paginación.',
   WalletsController_platformWithdrawals: 'Devuelve hasta 200 retiros sin paginación.',
   ClubWorkersController_listShifts: 'Devuelve hasta 100 turnos sin paginación.',
-  FlowPaymentsController_confirmation: 'Recibe el token de Flow y procesa el evento de pago.',
-  FlowPaymentsController_returnPost:
-    'Acepta un token opcional y devuelve una página HTML sin caché.',
-  FlowPaymentsController_returnGet:
-    'Acepta un token opcional en la URL y devuelve una página HTML sin caché.',
+  MercadoPagoPaymentsController_webhook:
+    'Verifica la firma, consulta el pago al proveedor y procesa el resultado de forma idempotente.',
 };
 
 function authorizationRule(operationId: string, path: string, tag: string): string {
@@ -825,7 +816,7 @@ function parameterExample(name: string, schema: SchemaObject): unknown {
   if (name === 'page') return 1;
   if (name === 'pageSize') return schema.default ?? 20;
   if (name === 'unreadOnly') return true;
-  if (name === 'token') return tokenExample('flowToken');
+  if (name === 'token') return tokenExample('paymentToken');
   return stringExample(name);
 }
 
@@ -834,11 +825,6 @@ function normalizeRequestBody(
   operationId: string,
   document: OpenAPIObject,
 ): void {
-  if (operationId === 'FlowPaymentsController_confirmation') {
-    operation.requestBody = flowRequestBody(true);
-  } else if (operationId === 'FlowPaymentsController_returnPost') {
-    operation.requestBody = flowRequestBody(false);
-  }
   if (!operation.requestBody || isReference(operation.requestBody)) return;
   const requestBody = operation.requestBody as RequestBodyObject;
   requestBody.description ??= 'Solo acepta las propiedades documentadas; rechaza cualquier otra.';
@@ -929,32 +915,6 @@ function normalizeRequestPropertyMetadata(
   }
 }
 
-function flowRequestBody(required: boolean): RequestBodyObject {
-  return {
-    required,
-    description: required
-      ? 'Datos enviados por Flow. El token es obligatorio.'
-      : 'Datos de retorno enviados por Flow. El token es opcional.',
-    content: {
-      'application/x-www-form-urlencoded': {
-        schema: {
-          title: required ? 'FlowConfirmationRequest' : 'FlowReturnRequest',
-          type: 'object',
-          additionalProperties: false,
-          ...(required ? { required: ['token'] } : {}),
-          properties: {
-            token: {
-              type: 'string',
-              description: 'Token opaco de Flow.',
-              example: tokenExample('flowToken'),
-            },
-          },
-        },
-      },
-    },
-  };
-}
-
 function requestPropertyDescription(name: string): string {
   const known: Record<string, string> = {
     idempotencyKey: 'Clave única del cliente para repetir la operación sin duplicarla.',
@@ -1039,36 +999,10 @@ function normalizeResponses(
     };
   }
   if (
-    operationId === 'FlowPaymentsController_returnGet' ||
-    operationId === 'FlowPaymentsController_returnPost'
-  ) {
-    operation.responses[successStatus] = {
-      description: 'Página HTML que redirige de vuelta a la aplicación móvil.',
-      headers: {
-        'Cache-Control': {
-          description: 'Impide almacenar la página de retorno.',
-          schema: { type: 'string', example: 'no-store, max-age=0' },
-        },
-      },
-      content: {
-        'text/html': {
-          schema: {
-            type: 'string',
-            example:
-              '<!doctype html><html lang="es"><head><title>Volviendo a Beerry</title></head><body>Redirigiendo a la aplicación.</body></html>',
-          },
-        },
-      },
-    };
-    return;
-  }
-
-  if (
-    operationId !== 'FlowPaymentsController_confirmation' &&
-    (operation.requestBody ||
+    operation.requestBody ||
       (operation.parameters ?? []).some(
         (raw: ParameterObject | ReferenceObject) => !isReference(raw) && raw.in === 'query',
-      ))
+      )
   ) {
     addError(
       operation,
@@ -1077,19 +1011,13 @@ function normalizeResponses(
       'La entrada o una regla de solicitud no es válida.',
     );
   }
-  if (operationId === 'FlowPaymentsController_confirmation') {
-    addInternalServerError(
-      operation,
-      'El token falta o Flow/configuración producen un Error que el manejador predeterminado de NestJS convierte en 500.',
-    );
-  }
   if (
     operationId === 'CommerceController_checkout' ||
     operationId === 'CommerceController_createWalletTopUp'
   ) {
     addInternalServerError(
       operation,
-      'La configuración, red o respuesta de Flow produce un Error que el manejador predeterminado de NestJS convierte en 500.',
+      'La configuración, red o respuesta de Mercado Pago produce un Error que el manejador predeterminado de NestJS convierte en 500.',
     );
   }
   if (!isPublic) {

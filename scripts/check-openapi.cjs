@@ -14,9 +14,6 @@ const EXPECTED_PUBLIC_OPERATIONS = [
   'AuthController_requestPasswordReset',
   'AuthController_resendPhoneCode',
   'AuthController_resetPassword',
-  'FlowPaymentsController_confirmation',
-  'FlowPaymentsController_returnGet',
-  'FlowPaymentsController_returnPost',
   'HealthController_check',
   'PublicEventsController_getPublicEvent',
   'PublicEventsController_listPublicEvents',
@@ -24,14 +21,8 @@ const EXPECTED_PUBLIC_OPERATIONS = [
 const EXPECTED_MEDIA_TYPES = {
   CommerceController_exportClubOrders: ['text/csv'],
   CapacityController_stream: ['text/event-stream'],
-  FlowPaymentsController_confirmation: ['application/json'],
-  FlowPaymentsController_returnGet: ['text/html'],
-  FlowPaymentsController_returnPost: ['text/html'],
 };
-const EXPECTED_REQUEST_MEDIA_TYPES = {
-  FlowPaymentsController_confirmation: ['application/x-www-form-urlencoded'],
-  FlowPaymentsController_returnPost: ['application/x-www-form-urlencoded'],
-};
+const EXPECTED_REQUEST_MEDIA_TYPES = {};
 const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   {
     pattern: /^NotificationController_listResponse::properties\.items\.items\.properties\.data$/,

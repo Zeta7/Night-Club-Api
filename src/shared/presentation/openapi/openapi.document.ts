@@ -22,7 +22,7 @@ const OPENAPI_TAGS = [
   ['Users', 'Búsqueda de usuarios y perfil propio.'],
   ['Wallets', 'Billeteras, conciliación, datos financieros y retiros.'],
   ['Commerce', 'Carrito, órdenes, pagos, validación y canjes.'],
-  ['Flow Payments', 'Confirmaciones y retornos del proveedor de pagos Flow.'],
+  ['Mercado Pago', 'Conexiones, notificaciones y pagos procesados con Mercado Pago.'],
   ['Referrals', 'Referidos, recompensas, transferencias y configuración.'],
 ] as const;
 

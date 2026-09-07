@@ -50,7 +50,7 @@ const PAYMENT_ATTEMPT_STATUSES = [
   'REFUNDED',
   'PARTIALLY_REFUNDED',
 ];
-const ORDER_PAYMENT_METHODS = ['FLOW', 'BEERRY_WALLET', 'SIMULATED'];
+const ORDER_PAYMENT_METHODS = ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'];
 const WALLET_TOP_UP_STATUSES = [
   'PENDING',
   'APPROVED',
@@ -60,7 +60,7 @@ const WALLET_TOP_UP_STATUSES = [
   'REFUNDED',
   'CHARGEDBACK',
 ];
-const PAYMENT_PROVIDERS = ['flow', 'simulated', 'beerry_wallet'];
+const PAYMENT_PROVIDERS = ['mercado_pago', 'simulated', 'beerry_wallet'];
 const FINANCIAL_ACCOUNT_OWNER_TYPES = ['CUSTOMER', 'CLUB', 'PLATFORM', 'PROVIDER'];
 const LEDGER_TRANSACTION_TYPES = [
   'SALE',
@@ -88,8 +88,6 @@ const CLUB_STATUSES = ['PENDING_APPROVAL', 'ACTIVE', 'INACTIVE'];
 const RESPONSE_SCHEMA_EXCLUSIONS = new Set([
   'CapacityController_stream',
   'CommerceController_exportClubOrders',
-  'FlowPaymentsController_returnGet',
-  'FlowPaymentsController_returnPost',
 ]);
 
 function decoratorsOf(node) {
@@ -183,7 +181,7 @@ function uriExample(name, context = []) {
     return 'https://nightclub-platform-assets.s3.amazonaws.com/uploads/2026/08/nebula-cover.webp?X-Amz-Expires=300';
   }
   if (/checkoutUrl/i.test(name)) {
-    return 'https://sandbox.flow.cl/app/web/pay.php?token=tok_8f3d1c7a6b2e4f90a5d8c1e7';
+    return 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab';
   }
   if (/shareUrl/i.test(name)) return 'https://beerry.app/eventos/noche-latina';
   if (/proofUrl/i.test(name)) {

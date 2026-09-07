@@ -531,7 +531,7 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
     if (!wallet || wallet.balanceCents < totalCents) {
       throw conflict(
         'INSUFFICIENT_WALLET_BALANCE',
-        'Saldo insuficiente. Recarga tu billetera o paga el total con Flow.',
+        'Saldo insuficiente. Recarga tu billetera o paga el total con Mercado Pago.',
       );
     }
     const now = new Date();

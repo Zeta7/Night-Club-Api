@@ -508,7 +508,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       orderId: created.order.id,
       amountCents: created.attempt.amountCents,
       currency: created.order.currency,
-      payerEmail: this.paymentPayerEmail(user.id, payer?.email),
+      payerEmail: this.paymentPayerEmail(payer?.email),
       subject: `Compra Beerry - ${payer?.fullName ?? user.id}`,
       clubId: created.order.clubId,
       marketplaceFeeCents: feeSnapshot?.marketplaceFeeCents,
@@ -626,7 +626,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       orderId: created.topUp.id,
       amountCents,
       currency: created.topUp.currency,
-      payerEmail: this.paymentPayerEmail(user.id, payer?.email),
+      payerEmail: this.paymentPayerEmail(payer?.email),
       subject: `Recarga de billetera Beerry - ${payer?.fullName ?? user.id}`,
     });
     const attempt = await this.prisma.paymentAttempt.update({
@@ -680,27 +680,6 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       }
     }
     return this.topUpResponse(topUp, topUp.paymentAttempt);
-  }
-
-  async getPaymentReturnContext(externalPaymentId: string) {
-    const attempt = await this.prisma.paymentAttempt.findFirst({
-      where: {
-        OR: [
-          { externalPaymentId },
-          { externalCheckoutId: externalPaymentId },
-          { id: externalPaymentId },
-        ],
-      },
-      select: { id: true, provider: true, purpose: true, orderId: true, walletTopUpId: true },
-    });
-    if (!attempt) return null;
-    const isTopUp = attempt.purpose === 'WALLET_TOP_UP';
-    return {
-      attemptId: attempt.id,
-      provider: attempt.provider,
-      operationType: isTopUp ? 'WALLET_TOP_UP' : 'ORDER',
-      operationId: isTopUp ? attempt.walletTopUpId : attempt.orderId,
-    };
   }
 
   async addCartItem(user: AuthenticatedUser, input: AddCartItemDto) {
@@ -1048,23 +1027,6 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         throw conflict(
           'MERCADO_PAGO_PAYMENT_MISMATCH',
           'El pago consultado no coincide con el snapshot registrado.',
-        );
-      }
-    }
-    if (event.provider === 'flow') {
-      const payload = event.payload ?? {};
-      const commerceOrder = String(payload.commerceOrder ?? '');
-      const currency = String(payload.currency ?? '');
-      const amountCents = Math.round(Number(payload.amount) * 100);
-      if (
-        commerceOrder !== attempt.id ||
-        currency !== attempt.currency ||
-        !Number.isFinite(amountCents) ||
-        amountCents !== attempt.amountCents
-      ) {
-        throw conflict(
-          'FLOW_PAYMENT_MISMATCH',
-          'La confirmación de Flow no coincide con el intento registrado.',
         );
       }
     }
@@ -1860,23 +1822,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  private paymentPayerEmail(userId: string, optionalEmail?: string | null) {
+  private paymentPayerEmail(optionalEmail?: string | null) {
     if (optionalEmail?.trim()) return optionalEmail.trim().toLowerCase();
-    if (this.paymentGateway.provider === 'mercado_pago') return undefined;
-    if (this.paymentGateway.provider !== 'flow') {
-      return `simulated+${userId}@beerry.local`;
-    }
-    const fallbackEmail = this.config
-      .get<string>('FLOW_FALLBACK_PAYER_EMAIL')
-      ?.trim()
-      .toLowerCase();
-    if (!fallbackEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fallbackEmail)) {
-      throw badRequest(
-        'FLOW_FALLBACK_PAYER_EMAIL_REQUIRED',
-        'Configura un correo operativo válido para pagos de clientes sin email.',
-      );
-    }
-    return fallbackEmail;
+    return undefined;
   }
 
   private walletTopUpGateway() {

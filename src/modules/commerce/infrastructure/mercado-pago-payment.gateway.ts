@@ -75,9 +75,9 @@ export class MercadoPagoPaymentGateway {
         external_reference: input.attemptId,
         metadata: { attempt_id: input.attemptId, order_id: input.orderId, club_id: input.clubId },
         back_urls: {
-          success: this.required('MERCADO_PAGO_RETURN_URL'),
-          pending: this.required('MERCADO_PAGO_RETURN_URL'),
-          failure: this.required('MERCADO_PAGO_RETURN_URL'),
+          success: this.mobileReturnUrl(input, 'success'),
+          pending: this.mobileReturnUrl(input, 'pending'),
+          failure: this.mobileReturnUrl(input, 'failure'),
         },
         notification_url: this.required('MERCADO_PAGO_NOTIFICATION_URL'),
         auto_return: 'approved',
@@ -182,10 +182,21 @@ export class MercadoPagoPaymentGateway {
       },
     );
     const body = (await response.json()) as Record<string, any>;
-    if (!response.ok) throw new Error(`MERCADO_PAGO_QUERY_ERROR:${response.status}`);
+    if (!response.ok) {
+      this.logger.error(
+        JSON.stringify({
+          event: 'mercado_pago.payment.query_failed',
+          paymentId,
+          sellerExternalId,
+          statusCode: response.status,
+          response: mercadoPagoErrorDetails(body),
+        }),
+      );
+      throw new Error(`MERCADO_PAGO_QUERY_ERROR:${response.status}`);
+    }
     const metadata = body.metadata && typeof body.metadata === 'object' ? body.metadata : {};
     const attemptId = stringValue(metadata.attempt_id) ?? stringValue(body.external_reference);
-    return {
+    const event: VerifiedPaymentEvent = {
       provider: this.provider,
       providerEventId: `payment:${paymentId}:${String(body.status)}:${String(body.date_last_updated ?? '')}`,
       externalPaymentId: String(body.id),
@@ -219,6 +230,17 @@ export class MercadoPagoPaymentGateway {
         feeDetails: body.fee_details,
       },
     };
+    this.logger.log(
+      JSON.stringify({
+        event: 'mercado_pago.payment.queried',
+        paymentId,
+        sellerExternalId,
+        attemptId: event.attemptId ?? null,
+        orderId: event.orderId ?? null,
+        outcome: event.outcome,
+      }),
+    );
+    return event;
   }
 
   private required(name: string) {
@@ -229,6 +251,21 @@ export class MercadoPagoPaymentGateway {
 
   private useSandboxCheckout() {
     return this.config.get<string>('MERCADO_PAGO_USE_SANDBOX_CHECKOUT', 'false') === 'true';
+  }
+
+  private mobileReturnUrl(input: CreatePaymentInput, result: string) {
+    const scheme = this.config
+      .get<string>('MOBILE_APP_SCHEME', 'beerry')
+      .replace(/[^a-zA-Z0-9+.-]/g, '');
+    if (!scheme) throw new Error('MOBILE_APP_SCHEME_REQUIRED');
+    const query = new URLSearchParams({
+      provider: 'mercado_pago',
+      attemptId: input.attemptId,
+      operationType: input.clubId ? 'ORDER' : 'WALLET_TOP_UP',
+      operationId: input.orderId,
+      result,
+    });
+    return `${scheme}://payments/result?${query}`;
   }
 }
 
