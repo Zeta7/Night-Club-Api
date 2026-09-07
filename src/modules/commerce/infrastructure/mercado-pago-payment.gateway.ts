@@ -85,6 +85,8 @@ export class MercadoPagoPaymentGateway {
             title: input.subject,
             quantity: 1,
             unit_price: amount,
+            unit_measure: 'unit',
+            total_amount: amount,
           },
         ],
       }),
@@ -131,6 +133,11 @@ export class MercadoPagoPaymentGateway {
         applicationId: stringValue((body.integration_data as any)?.application_id) ?? null,
         countryCode: stringValue(body.country_code) ?? null,
         currency: stringValue(body.currency) ?? null,
+        status: stringValue(body.status) ?? null,
+        statusDetail: stringValue(body.status_detail) ?? null,
+        captureMode: stringValue(body.capture_mode) ?? null,
+        testPayerEmail: testPayerEmail ? maskEmail(testPayerEmail) : null,
+        mercadoPagoRequestId: response.headers.get('x-request-id'),
         environment,
         checkoutHost: new URL(checkoutUrl).host,
       }),
@@ -142,6 +149,11 @@ export class MercadoPagoPaymentGateway {
       sellerExternalId: seller.sellerExternalId ?? stringValue(body.user_id),
       providerData: { mercadoPagoOrderId: body.id, api: 'orders' },
     };
+  }
+
+  queryExternalPayment(externalPaymentId: string, sellerExternalId?: string) {
+    if (!sellerExternalId) throw new Error('MERCADO_PAGO_SELLER_REQUIRED');
+    return this.queryOrder(externalPaymentId, sellerExternalId);
   }
 
   async createRefund(input: CreateRefundInput): Promise<CreateRefundResult> {
@@ -276,6 +288,11 @@ export class MercadoPagoPaymentGateway {
         attemptId: event.attemptId ?? null,
         orderId: event.orderId ?? null,
         outcome: event.outcome,
+        status: stringValue(body.status) ?? null,
+        statusDetail: stringValue(body.status_detail) ?? null,
+        paymentId: stringValue(payment?.id) ?? null,
+        paymentStatus: stringValue(payment?.status) ?? null,
+        paymentStatusDetail: stringValue(payment?.status_detail) ?? null,
       }),
     );
     return event;
@@ -477,6 +494,10 @@ const money = (value: number) => (value / 100).toFixed(2);
 const moneyToCents = (value: unknown) => Math.round(Number(value) * 100);
 const stringValue = (value: unknown) =>
   typeof value === 'string' && value ? value : value == null ? undefined : String(value);
+const maskEmail = (value: string) => {
+  const [local, domain] = value.split('@');
+  return `${local.slice(0, 4)}***@${domain}`;
+};
 const mapStatus = (status: string, detail: string): PaymentOutcome => {
   if (status === 'approved') return 'APPROVED';
   if (status === 'rejected') return 'REJECTED';

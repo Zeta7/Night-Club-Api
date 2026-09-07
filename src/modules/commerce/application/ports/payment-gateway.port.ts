@@ -66,6 +66,10 @@ export type CreateRefundResult = {
 export interface PaymentGateway {
   readonly provider: string;
   createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult>;
+  queryExternalPayment?(
+    externalPaymentId: string,
+    sellerExternalId?: string,
+  ): Promise<VerifiedPaymentEvent>;
   verifyPaymentToken?(token: string): Promise<VerifiedPaymentEvent>;
   createSimulatedEvent?(externalPaymentId: string, outcome: PaymentOutcome): VerifiedPaymentEvent;
 }

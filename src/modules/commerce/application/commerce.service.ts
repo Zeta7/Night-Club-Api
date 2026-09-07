@@ -952,11 +952,40 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getPayment(user: AuthenticatedUser, orderId: string) {
-    const order = await this.prisma.order.findFirst({
+    let order = await this.prisma.order.findFirst({
       where: { id: orderId, userId: user.id },
       include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } },
     });
     if (!order) throw notFound('ORDER_NOT_FOUND', 'No se encontró la orden.');
+    const attempt = order.paymentAttempts[0];
+    if (
+      order.status === 'PENDING' &&
+      attempt?.status === 'PENDING' &&
+      attempt.externalPaymentId &&
+      this.paymentGateway.queryExternalPayment
+    ) {
+      try {
+        const event = await this.paymentGateway.queryExternalPayment(
+          attempt.externalPaymentId,
+          attempt.sellerExternalId ?? undefined,
+        );
+        await this.processPaymentEvent(event);
+        order = await this.prisma.order.findFirstOrThrow({
+          where: { id: orderId, userId: user.id },
+          include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } },
+        });
+      } catch (error) {
+        this.logger.warn(
+          JSON.stringify({
+            event: 'checkout.payment.reconciliation_failed',
+            orderId,
+            attemptId: attempt.id,
+            externalPaymentId: attempt.externalPaymentId,
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      }
+    }
     return this.paymentResponse(order, order.paymentAttempts[0] ?? null);
   }
 
