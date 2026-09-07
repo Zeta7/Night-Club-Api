@@ -88,9 +88,14 @@ describe('MercadoPagoPaymentGateway Checkout Pro Preferences API', () => {
     expect(body.payer).toBeUndefined();
     expect(result).toMatchObject({
       externalPaymentId: 'preference-1',
-      checkoutUrl: 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
+      checkoutUrl:
+        'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
       sellerExternalId: '3671162760',
-      providerData: { preferenceId: 'preference-1', api: 'preferences' },
+      providerData: {
+        preferenceId: 'preference-1',
+        api: 'preferences',
+        checkoutEnvironment: 'test',
+      },
     });
   });
 

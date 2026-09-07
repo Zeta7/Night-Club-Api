@@ -108,9 +108,8 @@ export class MercadoPagoPaymentGateway {
     const collectorId = stringValue(body.collector_id);
     if (seller.sellerExternalId && collectorId && collectorId !== seller.sellerExternalId)
       throw new Error('MERCADO_PAGO_PREFERENCE_SELLER_MISMATCH');
-    // The official marketplace demo uses init_point for both real and test users.
-    // Mercado Pago determines test mode from the credentials and accounts involved.
-    const checkoutUrl = body.init_point;
+    const checkoutUrl =
+      environment === 'test' ? body.sandbox_init_point : body.init_point;
     if (typeof checkoutUrl !== 'string') {
       this.logger.error(
         JSON.stringify({
@@ -135,6 +134,12 @@ export class MercadoPagoPaymentGateway {
         mercadoPagoRequestId: response.headers.get('x-request-id'),
         environment,
         checkoutHost: new URL(checkoutUrl).host,
+        initPointHost:
+          typeof body.init_point === 'string' ? new URL(body.init_point).host : null,
+        sandboxInitPointHost:
+          typeof body.sandbox_init_point === 'string'
+            ? new URL(body.sandbox_init_point).host
+            : null,
       }),
     );
     return {
@@ -142,7 +147,11 @@ export class MercadoPagoPaymentGateway {
       status: 'PENDING',
       checkoutUrl,
       sellerExternalId: seller.sellerExternalId ?? collectorId,
-      providerData: { preferenceId: body.id, api: 'preferences' },
+      providerData: {
+        preferenceId: body.id,
+        api: 'preferences',
+        checkoutEnvironment: environment,
+      },
     };
   }
 
