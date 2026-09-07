@@ -5,7 +5,6 @@ describe('MercadoPagoPaymentGateway mobile checkout', () => {
   const accessTokenForClub = jest.fn();
   const configValues: Record<string, string> = {
     MERCADO_PAGO_NOTIFICATION_URL: 'https://api.beerry.app/api/v1/payments/mercado-pago/webhook',
-    MERCADO_PAGO_USE_SANDBOX_CHECKOUT: 'true',
     MOBILE_APP_SCHEME: 'beerry',
   };
   const config = {
@@ -24,10 +23,9 @@ describe('MercadoPagoPaymentGateway mobile checkout', () => {
       accessToken: 'TEST-seller-access-token',
       sellerExternalId: '3671162760',
     });
-    configValues.MERCADO_PAGO_USE_SANDBOX_CHECKOUT = 'true';
   });
 
-  it('creates the three documented mobile return URLs and opens the sandbox checkout', async () => {
+  it('creates the three documented mobile return URLs and opens Checkout Pro', async () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -68,12 +66,11 @@ describe('MercadoPagoPaymentGateway mobile checkout', () => {
     expect(body.marketplace_fee).toBe(1);
     expect(body.payer).toBeUndefined();
     expect(result.checkoutUrl).toBe(
-      'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
+      'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
     );
   });
 
-  it('uses the production checkout URL only when sandbox checkout is disabled', async () => {
-    configValues.MERCADO_PAGO_USE_SANDBOX_CHECKOUT = 'false';
+  it('does not select sandbox_init_point even when Mercado Pago returns it', async () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({

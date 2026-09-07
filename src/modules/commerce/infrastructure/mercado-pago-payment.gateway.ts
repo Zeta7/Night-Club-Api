@@ -34,7 +34,7 @@ export class MercadoPagoPaymentGateway {
         amountCents: input.amountCents,
         currency: input.currency,
         marketplaceFeeCents: input.marketplaceFeeCents ?? null,
-        sandboxCheckout: this.useSandboxCheckout(),
+        checkoutMode: 'init_point',
       }),
     );
     const seller = input.clubId
@@ -96,7 +96,7 @@ export class MercadoPagoPaymentGateway {
       );
       throw new Error(`MERCADO_PAGO_CREATE_ERROR:${response.status}`);
     }
-    const checkoutUrl = this.useSandboxCheckout() ? body.sandbox_init_point : body.init_point;
+    const checkoutUrl = body.init_point;
     if (typeof checkoutUrl !== 'string') {
       this.logger.error(
         JSON.stringify({
@@ -105,7 +105,7 @@ export class MercadoPagoPaymentGateway {
           orderId: input.orderId,
           clubId: input.clubId ?? null,
           preferenceId: body.id,
-          sandboxCheckout: this.useSandboxCheckout(),
+          checkoutMode: 'init_point',
           hasInitPoint: typeof body.init_point === 'string',
           hasSandboxInitPoint: typeof body.sandbox_init_point === 'string',
         }),
@@ -125,7 +125,7 @@ export class MercadoPagoPaymentGateway {
         marketplace: stringValue(body.marketplace) ?? null,
         siteId: stringValue(body.site_id) ?? null,
         liveMode: typeof body.live_mode === 'boolean' ? body.live_mode : null,
-        sandboxCheckout: this.useSandboxCheckout(),
+        checkoutMode: 'init_point',
         checkoutHost: new URL(checkoutUrl).host,
       }),
     );
@@ -252,10 +252,6 @@ export class MercadoPagoPaymentGateway {
     const value = this.config.get<string>(name)?.trim();
     if (!value) throw new Error(`${name}_REQUIRED`);
     return value;
-  }
-
-  private useSandboxCheckout() {
-    return this.config.get<string>('MERCADO_PAGO_USE_SANDBOX_CHECKOUT', 'false') === 'true';
   }
 
   private mobileReturnUrl(input: CreatePaymentInput, result: string) {
