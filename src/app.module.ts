@@ -15,6 +15,8 @@ import { PrismaModule } from './shared/infrastructure/prisma/prisma.module';
 import { CommerceModule } from './modules/commerce/commerce.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
+import { BusinessAccessModule } from './modules/business-access/business-access.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { ReferralsModule } from './modules/referrals/referrals.module';
     CommerceModule,
     AuditModule,
     ReferralsModule,
+    BusinessAccessModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

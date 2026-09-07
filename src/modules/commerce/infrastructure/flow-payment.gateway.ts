@@ -44,7 +44,7 @@ export class FlowPaymentGateway implements PaymentGateway {
       subject: input.subject.slice(0, 80),
       currency: input.currency,
       amount: this.decimalAmount(input.amountCents),
-      email: input.payerEmail,
+      email: input.payerEmail ?? `payment+${input.attemptId}@beerry.local`,
       urlConfirmation: this.required('FLOW_CONFIRMATION_URL'),
       urlReturn: this.required('FLOW_RETURN_URL'),
     };

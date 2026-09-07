@@ -19,6 +19,7 @@ import {
   PromotionStatus,
   Prisma,
   RedeemableStatus,
+  SellerConnectionStatus,
   TicketTypeStatus,
   UserRole,
   WorkerPermission,
@@ -42,13 +43,25 @@ import { CapacityService } from '../../events/application/capacity.service';
 import { ReferralsService } from '../../referrals/application/referrals.service';
 import {
   PAYMENT_GATEWAY,
+  REFUND_GATEWAY,
+  WALLET_TOP_UP_PAYMENT_GATEWAY,
   PaymentGateway,
+  RefundGateway,
   PaymentOutcome,
   VerifiedPaymentEvent,
 } from './ports/payment-gateway.port';
 import { buildProductDeliveryPlan } from './product-delivery-plan';
+import { MarketplaceFeeService } from '../../platform/application/marketplace-fee.service';
 
 type ValidationKind = 'TICKET' | 'PRODUCT' | 'PROMOTION';
+
+const mercadoPagoReadyRelation = (now = new Date()) => ({
+  some: {
+    provider: 'mercado_pago',
+    status: SellerConnectionStatus.CONNECTED,
+    OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: now } }],
+  },
+});
 
 @Injectable()
 export class CommerceService implements OnModuleInit, OnModuleDestroy {
@@ -63,6 +76,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     @Optional() private readonly ledger?: LedgerService,
     @Optional() private readonly capacity?: CapacityService,
     @Optional() private readonly referrals?: ReferralsService,
+    @Optional()
+    @Inject(WALLET_TOP_UP_PAYMENT_GATEWAY)
+    private readonly configuredWalletTopUpGateway?: PaymentGateway,
+    @Optional() private readonly marketplaceFees?: MarketplaceFeeService,
+    @Optional() @Inject(REFUND_GATEWAY) private readonly refundGateway?: RefundGateway,
   ) {}
 
   onModuleInit() {
@@ -136,9 +154,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
 
   async checkout(user: AuthenticatedUser, input: CheckoutDto) {
     const requestedPaymentMethod =
-      input.paymentMethod === 'FLOW' && this.paymentGateway.provider === 'simulated'
+      input.paymentMethod === 'MERCADO_PAGO' && this.paymentGateway.provider === 'simulated'
         ? 'SIMULATED'
-        : (input.paymentMethod ?? (this.paymentGateway.provider === 'flow' ? 'FLOW' : 'SIMULATED'));
+        : (input.paymentMethod ??
+          (this.paymentGateway.provider === 'mercado_pago' ? 'MERCADO_PAGO' : 'SIMULATED'));
     const created = await this.prisma.$transaction(async (tx) => {
       const reservationExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
       const cart = await tx.cart.findUnique({
@@ -154,6 +173,23 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         })) ?? [];
       if (checkoutItems.length === 0) {
         throw badRequest('EMPTY_CART', 'Agrega al menos un artículo antes de comprar.');
+      }
+      if (requestedPaymentMethod === 'MERCADO_PAGO') {
+        const connectedClub = cart?.clubId
+          ? await tx.club.findFirst({
+              where: {
+                id: cart.clubId,
+                sellerConnections: mercadoPagoReadyRelation(),
+              },
+              select: { id: true },
+            })
+          : null;
+        if (!connectedClub) {
+          throw conflict(
+            'MERCADO_PAGO_NOT_CONNECTED',
+            'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.',
+          );
+        }
       }
       checkoutItems.sort((left, right) =>
         `${left.type}:${left.id}`.localeCompare(`${right.type}:${right.id}`),
@@ -312,10 +348,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           'El crédito no puede superar el total de la compra.',
         );
       }
-      if (requestedPaymentMethod === 'FLOW' && promotionalCreditCents > 0) {
+      if (requestedPaymentMethod === 'MERCADO_PAGO' && promotionalCreditCents > 0) {
         throw badRequest(
           'MIXED_PAYMENT_NOT_ALLOWED',
-          'Elige pagar todo con Flow o todo con tu billetera.',
+          'Elige pagar todo con la pasarela externa o todo con tu billetera.',
         );
       }
       const order = await tx.order.create({
@@ -413,6 +449,26 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       where: { id: user.id },
       select: { email: true, fullName: true },
     });
+    const feeSnapshot =
+      this.paymentGateway.provider === 'mercado_pago'
+        ? await this.requiredMarketplaceFees().resolve(
+            created.order.clubId,
+            created.attempt.amountCents,
+          )
+        : null;
+    if (feeSnapshot) {
+      await this.prisma.paymentAttempt.update({
+        where: { id: created.attempt.id },
+        data: {
+          grossAmountCents: created.order.totalCents,
+          customerFundedSnapshotCents: created.attempt.amountCents,
+          marketplaceFeeBps: feeSnapshot.marketplaceFeeBps,
+          marketplaceFeeCents: feeSnapshot.marketplaceFeeCents,
+          sellerExpectedNetCents: feeSnapshot.sellerExpectedNetCents,
+          feeSource: feeSnapshot.feeSource,
+        },
+      });
+    }
     const providerPayment = await this.paymentGateway.createPayment({
       attemptId: created.attempt.id,
       orderId: created.order.id,
@@ -420,12 +476,19 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       currency: created.order.currency,
       payerEmail: this.paymentPayerEmail(user.id, payer?.email),
       subject: `Compra Beerry - ${payer?.fullName ?? user.id}`,
+      clubId: created.order.clubId,
+      marketplaceFeeCents: feeSnapshot?.marketplaceFeeCents,
     });
     const attempt = await this.prisma.paymentAttempt.update({
       where: { id: created.attempt.id },
       data: {
         externalPaymentId: providerPayment.externalPaymentId,
         providerData: providerPayment.providerData as Prisma.InputJsonValue | undefined,
+        externalCheckoutId:
+          this.paymentGateway.provider === 'mercado_pago'
+            ? providerPayment.externalPaymentId
+            : undefined,
+        sellerExternalId: providerPayment.sellerExternalId,
       },
     });
     return this.paymentResponse(created.order, attempt, providerPayment.checkoutUrl);
@@ -517,14 +580,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         data: {
           walletTopUpId: topUp.id,
           purpose: 'WALLET_TOP_UP',
-          provider: this.paymentGateway.provider,
+          provider: this.walletTopUpGateway().provider,
           amountCents,
           expiresAt: new Date(Date.now() + 30 * 60 * 1000),
         },
       });
       return { topUp, attempt };
     });
-    const providerPayment = await this.paymentGateway.createPayment({
+    const providerPayment = await this.walletTopUpGateway().createPayment({
       attemptId: created.attempt.id,
       orderId: created.topUp.id,
       amountCents,
@@ -536,6 +599,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       where: { id: created.attempt.id },
       data: {
         externalPaymentId: providerPayment.externalPaymentId,
+        externalCheckoutId:
+          this.walletTopUpGateway().provider === 'mercado_pago'
+            ? providerPayment.externalPaymentId
+            : undefined,
+        sellerExternalId: providerPayment.sellerExternalId,
         providerData: providerPayment.providerData as Prisma.InputJsonValue | undefined,
       },
     });
@@ -560,12 +628,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     if (!topUp) throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No se encontró la recarga.');
     if (
       topUp.status === 'PENDING' &&
-      topUp.paymentAttempt?.provider === this.paymentGateway.provider &&
+      topUp.paymentAttempt?.provider === this.walletTopUpGateway().provider &&
       topUp.paymentAttempt.externalPaymentId &&
-      this.paymentGateway.verifyPaymentToken
+      this.walletTopUpGateway().verifyPaymentToken
     ) {
       try {
-        const event = await this.paymentGateway.verifyPaymentToken(
+        const event = await this.walletTopUpGateway().verifyPaymentToken!(
           topUp.paymentAttempt.externalPaymentId,
         );
         await this.processPaymentEvent(event);
@@ -581,8 +649,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getPaymentReturnContext(externalPaymentId: string) {
-    const attempt = await this.prisma.paymentAttempt.findUnique({
-      where: { externalPaymentId },
+    const attempt = await this.prisma.paymentAttempt.findFirst({
+      where: {
+        OR: [
+          { externalPaymentId },
+          { externalCheckoutId: externalPaymentId },
+          { id: externalPaymentId },
+        ],
+      },
       select: { id: true, provider: true, purpose: true, orderId: true, walletTopUpId: true },
     });
     if (!attempt) return null;
@@ -716,7 +790,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     if (type === CommerceItemType.TICKET) {
       const source = await this.prisma.ticketType.findUnique({
         where: { id },
-        include: { club: true },
+        include: {
+          club: {
+            include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
+          },
+        },
       });
       const now = new Date();
       const alreadyOwned =
@@ -740,8 +818,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const userAvailable = source?.perUserLimit
         ? Math.max(0, source.perUserLimit - alreadyOwned)
         : globalAvailable;
+      const paymentsReady =
+        this.paymentGateway.provider !== 'mercado_pago' ||
+        Boolean(source?.club.sellerConnections.length);
       const available = Boolean(
         source &&
+        paymentsReady &&
         source.status === TicketTypeStatus.ACTIVE &&
         source.club.status === ClubStatus.ACTIVE &&
         globalAvailable > 0 &&
@@ -759,14 +841,22 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             imageUrl: null as string | null,
             available,
             availableQuantity: Math.min(globalAvailable, userAvailable),
-            availabilityMessage: available ? null : 'La entrada ya no está disponible.',
+            availabilityMessage: available
+              ? null
+              : !paymentsReady
+                ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
+                : 'La entrada ya no está disponible.',
           }
         : null;
     }
     if (type === CommerceItemType.PRODUCT) {
       const source = await this.prisma.product.findUnique({
         where: { id },
-        include: { club: true },
+        include: {
+          club: {
+            include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
+          },
+        },
       });
       const reserved = await this.prisma.inventoryReservation.aggregate({
         where: {
@@ -781,8 +871,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         0,
         (source?.stockQuantity ?? 0) - (reserved._sum.quantity ?? 0),
       );
+      const paymentsReady =
+        this.paymentGateway.provider !== 'mercado_pago' ||
+        Boolean(source?.club.sellerConnections.length);
       const available = Boolean(
         source &&
+        paymentsReady &&
         source.status === ProductStatus.ACTIVE &&
         source.club.status === ClubStatus.ACTIVE &&
         availableQuantity > 0,
@@ -797,17 +891,29 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             imageUrl: source.imageUrl,
             available,
             availableQuantity,
-            availabilityMessage: available ? null : 'El producto ya no tiene stock.',
+            availabilityMessage: available
+              ? null
+              : !paymentsReady
+                ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
+                : 'El producto ya no tiene stock.',
           }
         : null;
     }
     const source = await this.prisma.promotion.findUnique({
       where: { id },
-      include: { club: true },
+      include: {
+        club: {
+          include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
+        },
+      },
     });
     const now = new Date();
+    const paymentsReady =
+      this.paymentGateway.provider !== 'mercado_pago' ||
+      Boolean(source?.club.sellerConnections.length);
     const available = Boolean(
       source &&
+      paymentsReady &&
       source.status === PromotionStatus.ACTIVE &&
       source.club.status === ClubStatus.ACTIVE &&
       (!source.startsAt || source.startsAt <= now) &&
@@ -823,7 +929,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           imageUrl: source.imageUrl,
           available,
           availableQuantity: 20,
-          availabilityMessage: available ? null : 'La promoción ya no está disponible.',
+          availabilityMessage: available
+            ? null
+            : !paymentsReady
+              ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
+              : 'La promoción ya no está disponible.',
         }
       : null;
   }
@@ -857,6 +967,22 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       : this.getWalletTopUp(user, attempt.walletTopUpId!);
   }
 
+  async bindAuthoritativeExternalPayment(event: VerifiedPaymentEvent) {
+    if (!event.attemptId)
+      throw conflict(
+        'MERCADO_PAGO_ATTEMPT_REQUIRED',
+        'El pago no contiene la referencia del intento.',
+      );
+    const attempt = await this.prisma.paymentAttempt.findUnique({ where: { id: event.attemptId } });
+    if (!attempt || attempt.provider !== event.provider)
+      throw notFound('PAYMENT_ATTEMPT_NOT_FOUND', 'El pago del proveedor no está registrado.');
+    if (attempt.externalPaymentId === event.externalPaymentId) return;
+    await this.prisma.paymentAttempt.update({
+      where: { id: attempt.id },
+      data: { externalPaymentId: event.externalPaymentId },
+    });
+  }
+
   async processPaymentEvent(event: VerifiedPaymentEvent) {
     const attempt = await this.prisma.paymentAttempt.findUnique({
       where: { externalPaymentId: event.externalPaymentId },
@@ -867,6 +993,29 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
     if (!attempt || attempt.provider !== event.provider) {
       throw notFound('PAYMENT_ATTEMPT_NOT_FOUND', 'El pago del proveedor no está registrado.');
+    }
+    if (event.provider === 'mercado_pago') {
+      const mismatch =
+        attempt.purpose === 'WALLET_TOP_UP'
+          ? event.attemptId !== attempt.id ||
+            event.orderId !== attempt.walletTopUpId ||
+            event.clubId != null ||
+            event.currency !== attempt.currency ||
+            event.amountCents !== attempt.amountCents ||
+            event.marketplaceFeeCents !== 0
+          : event.attemptId !== attempt.id ||
+            event.orderId !== attempt.orderId ||
+            event.clubId !== attempt.order?.clubId ||
+            event.currency !== attempt.currency ||
+            event.amountCents !== attempt.amountCents ||
+            event.sellerExternalId !== attempt.sellerExternalId ||
+            event.marketplaceFeeCents !== attempt.marketplaceFeeCents;
+      if (mismatch) {
+        throw conflict(
+          'MERCADO_PAGO_PAYMENT_MISMATCH',
+          'El pago consultado no coincide con el snapshot registrado.',
+        );
+      }
     }
     if (event.provider === 'flow') {
       const payload = event.payload ?? {};
@@ -922,24 +1071,122 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       await this.finishProviderEvent(event, 'IGNORED');
       return;
     }
+    if (event.outcome === 'REFUND_PENDING') {
+      await this.prisma.paymentAttempt.updateMany({
+        where: { id: attempt.id, status: 'APPROVED' },
+        data: { status: 'REFUND_PENDING' },
+      });
+      await this.prisma.order.updateMany({
+        where: { id: orderId, status: { in: ['PAID', 'PARTIALLY_REFUNDED'] } },
+        data: { status: 'REFUND_PENDING' },
+      });
+      await this.finishProviderEvent(event, 'PROCESSED');
+      return;
+    }
+    if (event.outcome === 'PARTIALLY_REFUNDED') {
+      const providerRefundedCents = event.refundedAmountCents ?? attempt.refundedAmountCents;
+      const refundDeltaCents = providerRefundedCents - attempt.refundedAmountCents;
+      if (refundDeltaCents <= 0 || providerRefundedCents >= attempt.amountCents) {
+        await this.finishProviderEvent(event, 'IGNORED');
+        return;
+      }
+      const totalFeeRefundedCents = Math.round(
+        (providerRefundedCents * (attempt.marketplaceFeeCents ?? 0)) / attempt.amountCents,
+      );
+      const previousFeeRefundedCents = Math.round(
+        (attempt.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0)) / attempt.amountCents,
+      );
+      const feeDeltaCents = totalFeeRefundedCents - previousFeeRefundedCents;
+      await this.prisma.$transaction(async (tx) => {
+        await this.ledger?.reverseSalePartial(tx, {
+          paymentAttemptId: attempt.id,
+          providerEventId: event.providerEventId,
+          amountCents: refundDeltaCents,
+          marketplaceFeeCents: feeDeltaCents,
+        });
+        await tx.paymentAttempt.update({
+          where: { id: attempt.id },
+          data: { status: 'PARTIALLY_REFUNDED', refundedAmountCents: providerRefundedCents },
+        });
+        await tx.order.update({ where: { id: orderId }, data: { status: 'PARTIALLY_REFUNDED' } });
+        await tx.refundRequest.updateMany({
+          where: { orderId, status: 'PROCESSING' },
+          data: {
+            status: 'COMPLETED',
+            processedAmountCents: refundDeltaCents,
+            marketplaceFeeRefundedCents: feeDeltaCents,
+            completedAt: new Date(),
+          },
+        });
+        const wallet = await tx.wallet.findUnique({ where: { userId: order.userId } });
+        if (wallet)
+          await tx.wallet.update({
+            where: { id: wallet.id },
+            data: { totalSpentCents: { decrement: refundDeltaCents } },
+          });
+        await this.notifications?.notifyFromTemplate(
+          order.userId,
+          'PAYMENT_PARTIALLY_REFUNDED',
+          { amount: (refundDeltaCents / 100).toFixed(2), orderId },
+          { orderId, paymentAttemptId: attempt.id },
+          tx,
+        );
+      });
+      await this.finishProviderEvent(event, 'PROCESSED');
+      return;
+    }
     if (event.outcome === 'REFUNDED' || event.outcome === 'CHARGEBACK') {
       await this.prisma.$transaction(async (tx) => {
         const current = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
         if (!current || current.status === 'REFUNDED') return;
-        if (current.status !== 'APPROVED') {
+        if (!['APPROVED', 'REFUND_PENDING', 'PARTIALLY_REFUNDED'].includes(current.status)) {
           throw conflict('PAYMENT_NOT_REFUNDABLE', 'Solo un pago aprobado puede reembolsarse.');
         }
-        await this.ledger?.reverseSale(tx, {
-          paymentAttemptId: attempt.id,
-          providerEventId: event.providerEventId,
-          type: event.outcome === 'REFUNDED' ? 'REFUND' : 'CHARGEBACK',
-        });
+        const remainingAmountCents = attempt.amountCents - current.refundedAmountCents;
+        const remainingFeeCents =
+          (attempt.marketplaceFeeCents ?? 0) -
+          Math.round(
+            (current.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0)) /
+              attempt.amountCents,
+          );
+        if (current.refundedAmountCents > 0) {
+          await this.ledger?.reverseSalePartial(tx, {
+            paymentAttemptId: attempt.id,
+            providerEventId: event.providerEventId,
+            amountCents: remainingAmountCents,
+            marketplaceFeeCents: remainingFeeCents,
+          });
+        } else {
+          await this.ledger?.reverseSale(tx, {
+            paymentAttemptId: attempt.id,
+            providerEventId: event.providerEventId,
+            type: event.outcome === 'REFUNDED' ? 'REFUND' : 'CHARGEBACK',
+          });
+        }
         const refundedAt = new Date();
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
-          data: { status: 'REFUNDED', failedAt: refundedAt },
+          data: {
+            status: event.outcome === 'CHARGEBACK' ? 'CHARGEBACK' : 'REFUNDED',
+            failedAt: refundedAt,
+            refundedAmountCents: attempt.amountCents,
+          },
         });
-        await tx.order.update({ where: { id: orderId }, data: { status: 'REFUNDED' } });
+        await tx.order.update({
+          where: { id: orderId },
+          data: { status: event.outcome === 'CHARGEBACK' ? 'CHARGEBACK' : 'REFUNDED' },
+        });
+        if (event.outcome === 'REFUNDED') {
+          await tx.refundRequest.updateMany({
+            where: { orderId, status: { in: ['APPROVED', 'PROCESSING'] } },
+            data: {
+              status: 'COMPLETED',
+              processedAmountCents: remainingAmountCents,
+              marketplaceFeeRefundedCents: remainingFeeCents,
+              completedAt: refundedAt,
+            },
+          });
+        }
         await this.referrals?.reverseOrderEffects(tx, orderId, event.outcome);
         const revokedReason =
           event.outcome === 'CHARGEBACK' ? 'PAYMENT_CHARGEBACK' : 'PAYMENT_REFUNDED';
@@ -961,14 +1208,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         if (wallet) {
           await tx.wallet.update({
             where: { id: wallet.id },
-            data: { totalSpentCents: { decrement: attempt.amountCents } },
+            data: { totalSpentCents: { decrement: remainingAmountCents } },
           });
           await tx.walletMovement.create({
             data: {
               walletId: wallet.id,
               type: 'REFUND',
               status: 'COMPLETED',
-              amountCents: attempt.amountCents,
+              amountCents: remainingAmountCents,
               description:
                 event.outcome === 'CHARGEBACK' ? 'Contracargo confirmado' : 'Reembolso confirmado',
               referenceId: orderId,
@@ -976,6 +1223,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             },
           });
         }
+        await this.notifications?.notifyFromTemplate(
+          order.userId,
+          event.outcome === 'CHARGEBACK' ? 'PAYMENT_CHARGEBACK' : 'PAYMENT_REFUNDED',
+          { amount: (remainingAmountCents / 100).toFixed(2), orderId },
+          { orderId, paymentAttemptId: attempt.id },
+          tx,
+        );
       });
       await this.finishProviderEvent(event, 'PROCESSED');
       return;
@@ -1018,6 +1272,8 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           provider: event.provider,
           amountCents: order.totalCents,
           currency: attempt.currency,
+          marketplaceFeeBps: attempt.marketplaceFeeBps ?? undefined,
+          marketplaceFeeCents: attempt.marketplaceFeeCents ?? undefined,
         });
         await this.referrals?.createRewardForPaidOrder(tx, orderId);
         await this.issueOrderResources(tx, order);
@@ -1069,7 +1325,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
           data: {
-            status: event.outcome === 'EXPIRED' ? 'EXPIRED' : 'REJECTED',
+            status:
+              event.outcome === 'EXPIRED'
+                ? 'EXPIRED'
+                : event.outcome === 'CANCELLED'
+                  ? 'CANCELLED'
+                  : 'REJECTED',
             failureCode: event.failureCode,
             failureMessage: event.failureMessage,
             failedAt: new Date(),
@@ -1077,7 +1338,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         });
         await tx.order.update({
           where: { id: orderId },
-          data: { status: event.outcome === 'EXPIRED' ? 'EXPIRED' : 'FAILED' },
+          data: {
+            status:
+              event.outcome === 'EXPIRED'
+                ? 'EXPIRED'
+                : event.outcome === 'CANCELLED'
+                  ? 'CANCELLED'
+                  : 'FAILED',
+          },
         });
         await this.releaseOrderReservations(
           tx,
@@ -1560,6 +1828,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
 
   private paymentPayerEmail(userId: string, optionalEmail?: string | null) {
     if (optionalEmail?.trim()) return optionalEmail.trim().toLowerCase();
+    if (this.paymentGateway.provider === 'mercado_pago') return undefined;
     if (this.paymentGateway.provider !== 'flow') {
       return `simulated+${userId}@beerry.local`;
     }
@@ -1574,6 +1843,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       );
     }
     return fallbackEmail;
+  }
+
+  private walletTopUpGateway() {
+    return this.configuredWalletTopUpGateway ?? this.paymentGateway;
+  }
+  private requiredMarketplaceFees() {
+    if (!this.marketplaceFees) throw new Error('MARKETPLACE_FEE_SERVICE_NOT_AVAILABLE');
+    return this.marketplaceFees;
   }
 
   async validateCode(
@@ -2581,21 +2858,47 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     clubId: string,
     orderId: string,
     reason: string,
+    requestedAmountCents?: number,
   ) {
     await this.assertClubPermission(user, clubId, WorkerPermission.REQUEST_REFUNDS);
     return this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.findFirst({ where: { id: orderId, clubId } });
+      const order = await tx.order.findFirst({
+        where: { id: orderId, clubId },
+        include: {
+          paymentAttempts: {
+            where: { status: { in: ['APPROVED', 'PARTIALLY_REFUNDED'] } },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
+        },
+      });
       if (!order) throw notFound('ORDER_NOT_FOUND', 'No se encontró la orden del negocio.');
       if (order.status !== 'PAID' && order.status !== 'PARTIALLY_REFUNDED') {
         throw conflict('ORDER_NOT_REFUNDABLE', 'Solo una orden pagada puede solicitar devolución.');
       }
+      const attempt = order.paymentAttempts[0];
+      if (!attempt)
+        throw conflict('PAYMENT_NOT_REFUNDABLE', 'No existe un pago aprobado para devolver.');
+      const refundableCents = attempt.amountCents - attempt.refundedAmountCents;
+      const amountCents = requestedAmountCents ?? refundableCents;
+      if (!Number.isInteger(amountCents) || amountCents <= 0 || amountCents > refundableCents)
+        throw conflict(
+          'REFUND_AMOUNT_EXCEEDS_AVAILABLE',
+          'El monto solicitado supera el saldo reembolsable.',
+        );
       const pending = await tx.refundRequest.findFirst({
         where: { orderId, status: { in: ['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'PROCESSING'] } },
       });
       if (pending)
         throw conflict('REFUND_ALREADY_REQUESTED', 'La orden ya tiene una devolución en proceso.');
       const request = await tx.refundRequest.create({
-        data: { orderId, clubId, requestedByUserId: user.id, reason: reason.trim() },
+        data: {
+          orderId,
+          clubId,
+          requestedByUserId: user.id,
+          reason: reason.trim(),
+          requestedAmountCents: amountCents,
+        },
       });
       await tx.order.update({ where: { id: orderId }, data: { status: 'REFUND_PENDING' } });
       await tx.auditLogEntry.create({
@@ -2605,11 +2908,124 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           action: 'REQUEST_ORDER_REFUND',
           resourceType: 'ORDER',
           resourceId: orderId,
-          metadata: { refundRequestId: request.id, reason: reason.trim() },
+          metadata: {
+            refundRequestId: request.id,
+            reason: reason.trim(),
+            requestedAmountCents: amountCents,
+            refundableCents,
+          },
         },
       });
       return { message: 'Solicitud de devolución registrada.', refundRequest: request };
     });
+  }
+
+  async processRefundRequest(
+    user: AuthenticatedUser,
+    refundRequestId: string,
+    approvedAmountCents?: number,
+    resolutionNote?: string,
+  ) {
+    if (user.role !== UserRole.SUPER_ADMIN) {
+      throw forbidden('SUPER_ADMIN_REQUIRED', 'Solo la plataforma puede procesar devoluciones.');
+    }
+    const request = await this.prisma.refundRequest.findUnique({
+      where: { id: refundRequestId },
+      include: {
+        order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } },
+      },
+    });
+    if (!request)
+      throw notFound('REFUND_REQUEST_NOT_FOUND', 'No se encontró la solicitud de devolución.');
+    if (request.status === 'PROCESSING' || request.status === 'COMPLETED') {
+      return { message: 'La devolución ya fue enviada.', refundRequest: request };
+    }
+    if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED'].includes(request.status)) {
+      throw conflict(
+        'REFUND_REQUEST_NOT_PROCESSABLE',
+        'La solicitud no se puede procesar en su estado actual.',
+      );
+    }
+    const attempt = request.order.paymentAttempts[0];
+    if (
+      !attempt ||
+      attempt.provider !== 'mercado_pago' ||
+      !attempt.externalPaymentId ||
+      !attempt.sellerExternalId
+    ) {
+      throw conflict(
+        'REFUND_PROVIDER_NOT_SUPPORTED',
+        'Este pago no puede devolverse automáticamente con Mercado Pago.',
+      );
+    }
+    const requested = request.requestedAmountCents ?? attempt.amountCents;
+    const amountCents = approvedAmountCents ?? request.approvedAmountCents ?? requested;
+    const refundableCents = attempt.amountCents - attempt.refundedAmountCents;
+    if (
+      !Number.isInteger(amountCents) ||
+      amountCents <= 0 ||
+      amountCents > requested ||
+      amountCents > refundableCents
+    ) {
+      throw conflict(
+        'REFUND_AMOUNT_EXCEEDS_AVAILABLE',
+        'El monto aprobado supera el saldo reembolsable o lo solicitado.',
+      );
+    }
+    if (!this.refundGateway || this.refundGateway.provider !== 'mercado_pago') {
+      throw conflict(
+        'REFUND_GATEWAY_UNAVAILABLE',
+        'La devolución de Mercado Pago no está configurada.',
+      );
+    }
+    await this.prisma.refundRequest.update({
+      where: { id: request.id },
+      data: {
+        status: 'PROCESSING',
+        approvedAmountCents: amountCents,
+        resolutionNote: resolutionNote?.trim(),
+        reviewedAt: new Date(),
+      },
+    });
+    try {
+      const providerRefund = await this.refundGateway.createRefund({
+        paymentId: attempt.externalPaymentId,
+        sellerExternalId: attempt.sellerExternalId,
+        amountCents,
+        idempotencyKey: `refund-${request.id}`,
+      });
+      const updated = await this.prisma.refundRequest.update({
+        where: { id: request.id },
+        data: { externalRefundId: providerRefund.externalRefundId },
+      });
+      await this.prisma.auditLogEntry.create({
+        data: {
+          actorUserId: user.id,
+          clubId: request.clubId,
+          action: 'PROCESS_ORDER_REFUND',
+          resourceType: 'REFUND_REQUEST',
+          resourceId: request.id,
+          metadata: {
+            orderId: request.orderId,
+            amountCents,
+            externalRefundId: providerRefund.externalRefundId,
+          },
+        },
+      });
+      return {
+        message: 'La devolución fue enviada y espera confirmación del proveedor.',
+        refundRequest: updated,
+      };
+    } catch (error) {
+      await this.prisma.refundRequest.update({
+        where: { id: request.id },
+        data: {
+          status: 'FAILED',
+          resolutionNote: 'Mercado Pago rechazó o no pudo procesar la solicitud.',
+        },
+      });
+      throw error;
+    }
   }
 
   async getClubOperations(user: AuthenticatedUser, clubId: string) {

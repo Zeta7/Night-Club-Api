@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { PlatformService } from '../application/platform.service';
@@ -8,13 +8,31 @@ import { ListPlatformUsersDto } from './dto/list-platform-users.dto';
 import { UpdatePlatformSettingsDto } from './dto/update-platform-settings.dto';
 import { SuperAdminGuard } from './guards/super-admin.guard';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
+import { MarketplaceFeeService } from '../application/marketplace-fee.service';
+import { RemoveMarketplaceFeeOverrideDto, UpdateMarketplaceFeeDto } from './dto/marketplace-fee.dto';
 
 @ApiTags('Platform')
 @ApiBearerAuth()
 @UseGuards(AccessTokenGuard, SuperAdminGuard)
 @Controller('platform')
 export class PlatformController {
-  constructor(private readonly platformService: PlatformService) {}
+  constructor(private readonly platformService: PlatformService, private readonly fees: MarketplaceFeeService) {}
+
+  @Get('marketplace-fee')
+  @ApiOperation({ summary: 'Consultar la comisión global del marketplace (SUPER_ADMIN)' })
+  getMarketplaceFee() { return this.fees.readGlobal(); }
+
+  @Patch('marketplace-fee')
+  @ApiOperation({ summary: 'Modificar la comisión global del marketplace (SUPER_ADMIN)' })
+  updateMarketplaceFee(@CurrentUser() user: AuthenticatedUser, @Body() body: UpdateMarketplaceFeeDto) { return this.fees.updateGlobal(user, body.feeBps, body.reason); }
+
+  @Patch('clubs/:clubId/marketplace-fee')
+  @ApiOperation({ summary: 'Asignar comisión personalizada a un negocio (SUPER_ADMIN)' })
+  setClubMarketplaceFee(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Body() body: UpdateMarketplaceFeeDto) { return this.fees.setOverride(user, clubId, body.feeBps, body.reason); }
+
+  @Delete('clubs/:clubId/marketplace-fee')
+  @ApiOperation({ summary: 'Eliminar excepción y volver a heredar la comisión global (SUPER_ADMIN)' })
+  removeClubMarketplaceFee(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Body() body: RemoveMarketplaceFeeOverrideDto) { return this.fees.removeOverride(user, clubId, body.reason); }
 
   @Get('dashboard')
   @ApiOperation({

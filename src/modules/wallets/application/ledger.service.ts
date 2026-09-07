@@ -23,6 +23,8 @@ export class LedgerService {
       provider: string;
       amountCents: number;
       currency: string;
+      marketplaceFeeBps?: number;
+      marketplaceFeeCents?: number;
     },
   ) {
     const db = tx as any;
@@ -30,9 +32,10 @@ export class LedgerService {
     const existing = await db.ledgerTransaction.findUnique({ where: { reference } });
     if (existing) return existing;
 
-    const commissionBps = await this.commissionBps(tx);
+    const commissionBps = input.marketplaceFeeBps ?? (await this.commissionBps(tx));
     const providerCostBps = this.numberConfig('PAYMENT_PROVIDER_COST_BPS', 0);
-    const commissionCents = Math.round((input.amountCents * commissionBps) / 10_000);
+    const commissionCents =
+      input.marketplaceFeeCents ?? Math.round((input.amountCents * commissionBps) / 10_000);
     const providerCostCents = Math.round((input.amountCents * providerCostBps) / 10_000);
     const clubNetCents = input.amountCents - commissionCents;
     const [customer, club, platform, provider] = await Promise.all([
@@ -167,6 +170,91 @@ export class LedgerService {
         data: { [field]: delta >= 0 ? { increment: delta } : { decrement: Math.abs(delta) } },
       });
     }
+    return transaction;
+  }
+
+  async reverseSalePartial(
+    tx: Tx,
+    input: {
+      paymentAttemptId: string;
+      providerEventId: string;
+      amountCents: number;
+      marketplaceFeeCents: number;
+    },
+  ) {
+    const db = tx as any;
+    const reference = `REFUND:${input.paymentAttemptId}:${input.providerEventId}`;
+    const existing = await db.ledgerTransaction.findUnique({ where: { reference } });
+    if (existing) return existing;
+    const sale = await db.ledgerTransaction.findUnique({
+      where: { reference: `SALE:${input.paymentAttemptId}` },
+      include: { entries: { include: { account: true } } },
+    });
+    if (!sale) throw new Error('LEDGER_SALE_NOT_FOUND');
+    const customer = sale.entries.find((entry: any) => entry.account.ownerType === 'CUSTOMER');
+    const club = sale.entries.find((entry: any) => entry.account.ownerType === 'CLUB');
+    const platform = sale.entries.find(
+      (entry: any) => entry.account.ownerType === 'PLATFORM' && entry.direction === 'CREDIT',
+    );
+    if (!customer || !club || !platform) throw new Error('LEDGER_SALE_ENTRIES_NOT_FOUND');
+    const clubAmountCents = input.amountCents - input.marketplaceFeeCents;
+    const entries = [
+      this.entry(
+        customer.accountId,
+        'CREDIT',
+        customer.bucket,
+        input.amountCents,
+        'Devolución parcial al cliente',
+      ),
+      this.entry(
+        club.accountId,
+        'DEBIT',
+        club.bucket,
+        clubAmountCents,
+        'Reversión parcial del neto del negocio',
+      ),
+      this.entry(
+        platform.accountId,
+        'DEBIT',
+        platform.bucket,
+        input.marketplaceFeeCents,
+        'Reversión parcial de comisión',
+      ),
+    ];
+    const transaction = await db.ledgerTransaction.create({
+      data: {
+        reference,
+        type: 'REFUND',
+        orderId: sale.orderId,
+        paymentAttemptId: input.paymentAttemptId,
+        providerEventId: input.providerEventId,
+        reversalOfId: sale.id,
+        currency: sale.currency,
+        debitTotalCents: input.amountCents,
+        creditTotalCents: input.amountCents,
+        description: 'Reembolso parcial',
+        metadata: {
+          amountCents: input.amountCents,
+          marketplaceFeeCents: input.marketplaceFeeCents,
+        },
+        entries: { create: entries },
+      },
+      include: { entries: true },
+    });
+    await Promise.all([
+      db.financialAccount.update({
+        where: { id: customer.accountId },
+        data: { [this.bucketField(customer.bucket)]: { increment: input.amountCents } },
+      }),
+      db.financialAccount.update({
+        where: { id: club.accountId },
+        data: { [this.bucketField(club.bucket)]: { decrement: clubAmountCents } },
+      }),
+      db.financialAccount.update({
+        where: { id: platform.accountId },
+        data: { [this.bucketField(platform.bucket)]: { decrement: input.marketplaceFeeCents } },
+      }),
+    ]);
     return transaction;
   }
 

@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClubStatus, EventStatus, RedeemableStatus, UserRole } from '@prisma/client';
+import {
+  ClubStatus,
+  EventStatus,
+  RedeemableStatus,
+  SellerConnectionStatus,
+  UserRole,
+} from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
@@ -15,6 +21,16 @@ const PUBLIC_EVENT_STATUSES = [
   EventStatus.SOLD_OUT,
   EventStatus.IN_PROGRESS,
 ];
+const mercadoPagoReadyClubWhere = () => ({
+  status: ClubStatus.ACTIVE,
+  sellerConnections: {
+    some: {
+      provider: 'mercado_pago',
+      status: SellerConnectionStatus.CONNECTED,
+      OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: new Date() } }],
+    },
+  },
+});
 
 @Injectable()
 export class EventsService {
@@ -80,7 +96,7 @@ export class EventsService {
     const events = await this.prisma.event.findMany({
       where: {
         status: { in: PUBLIC_EVENT_STATUSES },
-        club: { status: ClubStatus.ACTIVE },
+        club: mercadoPagoReadyClubWhere(),
       },
       orderBy: { startsAt: 'asc' },
       include: eventInclude,
@@ -180,7 +196,7 @@ export class EventsService {
       where: {
         id: eventId,
         status: { in: PUBLIC_EVENT_STATUSES },
-        club: { status: ClubStatus.ACTIVE },
+        club: mercadoPagoReadyClubWhere(),
       },
       include: eventInclude,
     });

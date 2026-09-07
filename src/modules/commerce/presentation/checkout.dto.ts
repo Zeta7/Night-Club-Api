@@ -14,6 +14,6 @@ export class CheckoutDto {
   promotionalCreditCents?: number;
 
   @IsOptional()
-  @IsIn(['FLOW', 'BEERRY_WALLET'])
-  paymentMethod?: 'FLOW' | 'BEERRY_WALLET';
+  @IsIn(['MERCADO_PAGO', 'BEERRY_WALLET'])
+  paymentMethod?: 'MERCADO_PAGO' | 'BEERRY_WALLET';
 }

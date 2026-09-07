@@ -256,6 +256,9 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       ['PAYMENT_APPROVED', NotificationCategory.PAYMENT, 'Pago aprobado', 'Tu pago de S/ {amount} fue aprobado.', '/orders/{orderId}'],
       ['PAYMENT_REJECTED', NotificationCategory.PAYMENT, 'Pago rechazado', 'No pudimos aprobar tu pago. Tu carrito se mantiene disponible.', '/cart'],
       ['PAYMENT_EXPIRED', NotificationCategory.PAYMENT, 'Pago vencido', 'La reserva venció antes de completar el pago. Puedes intentarlo nuevamente.', '/cart'],
+      ['PAYMENT_PARTIALLY_REFUNDED', NotificationCategory.PAYMENT, 'Devolución parcial confirmada', 'Mercado Pago confirmó una devolución parcial de S/ {amount}.', '/orders/{orderId}'],
+      ['PAYMENT_REFUNDED', NotificationCategory.PAYMENT, 'Devolución confirmada', 'Mercado Pago confirmó tu devolución de S/ {amount}.', '/orders/{orderId}'],
+      ['PAYMENT_CHARGEBACK', NotificationCategory.PAYMENT, 'Contracargo registrado', 'Se registró un contracargo para la orden {orderId}.', '/orders/{orderId}'],
       ['QR_AVAILABLE', NotificationCategory.QR, 'QR disponible', 'Tu compra fue confirmada y ya puedes usar tus QR.', '/qrs'],
       ['ADMIN_NEW_SALE', NotificationCategory.ORDER, 'Nueva venta: {saleType}', '{customerName} realizó una compra por S/ {amount}: {itemSummary}.', '/admin/sales'],
       ['WITHDRAWAL_REQUESTED', NotificationCategory.WITHDRAWAL, 'Retiro solicitado', 'Registramos tu solicitud de retiro por S/ {amount}.', '/admin/wallet'],
@@ -266,6 +269,8 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       ['REFERRAL_REWARD_PENDING', NotificationCategory.PROMOTION, 'Recompensa pendiente', 'Generaste S/ {amount} por una compra de tu referido. Te avisaremos cuando esté disponible.', '/referrals'],
       ['REFERRAL_REWARD_AVAILABLE', NotificationCategory.PROMOTION, 'Crédito Beerry disponible', 'Ya tienes S/ {amount} adicionales en tu billetera.', '/wallet'],
       ['REFERRAL_TRANSFER_RECEIVED', NotificationCategory.PROMOTION, 'Recibiste Crédito Beerry', 'Recibiste una transferencia de S/ {amount}.', '/wallet'],
+      ['BUSINESS_ACCESS_APPROVED', NotificationCategory.SYSTEM, 'Solicitud comercial aprobada', 'Ya puedes configurar y administrar {businessName}.', '/profile/business-access'],
+      ['BUSINESS_ACCESS_REJECTED', NotificationCategory.SYSTEM, 'Solicitud comercial revisada', 'La solicitud para {businessName} fue rechazada. {comment}', '/profile/business-access'],
     ] as const;
     for (const [key, category, titleTemplate, bodyTemplate, deepLinkTemplate] of templates) {
       await this.prisma.notificationTemplate.upsert({

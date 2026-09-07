@@ -24,6 +24,7 @@ import { ClubOrdersQueryDto } from './club-orders-query.dto';
 import { RequestRefundDto } from './request-refund.dto';
 import { WalletTopUpDto } from './wallet-top-up.dto';
 import { UpdateProductDeliveryDto } from './update-product-delivery.dto';
+import { ProcessRefundDto } from './process-refund.dto';
 
 @ApiTags('Commerce')
 @ApiBearerAuth()
@@ -130,7 +131,21 @@ export class CommerceController {
     @Param('orderId') orderId: string,
     @Body() body: RequestRefundDto,
   ) {
-    return this.service.requestOrderRefund(user, clubId, orderId, body.reason);
+    return this.service.requestOrderRefund(user, clubId, orderId, body.reason, body.amountCents);
+  }
+
+  @Post('admin/refund-requests/:refundRequestId/process')
+  processRefund(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('refundRequestId') refundRequestId: string,
+    @Body() body: ProcessRefundDto,
+  ) {
+    return this.service.processRefundRequest(
+      user,
+      refundRequestId,
+      body.approvedAmountCents,
+      body.resolutionNote,
+    );
   }
 
   @Get('clubs/:clubId/operations')

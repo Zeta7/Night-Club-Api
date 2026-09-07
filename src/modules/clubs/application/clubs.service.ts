@@ -6,6 +6,7 @@ import {
   Prisma,
   ProductStatus,
   PromotionStatus,
+  SellerConnectionStatus,
   TicketTypeStatus,
   UserRole,
 } from '@prisma/client';
@@ -32,6 +33,18 @@ const CUSTOMER_VISIBLE_EVENT_STATUSES = [
 // Customer discovery must reflect newly activated clubs and published events.
 // Keep the cache effectively disabled until mutation-driven invalidation exists.
 const CUSTOMER_HOME_CACHE_TTL_MS = 0;
+const MERCADO_PAGO_PROVIDER = 'mercado_pago';
+
+const paymentReadyClubWhere = (now: Date): Prisma.ClubWhereInput => ({
+  status: ClubStatus.ACTIVE,
+  sellerConnections: {
+    some: {
+      provider: MERCADO_PAGO_PROVIDER,
+      status: SellerConnectionStatus.CONNECTED,
+      OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: now } }],
+    },
+  },
+});
 const customerHomeCache = new Map<
   string,
   { expiresAt: number; payload: Record<string, unknown> }
@@ -423,10 +436,16 @@ export class ClubsService {
       };
     }
 
+    const paymentReadyClubs = await this.prisma.club.findMany({
+      where: { id: { in: clubIds }, ...paymentReadyClubWhere(now) },
+      select: { id: true },
+    });
+    const paymentReadyClubIds = paymentReadyClubs.map((club) => club.id);
+
     const [events, promotions, products, tickets] = await Promise.all([
       this.prisma.event.findMany({
         where: {
-          clubId: { in: clubIds },
+          clubId: { in: paymentReadyClubIds },
           status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
           endsAt: { gte: now },
         },
@@ -447,7 +466,7 @@ export class ClubsService {
       }),
       this.prisma.promotion.findMany({
         where: {
-          clubId: { in: clubIds },
+          clubId: { in: paymentReadyClubIds },
           status: PromotionStatus.ACTIVE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
@@ -475,7 +494,7 @@ export class ClubsService {
       }),
       this.prisma.product.findMany({
         where: {
-          clubId: { in: clubIds },
+          clubId: { in: paymentReadyClubIds },
           status: ProductStatus.ACTIVE,
         },
         orderBy: [{ updatedAt: 'desc' }],
@@ -486,7 +505,7 @@ export class ClubsService {
       }),
       this.prisma.ticketType.findMany({
         where: {
-          clubId: { in: clubIds },
+          clubId: { in: paymentReadyClubIds },
           status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] },
           OR: [
             { eventId: null },
@@ -633,9 +652,7 @@ export class ClubsService {
       take: 30,
     });
     const matchedClubIds = activeClubs.map((club) => club.id);
-    const clubRelationFilter = {
-      status: ClubStatus.ACTIVE,
-    } as const;
+    const clubRelationFilter = paymentReadyClubWhere(now);
 
     const [events, promotions, products] = await Promise.all([
       this.prisma.event.findMany({
@@ -798,10 +815,23 @@ export class ClubsService {
       throw notFound('CLUB_NOT_FOUND', 'Discoteca no encontrada o no disponible.');
     }
 
+    const paymentReady = Boolean(
+      await this.prisma.marketplaceSellerConnection.findFirst({
+        where: {
+          clubId,
+          provider: MERCADO_PAGO_PROVIDER,
+          status: SellerConnectionStatus.CONNECTED,
+          OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: now } }],
+        },
+        select: { id: true },
+      }),
+    );
+    const paidContentClubIds = paymentReady ? [clubId] : [];
+
     const [events, promotions, products, tickets] = await Promise.all([
       this.prisma.event.findMany({
         where: {
-          clubId,
+          clubId: { in: paidContentClubIds },
           status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
           endsAt: { gte: now },
         },
@@ -817,7 +847,7 @@ export class ClubsService {
       }),
       this.prisma.promotion.findMany({
         where: {
-          clubId,
+          clubId: { in: paidContentClubIds },
           status: PromotionStatus.ACTIVE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
@@ -840,7 +870,7 @@ export class ClubsService {
       }),
       this.prisma.product.findMany({
         where: {
-          clubId,
+          clubId: { in: paidContentClubIds },
           status: ProductStatus.ACTIVE,
         },
         orderBy: { updatedAt: 'desc' },
@@ -848,7 +878,7 @@ export class ClubsService {
       }),
       this.prisma.ticketType.findMany({
         where: {
-          clubId,
+          clubId: { in: paidContentClubIds },
           status: { in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT] },
           OR: [
             { eventId: null },
@@ -968,7 +998,7 @@ export class ClubsService {
       where: {
         id: eventId,
         status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-        club: { status: ClubStatus.ACTIVE },
+        club: paymentReadyClubWhere(now),
       },
       include: {
         club: true,
