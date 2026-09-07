@@ -85,8 +85,6 @@ export class MercadoPagoPaymentGateway {
             title: input.subject,
             quantity: 1,
             unit_price: amount,
-            unit_measure: 'unit',
-            total_amount: amount,
           },
         ],
       }),
