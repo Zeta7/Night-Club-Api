@@ -1,8 +1,9 @@
 /// <reference types="jest" />
 import { MercadoPagoPaymentGateway } from '@modules/commerce/infrastructure/mercado-pago-payment.gateway';
 
-describe('MercadoPagoPaymentGateway mobile checkout', () => {
+describe('MercadoPagoPaymentGateway Checkout Pro Orders API', () => {
   const accessTokenForClub = jest.fn();
+  const prisma = { paymentAttempt: { findUnique: jest.fn() } };
   const configValues: Record<string, string> = {
     MERCADO_PAGO_NOTIFICATION_URL: 'https://api.beerry.app/api/v1/payments/mercado-pago/webhook',
     MOBILE_APP_SCHEME: 'beerry',
@@ -13,27 +14,30 @@ describe('MercadoPagoPaymentGateway mobile checkout', () => {
   const gateway = new MercadoPagoPaymentGateway(
     config as never,
     { accessTokenForClub } as never,
-    {} as never,
+    prisma as never,
     {} as never,
   );
 
   beforeEach(() => {
     jest.restoreAllMocks();
     accessTokenForClub.mockReset().mockResolvedValue({
-      accessToken: 'TEST-seller-access-token',
+      accessToken: 'APP_USR-seller-access-token',
       sellerExternalId: '3671162760',
     });
+    prisma.paymentAttempt.findUnique.mockReset();
   });
 
-  it('creates the three documented mobile return URLs and opens Checkout Pro', async () => {
+  it('creates a marketplace order using the documented Orders API contract', async () => {
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
-          id: 'preference-1',
-          collector_id: 3671162760,
-          init_point: 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
-          sandbox_init_point:
-            'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
+          id: 'ORDTST-order-1',
+          user_id: '3671162760',
+          currency: 'PEN',
+          country_code: 'PE',
+          checkout_url:
+            'https://www.mercadopago.com.pe/checkout/v1/redirect?order_id=ORDTST-order-1',
+          integration_data: { application_id: '5106228891748811' },
         }),
         { status: 201, headers: { 'content-type': 'application/json' } },
       ),
@@ -47,59 +51,125 @@ describe('MercadoPagoPaymentGateway mobile checkout', () => {
       amountCents: 2000,
       marketplaceFeeCents: 100,
       currency: 'PEN',
-      payerEmail: 'buyer@beerry.test',
+      payerEmail: 'ignored@example.com',
       subject: 'Compra Beerry',
     });
 
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.mercadopago.com/v1/orders');
     const request = fetchMock.mock.calls[0]![1]!;
+    expect((request.headers as Record<string, string>)['x-idempotency-key']).toBe('attempt-1');
     const body = JSON.parse(String(request.body));
-    expect(body.back_urls).toEqual({
-      success:
-        'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=success',
-      pending:
-        'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=pending',
-      failure:
-        'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=failure',
+    expect(body).toMatchObject({
+      type: 'online',
+      processing_mode: 'manual',
+      capture_mode: 'automatic_async',
+      total_amount: '20.00',
+      marketplace_fee: '1.00',
+      external_reference: 'attempt-1',
+      description: 'Compra Beerry',
+      config: {
+        online: {
+          callback_url: configValues.MERCADO_PAGO_NOTIFICATION_URL,
+          success_url:
+            'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=success',
+          pending_url:
+            'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=pending',
+          failure_url:
+            'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=failure',
+          auto_return: 'approved',
+        },
+      },
+      items: [
+        {
+          external_code: 'order-1',
+          title: 'Compra Beerry',
+          quantity: 1,
+          unit_price: '20.00',
+          total_amount: '20.00',
+          unit_measure: 'unit',
+        },
+      ],
     });
-    expect(body.auto_return).toBe('approved');
-    expect(body.notification_url).toBe(configValues.MERCADO_PAGO_NOTIFICATION_URL);
-    expect(body.marketplace_fee).toBe(1);
     expect(body.payer).toBeUndefined();
-    expect(result.checkoutUrl).toBe(
-      'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
-    );
+    expect(body.back_urls).toBeUndefined();
+    expect(body.notification_url).toBeUndefined();
+    expect(result).toMatchObject({
+      externalPaymentId: 'ORDTST-order-1',
+      checkoutUrl: 'https://www.mercadopago.com.pe/checkout/v1/redirect?order_id=ORDTST-order-1',
+      sellerExternalId: '3671162760',
+      providerData: { mercadoPagoOrderId: 'ORDTST-order-1', api: 'orders' },
+    });
   });
 
-  it('does not select sandbox_init_point even when Mercado Pago returns it', async () => {
-    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
+  it('rejects an invalid marketplace fee before calling Mercado Pago', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch');
+    await expect(
+      gateway.createPayment({
+        attemptId: 'attempt-2',
+        orderId: 'order-2',
+        clubId: 'club-1',
+        amountCents: 2000,
+        marketplaceFeeCents: 2001,
+        currency: 'PEN',
+        subject: 'Compra Beerry',
+      }),
+    ).rejects.toThrow('MERCADO_PAGO_INVALID_MARKETPLACE_FEE');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('verifies an approved order against Mercado Pago and the local snapshot', async () => {
+    prisma.paymentAttempt.findUnique.mockResolvedValue({
+      externalPaymentId: 'ORDTST-order-3',
+      orderId: 'order-3',
+      walletTopUpId: null,
+      order: { clubId: 'club-1' },
+      walletTopUp: null,
+    });
+    const cipher = { decrypt: jest.fn(() => 'APP_USR-seller-access-token') };
+    const queryGateway = new MercadoPagoPaymentGateway(
+      config as never,
+      { accessTokenForClub } as never,
+      {
+        ...prisma,
+        marketplaceSellerConnection: {
+          findUnique: jest.fn().mockResolvedValue({
+            status: 'CONNECTED',
+            accessTokenEncrypted: 'encrypted',
+          }),
+        },
+      } as never,
+      cipher as never,
+    );
+    jest.spyOn(global, 'fetch').mockResolvedValue(
       new Response(
         JSON.stringify({
-          id: 'preference-2',
-          collector_id: 3671162760,
-          init_point: 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-2',
-          sandbox_init_point:
-            'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-2',
+          id: 'ORDTST-order-3',
+          status: 'processed',
+          status_detail: 'accredited',
+          external_reference: 'attempt-3',
+          total_amount: '50.00',
+          marketplace_fee: '5.00',
+          currency: 'PEN',
+          user_id: '3671162760',
+          last_updated_date: '2026-09-07T10:00:00Z',
+          transactions: {
+            payments: [{ id: 'PAY-payment-3', status: 'processed', status_detail: 'accredited' }],
+          },
         }),
-        { status: 201, headers: { 'content-type': 'application/json' } },
+        { status: 200, headers: { 'content-type': 'application/json' } },
       ),
     );
 
-    const result = await gateway.createPayment({
-      attemptId: 'attempt-2',
-      orderId: 'order-2',
+    await expect(queryGateway.queryOrder('ORDTST-order-3', '3671162760')).resolves.toMatchObject({
+      externalPaymentId: 'ORDTST-order-3',
+      outcome: 'APPROVED',
+      attemptId: 'attempt-3',
+      orderId: 'order-3',
       clubId: 'club-1',
-      sellerExternalId: '3671162760',
-      amountCents: 2000,
-      marketplaceFeeCents: 100,
+      amountCents: 5000,
       currency: 'PEN',
-      payerEmail: 'buyer@beerry.test',
-      subject: 'Compra Beerry',
+      sellerExternalId: '3671162760',
+      marketplaceFeeCents: 500,
     });
-
-    const request = fetchMock.mock.calls[0]![1]!;
-    expect(JSON.parse(String(request.body)).payer).toBeUndefined();
-    expect(result.checkoutUrl).toBe(
-      'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-2',
-    );
   });
 });

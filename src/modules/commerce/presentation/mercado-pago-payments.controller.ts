@@ -16,7 +16,6 @@ export class MercadoPagoPaymentsController {
     private readonly config: ConfigService,
   ) {}
 
-
   @Post('webhook')
   @ApiExcludeEndpoint()
   async webhook(
@@ -38,14 +37,21 @@ export class MercadoPagoPaymentsController {
     );
     try {
       this.verifySignature(signature, requestId, dataId);
-      if (body?.type !== 'payment' || !dataId) return { received: true };
+      if (!dataId) return { received: true };
       const sellerId = String(body.user_id ?? '');
       if (!sellerId)
         throw unauthorized(
           'MERCADO_PAGO_SELLER_REQUIRED',
           'La notificación no identifica al vendedor.',
         );
-      const event = await this.mercadoPago.queryPayment(dataId, sellerId);
+      const type = String(body?.type ?? '').toLowerCase();
+      const event =
+        type === 'payment'
+          ? await this.mercadoPago.queryPayment(dataId, sellerId)
+          : type === 'order'
+            ? await this.mercadoPago.queryOrder(dataId, sellerId)
+            : null;
+      if (!event) return { received: true };
       await this.commerce.bindAuthoritativeExternalPayment(event);
       await this.commerce.processPaymentEvent(event);
       this.logger.log(

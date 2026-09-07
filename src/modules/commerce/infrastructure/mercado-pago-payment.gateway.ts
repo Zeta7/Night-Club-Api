@@ -27,14 +27,14 @@ export class MercadoPagoPaymentGateway {
   async createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult> {
     this.logger.log(
       JSON.stringify({
-        event: 'mercado_pago.preference.create.started',
+        event: 'mercado_pago.order.create.started',
         attemptId: input.attemptId,
         orderId: input.orderId,
         clubId: input.clubId ?? null,
         amountCents: input.amountCents,
         currency: input.currency,
         marketplaceFeeCents: input.marketplaceFeeCents ?? null,
-        checkoutMode: 'init_point',
+        api: 'orders',
       }),
     );
     const seller = input.clubId
@@ -52,7 +52,8 @@ export class MercadoPagoPaymentGateway {
       throw new Error('MERCADO_PAGO_INVALID_MARKETPLACE_FEE');
     if (input.sellerExternalId && input.sellerExternalId !== seller.sellerExternalId)
       throw new Error('MERCADO_PAGO_SELLER_MISMATCH');
-    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+    const amount = money(input.amountCents);
+    const response = await fetch('https://api.mercadopago.com/v1/orders', {
       method: 'POST',
       headers: {
         authorization: `Bearer ${seller.accessToken}`,
@@ -61,32 +62,39 @@ export class MercadoPagoPaymentGateway {
         'x-idempotency-key': input.attemptId,
       },
       body: JSON.stringify({
+        type: 'online',
+        processing_mode: 'manual',
+        capture_mode: 'automatic_async',
+        total_amount: amount,
+        external_reference: input.attemptId,
+        description: input.subject,
+        ...(input.clubId ? { marketplace_fee: money(input.marketplaceFeeCents!) } : {}),
+        config: {
+          online: {
+            callback_url: this.required('MERCADO_PAGO_NOTIFICATION_URL'),
+            success_url: this.mobileReturnUrl(input, 'success'),
+            pending_url: this.mobileReturnUrl(input, 'pending'),
+            failure_url: this.mobileReturnUrl(input, 'failure'),
+            auto_return: 'approved',
+          },
+        },
         items: [
           {
-            id: input.orderId,
+            external_code: input.orderId,
             title: input.subject,
-            currency_id: input.currency,
             quantity: 1,
-            unit_price: cents(input.amountCents),
+            unit_price: amount,
+            total_amount: amount,
+            unit_measure: 'unit',
           },
         ],
-        ...(input.clubId ? { marketplace_fee: cents(input.marketplaceFeeCents!) } : {}),
-        external_reference: input.attemptId,
-        metadata: { attempt_id: input.attemptId, order_id: input.orderId, club_id: input.clubId },
-        back_urls: {
-          success: this.mobileReturnUrl(input, 'success'),
-          pending: this.mobileReturnUrl(input, 'pending'),
-          failure: this.mobileReturnUrl(input, 'failure'),
-        },
-        notification_url: this.required('MERCADO_PAGO_NOTIFICATION_URL'),
-        auto_return: 'approved',
       }),
     });
     const body = (await response.json()) as Record<string, unknown>;
     if (!response.ok || typeof body.id !== 'string') {
       this.logger.error(
         JSON.stringify({
-          event: 'mercado_pago.preference.create.failed',
+          event: 'mercado_pago.order.create.failed',
           attemptId: input.attemptId,
           orderId: input.orderId,
           clubId: input.clubId ?? null,
@@ -96,36 +104,31 @@ export class MercadoPagoPaymentGateway {
       );
       throw new Error(`MERCADO_PAGO_CREATE_ERROR:${response.status}`);
     }
-    const checkoutUrl = body.init_point;
+    const checkoutUrl = body.checkout_url;
     if (typeof checkoutUrl !== 'string') {
       this.logger.error(
         JSON.stringify({
-          event: 'mercado_pago.preference.checkout_url_missing',
+          event: 'mercado_pago.order.checkout_url_missing',
           attemptId: input.attemptId,
           orderId: input.orderId,
           clubId: input.clubId ?? null,
-          preferenceId: body.id,
-          checkoutMode: 'init_point',
-          hasInitPoint: typeof body.init_point === 'string',
-          hasSandboxInitPoint: typeof body.sandbox_init_point === 'string',
+          mercadoPagoOrderId: body.id,
         }),
       );
       throw new Error('MERCADO_PAGO_CHECKOUT_URL_MISSING');
     }
     this.logger.log(
       JSON.stringify({
-        event: 'mercado_pago.preference.create.succeeded',
+        event: 'mercado_pago.order.create.succeeded',
         attemptId: input.attemptId,
         orderId: input.orderId,
         clubId: input.clubId ?? null,
-        preferenceId: body.id,
-        collectorId: stringValue(body.collector_id) ?? seller.sellerExternalId ?? null,
+        mercadoPagoOrderId: body.id,
+        collectorId: stringValue(body.user_id) ?? seller.sellerExternalId ?? null,
         sellerExternalId: seller.sellerExternalId ?? null,
-        clientId: stringValue(body.client_id) ?? null,
-        marketplace: stringValue(body.marketplace) ?? null,
-        siteId: stringValue(body.site_id) ?? null,
-        liveMode: typeof body.live_mode === 'boolean' ? body.live_mode : null,
-        checkoutMode: 'init_point',
+        applicationId: stringValue((body.integration_data as any)?.application_id) ?? null,
+        countryCode: stringValue(body.country_code) ?? null,
+        currency: stringValue(body.currency) ?? null,
         checkoutHost: new URL(checkoutUrl).host,
       }),
     );
@@ -133,8 +136,8 @@ export class MercadoPagoPaymentGateway {
       externalPaymentId: body.id,
       status: 'PENDING',
       checkoutUrl,
-      sellerExternalId: seller.sellerExternalId ?? stringValue(body.collector_id),
-      providerData: { preferenceId: body.id },
+      sellerExternalId: seller.sellerExternalId ?? stringValue(body.user_id),
+      providerData: { mercadoPagoOrderId: body.id, api: 'orders' },
     };
   }
 
@@ -149,23 +152,49 @@ export class MercadoPagoPaymentGateway {
     });
     if (!connection || connection.status !== 'CONNECTED')
       throw new Error('MERCADO_PAGO_SELLER_CONNECTION_NOT_FOUND');
+    const accessToken = this.cipher.decrypt(connection.accessTokenEncrypted);
+    const orderResponse = await fetch(
+      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(input.paymentId)}`,
+      { headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' } },
+    );
+    const order = (await orderResponse.json()) as Record<string, any>;
+    if (!orderResponse.ok)
+      throw new Error(`MERCADO_PAGO_ORDER_QUERY_ERROR:${orderResponse.status}`);
+    const transactionId = stringValue(order.transactions?.payments?.[0]?.id);
+    const totalAmountCents = moneyToCents(order.total_amount);
+    const isFullRefund = input.amountCents === totalAmountCents;
+    if (!isFullRefund && !transactionId)
+      throw new Error('MERCADO_PAGO_REFUND_TRANSACTION_REQUIRED');
+    if (input.amountCents <= 0 || input.amountCents > totalAmountCents)
+      throw new Error('MERCADO_PAGO_INVALID_REFUND_AMOUNT');
+
     const response = await fetch(
-      `https://api.mercadopago.com/v1/payments/${encodeURIComponent(input.paymentId)}/refunds`,
+      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(input.paymentId)}/refund`,
       {
         method: 'POST',
         headers: {
-          authorization: `Bearer ${this.cipher.decrypt(connection.accessTokenEncrypted)}`,
+          authorization: `Bearer ${accessToken}`,
           'content-type': 'application/json',
           accept: 'application/json',
           'x-idempotency-key': input.idempotencyKey,
         },
-        body: JSON.stringify({ amount: cents(input.amountCents) }),
+        body: JSON.stringify(
+          isFullRefund
+            ? {}
+            : { transactions: [{ id: transactionId, amount: money(input.amountCents) }] },
+        ),
       },
     );
     const body = (await response.json()) as Record<string, unknown>;
     if (!response.ok || body.id == null)
       throw new Error(`MERCADO_PAGO_REFUND_ERROR:${response.status}`);
-    return { externalRefundId: String(body.id), status: 'PENDING' };
+    const refunds = Array.isArray((body as any).transactions?.refunds)
+      ? (body as any).transactions.refunds
+      : [];
+    return {
+      externalRefundId: String(refunds.at(-1)?.id ?? body.id),
+      status: 'PENDING',
+    };
   }
 
   async queryPayment(paymentId: string, sellerExternalId: string): Promise<VerifiedPaymentEvent> {
@@ -201,10 +230,11 @@ export class MercadoPagoPaymentGateway {
     }
     const metadata = body.metadata && typeof body.metadata === 'object' ? body.metadata : {};
     const attemptId = stringValue(metadata.attempt_id) ?? stringValue(body.external_reference);
+    const snapshot = await this.paymentSnapshot(attemptId);
     const event: VerifiedPaymentEvent = {
       provider: this.provider,
       providerEventId: `payment:${paymentId}:${String(body.status)}:${String(body.date_last_updated ?? '')}`,
-      externalPaymentId: String(body.id),
+      externalPaymentId: snapshot?.externalPaymentId ?? String(body.id),
       outcome: mapStatus(String(body.status), String(body.status_detail ?? '')),
       failureCode:
         body.status === 'rejected'
@@ -212,8 +242,8 @@ export class MercadoPagoPaymentGateway {
           : undefined,
       failureMessage: body.status === 'rejected' ? 'Mercado Pago rechazó el pago.' : undefined,
       attemptId,
-      orderId: stringValue(metadata.order_id),
-      clubId: stringValue(metadata.club_id),
+      orderId: stringValue(metadata.order_id) ?? snapshot?.operationId,
+      clubId: stringValue(metadata.club_id) ?? snapshot?.clubId,
       amountCents: moneyToCents(body.transaction_amount),
       currency: stringValue(body.currency_id),
       sellerExternalId: String(body.collector_id ?? sellerExternalId),
@@ -246,6 +276,110 @@ export class MercadoPagoPaymentGateway {
       }),
     );
     return event;
+  }
+
+  async queryOrder(
+    mercadoPagoOrderId: string,
+    sellerExternalId: string,
+  ): Promise<VerifiedPaymentEvent> {
+    const accessToken = await this.accessTokenForSeller(sellerExternalId);
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(mercadoPagoOrderId)}`,
+      { headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' } },
+    );
+    const body = (await response.json()) as Record<string, any>;
+    if (!response.ok) {
+      this.logger.error(
+        JSON.stringify({
+          event: 'mercado_pago.order.query_failed',
+          mercadoPagoOrderId,
+          sellerExternalId,
+          statusCode: response.status,
+          response: mercadoPagoErrorDetails(body),
+        }),
+      );
+      throw new Error(`MERCADO_PAGO_ORDER_QUERY_ERROR:${response.status}`);
+    }
+    const attemptId = stringValue(body.external_reference);
+    const snapshot = await this.paymentSnapshot(attemptId);
+    const payment = Array.isArray(body.transactions?.payments)
+      ? body.transactions.payments[0]
+      : undefined;
+    const status = String(payment?.status ?? body.status ?? '');
+    const statusDetail = String(payment?.status_detail ?? body.status_detail ?? '');
+    const event: VerifiedPaymentEvent = {
+      provider: this.provider,
+      providerEventId: `order:${mercadoPagoOrderId}:${status}:${String(body.last_updated_date ?? '')}`,
+      externalPaymentId: snapshot?.externalPaymentId ?? String(body.id),
+      outcome: mapOrderStatus(status, statusDetail),
+      failureCode:
+        status === 'failed' || status === 'rejected'
+          ? `MERCADO_PAGO_${statusDetail.toUpperCase() || 'REJECTED'}`
+          : undefined,
+      failureMessage:
+        status === 'failed' || status === 'rejected' ? 'Mercado Pago rechazó el pago.' : undefined,
+      attemptId,
+      orderId: snapshot?.operationId,
+      clubId: snapshot?.clubId,
+      amountCents: moneyToCents(body.total_amount),
+      currency: stringValue(body.currency),
+      sellerExternalId: String(body.user_id ?? sellerExternalId),
+      marketplaceFeeCents: moneyToCents(body.marketplace_fee ?? 0),
+      refundedAmountCents: Array.isArray(body.transactions?.refunds)
+        ? body.transactions.refunds.reduce(
+            (total: number, refund: any) => total + moneyToCents(refund?.amount ?? 0),
+            0,
+          )
+        : 0,
+      payload: {
+        id: String(body.id),
+        status: body.status,
+        statusDetail: body.status_detail,
+        externalReference: body.external_reference,
+        totalAmount: body.total_amount,
+        currency: body.currency,
+        userId: body.user_id,
+        marketplaceFee: body.marketplace_fee,
+        paymentId: payment?.id,
+        paymentStatus: payment?.status,
+      },
+    };
+    this.logger.log(
+      JSON.stringify({
+        event: 'mercado_pago.order.queried',
+        mercadoPagoOrderId,
+        sellerExternalId,
+        attemptId: event.attemptId ?? null,
+        orderId: event.orderId ?? null,
+        outcome: event.outcome,
+      }),
+    );
+    return event;
+  }
+
+  private async accessTokenForSeller(sellerExternalId: string) {
+    const connection = await this.prisma.marketplaceSellerConnection.findUnique({
+      where: {
+        provider_externalSellerId: { provider: this.provider, externalSellerId: sellerExternalId },
+      },
+    });
+    return connection
+      ? this.cipher.decrypt(connection.accessTokenEncrypted)
+      : this.required('MERCADO_PAGO_PLATFORM_ACCESS_TOKEN');
+  }
+
+  private async paymentSnapshot(attemptId: string | undefined) {
+    if (!attemptId) return undefined;
+    const attempt = await this.prisma.paymentAttempt.findUnique({
+      where: { id: attemptId },
+      include: { order: { select: { clubId: true } }, walletTopUp: { select: { id: true } } },
+    });
+    if (!attempt) return undefined;
+    return {
+      externalPaymentId: attempt.externalPaymentId ?? undefined,
+      operationId: attempt.orderId ?? attempt.walletTopUpId ?? undefined,
+      clubId: attempt.order?.clubId ?? undefined,
+    };
   }
 
   private required(name: string) {
@@ -287,7 +421,7 @@ const mercadoPagoErrorDetails = (body: Record<string, unknown>) => ({
     : undefined,
 });
 
-const cents = (value: number) => Number((value / 100).toFixed(2));
+const money = (value: number) => (value / 100).toFixed(2);
 const moneyToCents = (value: unknown) => Math.round(Number(value) * 100);
 const stringValue = (value: unknown) =>
   typeof value === 'string' && value ? value : value == null ? undefined : String(value);
@@ -298,5 +432,14 @@ const mapStatus = (status: string, detail: string): PaymentOutcome => {
   if (status === 'refunded') return 'REFUNDED';
   if (status === 'charged_back' || detail.includes('charged_back')) return 'CHARGEBACK';
   if (status === 'partially_refunded') return 'PARTIALLY_REFUNDED';
+  return 'PENDING';
+};
+const mapOrderStatus = (status: string, detail: string): PaymentOutcome => {
+  if (status === 'processed' && detail === 'accredited') return 'APPROVED';
+  if (detail === 'partially_refunded') return 'PARTIALLY_REFUNDED';
+  if (detail === 'refunded') return 'REFUNDED';
+  if (status === 'cancelled' || status === 'canceled') return 'CANCELLED';
+  if (status === 'expired') return 'EXPIRED';
+  if (status === 'failed' || status === 'rejected') return 'REJECTED';
   return 'PENDING';
 };
