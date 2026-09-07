@@ -70,7 +70,6 @@ export class MercadoPagoPaymentGateway {
             unit_price: cents(input.amountCents),
           },
         ],
-        ...(input.payerEmail ? { payer: { email: input.payerEmail } } : {}),
         ...(input.clubId ? { marketplace_fee: cents(input.marketplaceFeeCents!) } : {}),
         external_reference: input.attemptId,
         metadata: { attempt_id: input.attemptId, order_id: input.orderId, club_id: input.clubId },
@@ -121,7 +120,13 @@ export class MercadoPagoPaymentGateway {
         clubId: input.clubId ?? null,
         preferenceId: body.id,
         collectorId: stringValue(body.collector_id) ?? seller.sellerExternalId ?? null,
+        sellerExternalId: seller.sellerExternalId ?? null,
+        clientId: stringValue(body.client_id) ?? null,
+        marketplace: stringValue(body.marketplace) ?? null,
+        siteId: stringValue(body.site_id) ?? null,
+        liveMode: typeof body.live_mode === 'boolean' ? body.live_mode : null,
         sandboxCheckout: this.useSandboxCheckout(),
+        checkoutHost: new URL(checkoutUrl).host,
       }),
     );
     return {

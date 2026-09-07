@@ -16,6 +16,7 @@ export class MercadoPagoPaymentsController {
     private readonly config: ConfigService,
   ) {}
 
+
   @Post('webhook')
   @ApiExcludeEndpoint()
   async webhook(
