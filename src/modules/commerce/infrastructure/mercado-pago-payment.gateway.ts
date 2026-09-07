@@ -25,6 +25,7 @@ export class MercadoPagoPaymentGateway {
   ) {}
 
   async createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult> {
+    const environment = this.paymentEnvironment();
     this.logger.log(
       JSON.stringify({
         event: 'mercado_pago.order.create.started',
@@ -35,6 +36,7 @@ export class MercadoPagoPaymentGateway {
         currency: input.currency,
         marketplaceFeeCents: input.marketplaceFeeCents ?? null,
         api: 'orders',
+        environment,
       }),
     );
     const seller = input.clubId
@@ -53,7 +55,7 @@ export class MercadoPagoPaymentGateway {
     if (input.sellerExternalId && input.sellerExternalId !== seller.sellerExternalId)
       throw new Error('MERCADO_PAGO_SELLER_MISMATCH');
     const amount = money(input.amountCents);
-    const testPayerEmail = this.optionalTestPayerEmail();
+    const testPayerEmail = this.payerEmailFor(environment);
     const response = await fetch('https://api.mercadopago.com/v1/orders', {
       method: 'POST',
       headers: {
@@ -103,6 +105,7 @@ export class MercadoPagoPaymentGateway {
       );
       throw new Error(`MERCADO_PAGO_CREATE_ERROR:${response.status}`);
     }
+    this.assertCreatedOrder(body, input, seller.sellerExternalId, environment);
     const checkoutUrl = body.checkout_url;
     if (typeof checkoutUrl !== 'string') {
       this.logger.error(
@@ -128,6 +131,7 @@ export class MercadoPagoPaymentGateway {
         applicationId: stringValue((body.integration_data as any)?.application_id) ?? null,
         countryCode: stringValue(body.country_code) ?? null,
         currency: stringValue(body.currency) ?? null,
+        environment,
         checkoutHost: new URL(checkoutUrl).host,
       }),
     );
@@ -387,12 +391,49 @@ export class MercadoPagoPaymentGateway {
     return value;
   }
 
-  private optionalTestPayerEmail() {
+  private paymentEnvironment(): 'test' | 'production' {
+    const value = this.config.get<string>('MERCADO_PAGO_ENVIRONMENT')?.trim().toLowerCase();
+    if (value === 'test' || value === 'production') return value;
+    throw new Error('MERCADO_PAGO_ENVIRONMENT_REQUIRED');
+  }
+
+  private payerEmailFor(environment: 'test' | 'production') {
     const value = this.config.get<string>('MERCADO_PAGO_TEST_PAYER_EMAIL')?.trim().toLowerCase();
-    if (!value) return undefined;
+    if (environment === 'production') {
+      if (value) throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_FORBIDDEN_IN_PRODUCTION');
+      return undefined;
+    }
+    if (!value) throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_REQUIRED');
     if (!/^[^\s@]+@testuser\.com$/.test(value))
       throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_INVALID');
     return value;
+  }
+
+  private assertCreatedOrder(
+    body: Record<string, unknown>,
+    input: CreatePaymentInput,
+    expectedSellerId: string | undefined,
+    environment: 'test' | 'production',
+  ) {
+    const mercadoPagoOrderId = String(body.id);
+    const isTestOrder = mercadoPagoOrderId.startsWith('ORDTST');
+    if (environment === 'test' && !isTestOrder) throw new Error('MERCADO_PAGO_EXPECTED_TEST_ORDER');
+    if (environment === 'production' && isTestOrder)
+      throw new Error('MERCADO_PAGO_TEST_ORDER_FORBIDDEN_IN_PRODUCTION');
+    const actualSellerId = stringValue(body.user_id);
+    if (expectedSellerId && actualSellerId !== expectedSellerId)
+      throw new Error('MERCADO_PAGO_ORDER_SELLER_MISMATCH');
+    const actualApplicationId = stringValue(
+      (body.integration_data as Record<string, unknown> | undefined)?.application_id,
+    );
+    if (actualApplicationId !== this.required('MERCADO_PAGO_CLIENT_ID'))
+      throw new Error('MERCADO_PAGO_ORDER_APPLICATION_MISMATCH');
+    if (stringValue(body.currency) !== input.currency)
+      throw new Error('MERCADO_PAGO_ORDER_CURRENCY_MISMATCH');
+    if (moneyToCents(body.total_amount) !== input.amountCents)
+      throw new Error('MERCADO_PAGO_ORDER_AMOUNT_MISMATCH');
+    if (input.clubId && moneyToCents(body.marketplace_fee) !== input.marketplaceFeeCents)
+      throw new Error('MERCADO_PAGO_ORDER_MARKETPLACE_FEE_MISMATCH');
   }
 
   private mobileReturnUrl(input: CreatePaymentInput, result: string) {

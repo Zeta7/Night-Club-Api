@@ -31,7 +31,6 @@ export class MercadoPagoOAuthClient {
       grant_type: 'authorization_code',
       code,
       redirect_uri: this.required('MERCADO_PAGO_REDIRECT_URI'),
-      ...(this.testTokenEnabled() ? { test_token: 'true' } : {}),
     });
   }
 
@@ -59,12 +58,5 @@ export class MercadoPagoOAuthClient {
     const value = this.config.get<string>(name)?.trim();
     if (!value) throw new Error(`${name}_REQUIRED`);
     return value;
-  }
-
-  private testTokenEnabled() {
-    const value = this.config.get<string>('MERCADO_PAGO_OAUTH_TEST_TOKEN')?.trim().toLowerCase();
-    if (!value || value === 'false') return false;
-    if (value === 'true') return true;
-    throw new Error('MERCADO_PAGO_OAUTH_TEST_TOKEN_INVALID');
   }
 }
