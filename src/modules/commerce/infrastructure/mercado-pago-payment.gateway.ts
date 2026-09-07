@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { SellerConnectionService } from '../../payments/application/seller-connection.service';
@@ -15,6 +15,8 @@ import {
 @Injectable()
 export class MercadoPagoPaymentGateway {
   readonly provider = 'mercado_pago';
+  private readonly logger = new Logger(MercadoPagoPaymentGateway.name);
+
   constructor(
     private readonly config: ConfigService,
     private readonly connections: SellerConnectionService,
@@ -23,6 +25,18 @@ export class MercadoPagoPaymentGateway {
   ) {}
 
   async createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult> {
+    this.logger.log(
+      JSON.stringify({
+        event: 'mercado_pago.preference.create.started',
+        attemptId: input.attemptId,
+        orderId: input.orderId,
+        clubId: input.clubId ?? null,
+        amountCents: input.amountCents,
+        currency: input.currency,
+        marketplaceFeeCents: input.marketplaceFeeCents ?? null,
+        sandboxCheckout: this.useSandboxCheckout(),
+      }),
+    );
     const seller = input.clubId
       ? await this.connections.accessTokenForClub(input.clubId)
       : {
@@ -70,13 +84,46 @@ export class MercadoPagoPaymentGateway {
       }),
     });
     const body = (await response.json()) as Record<string, unknown>;
-    if (!response.ok || typeof body.id !== 'string')
+    if (!response.ok || typeof body.id !== 'string') {
+      this.logger.error(
+        JSON.stringify({
+          event: 'mercado_pago.preference.create.failed',
+          attemptId: input.attemptId,
+          orderId: input.orderId,
+          clubId: input.clubId ?? null,
+          statusCode: response.status,
+          response: mercadoPagoErrorDetails(body),
+        }),
+      );
       throw new Error(`MERCADO_PAGO_CREATE_ERROR:${response.status}`);
-    const checkoutUrl =
-      this.config.get<string>('MERCADO_PAGO_USE_SANDBOX_CHECKOUT', 'false') === 'true'
-        ? body.sandbox_init_point
-        : body.init_point;
-    if (typeof checkoutUrl !== 'string') throw new Error('MERCADO_PAGO_CHECKOUT_URL_MISSING');
+    }
+    const checkoutUrl = this.useSandboxCheckout() ? body.sandbox_init_point : body.init_point;
+    if (typeof checkoutUrl !== 'string') {
+      this.logger.error(
+        JSON.stringify({
+          event: 'mercado_pago.preference.checkout_url_missing',
+          attemptId: input.attemptId,
+          orderId: input.orderId,
+          clubId: input.clubId ?? null,
+          preferenceId: body.id,
+          sandboxCheckout: this.useSandboxCheckout(),
+          hasInitPoint: typeof body.init_point === 'string',
+          hasSandboxInitPoint: typeof body.sandbox_init_point === 'string',
+        }),
+      );
+      throw new Error('MERCADO_PAGO_CHECKOUT_URL_MISSING');
+    }
+    this.logger.log(
+      JSON.stringify({
+        event: 'mercado_pago.preference.create.succeeded',
+        attemptId: input.attemptId,
+        orderId: input.orderId,
+        clubId: input.clubId ?? null,
+        preferenceId: body.id,
+        collectorId: stringValue(body.collector_id) ?? seller.sellerExternalId ?? null,
+        sandboxCheckout: this.useSandboxCheckout(),
+      }),
+    );
     return {
       externalPaymentId: body.id,
       status: 'PENDING',
@@ -179,7 +226,28 @@ export class MercadoPagoPaymentGateway {
     if (!value) throw new Error(`${name}_REQUIRED`);
     return value;
   }
+
+  private useSandboxCheckout() {
+    return this.config.get<string>('MERCADO_PAGO_USE_SANDBOX_CHECKOUT', 'false') === 'true';
+  }
 }
+
+const mercadoPagoErrorDetails = (body: Record<string, unknown>) => ({
+  message: stringValue(body.message),
+  error: stringValue(body.error),
+  status: body.status,
+  cause: Array.isArray(body.cause)
+    ? body.cause.slice(0, 10).map((item) => {
+        if (!item || typeof item !== 'object') return String(item);
+        const cause = item as Record<string, unknown>;
+        return {
+          code: cause.code,
+          description: stringValue(cause.description),
+          data: stringValue(cause.data),
+        };
+      })
+    : undefined,
+});
 
 const cents = (value: number) => Number((value / 100).toFixed(2));
 const moneyToCents = (value: unknown) => Math.round(Number(value) * 100);

@@ -1,4 +1,11 @@
-import { Inject, Injectable, OnModuleDestroy, OnModuleInit, Optional } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   createHash,
@@ -65,6 +72,7 @@ const mercadoPagoReadyRelation = (now = new Date()) => ({
 
 @Injectable()
 export class CommerceService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(CommerceService.name);
   private expirationTimer?: NodeJS.Timeout;
 
   constructor(
@@ -449,13 +457,39 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       where: { id: user.id },
       select: { email: true, fullName: true },
     });
-    const feeSnapshot =
-      this.paymentGateway.provider === 'mercado_pago'
-        ? await this.requiredMarketplaceFees().resolve(
-            created.order.clubId,
-            created.attempt.amountCents,
-          )
-        : null;
+    let feeSnapshot = null;
+    if (this.paymentGateway.provider === 'mercado_pago') {
+      try {
+        feeSnapshot = await this.requiredMarketplaceFees().resolve(
+          created.order.clubId,
+          created.attempt.amountCents,
+        );
+        this.logger.log(
+          JSON.stringify({
+            event: 'checkout.marketplace_fee.resolved',
+            orderId: created.order.id,
+            attemptId: created.attempt.id,
+            clubId: created.order.clubId,
+            amountCents: created.attempt.amountCents,
+            marketplaceFeeBps: feeSnapshot.marketplaceFeeBps,
+            marketplaceFeeCents: feeSnapshot.marketplaceFeeCents,
+            feeSource: feeSnapshot.feeSource,
+          }),
+        );
+      } catch (error) {
+        this.logger.error(
+          JSON.stringify({
+            event: 'checkout.marketplace_fee.failed',
+            orderId: created.order.id,
+            attemptId: created.attempt.id,
+            clubId: created.order.clubId,
+            amountCents: created.attempt.amountCents,
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+        throw error;
+      }
+    }
     if (feeSnapshot) {
       await this.prisma.paymentAttempt.update({
         where: { id: created.attempt.id },
