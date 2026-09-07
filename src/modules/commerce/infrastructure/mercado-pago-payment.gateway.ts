@@ -28,14 +28,14 @@ export class MercadoPagoPaymentGateway {
     const environment = this.paymentEnvironment();
     this.logger.log(
       JSON.stringify({
-        event: 'mercado_pago.order.create.started',
+        event: 'mercado_pago.preference.create.started',
         attemptId: input.attemptId,
         orderId: input.orderId,
         clubId: input.clubId ?? null,
         amountCents: input.amountCents,
         currency: input.currency,
         marketplaceFeeCents: input.marketplaceFeeCents ?? null,
-        api: 'orders',
+        api: 'preferences',
         environment,
       }),
     );
@@ -54,9 +54,8 @@ export class MercadoPagoPaymentGateway {
       throw new Error('MERCADO_PAGO_INVALID_MARKETPLACE_FEE');
     if (input.sellerExternalId && input.sellerExternalId !== seller.sellerExternalId)
       throw new Error('MERCADO_PAGO_SELLER_MISMATCH');
-    const amount = money(input.amountCents);
-    const testPayerEmail = this.payerEmailFor(environment);
-    const response = await fetch('https://api.mercadopago.com/v1/orders', {
+    const amount = input.amountCents / 100;
+    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
       headers: {
         authorization: `Bearer ${seller.accessToken}`,
@@ -65,26 +64,27 @@ export class MercadoPagoPaymentGateway {
         'x-idempotency-key': input.attemptId,
       },
       body: JSON.stringify({
-        type: 'online',
-        processing_mode: 'manual',
-        total_amount: amount,
         external_reference: input.attemptId,
-        ...(testPayerEmail ? { payer: { email: testPayerEmail } } : {}),
-        ...(input.clubId ? { marketplace_fee: money(input.marketplaceFeeCents!) } : {}),
-        config: {
-          online: {
-            callback_url: this.required('MERCADO_PAGO_NOTIFICATION_URL'),
-            success_url: this.mobileReturnUrl(input, 'success'),
-            pending_url: this.mobileReturnUrl(input, 'pending'),
-            failure_url: this.mobileReturnUrl(input, 'failure'),
-            auto_return: 'approved',
-          },
+        ...(input.clubId ? { marketplace_fee: input.marketplaceFeeCents! / 100 } : {}),
+        notification_url: this.required('MERCADO_PAGO_NOTIFICATION_URL'),
+        back_urls: {
+          success: this.mobileReturnUrl(input, 'success'),
+          pending: this.mobileReturnUrl(input, 'pending'),
+          failure: this.mobileReturnUrl(input, 'failure'),
+        },
+        auto_return: 'approved',
+        metadata: {
+          attempt_id: input.attemptId,
+          order_id: input.orderId,
+          club_id: input.clubId ?? null,
         },
         items: [
           {
+            id: input.orderId,
             title: input.subject,
             quantity: 1,
             unit_price: amount,
+            currency_id: input.currency,
           },
         ],
       }),
@@ -93,7 +93,7 @@ export class MercadoPagoPaymentGateway {
     if (!response.ok || typeof body.id !== 'string') {
       this.logger.error(
         JSON.stringify({
-          event: 'mercado_pago.order.create.failed',
+          event: 'mercado_pago.preference.create.failed',
           attemptId: input.attemptId,
           orderId: input.orderId,
           clubId: input.clubId ?? null,
@@ -105,36 +105,33 @@ export class MercadoPagoPaymentGateway {
       );
       throw new Error(`MERCADO_PAGO_CREATE_ERROR:${response.status}`);
     }
-    this.assertCreatedOrder(body, input, seller.sellerExternalId, environment);
-    const checkoutUrl = body.checkout_url;
+    const collectorId = stringValue(body.collector_id);
+    if (seller.sellerExternalId && collectorId && collectorId !== seller.sellerExternalId)
+      throw new Error('MERCADO_PAGO_PREFERENCE_SELLER_MISMATCH');
+    // The official marketplace demo uses init_point for both real and test users.
+    // Mercado Pago determines test mode from the credentials and accounts involved.
+    const checkoutUrl = body.init_point;
     if (typeof checkoutUrl !== 'string') {
       this.logger.error(
         JSON.stringify({
-          event: 'mercado_pago.order.checkout_url_missing',
+          event: 'mercado_pago.preference.init_point_missing',
           attemptId: input.attemptId,
           orderId: input.orderId,
           clubId: input.clubId ?? null,
-          mercadoPagoOrderId: body.id,
+          preferenceId: body.id,
         }),
       );
       throw new Error('MERCADO_PAGO_CHECKOUT_URL_MISSING');
     }
     this.logger.log(
       JSON.stringify({
-        event: 'mercado_pago.order.create.succeeded',
+        event: 'mercado_pago.preference.create.succeeded',
         attemptId: input.attemptId,
         orderId: input.orderId,
         clubId: input.clubId ?? null,
-        mercadoPagoOrderId: body.id,
-        collectorId: stringValue(body.user_id) ?? seller.sellerExternalId ?? null,
+        preferenceId: body.id,
+        collectorId: collectorId ?? seller.sellerExternalId ?? null,
         sellerExternalId: seller.sellerExternalId ?? null,
-        applicationId: stringValue((body.integration_data as any)?.application_id) ?? null,
-        countryCode: stringValue(body.country_code) ?? null,
-        currency: stringValue(body.currency) ?? null,
-        status: stringValue(body.status) ?? null,
-        statusDetail: stringValue(body.status_detail) ?? null,
-        captureMode: stringValue(body.capture_mode) ?? null,
-        testPayerEmail: testPayerEmail ? maskEmail(testPayerEmail) : null,
         mercadoPagoRequestId: response.headers.get('x-request-id'),
         environment,
         checkoutHost: new URL(checkoutUrl).host,
@@ -144,14 +141,9 @@ export class MercadoPagoPaymentGateway {
       externalPaymentId: body.id,
       status: 'PENDING',
       checkoutUrl,
-      sellerExternalId: seller.sellerExternalId ?? stringValue(body.user_id),
-      providerData: { mercadoPagoOrderId: body.id, api: 'orders' },
+      sellerExternalId: seller.sellerExternalId ?? collectorId,
+      providerData: { preferenceId: body.id, api: 'preferences' },
     };
-  }
-
-  queryExternalPayment(externalPaymentId: string, sellerExternalId?: string) {
-    if (!sellerExternalId) throw new Error('MERCADO_PAGO_SELLER_REQUIRED');
-    return this.queryOrder(externalPaymentId, sellerExternalId);
   }
 
   async createRefund(input: CreateRefundInput): Promise<CreateRefundResult> {
@@ -166,23 +158,20 @@ export class MercadoPagoPaymentGateway {
     if (!connection || connection.status !== 'CONNECTED')
       throw new Error('MERCADO_PAGO_SELLER_CONNECTION_NOT_FOUND');
     const accessToken = this.cipher.decrypt(connection.accessTokenEncrypted);
-    const orderResponse = await fetch(
-      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(input.paymentId)}`,
+    const paymentResponse = await fetch(
+      `https://api.mercadopago.com/v1/payments/${encodeURIComponent(input.paymentId)}`,
       { headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' } },
     );
-    const order = (await orderResponse.json()) as Record<string, any>;
-    if (!orderResponse.ok)
-      throw new Error(`MERCADO_PAGO_ORDER_QUERY_ERROR:${orderResponse.status}`);
-    const transactionId = stringValue(order.transactions?.payments?.[0]?.id);
-    const totalAmountCents = moneyToCents(order.total_amount);
+    const payment = (await paymentResponse.json()) as Record<string, any>;
+    if (!paymentResponse.ok)
+      throw new Error(`MERCADO_PAGO_QUERY_ERROR:${paymentResponse.status}`);
+    const totalAmountCents = moneyToCents(payment.transaction_amount);
     const isFullRefund = input.amountCents === totalAmountCents;
-    if (!isFullRefund && !transactionId)
-      throw new Error('MERCADO_PAGO_REFUND_TRANSACTION_REQUIRED');
     if (input.amountCents <= 0 || input.amountCents > totalAmountCents)
       throw new Error('MERCADO_PAGO_INVALID_REFUND_AMOUNT');
 
     const response = await fetch(
-      `https://api.mercadopago.com/v1/orders/${encodeURIComponent(input.paymentId)}/refund`,
+      `https://api.mercadopago.com/v1/payments/${encodeURIComponent(input.paymentId)}/refunds`,
       {
         method: 'POST',
         headers: {
@@ -191,21 +180,14 @@ export class MercadoPagoPaymentGateway {
           accept: 'application/json',
           'x-idempotency-key': input.idempotencyKey,
         },
-        body: JSON.stringify(
-          isFullRefund
-            ? {}
-            : { transactions: [{ id: transactionId, amount: money(input.amountCents) }] },
-        ),
+        body: JSON.stringify(isFullRefund ? {} : { amount: input.amountCents / 100 }),
       },
     );
     const body = (await response.json()) as Record<string, unknown>;
     if (!response.ok || body.id == null)
       throw new Error(`MERCADO_PAGO_REFUND_ERROR:${response.status}`);
-    const refunds = Array.isArray((body as any).transactions?.refunds)
-      ? (body as any).transactions.refunds
-      : [];
     return {
-      externalRefundId: String(refunds.at(-1)?.id ?? body.id),
+      externalRefundId: String(body.id),
       status: 'PENDING',
     };
   }
@@ -414,45 +396,6 @@ export class MercadoPagoPaymentGateway {
     throw new Error('MERCADO_PAGO_ENVIRONMENT_REQUIRED');
   }
 
-  private payerEmailFor(environment: 'test' | 'production') {
-    const value = this.config.get<string>('MERCADO_PAGO_TEST_PAYER_EMAIL')?.trim().toLowerCase();
-    if (environment === 'production') {
-      if (value) throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_FORBIDDEN_IN_PRODUCTION');
-      return undefined;
-    }
-    if (!value) throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_REQUIRED');
-    if (!/^[^\s@]+@testuser\.com$/.test(value))
-      throw new Error('MERCADO_PAGO_TEST_PAYER_EMAIL_INVALID');
-    return value;
-  }
-
-  private assertCreatedOrder(
-    body: Record<string, unknown>,
-    input: CreatePaymentInput,
-    expectedSellerId: string | undefined,
-    environment: 'test' | 'production',
-  ) {
-    const mercadoPagoOrderId = String(body.id);
-    const isTestOrder = mercadoPagoOrderId.startsWith('ORDTST');
-    if (environment === 'test' && !isTestOrder) throw new Error('MERCADO_PAGO_EXPECTED_TEST_ORDER');
-    if (environment === 'production' && isTestOrder)
-      throw new Error('MERCADO_PAGO_TEST_ORDER_FORBIDDEN_IN_PRODUCTION');
-    const actualSellerId = stringValue(body.user_id);
-    if (expectedSellerId && actualSellerId !== expectedSellerId)
-      throw new Error('MERCADO_PAGO_ORDER_SELLER_MISMATCH');
-    const actualApplicationId = stringValue(
-      (body.integration_data as Record<string, unknown> | undefined)?.application_id,
-    );
-    if (actualApplicationId !== this.required('MERCADO_PAGO_CLIENT_ID'))
-      throw new Error('MERCADO_PAGO_ORDER_APPLICATION_MISMATCH');
-    if (stringValue(body.currency) !== input.currency)
-      throw new Error('MERCADO_PAGO_ORDER_CURRENCY_MISMATCH');
-    if (moneyToCents(body.total_amount) !== input.amountCents)
-      throw new Error('MERCADO_PAGO_ORDER_AMOUNT_MISMATCH');
-    if (input.clubId && moneyToCents(body.marketplace_fee) !== input.marketplaceFeeCents)
-      throw new Error('MERCADO_PAGO_ORDER_MARKETPLACE_FEE_MISMATCH');
-  }
-
   private mobileReturnUrl(input: CreatePaymentInput, result: string) {
     const scheme = this.config
       .get<string>('MOBILE_APP_SCHEME', 'beerry')
@@ -490,14 +433,9 @@ const mercadoPagoErrorDetails = (body: Record<string, unknown>) => ({
   raw: Object.keys(body).length ? body : undefined,
 });
 
-const money = (value: number) => (value / 100).toFixed(2);
 const moneyToCents = (value: unknown) => Math.round(Number(value) * 100);
 const stringValue = (value: unknown) =>
   typeof value === 'string' && value ? value : value == null ? undefined : String(value);
-const maskEmail = (value: string) => {
-  const [local, domain] = value.split('@');
-  return `${local.slice(0, 4)}***@${domain}`;
-};
 const mapStatus = (status: string, detail: string): PaymentOutcome => {
   if (status === 'approved') return 'APPROVED';
   if (status === 'rejected') return 'REJECTED';
