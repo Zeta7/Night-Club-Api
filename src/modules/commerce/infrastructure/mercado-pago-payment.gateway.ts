@@ -290,9 +290,6 @@ export class MercadoPagoPaymentGateway {
         outcome: event.outcome,
         status: stringValue(body.status) ?? null,
         statusDetail: stringValue(body.status_detail) ?? null,
-        paymentId: stringValue(payment?.id) ?? null,
-        paymentStatus: stringValue(payment?.status) ?? null,
-        paymentStatusDetail: stringValue(payment?.status_detail) ?? null,
       }),
     );
     return event;
@@ -372,6 +369,11 @@ export class MercadoPagoPaymentGateway {
         attemptId: event.attemptId ?? null,
         orderId: event.orderId ?? null,
         outcome: event.outcome,
+        status: stringValue(body.status) ?? null,
+        statusDetail: stringValue(body.status_detail) ?? null,
+        paymentId: stringValue(payment?.id) ?? null,
+        paymentStatus: stringValue(payment?.status) ?? null,
+        paymentStatusDetail: stringValue(payment?.status_detail) ?? null,
       }),
     );
     return event;
