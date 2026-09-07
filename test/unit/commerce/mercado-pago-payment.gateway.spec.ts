@@ -62,11 +62,9 @@ describe('MercadoPagoPaymentGateway Checkout Pro Orders API', () => {
     expect(body).toMatchObject({
       type: 'online',
       processing_mode: 'manual',
-      capture_mode: 'automatic_async',
       total_amount: '20.00',
       marketplace_fee: '1.00',
       external_reference: 'attempt-1',
-      description: 'Compra Beerry',
       config: {
         online: {
           callback_url: configValues.MERCADO_PAGO_NOTIFICATION_URL,
@@ -81,12 +79,9 @@ describe('MercadoPagoPaymentGateway Checkout Pro Orders API', () => {
       },
       items: [
         {
-          external_code: 'order-1',
           title: 'Compra Beerry',
           quantity: 1,
           unit_price: '20.00',
-          total_amount: '20.00',
-          unit_measure: 'unit',
         },
       ],
     });

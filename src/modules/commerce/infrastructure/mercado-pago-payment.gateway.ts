@@ -64,10 +64,8 @@ export class MercadoPagoPaymentGateway {
       body: JSON.stringify({
         type: 'online',
         processing_mode: 'manual',
-        capture_mode: 'automatic_async',
         total_amount: amount,
         external_reference: input.attemptId,
-        description: input.subject,
         ...(input.clubId ? { marketplace_fee: money(input.marketplaceFeeCents!) } : {}),
         config: {
           online: {
@@ -80,12 +78,9 @@ export class MercadoPagoPaymentGateway {
         },
         items: [
           {
-            external_code: input.orderId,
             title: input.subject,
             quantity: 1,
             unit_price: amount,
-            total_amount: amount,
-            unit_measure: 'unit',
           },
         ],
       }),
@@ -99,6 +94,8 @@ export class MercadoPagoPaymentGateway {
           orderId: input.orderId,
           clubId: input.clubId ?? null,
           statusCode: response.status,
+          statusText: response.statusText || null,
+          mercadoPagoRequestId: response.headers.get('x-request-id'),
           response: mercadoPagoErrorDetails(body),
         }),
       );
@@ -408,6 +405,9 @@ const mercadoPagoErrorDetails = (body: Record<string, unknown>) => ({
   message: stringValue(body.message),
   error: stringValue(body.error),
   status: body.status,
+  code: body.code,
+  details: body.details,
+  errors: body.errors,
   cause: Array.isArray(body.cause)
     ? body.cause.slice(0, 10).map((item) => {
         if (!item || typeof item !== 'object') return String(item);
@@ -419,6 +419,7 @@ const mercadoPagoErrorDetails = (body: Record<string, unknown>) => ({
         };
       })
     : undefined,
+  raw: Object.keys(body).length ? body : undefined,
 });
 
 const money = (value: number) => (value / 100).toFixed(2);
