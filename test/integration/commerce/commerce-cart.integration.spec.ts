@@ -22,6 +22,7 @@ describe('CommerceService persistent cart integration', () => {
   const clubIds: string[] = [];
   const productIds: string[] = [];
   const ticketTypeIds: string[] = [];
+  const eventIds: string[] = [];
 
   beforeAll(async () => {
     await prisma.$connect();
@@ -31,6 +32,7 @@ describe('CommerceService persistent cart integration', () => {
     await prisma.cart.deleteMany({ where: { userId: { in: userIds } } });
     await prisma.product.deleteMany({ where: { id: { in: productIds } } });
     await prisma.ticketType.deleteMany({ where: { id: { in: ticketTypeIds } } });
+    await prisma.event.deleteMany({ where: { id: { in: eventIds } } });
     await prisma.club.deleteMany({ where: { id: { in: clubIds } } });
     await prisma.user.deleteMany({ where: { id: { in: userIds } } });
     await prisma.$disconnect();
@@ -86,6 +88,35 @@ describe('CommerceService persistent cart integration', () => {
     });
     ticketTypeIds.push(ticket.id);
     return ticket;
+  }
+
+  async function createEventTicket(label: string, status: 'PUBLISHED' | 'SALE_ACTIVE') {
+    const club = await prisma.club.create({
+      data: { name: `${label} ${suffix}`, status: 'ACTIVE' },
+    });
+    clubIds.push(club.id);
+    const event = await prisma.event.create({
+      data: {
+        clubId: club.id,
+        name: `Evento ${label}`,
+        startsAt: new Date(Date.now() + 86_400_000),
+        endsAt: new Date(Date.now() + 90_000_000),
+        capacity: 100,
+        status,
+      },
+    });
+    eventIds.push(event.id);
+    const ticket = await prisma.ticketType.create({
+      data: {
+        clubId: club.id,
+        eventId: event.id,
+        name: `Entrada ${label}`,
+        priceCents: 2000,
+        quantityTotal: 20,
+      },
+    });
+    ticketTypeIds.push(ticket.id);
+    return { event, ticket };
   }
 
   it('persists live server pricing and quantity between service reads', async () => {
@@ -166,5 +197,30 @@ describe('CommerceService persistent cart integration', () => {
       service.addCartItem(user, { id: ticket.id, type: CommerceItemType.TICKET, quantity: 2 }),
     ).rejects.toBeDefined();
     expect((await service.getCart(user)).items).toHaveLength(0);
+  });
+
+  it('only accepts event tickets while the event sale is active', async () => {
+    const user = await createUser('Event sale');
+    const { event, ticket } = await createEventTicket('Event sale', 'PUBLISHED');
+
+    await expect(
+      service.addCartItem(user, {
+        id: ticket.id,
+        type: CommerceItemType.TICKET,
+        quantity: 1,
+      }),
+    ).rejects.toBeDefined();
+
+    await prisma.event.update({
+      where: { id: event.id },
+      data: { status: 'SALE_ACTIVE' },
+    });
+
+    const cart = await service.addCartItem(user, {
+      id: ticket.id,
+      type: CommerceItemType.TICKET,
+      quantity: 1,
+    });
+    expect(cart.items).toHaveLength(1);
   });
 });
