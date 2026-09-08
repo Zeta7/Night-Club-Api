@@ -27,6 +27,21 @@ export class WalletsController {
     return this.walletsService.getMine(currentUser);
   }
 
+  @Get('me/movements/:id')
+  movement(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.walletsService.movementDetail(user, id);
+  }
+
+  @Get('me/orders/:id')
+  orderDetail(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.walletsService.orderDetail(user, id);
+  }
+
+  @Get('me/top-ups/:id')
+  topUpDetail(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.walletsService.topUpDetail(user, id);
+  }
+
   @Get('clubs/:clubId')
   getClubLedger(
     @CurrentUser() currentUser: AuthenticatedUser,

@@ -12,6 +12,40 @@ export class WalletsService {
     private readonly ledger: LedgerService,
   ) {}
 
+  async orderDetail(user: AuthenticatedUser, id: string) {
+    const order = await this.prisma.order.findFirst({ where: { id, userId: user.id },
+      select: { id: true, status: true, currency: true, totalCents: true, paymentMethod: true, createdAt: true,
+        club: { select: { name: true } }, items: { select: { nameSnapshot: true, quantity: true, unitPriceCents: true, totalCents: true, itemType: true } } } });
+    if (!order) throw notFound('ORDER_NOT_FOUND', 'No encontramos tu compra.');
+    return { id: order.id, title: 'Detalle de compra', status: order.status, currency: order.currency,
+      amountCents: order.totalCents, createdAt: order.createdAt, paymentMethod: order.paymentMethod,
+      business: order.club.name, items: order.items };
+  }
+
+  async topUpDetail(user: AuthenticatedUser, id: string) {
+    const topUp = await this.prisma.walletTopUp.findFirst({ where: { id, userId: user.id },
+      select: { id: true, status: true, currency: true, amountCents: true, createdAt: true, approvedAt: true } });
+    if (!topUp) throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No encontramos tu recarga.');
+    return { ...topUp, title: 'Detalle de recarga', paymentMethod: 'MERCADO_PAGO', items: [] };
+  }
+
+  async movementDetail(user: AuthenticatedUser, id: string) {
+    const movement = await this.prisma.walletMovement.findFirst({ where: { id, wallet: { userId: user.id } },
+      select: { id: true, type: true, status: true, amountCents: true, description: true, referenceId: true, createdAt: true, completedAt: true, wallet: { select: { currency: true } } } });
+    if (!movement) throw notFound('MOVEMENT_NOT_FOUND', 'No encontramos tu movimiento.');
+    let related: unknown = null;
+    if (movement.referenceId && ['PURCHASE', 'REFUND'].includes(movement.type)) {
+      const order = await this.prisma.order.findFirst({ where: { id: movement.referenceId, userId: user.id }, select: { id: true } });
+      if (order) related = await this.orderDetail(user, order.id);
+    } else if (movement.referenceId && movement.type === 'TOP_UP') {
+      const topUp = await this.prisma.walletTopUp.findFirst({ where: { id: movement.referenceId, userId: user.id }, select: { id: true } });
+      if (topUp) related = await this.topUpDetail(user, topUp.id);
+    }
+    return { id: movement.id, title: 'Detalle del movimiento', status: movement.status, type: movement.type,
+      amountCents: movement.amountCents, description: movement.description, createdAt: movement.createdAt,
+      completedAt: movement.completedAt, currency: movement.wallet.currency, related };
+  }
+
   async getMine(currentUser: AuthenticatedUser) {
     const user = await this.prisma.user.findUnique({
       where: { id: currentUser.id },
