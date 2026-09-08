@@ -68,6 +68,9 @@ importers:
       ioredis:
         specifier: ^5.11.1
         version: 5.11.1
+      mercadopago:
+        specifier: ^3.6.0
+        version: 3.6.0
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -3276,6 +3279,10 @@ packages:
   memfs@3.5.3:
     resolution: {integrity: sha512-UERzLsxzllchadvbPs5aolHh65ISpKpM+ccLbOJ8/vvpBKmAWf+la7dXFy7Mr0ySHbdHrFv5kGFCUHHe6GFEmw==}
     engines: {node: '>= 4.0.0'}
+
+  mercadopago@3.6.0:
+    resolution: {integrity: sha512-Dk47c/bgRPdbMPcRvopitgZq4jOujMfeMf/msWNr942QQ4p+CDBhhov+059UWhsoyGjdizzJaZeyveApoEgDBg==}
+    engines: {node: '>=18'}
 
   merge-descriptors@2.0.0:
     resolution: {integrity: sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g==}
@@ -8244,6 +8251,8 @@ snapshots:
   memfs@3.5.3:
     dependencies:
       fs-monkey: 1.1.0
+
+  mercadopago@3.6.0: {}
 
   merge-descriptors@2.0.0: {}
 

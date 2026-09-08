@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { MercadoPagoConfig, OAuth } from 'mercadopago';
 
 export type MercadoPagoOAuthToken = {
   access_token: string;
@@ -15,15 +16,13 @@ export class MercadoPagoOAuthClient {
   constructor(private readonly config: ConfigService) {}
 
   authorizationUrl(state: string) {
-    const url = new URL('https://auth.mercadopago.com/authorization');
-    url.search = new URLSearchParams({
-      response_type: 'code',
-      client_id: this.required('MERCADO_PAGO_CLIENT_ID'),
-      platform_id: 'mp',
-      state,
-      redirect_uri: this.required('MERCADO_PAGO_REDIRECT_URI'),
-    }).toString();
-    return url.toString();
+    return this.client().getAuthorizationURL({
+      options: {
+        client_id: this.required('MERCADO_PAGO_CLIENT_ID'),
+        state,
+        redirect_uri: this.required('MERCADO_PAGO_REDIRECT_URI'),
+      },
+    });
   }
 
   exchangeCode(code: string): Promise<MercadoPagoOAuthToken> {
@@ -39,19 +38,25 @@ export class MercadoPagoOAuthClient {
   }
 
   private async token(input: Record<string, string>) {
-    const response = await fetch('https://api.mercadopago.com/oauth/token', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify({
-        client_id: this.required('MERCADO_PAGO_CLIENT_ID'),
-        client_secret: this.required('MERCADO_PAGO_CLIENT_SECRET'),
-        ...input,
-      }),
-    });
-    const body = (await response.json()) as Record<string, unknown>;
-    if (!response.ok || typeof body.access_token !== 'string' || body.user_id == null)
-      throw new Error(`MERCADO_PAGO_OAUTH_ERROR:${response.status}`);
+    const credentials = {
+      client_id: this.required('MERCADO_PAGO_CLIENT_ID'),
+      client_secret: this.required('MERCADO_PAGO_CLIENT_SECRET'),
+    };
+    const oauth = this.client();
+    const body =
+      input.grant_type === 'refresh_token'
+        ? await oauth.refresh({ body: { ...credentials, refresh_token: input.refresh_token } })
+        : await oauth.create({
+            body: { ...credentials, code: input.code, redirect_uri: input.redirect_uri },
+          });
+    if (typeof body.access_token !== 'string' || body.user_id == null)
+      throw new Error('MERCADO_PAGO_OAUTH_INVALID_RESPONSE');
     return body as MercadoPagoOAuthToken;
+  }
+
+  private client() {
+    // OAuth authenticates with client_id/client_secret; no seller token exists yet.
+    return new OAuth(new MercadoPagoConfig({ accessToken: '', options: { timeout: 15000 } }));
   }
 
   private required(name: string) {

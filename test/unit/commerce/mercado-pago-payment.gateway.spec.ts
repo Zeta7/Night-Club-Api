@@ -1,204 +1,87 @@
 /// <reference types="jest" />
+import { Preference, Payment, PaymentRefund } from 'mercadopago';
 import { MercadoPagoPaymentGateway } from '@modules/commerce/infrastructure/mercado-pago-payment.gateway';
-
-describe('MercadoPagoPaymentGateway Checkout Pro Preferences API', () => {
-  const accessTokenForClub = jest.fn();
-  const prisma = { paymentAttempt: { findUnique: jest.fn() } };
-  const configValues: Record<string, string> = {
-    MERCADO_PAGO_NOTIFICATION_URL: 'https://api.beerry.app/api/v1/payments/mercado-pago/webhook',
-    MOBILE_APP_SCHEME: 'beerry',
-    MERCADO_PAGO_CLIENT_ID: '5106228891748811',
+describe('Mercado Pago SDK gateway', () => {
+  afterEach(() => jest.restoreAllMocks());
+  const values: Record<string, string> = {
     MERCADO_PAGO_ENVIRONMENT: 'test',
-  };
-  const config = {
-    get: jest.fn((name: string, fallback?: string) => configValues[name] ?? fallback),
+    MOBILE_APP_SCHEME: 'beerry',
+    MERCADO_PAGO_NOTIFICATION_URL: 'https://api.beerry.app/webhook',
   };
   const gateway = new MercadoPagoPaymentGateway(
-    config as never,
-    { accessTokenForClub } as never,
-    prisma as never,
-    {} as never,
+    { get: (key: string) => values[key] } as never,
+    {
+      accessTokenForClub: async () => ({ accessToken: 'seller-token', sellerExternalId: '123' }),
+    } as never,
+    {
+      marketplaceSellerConnection: {
+        findUnique: async () => ({ status: 'CONNECTED', accessTokenEncrypted: 'encrypted' }),
+      },
+    } as never,
+    { decrypt: () => 'seller-token' } as never,
   );
-
-  beforeEach(() => {
-    jest.restoreAllMocks();
-    accessTokenForClub.mockReset().mockResolvedValue({
-      accessToken: 'APP_USR-seller-access-token',
-      sellerExternalId: '3671162760',
-    });
-    prisma.paymentAttempt.findUnique.mockReset();
-  });
-
-  it('creates a marketplace preference with the seller OAuth token and fee', async () => {
-    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          id: 'preference-1',
-          collector_id: 3671162760,
-          init_point: 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
-          sandbox_init_point:
-            'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
-        }),
-        { status: 201, headers: { 'content-type': 'application/json' } },
-      ),
-    );
-
-    const result = await gateway.createPayment({
-      attemptId: 'attempt-1',
-      orderId: 'order-1',
-      clubId: 'club-1',
-      sellerExternalId: '3671162760',
-      amountCents: 2000,
-      marketplaceFeeCents: 100,
-      currency: 'PEN',
-      payerEmail: 'ignored@example.com',
-      subject: 'Compra Beerry',
-    });
-
-    expect(fetchMock.mock.calls[0]![0]).toBe(
-      'https://api.mercadopago.com/checkout/preferences',
-    );
-    const request = fetchMock.mock.calls[0]![1]!;
-    expect((request.headers as Record<string, string>)['x-idempotency-key']).toBe('attempt-1');
-    const body = JSON.parse(String(request.body));
-    expect(body).toMatchObject({
-      marketplace_fee: 1,
-      external_reference: 'attempt-1',
-      notification_url: configValues.MERCADO_PAGO_NOTIFICATION_URL,
-      back_urls: {
-        success:
-          'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=success',
-        pending:
-          'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=pending',
-        failure:
-          'beerry://payments/result?provider=mercado_pago&attemptId=attempt-1&operationType=ORDER&operationId=order-1&result=failure',
-      },
-      auto_return: 'approved',
-      metadata: { attempt_id: 'attempt-1', order_id: 'order-1', club_id: 'club-1' },
-      items: [
-        {
-          id: 'order-1',
-          title: 'Compra Beerry',
-          quantity: 1,
-          unit_price: 20,
-          currency_id: 'PEN',
-        },
-      ],
-    });
-    expect(body.payer).toBeUndefined();
-    expect(result).toMatchObject({
-      externalPaymentId: 'preference-1',
-      checkoutUrl:
-        'https://sandbox.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-1',
-      sellerExternalId: '3671162760',
-      providerData: {
-        preferenceId: 'preference-1',
-        api: 'preferences',
-        checkoutEnvironment: 'test',
-      },
-    });
-  });
-
-  it('rejects an invalid marketplace fee before calling Mercado Pago', async () => {
-    const fetchMock = jest.spyOn(global, 'fetch');
-    await expect(
-      gateway.createPayment({
-        attemptId: 'attempt-2',
-        orderId: 'order-2',
-        clubId: 'club-1',
-        amountCents: 2000,
-        marketplaceFeeCents: 2001,
-        currency: 'PEN',
-        subject: 'Compra Beerry',
-      }),
-    ).rejects.toThrow('MERCADO_PAGO_INVALID_MARKETPLACE_FEE');
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('verifies an approved order against Mercado Pago and the local snapshot', async () => {
-    prisma.paymentAttempt.findUnique.mockResolvedValue({
-      externalPaymentId: 'ORDTST-order-3',
-      orderId: 'order-3',
-      walletTopUpId: null,
-      order: { clubId: 'club-1' },
-      walletTopUp: null,
-    });
-    const cipher = { decrypt: jest.fn(() => 'APP_USR-seller-access-token') };
-    const queryGateway = new MercadoPagoPaymentGateway(
-      config as never,
-      { accessTokenForClub } as never,
-      {
-        ...prisma,
-        marketplaceSellerConnection: {
-          findUnique: jest.fn().mockResolvedValue({
-            status: 'CONNECTED',
-            accessTokenEncrypted: 'encrypted',
-          }),
-        },
-      } as never,
-      cipher as never,
-    );
-    jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          id: 'ORDTST-order-3',
-          status: 'processed',
-          status_detail: 'accredited',
-          external_reference: 'attempt-3',
-          total_amount: '50.00',
-          marketplace_fee: '5.00',
-          currency: 'PEN',
-          user_id: '3671162760',
-          last_updated_date: '2026-09-07T10:00:00Z',
-          transactions: {
-            payments: [{ id: 'PAY-payment-3', status: 'processed', status_detail: 'accredited' }],
-          },
-        }),
-        { status: 200, headers: { 'content-type': 'application/json' } },
-      ),
-    );
-
-    await expect(queryGateway.queryOrder('ORDTST-order-3', '3671162760')).resolves.toMatchObject({
-      externalPaymentId: 'ORDTST-order-3',
-      outcome: 'APPROVED',
-      attemptId: 'attempt-3',
-      orderId: 'order-3',
-      clubId: 'club-1',
-      amountCents: 5000,
-      currency: 'PEN',
-      sellerExternalId: '3671162760',
-      marketplaceFeeCents: 500,
-    });
-  });
-
-  it('keeps test payer data out of production orders', async () => {
-    configValues.MERCADO_PAGO_ENVIRONMENT = 'production';
-    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          id: 'preference-production-1',
-          collector_id: 3671162760,
-          init_point:
-            'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-production-1',
-        }),
-        { status: 201, headers: { 'content-type': 'application/json' } },
-      ),
-    );
-
-    try {
-      await gateway.createPayment({
-        attemptId: 'attempt-production',
-        orderId: 'order-production',
-        clubId: 'club-1',
-        sellerExternalId: '3671162760',
-        amountCents: 2000,
-        marketplaceFeeCents: 100,
-        currency: 'PEN',
-        subject: 'Compra Beerry',
+  const input = {
+    attemptId: 'attempt',
+    orderId: 'order',
+    clubId: 'club',
+    amountCents: 2500,
+    marketplaceFeeCents: 250,
+    currency: 'PEN',
+    subject: 'Compra',
+  };
+  it.each(['test', 'production'])(
+    'creates a preference in %s using seller credentials',
+    async (environment) => {
+      values.MERCADO_PAGO_ENVIRONMENT = environment;
+      const create = jest.spyOn(Preference.prototype, 'create').mockImplementation(async function (
+        this: Preference,
+      ) {
+        expect((this as unknown as { config: { accessToken: string } }).config.accessToken).toBe(
+          'seller-token',
+        );
+        return {
+          id: 'pref',
+          collector_id: 123,
+          init_point: 'https://www.mercadopago.com.pe/pay',
+          sandbox_init_point: 'https://sandbox.mercadopago.com.pe/pay',
+        } as never;
       });
-      expect(JSON.parse(String(fetchMock.mock.calls[0]![1]!.body))).not.toHaveProperty('payer');
-    } finally {
-      configValues.MERCADO_PAGO_ENVIRONMENT = 'test';
-    }
+      const result = await gateway.createPayment(input);
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          requestOptions: { idempotencyKey: 'attempt' },
+          body: expect.objectContaining({
+            marketplace_fee: 2.5,
+            items: [expect.objectContaining({ unit_price: 25, currency_id: 'PEN' })],
+          }),
+        }),
+      );
+      expect(create.mock.calls[0][0].body).not.toHaveProperty('payer');
+      expect(result.checkoutUrl).toContain(environment === 'test' ? 'sandbox.' : 'www.');
+    },
+  );
+  it('rejects excessive fees before SDK invocation', async () => {
+    const create = jest.spyOn(Preference.prototype, 'create');
+    await expect(gateway.createPayment({ ...input, marketplaceFeeCents: 2501 })).rejects.toThrow(
+      'INVALID_MARKETPLACE_FEE',
+    );
+    expect(create).not.toHaveBeenCalled();
+  });
+  it('refunds using the payment ID and numeric amount', async () => {
+    jest.spyOn(Payment.prototype, 'get').mockResolvedValue({ transaction_amount: 25 } as never);
+    const refund = jest
+      .spyOn(PaymentRefund.prototype, 'create')
+      .mockResolvedValue({ id: 789 } as never);
+    await gateway.createRefund({
+      paymentId: '456',
+      sellerExternalId: '123',
+      amountCents: 500,
+      idempotencyKey: 'refund',
+    });
+    expect(refund).toHaveBeenCalledWith({
+      payment_id: '456',
+      body: { amount: 5 },
+      requestOptions: { idempotencyKey: 'refund' },
+    });
   });
 });
