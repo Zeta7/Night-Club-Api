@@ -33,7 +33,12 @@ export class LedgerService {
     if (existing) return existing;
 
     const commissionBps = input.marketplaceFeeBps ?? (await this.commissionBps(tx));
-    const providerCostBps = this.numberConfig('PAYMENT_PROVIDER_COST_BPS', 0);
+    const externalSplit = input.provider === 'mercado_pago';
+    // Split is settled by the provider, not a payable from Beerry's cash balance.
+    const providerCostBps =
+      externalSplit || input.provider === 'beerry_wallet'
+        ? 0
+        : this.numberConfig('PAYMENT_PROVIDER_COST_BPS', 0);
     const commissionCents =
       input.marketplaceFeeCents ?? Math.round((input.amountCents * commissionBps) / 10_000);
     const providerCostCents = Math.round((input.amountCents * providerCostBps) / 10_000);
@@ -42,7 +47,13 @@ export class LedgerService {
       this.account(tx, `CUSTOMER:${input.customerUserId}`, 'CUSTOMER', input.currency, {
         userId: input.customerUserId,
       }),
-      this.account(tx, `CLUB:${input.clubId}`, 'CLUB', input.currency, { clubId: input.clubId }),
+      this.account(
+        tx,
+        `${externalSplit ? 'CLUB_EXTERNAL' : 'CLUB'}:${input.clubId}`,
+        'CLUB',
+        input.currency,
+        { clubId: input.clubId },
+      ),
       this.account(tx, 'PLATFORM:MAIN', 'PLATFORM', input.currency),
       this.account(tx, `PROVIDER:${input.provider}`, 'PROVIDER', input.currency, {
         provider: input.provider,
@@ -50,7 +61,15 @@ export class LedgerService {
     ]);
     const entries = [
       this.entry(customer.id, 'DEBIT', 'AVAILABLE', input.amountCents, 'Cobro al cliente'),
-      this.entry(club.id, 'CREDIT', 'PENDING', clubNetCents, 'Venta neta pendiente del negocio'),
+      this.entry(
+        club.id,
+        'CREDIT',
+        'PENDING',
+        clubNetCents,
+        externalSplit
+          ? 'Venta distribuida por Mercado Pago; no liquidable por Beerry'
+          : 'Venta neta pendiente del negocio',
+      ),
       this.entry(platform.id, 'CREDIT', 'AVAILABLE', commissionCents, 'Comisión de plataforma'),
       ...(providerCostCents > 0
         ? [
@@ -91,6 +110,7 @@ export class LedgerService {
         creditTotalCents,
         description: 'Venta confirmada',
         metadata: {
+          settlementMode: externalSplit ? 'EXTERNAL_SPLIT' : 'MANUAL',
           commissionBps,
           commissionCents,
           providerCostBps,

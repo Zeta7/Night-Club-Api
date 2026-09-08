@@ -907,6 +907,7 @@ model Club {
   scheduleJson      Json?
   status            ClubStatus @default(PENDING_APPROVAL)
   marketplaceFeeBps Int?
+  acceptsWalletPayments Boolean @default(false)
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 

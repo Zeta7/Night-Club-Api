@@ -160,6 +160,20 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     return randomInt(100000, 1000000).toString();
   }
 
+  async paymentOptions(user: AuthenticatedUser) {
+    const cart = await this.prisma.cart.findUnique({
+      where: { userId: user.id },
+      select: { clubId: true },
+    });
+    const club = cart?.clubId
+      ? await this.prisma.club.findUnique({
+          where: { id: cart.clubId },
+          select: { acceptsWalletPayments: true },
+        })
+      : null;
+    return { acceptsWallet: club?.acceptsWalletPayments ?? false };
+  }
+
   async checkout(user: AuthenticatedUser, input: CheckoutDto) {
     const requestedPaymentMethod =
       input.paymentMethod === 'MERCADO_PAGO' && this.paymentGateway.provider === 'simulated'
@@ -342,6 +356,17 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         );
       }
       const total = resolved.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      if (requestedPaymentMethod === 'BEERRY_WALLET') {
+        const club = await tx.club.findUnique({
+          where: { id: resolved[0].clubId },
+          select: { acceptsWalletPayments: true },
+        });
+        if (!club?.acceptsWalletPayments)
+          throw conflict(
+            'WALLET_NOT_ACCEPTED',
+            'Este negocio no acepta pagos con billetera Beerry.',
+          );
+      }
       if (total !== input.expectedTotalCents) {
         throw conflict(
           'CART_TOTAL_CHANGED',
@@ -418,9 +443,21 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           });
         }
       }
+      const walletFee =
+        requestedPaymentMethod === 'BEERRY_WALLET'
+          ? await this.requiredMarketplaceFees().resolve(order.clubId, total)
+          : null;
       const attempt = await tx.paymentAttempt.create({
         data: {
           orderId: order.id,
+          ...(walletFee
+            ? {
+                marketplaceFeeBps: walletFee.marketplaceFeeBps,
+                marketplaceFeeCents: walletFee.marketplaceFeeCents,
+                sellerExpectedNetCents: walletFee.sellerExpectedNetCents,
+                feeSource: walletFee.feeSource,
+              }
+            : {}),
           provider:
             requestedPaymentMethod === 'BEERRY_WALLET'
               ? 'beerry_wallet'
@@ -517,7 +554,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       where: { id: created.attempt.id },
       data: {
         externalPaymentId: providerPayment.externalPaymentId,
-        providerData: providerPayment.providerData as Prisma.InputJsonValue | undefined,
+        providerData: { ...providerPayment.providerData, checkoutUrl: providerPayment.checkoutUrl } as Prisma.InputJsonValue,
         externalCheckoutId:
           this.paymentGateway.provider === 'mercado_pago'
             ? providerPayment.externalPaymentId
@@ -638,7 +675,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             ? providerPayment.externalPaymentId
             : undefined,
         sellerExternalId: providerPayment.sellerExternalId,
-        providerData: providerPayment.providerData as Prisma.InputJsonValue | undefined,
+        providerData: { ...providerPayment.providerData, checkoutUrl: providerPayment.checkoutUrl } as Prisma.InputJsonValue,
       },
     });
     return this.topUpResponse(created.topUp, attempt, providerPayment.checkoutUrl);
@@ -2958,6 +2995,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       );
     }
     const attempt = request.order.paymentAttempts[0];
+    if (attempt?.provider === 'beerry_wallet') {
+      return this.processWalletRefund(user, request.id, approvedAmountCents, resolutionNote);
+    }
     if (
       !attempt ||
       attempt.provider !== 'mercado_pago' ||
@@ -3037,6 +3077,104 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       });
       throw error;
     }
+  }
+
+  private async processWalletRefund(
+    user: AuthenticatedUser,
+    requestId: string,
+    approvedAmountCents?: number,
+    note?: string,
+  ) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        const request = await tx.refundRequest.findUniqueOrThrow({
+          where: { id: requestId },
+          include: {
+            order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } },
+          },
+        });
+        if (request.status === 'COMPLETED')
+          return { message: 'La devolución ya fue completada.', refundRequest: request };
+        if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED'].includes(request.status))
+          throw conflict('REFUND_REQUEST_NOT_PROCESSABLE', 'La devolución está en proceso.');
+        const attempt = request.order.paymentAttempts[0];
+        if (!attempt || attempt.provider !== 'beerry_wallet' || attempt.status !== 'APPROVED')
+          throw conflict('PAYMENT_NOT_REFUNDABLE', 'La compra de billetera no está aprobada.');
+        const amount =
+          approvedAmountCents ??
+          request.approvedAmountCents ??
+          request.requestedAmountCents ??
+          attempt.amountCents;
+        // Partial wallet refunds need lot-level allocation; never restore the whole wallet for a partial amount.
+        if (
+          amount !== attempt.amountCents ||
+          attempt.refundedAmountCents !== 0 ||
+          (request.requestedAmountCents != null && amount > request.requestedAmountCents)
+        )
+          throw conflict(
+            'WALLET_FULL_REFUND_REQUIRED',
+            'Por ahora la devolución de billetera debe ser por el total de la compra.',
+          );
+        if (!this.referrals || !this.ledger) throw new Error('WALLET_REFUND_SERVICES_REQUIRED');
+        const now = new Date();
+        await this.ledger.reverseSale(tx, {
+          paymentAttemptId: attempt.id,
+          providerEventId: `wallet-refund:${request.id}`,
+          type: 'REFUND',
+        });
+        await this.referrals.reverseOrderEffects(tx, request.orderId, 'REFUNDED');
+        await tx.paymentAttempt.update({
+          where: { id: attempt.id },
+          data: { status: 'REFUNDED', refundedAmountCents: amount },
+        });
+        await tx.order.update({ where: { id: request.orderId }, data: { status: 'REFUNDED' } });
+        const revoke = {
+          status: 'CANCELLED' as const,
+          revokedAt: now,
+          revokedReason: 'PAYMENT_REFUNDED',
+        };
+        await tx.ticket.updateMany({
+          where: { orderId: request.orderId, status: 'AVAILABLE' },
+          data: revoke,
+        });
+        await tx.consumableRight.updateMany({
+          where: { orderId: request.orderId, status: 'AVAILABLE' },
+          data: revoke,
+        });
+        await tx.productDelivery.updateMany({
+          where: { orderId: request.orderId, status: 'AVAILABLE' },
+          data: revoke,
+        });
+        await tx.wallet.update({
+          where: { userId: request.order.userId },
+          data: { totalSpentCents: { decrement: amount } },
+        });
+        const updated = await tx.refundRequest.update({
+          where: { id: request.id },
+          data: {
+            status: 'COMPLETED',
+            approvedAmountCents: amount,
+            processedAmountCents: amount,
+            marketplaceFeeRefundedCents: attempt.marketplaceFeeCents ?? 0,
+            reviewedAt: now,
+            completedAt: now,
+            resolutionNote: note?.trim(),
+          },
+        });
+        await tx.auditLogEntry.create({
+          data: {
+            actorUserId: user.id,
+            clubId: request.order.clubId,
+            action: 'PROCESS_WALLET_REFUND',
+            resourceType: 'REFUND_REQUEST',
+            resourceId: request.id,
+            metadata: { orderId: request.orderId, amountCents: amount },
+          },
+        });
+        return { message: 'La compra fue devuelta a la billetera.', refundRequest: updated };
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
   }
 
   async getClubOperations(user: AuthenticatedUser, clubId: string) {
