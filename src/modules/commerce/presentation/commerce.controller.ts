@@ -38,6 +38,11 @@ export class CommerceController {
     return this.service.checkout(user, body);
   }
 
+  @Get('cart/payment-options')
+  paymentOptions(@CurrentUser() user: AuthenticatedUser) {
+    return this.service.paymentOptions(user);
+  }
+
   @Get('cart')
   cart(@CurrentUser() user: AuthenticatedUser) {
     return this.service.getCart(user);

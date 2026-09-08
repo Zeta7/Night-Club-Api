@@ -56,6 +56,33 @@ export class SellerConnectionService {
     };
   }
 
+  async walletAcceptance(clubId: string) {
+    const club = await this.prisma.club.findUnique({
+      where: { id: clubId },
+      select: { acceptsWalletPayments: true },
+    });
+    if (!club) throw notFound('CLUB_NOT_FOUND', 'No encontramos el negocio.');
+    return { enabled: club.acceptsWalletPayments };
+  }
+
+  async setWalletAcceptance(actor: AuthenticatedUser, clubId: string, enabled: boolean) {
+    await this.assertAdmin(actor, clubId);
+    await this.prisma.club.update({
+      where: { id: clubId },
+      data: { acceptsWalletPayments: enabled },
+    });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      clubId,
+      action: 'SET_WALLET_ACCEPTANCE',
+      resourceType: 'CLUB',
+      resourceId: clubId,
+      metadata: { enabled },
+    });
+    return { enabled };
+  }
+
   async start(actor: AuthenticatedUser, clubId: string) {
     await this.assertAdmin(actor, clubId);
     const nonce = randomBytes(32).toString('base64url');
@@ -169,6 +196,10 @@ export class SellerConnectionService {
       where: { clubId_provider: { clubId, provider: PROVIDER } },
     });
     if (!connection) return this.status(actor, clubId);
+    await this.prisma.marketplaceOAuthState.updateMany({
+      where: { clubId, provider: PROVIDER, consumedAt: null },
+      data: { consumedAt: new Date() },
+    });
     await this.prisma.marketplaceSellerConnection.update({
       where: { id: connection.id },
       data: { status: SellerConnectionStatus.DISCONNECTED, disconnectedAt: new Date() },

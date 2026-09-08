@@ -1,9 +1,15 @@
-import { Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { IsBoolean } from 'class-validator';
 import { ApiBearerAuth, ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SellerConnectionService } from '../application/seller-connection.service';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { ConfigService } from '@nestjs/config';
+
+class WalletAcceptanceDto {
+  @IsBoolean()
+  enabled!: boolean;
+}
 
 @ApiTags('Mercado Pago connections')
 @ApiBearerAuth()
@@ -11,6 +17,20 @@ import { ConfigService } from '@nestjs/config';
 @Controller('clubs/:clubId/payments/mercado-pago')
 export class MercadoPagoConnectionsController {
   constructor(private readonly connections: SellerConnectionService) {}
+
+  @Get('wallet-acceptance')
+  walletAcceptance(@Param('clubId') clubId: string) {
+    return this.connections.walletAcceptance(clubId);
+  }
+
+  @Post('wallet-acceptance')
+  setWalletAcceptance(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Body() input: WalletAcceptanceDto,
+  ) {
+    return this.connections.setWalletAcceptance(user, clubId, input.enabled);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Consultar estado de conexión Mercado Pago' })
@@ -38,7 +58,7 @@ export class MercadoPagoOAuthCallbackController {
     private readonly config: ConfigService,
   ) {}
 
-  @Get('oauth/callback')
+  @Get(['connect', 'oauth/callback'])
   @ApiExcludeEndpoint()
   @Header('Content-Type', 'text/html; charset=utf-8')
   async callback(@Query('state') state: string, @Query('code') code: string) {

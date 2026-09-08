@@ -163,7 +163,8 @@ export class MercadoPagoPaymentGateway {
         },
       },
     });
-    if (!connection || connection.status !== 'CONNECTED')
+    // A local disconnection blocks new checkouts, not refunds of previous sales.
+    if (!connection || !['CONNECTED', 'DISCONNECTED'].includes(connection.status))
       throw new Error('MERCADO_PAGO_SELLER_CONNECTION_NOT_FOUND');
     const accessToken = this.cipher.decrypt(connection.accessTokenEncrypted);
     const orderResponse = await fetch(
