@@ -6281,6 +6281,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description: 'Campo per user limit expuesto por el runtime actual.',
             },
+            saleStartAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo sale start at expuesto por el runtime actual.',
+              example: '2026-09-01T12:00:00.000Z',
+            },
+            saleEndAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo sale end at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
             status: {
               type: 'string',
               enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
@@ -6301,6 +6315,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'currency',
             'quantityAvailable',
             'perUserLimit',
+            'saleStartAt',
+            'saleEndAt',
             'status',
           ],
           additionalProperties: false,
@@ -28183,7 +28199,21 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '403': ['RESERVATION_METRICS_FORBIDDEN'],
   },
   CommerceController_payment: {
-    '404': ['ORDER_NOT_FOUND'],
+    '404': [
+      'NOTIFICATION_TEMPLATE_NOT_FOUND',
+      'ORDER_NOT_FOUND',
+      'ORDER_PAYMENT_NOT_FOUND',
+      'PAYMENT_ATTEMPT_NOT_FOUND',
+      'WALLET_TOP_UP_NOT_FOUND',
+    ],
+    '409': [
+      'MERCADO_PAGO_PAYMENT_MISMATCH',
+      'PAYMENT_NOT_REFUNDABLE',
+      'PRODUCT_OVERSOLD',
+      'RESERVATION_EXPIRED',
+      'RESERVATION_NOT_ACTIVE',
+      'TICKET_OVERSOLD',
+    ],
   },
   CommerceController_createWalletTopUp: {
     '400': ['WALLET_TOP_UP_AMOUNT_OUT_OF_RANGE'],
