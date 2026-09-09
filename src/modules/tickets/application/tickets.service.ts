@@ -79,7 +79,7 @@ export class TicketsService {
   ) {
     const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, null);
     await this.assertCanManageClub(currentUser, clubId);
-    const data = this.normalizeTicketUpdateInput(input, current.quantitySold);
+    const data = this.normalizeTicketUpdateInput(input, current.quantitySold, current.replacementReserved);
     const ticketType = await this.prisma.ticketType.update({
       where: { id: ticketTypeId },
       data,
@@ -114,7 +114,7 @@ export class TicketsService {
   ) {
     const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, eventId);
     await this.assertCanManageEvent(currentUser, clubId, eventId);
-    const data = this.normalizeTicketUpdateInput(input, current.quantitySold);
+    const data = this.normalizeTicketUpdateInput(input, current.quantitySold, current.replacementReserved);
     const ticketType = await this.prisma.ticketType.update({
       where: { id: ticketTypeId },
       data,
@@ -231,7 +231,7 @@ export class TicketsService {
     };
   }
 
-  private normalizeTicketUpdateInput(input: UpdateTicketTypeDto, quantitySold: number) {
+  private normalizeTicketUpdateInput(input: UpdateTicketTypeDto, quantitySold: number, replacementReserved = 0) {
     const data: {
       name?: string;
       description?: string | null;
@@ -249,10 +249,10 @@ export class TicketsService {
     if (input.price !== undefined) data.priceCents = priceToCents(input.price);
     if (input.currency !== undefined) data.currency = normalizeCurrency(input.currency);
     if (input.quantityTotal !== undefined) {
-      if (input.quantityTotal < quantitySold) {
+      if (input.quantityTotal < quantitySold + replacementReserved) {
         throw badRequest(
           'TICKET_QUANTITY_BELOW_SOLD',
-          'La cantidad total no puede ser menor a la cantidad ya vendida.',
+          'La cantidad total no puede ser menor a lo vendido y reservado para reemplazos.',
         );
       }
       data.quantityTotal = input.quantityTotal;
@@ -323,7 +323,7 @@ export class TicketsService {
   ) {
     const ticketType = await this.prisma.ticketType.findFirst({
       where: { id: ticketTypeId, clubId, eventId },
-      select: { id: true, quantitySold: true, quantityTotal: true, status: true },
+      select: { id: true, quantitySold: true, quantityTotal: true, replacementReserved: true, status: true },
     });
     if (!ticketType)
       throw notFound('TICKET_TYPE_NOT_FOUND', 'No encontramos la entrada solicitada.');
@@ -356,6 +356,7 @@ const toTicketTypeResponse = (ticketType: {
   currency: string;
   quantityTotal: number;
   quantitySold: number;
+  replacementReserved?: number;
   perUserLimit: number | null;
   saleStartAt: Date | null;
   saleEndAt: Date | null;
@@ -375,7 +376,7 @@ const toTicketTypeResponse = (ticketType: {
   currency: ticketType.currency,
   quantityTotal: ticketType.quantityTotal,
   quantitySold: ticketType.quantitySold,
-  quantityAvailable: Math.max(ticketType.quantityTotal - ticketType.quantitySold, 0),
+  quantityAvailable: Math.max(ticketType.quantityTotal - ticketType.quantitySold - (ticketType.replacementReserved ?? 0), 0),
   perUserLimit: ticketType.perUserLimit,
   saleStartAt: ticketType.saleStartAt,
   saleEndAt: ticketType.saleEndAt,

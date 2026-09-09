@@ -3,7 +3,7 @@ import { CommerceService } from '../../../src/modules/commerce/application/comme
 import { UserRole } from '@prisma/client';
 
 describe('Administrative wallet refunds', () => {
-  function fixture() {
+  function fixture(used = false) {
     const request: any = {
       id: 'refund',
       orderId: 'order',
@@ -26,6 +26,7 @@ describe('Administrative wallet refunds', () => {
     };
     const update = jest.fn().mockResolvedValue({});
     const tx = {
+      eventCancellation: { findFirst: jest.fn().mockResolvedValue(null) },
       refundRequest: {
         findUnique: jest.fn(async () => request),
         findUniqueOrThrow: jest.fn(async () => request),
@@ -34,9 +35,9 @@ describe('Administrative wallet refunds', () => {
       paymentAttempt: { update },
       order: { update },
       wallet: { update },
-      ticket: { updateMany: update },
-      consumableRight: { updateMany: update },
-      productDelivery: { updateMany: update },
+      ticket: { updateMany: update, findFirst: jest.fn().mockResolvedValue(used ? { id: 'used-ticket' } : null) },
+      consumableRight: { updateMany: update, findFirst: jest.fn().mockResolvedValue(null) },
+      productDelivery: { updateMany: update, findFirst: jest.fn().mockResolvedValue(null) },
       auditLogEntry: { create: update },
     };
     const prisma = { ...tx, $transaction: jest.fn(async (action) => action(tx)) };
@@ -59,6 +60,15 @@ describe('Administrative wallet refunds', () => {
     return { service, ledger, referrals, gateway };
   }
   const admin = { id: 'admin', role: UserRole.SUPER_ADMIN };
+  it('requires an explicit decision before refunding used resources', async () => {
+    const f = fixture(true);
+    await expect(f.service.processRefundRequest(admin, 'refund')).rejects.toThrow();
+    await expect(f.service.processRefundRequest(admin, 'refund', 1000, '   ')).rejects.toThrow();
+    expect(f.ledger.reverseSale).not.toHaveBeenCalled();
+    expect(f.gateway.createRefund).not.toHaveBeenCalled();
+    await f.service.processRefundRequest(admin, 'refund', 1000, 'Revisión manual: devolución total autorizada por cancelación.');
+    expect(f.ledger.reverseSale).toHaveBeenCalledTimes(1);
+  });
   it('restores once and does not send a wallet refund to Mercado Pago', async () => {
     const f = fixture();
     await f.service.processRefundRequest(admin, 'refund');

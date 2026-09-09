@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { EventReplacementService } from './application/event-replacement.service';
+import { EventRefundWorker } from './application/event-refund-worker.service';
+import { EventResolutionController } from './presentation/event-resolution.controller';
 import { ConfigService } from '@nestjs/config';
 import { CommerceController } from './presentation/commerce.controller';
 import { CommerceService } from './application/commerce.service';
@@ -30,9 +33,11 @@ import { MercadoPagoPaymentsController } from './presentation/mercado-pago-payme
     PaymentsModule,
     PlatformModule,
   ],
-  controllers: [CommerceController, MercadoPagoPaymentsController],
+  controllers: [CommerceController, MercadoPagoPaymentsController, EventResolutionController],
   providers: [
     CommerceService,
+    EventReplacementService,
+    EventRefundWorker,
     SimulatedPaymentGateway,
     MercadoPagoPaymentGateway,
     { provide: REFUND_GATEWAY, useExisting: MercadoPagoPaymentGateway },

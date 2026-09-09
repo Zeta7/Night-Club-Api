@@ -18,7 +18,7 @@ describe('Private operation details', () => {
   });
   it('returns purchased item snapshots, not current catalog prices', async () => {
     const items = [{ nameSnapshot: 'Entrada general', quantity: 2, unitPriceCents: 2500, totalCents: 5000, itemType: 'TICKET' }];
-    const service = new WalletsService({ order: { findFirst: jest.fn().mockResolvedValue({ id: 'order', club: { name: 'Club' }, items, totalCents: 5000 }) } } as never, {} as never);
-    expect(await service.orderDetail(user, 'order')).toEqual(expect.objectContaining({ amountCents: 5000, business: 'Club', items }));
+    const service = new WalletsService({ event: { findMany: jest.fn().mockResolvedValue([]) }, eventCancellation: { findMany: jest.fn().mockResolvedValue([]) }, order: { findFirst: jest.fn().mockResolvedValue({ id: 'order', club: { name: 'Club' }, items, totalCents: 5000 }) } } as never, {} as never);
+    expect(await service.orderDetail(user, 'order')).toEqual(expect.objectContaining({ amountCents: 5000, business: 'Club', items: items.map((item) => ({ ...item, replacementRefundStatus: null, refundExecution: null, replacementOffer: null, canRequestReplacementRefund: false })) }));
   });
 });

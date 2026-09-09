@@ -15,11 +15,42 @@ export class WalletsService {
   async orderDetail(user: AuthenticatedUser, id: string) {
     const order = await this.prisma.order.findFirst({ where: { id, userId: user.id },
       select: { id: true, status: true, currency: true, totalCents: true, paymentMethod: true, createdAt: true,
-        club: { select: { name: true } }, items: { select: { nameSnapshot: true, quantity: true, unitPriceCents: true, totalCents: true, itemType: true } } } });
+        club: { select: { name: true } }, items: { select: { id: true, itemId: true, nameSnapshot: true, quantity: true, unitPriceCents: true, totalCents: true, itemType: true,
+          event: { select: { cancellation: { select: { id: true, replacementEventId: true, status: true, mode: true, replacementMappings: { select: { sourceItemId: true, itemType: true, targetName: true, reservedQuantity: true } } } } } },
+          eventRefundRequests: { select: { status: true }, orderBy: { createdAt: 'desc' }, take: 1 },
+          eventRefundJobs: { select: { status: true, amountCents: true }, orderBy: { createdAt: 'desc' }, take: 1 },
+        } } } });
     if (!order) throw notFound('ORDER_NOT_FOUND', 'No encontramos tu compra.');
+    const cancellations = await this.prisma.eventCancellation.findMany({ where: {
+      event: { OR: [{ purchasedItems: { some: { orderId: id } } }, { tickets: { some: { orderId: id } } }, { consumableRights: { some: { orderId: id } } }] },
+    }, select: { status: true, replacementEventId: true, event: { select: { name: true } } } });
+    const replacementIds = cancellations.map((item) => item.replacementEventId).filter((id): id is string => !!id);
+    const replacements = replacementIds.length ? await this.prisma.event.findMany({ where: { id: { in: replacementIds } }, select: { id: true, name: true, status: true, startsAt: true, endsAt: true } }) : [];
+    const postponedEvents = await this.prisma.event.findMany({ where: {
+      status: 'POSTPONED', OR: [{ purchasedItems: { some: { orderId: id } } }, { tickets: { some: { orderId: id } } }, { consumableRights: { some: { orderId: id } } }],
+    }, select: { name: true } });
     return { id: order.id, title: 'Detalle de compra', status: order.status, currency: order.currency,
       amountCents: order.totalCents, createdAt: order.createdAt, paymentMethod: order.paymentMethod,
-      business: order.club.name, items: order.items };
+      business: order.club.name, items: order.items.map(({ event, eventRefundRequests, eventRefundJobs, itemId, ...item }) => ({
+        ...item,
+        replacementRefundStatus: eventRefundRequests?.[0]?.status ?? null,
+        refundExecution: eventRefundJobs?.[0] ?? null,
+        replacementOffer: order.status === 'PAID' && !eventRefundRequests?.length && event?.cancellation?.status === 'REPLACEMENT_PROPOSED'
+          ? (() => { const cancellation = event.cancellation!; const target = replacements.find((target) => target.id === cancellation.replacementEventId && target.startsAt > new Date() && ['PUBLISHED','SALE_ACTIVE','SOLD_OUT'].includes(target.status)); const mapping = cancellation.replacementMappings?.find((mapping) => mapping.sourceItemId === itemId && mapping.itemType === item.itemType && mapping.reservedQuantity >= item.quantity); return mapping && target ? { cancellationId: cancellation.id, targetName: mapping.targetName, eventName: target.name, startsAt: target.startsAt, endsAt: target.endsAt } : null; })() : null,
+        canRequestReplacementRefund: order.status === 'PAID' && !eventRefundRequests?.length &&
+          event?.cancellation?.mode === 'REPLACEMENT' && event.cancellation.status === 'REPLACEMENT_PROPOSED',
+      })),
+      eventNotices: [...postponedEvents.map((event) => ({ eventName: event.name,
+        message: 'Evento postergado. Tu compra se conserva; los canjes están suspendidos hasta confirmar una nueva fecha.' })), ...cancellations.map((cancellation) => ({
+        eventName: cancellation.event.name,
+        replacement: replacements.find((event) => event.id === cancellation.replacementEventId) ?? null,
+        message: cancellation.status === 'REPLACEMENT_PROPOSED'
+          ? 'Evento cancelado. El negocio propone un reemplazo; tus QR anteriores ya no son válidos. Tu compra está pendiente de resolución.'
+          : cancellation.status === 'AUTHORIZED'
+          ? 'Evento cancelado. Beerry autorizó la evaluación y el procesamiento de las devoluciones aplicables; esto no confirma que el dinero haya sido devuelto.'
+          : 'Evento cancelado. Tu compra está en revisión. Aún no hay una devolución confirmada.',
+      }))],
+    };
   }
 
   async topUpDetail(user: AuthenticatedUser, id: string) {

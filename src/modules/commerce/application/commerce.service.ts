@@ -19,7 +19,6 @@ import {
   ClubStatus,
   ClubWorkerStatus,
   CommerceItemType,
-  EventStatus,
   OrderStatus,
   ProductStatus,
   ProductDeliveryMode,
@@ -47,6 +46,7 @@ import { LedgerService } from '../../wallets/application/ledger.service';
 import { ClubOrdersQueryDto } from '../presentation/club-orders-query.dto';
 import { UpdateProductDeliveryDto } from '../presentation/update-product-delivery.dto';
 import { CapacityService } from '../../events/application/capacity.service';
+import { eventAllowsSales, eventAllowsRedemption } from '../../events/application/event-availability';
 import { ReferralsService } from '../../referrals/application/referrals.service';
 import {
   PAYMENT_GATEWAY,
@@ -241,6 +241,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             include: { club: true, event: true },
           });
           const now = new Date();
+          if (source?.eventId) await this.assertEventForCheckout(tx, source.eventId);
           const alreadyOwned = source?.perUserLimit
             ? await tx.ticket.count({ where: { ownerUserId: user.id, ticketTypeId: source.id } })
             : 0;
@@ -254,7 +255,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             _sum: { quantity: true },
           });
           const availableQuantity = source
-            ? source.quantityTotal - source.quantitySold - (reserved._sum.quantity ?? 0)
+            ? source.quantityTotal - source.quantitySold - (source.replacementReserved ?? 0) - (reserved._sum.quantity ?? 0)
             : 0;
           if (
             !source ||
@@ -326,6 +327,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           if (!source) {
             throw badRequest('PROMOTION_UNAVAILABLE', 'Una promoción ya no está disponible.');
           }
+          if (source.eventId) await this.assertEventForCheckout(tx, source.eventId);
           const now = new Date();
           if (
             (source.startsAt && source.startsAt > now) ||
@@ -418,6 +420,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         }
       }
       for (const item of resolved) {
+        const purchasedEvent = item.eventId
+          ? await tx.event.findUniqueOrThrow({ where: { id: item.eventId } })
+          : null;
         await tx.orderItem.create({
           data: {
             orderId: order.id,
@@ -425,6 +430,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             itemType: item.type,
             itemId: item.id,
             nameSnapshot: item.name,
+            eventId: item.eventId,
+            eventSnapshot: purchasedEvent ? {
+              source: 'CHECKOUT', name: purchasedEvent.name,
+              startsAt: purchasedEvent.startsAt.toISOString(),
+              endsAt: purchasedEvent.endsAt.toISOString(),
+            } : undefined,
             quantity: item.quantity,
             productDeliveryMode: item.productDeliveryMode,
             unitPriceCents: item.price,
@@ -863,7 +874,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         _sum: { quantity: true },
       });
       const globalAvailable = source
-        ? Math.max(0, source.quantityTotal - source.quantitySold - (reserved._sum.quantity ?? 0))
+        ? Math.max(0, source.quantityTotal - source.quantitySold - (source.replacementReserved ?? 0) - (reserved._sum.quantity ?? 0))
         : 0;
       const userAvailable = source?.perUserLimit
         ? Math.max(0, source.perUserLimit - alreadyOwned)
@@ -1152,14 +1163,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         await this.finishProviderEvent(event, 'IGNORED');
         return;
       }
-      const totalFeeRefundedCents = Math.round(
-        (providerRefundedCents * (attempt.marketplaceFeeCents ?? 0)) / attempt.amountCents,
-      );
-      const previousFeeRefundedCents = Math.round(
-        (attempt.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0)) / attempt.amountCents,
-      );
-      const feeDeltaCents = totalFeeRefundedCents - previousFeeRefundedCents;
       await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`);
+        const current = await tx.paymentAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
+        const refundDeltaCents = providerRefundedCents - current.refundedAmountCents;
+        if (refundDeltaCents <= 0) return;
+        const feeDeltaCents = Math.round(providerRefundedCents * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents) - Math.round(current.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents);
         await this.ledger?.reverseSalePartial(tx, {
           paymentAttemptId: attempt.id,
           providerEventId: event.providerEventId,
@@ -1172,7 +1181,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         });
         await tx.order.update({ where: { id: orderId }, data: { status: 'PARTIALLY_REFUNDED' } });
         await tx.refundRequest.updateMany({
-          where: { orderId, status: 'PROCESSING' },
+          where: { orderId, status: 'PROCESSING', eventJob: { is: null }, approvedAmountCents: refundDeltaCents },
           data: {
             status: 'COMPLETED',
             processedAmountCents: refundDeltaCents,
@@ -1199,6 +1208,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
     if (event.outcome === 'REFUNDED' || event.outcome === 'CHARGEBACK') {
       await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`);
         const current = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
         if (!current || current.status === 'REFUNDED') return;
         if (!['APPROVED', 'REFUND_PENDING', 'PARTIALLY_REFUNDED'].includes(current.status)) {
@@ -1240,7 +1250,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         });
         if (event.outcome === 'REFUNDED') {
           await tx.refundRequest.updateMany({
-            where: { orderId, status: { in: ['APPROVED', 'PROCESSING'] } },
+            where: { orderId, status: { in: ['APPROVED', 'PROCESSING'] }, eventJob: { is: null }, approvedAmountCents: remainingAmountCents },
             data: {
               status: 'COMPLETED',
               processedAmountCents: remainingAmountCents,
@@ -1297,14 +1307,17 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`);
       const current = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
-      if (!current || current.status !== 'PENDING') return;
+      if (!current || (current.status !== 'PENDING' && !(current.status === 'EXPIRED' && event.outcome === 'APPROVED'))) return;
       if (event.outcome === 'APPROVED') {
         const paidAt = new Date();
-        await this.confirmOrderReservations(tx, order, paidAt);
+        const fulfilled = await this.confirmOrderReservations(tx, order, paidAt);
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
-          data: { status: 'APPROVED', approvedAt: paidAt },
+          data: { status: 'APPROVED', approvedAt: paidAt,
+            ...(event.provider === 'mercado_pago' && /^\d+$/.test(String(event.payload?.id ?? '')) ? { providerData: { ...(attempt.providerData as Prisma.JsonObject ?? {}), paymentId: String(event.payload!.id) } } : {}),
+          },
         });
         await tx.order.update({ where: { id: orderId }, data: { status: 'PAID', paidAt } });
         const wallet = await tx.wallet.upsert({
@@ -1337,8 +1350,16 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           marketplaceFeeBps: attempt.marketplaceFeeBps ?? undefined,
           marketplaceFeeCents: attempt.marketplaceFeeCents ?? undefined,
         });
-        await this.referrals?.createRewardForPaidOrder(tx, orderId);
-        await this.issueOrderResources(tx, order);
+        if (fulfilled) {
+          await this.referrals?.createRewardForPaidOrder(tx, orderId);
+          await this.issueOrderResources(tx, order);
+        } else {
+          await tx.refundRequest.create({ data: { orderId, clubId: order.clubId, requestedByUserId: order.userId, reason: 'Pago confirmado después del vencimiento de la reserva. Requiere resolución de Beerry.', status: 'UNDER_REVIEW', requestedAmountCents: attempt.amountCents } });
+          await tx.order.update({ where: { id: orderId }, data: { status: 'REFUND_PENDING' } });
+          const reviewers = await tx.user.findMany({ where: { role: UserRole.SUPER_ADMIN, status: 'ACTIVE' }, select: { id: true } });
+          if (reviewers.length) await tx.notification.createMany({ data: reviewers.map((reviewer) => ({ userId: reviewer.id, category: 'EVENT' as const, title: 'Pago recibido sin reserva vigente', body: 'Revisa la compra y su solicitud de devolución. No se emitieron QR.', data: { orderId } })) });
+          await tx.notification.create({ data: { userId: order.userId, category: 'EVENT', title: 'Pago recibido: compra en revisión', body: 'El pago se confirmó cuando la reserva ya no estaba disponible. No se emitieron QR. Beerry revisará la solución.', data: { orderId } } });
+        }
         await this.notifications?.notifyFromTemplate(
           order.userId,
           'PAYMENT_APPROVED',
@@ -1346,7 +1367,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           { orderId, paymentAttemptId: attempt.id },
           tx,
         );
-        await this.notifications?.notifyFromTemplate(
+        if (fulfilled) await this.notifications?.notifyFromTemplate(
           order.userId,
           'QR_AVAILABLE',
           { orderId },
@@ -1426,10 +1447,25 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
+  async issueReplacementResources(tx: Prisma.TransactionClient, orderItemId: string, targetItemId: string, targetEventId: string) {
+    const item = await tx.orderItem.findUniqueOrThrow({ where: { id: orderItemId }, include: { order: true } });
+    // New resource IDs: a QR from the cancelled event remains cancelled forever.
+    await this.issueOrderResources(tx, { id: item.orderId, userId: item.order.userId, combineProducts: false,
+      items: [{ ...item, itemId: targetItemId, eventId: targetEventId }] });
+  }
+
   private async issueOrderResources(
     tx: any,
     order: { id: string; userId: string; combineProducts: boolean; items: any[] },
   ) {
+    // Cancellation and late payment issuance serialize on the same event lock.
+    // Payment approval remains a financial fact; cancelled rights must not become usable.
+    const eventStates = new Map<string, { status: string; startsAt: Date; endsAt: Date }>();
+    const eventIds = [...new Set<string>(order.items.map((item) => item.eventId).filter(Boolean))].sort();
+    for (const eventId of eventIds) {
+      await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR SHARE`);
+      eventStates.set(eventId, await tx.event.findUniqueOrThrow({ where: { id: eventId } }));
+    }
     const productItems = order.items.filter((item) => item.itemType === CommerceItemType.PRODUCT);
     for (const group of buildProductDeliveryPlan(order.combineProducts, productItems)) {
       await this.createProductDelivery(tx, order, group);
@@ -1445,20 +1481,24 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             where: { id: item.itemId },
             include: { event: true },
           });
+          const eventId = item.eventId ?? ticketType?.eventId;
+          const event = eventStates.get(eventId) ?? ticketType?.event;
+          const cancelled = event?.status === 'CANCELLED';
           await tx.ticket.create({
             data: {
               id,
               orderId: order.id,
               orderItemId: item.id,
               clubId: item.clubId,
-              eventId: ticketType?.eventId,
+              eventId,
               ticketTypeId: item.itemId,
               ownerUserId: order.userId,
               code,
-              qrPayload: this.qr('TICKET', id, item.clubId, ticketType?.eventId),
+              qrPayload: this.qr('TICKET', id, item.clubId, eventId),
               signatureVersion: this.activeSigningVersion(),
-              validFrom: ticketType?.event?.startsAt ?? null,
-              validUntil: ticketType?.event?.endsAt ?? ticketType?.saleEndAt,
+              validFrom: event?.startsAt ?? null,
+              validUntil: event?.endsAt ?? ticketType?.saleEndAt,
+              ...(cancelled ? { status: 'CANCELLED', revokedAt: new Date(), revokedReason: `EVENT_CANCELLED:${eventId}` } : {}),
             },
           });
         } else {
@@ -1466,26 +1506,40 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             where: { id: item.itemId },
             include: { event: true },
           });
+          const eventId = item.eventId ?? promotion?.eventId;
+          const event = eventStates.get(eventId) ?? promotion?.event;
+          const cancelled = event?.status === 'CANCELLED';
           await tx.consumableRight.create({
             data: {
               id,
               orderId: order.id,
               orderItemId: item.id,
               clubId: item.clubId,
-              eventId: promotion?.eventId,
+              eventId,
               ownerUserId: order.userId,
               sourceType: item.itemType,
               sourceId: item.itemId,
               promotionId: item.itemId,
               code,
-              qrPayload: this.qr('PROMOTION', id, item.clubId, promotion?.eventId),
+              qrPayload: this.qr('PROMOTION', id, item.clubId, eventId),
               signatureVersion: this.activeSigningVersion(),
               validFrom: promotion?.startsAt ?? promotion?.event?.startsAt ?? null,
               validUntil: promotion?.endsAt ?? promotion?.event?.endsAt ?? null,
+              ...(cancelled ? { status: 'CANCELLED', revokedAt: new Date(), revokedReason: `EVENT_CANCELLED:${eventId}` } : {}),
             },
           });
         }
       }
+    }
+    if ([...eventStates.values()].some((event) => event.status === 'CANCELLED')) {
+      await tx.notification.create({ data: { userId: order.userId, category: 'EVENT',
+        title: 'Compra recibida después de una cancelación',
+        body: 'El pago fue recibido, pero el evento está cancelado. Los QR afectados no son válidos. Revisa el estado de tu compra; aún no hay una devolución confirmada.',
+        data: { orderId: order.id },
+      } });
+      await tx.auditLogEntry.create({ data: { action: 'PAYMENT_APPROVED_AFTER_EVENT_CANCELLATION',
+        resourceType: 'ORDER', resourceId: order.id, metadata: { eventIds },
+      } });
     }
   }
 
@@ -1583,6 +1637,15 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
+  private async assertEventForCheckout(tx: Prisma.TransactionClient, eventId: string) {
+    // Serialize with changes to the event, retaining the lock until checkout commits.
+    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR SHARE`);
+    const event = await tx.event.findUnique({ where: { id: eventId }, select: { status: true, endsAt: true } });
+    if (!event || !eventAllowsSales(event)) {
+      throw badRequest('EVENT_SALES_UNAVAILABLE', 'Este evento no admite nuevas compras en este momento.');
+    }
+  }
+
   private async lockInventoryResource(
     tx: Prisma.TransactionClient,
     type: CommerceItemType,
@@ -1612,7 +1675,23 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       orderBy: [{ resourceType: 'asc' }, { resourceId: 'asc' }],
     });
     if (reservations.length !== expectedItems.length) {
-      throw conflict('RESERVATION_NOT_ACTIVE', 'La reserva de inventario ya no está activa.');
+      return false;
+    }
+    if (reservations.some((reservation) => reservation.expiresAt <= confirmedAt)) return false;
+    // Lock and validate every resource before consuming any of them. An already
+    // approved payment must be recorded for manual refund when stock is missing.
+    for (const reservation of reservations) {
+      await this.lockInventoryResource(tx, reservation.resourceType, reservation.resourceId);
+      if (reservation.resourceType === CommerceItemType.TICKET) {
+        const rows = await tx.$queryRaw<Array<{ available: number }>>(Prisma.sql`
+          SELECT "quantityTotal" - "quantitySold" - "replacementReserved" AS available
+          FROM "TicketType" WHERE id = ${reservation.resourceId} FOR UPDATE`);
+        if (!rows.length || rows[0].available < reservation.quantity) return false;
+      } else if (reservation.resourceType === CommerceItemType.PRODUCT) {
+        const rows = await tx.$queryRaw<Array<{ available: number }>>(Prisma.sql`
+          SELECT "stockQuantity" AS available FROM "Product" WHERE id = ${reservation.resourceId} FOR UPDATE`);
+        if (!rows.length || rows[0].available < reservation.quantity) return false;
+      }
     }
     for (const reservation of reservations) {
       await this.lockInventoryResource(tx, reservation.resourceType, reservation.resourceId);
@@ -1646,6 +1725,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           throw conflict('PRODUCT_OVERSOLD', 'No se pudo confirmar el producto reservado.');
       }
     }
+    return true;
   }
 
   private async releaseOrderReservations(
@@ -1671,6 +1751,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const orderId = attempt.orderId;
       const order = attempt.order;
       await this.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`);
         const expired = await tx.paymentAttempt.updateMany({
           where: { id: attempt.id, status: 'PENDING', expiresAt: { lte: now } },
           data: { status: 'EXPIRED', failedAt: now, failureCode: 'PAYMENT_TIMEOUT' },
@@ -2093,8 +2174,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
     if (
       resource.event &&
-      (resource.event.status === EventStatus.FINISHED ||
-        resource.event.status === EventStatus.CANCELLED)
+      !eventAllowsRedemption(resource.event)
     ) {
       await this.recordValidationAttempt(
         user,
@@ -2107,7 +2187,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       );
       return this.invalidValidation(
         'EVENTO NO DISPONIBLE',
-        'El evento asociado finalizó o fue cancelado.',
+        'El evento asociado no permite canjes en este momento.',
       );
     }
 
@@ -2115,6 +2195,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const usedAt = new Date();
       let redeemed = false;
       await this.prisma.$transaction(async (tx) => {
+        await this.assertOrderAllowsRedemption(tx, resource.order.id);
+        if (resource.eventId) {
+          await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${resource.eventId} FOR SHARE`);
+          const currentEvent = await tx.event.findUnique({ where: { id: resource.eventId }, select: { status: true, endsAt: true } });
+          if (!currentEvent || !eventAllowsRedemption(currentEvent)) {
+            throw conflict('EVENT_UNAVAILABLE', 'El evento cambió y ya no permite canjear este código.');
+          }
+        }
         const nextRedemptionCount = resource.redemptionCount + 1;
         const result =
           kind === 'TICKET'
@@ -2313,6 +2401,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const usedAt = new Date();
       let redeemed = false;
       await this.prisma.$transaction(async (tx) => {
+        await this.assertOrderAllowsRedemption(tx, delivery.orderId);
         const result = await tx.productDelivery.updateMany({
           where: { id: delivery.id, status: RedeemableStatus.AVAILABLE, usedAt: null },
           data: { status: RedeemableStatus.USED, usedAt },
@@ -2910,6 +2999,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   ) {
     await this.assertClubPermission(user, clubId, WorkerPermission.REQUEST_REFUNDS);
     return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Order" WHERE "id" = ${orderId} AND "clubId" = ${clubId} FOR UPDATE`);
       const order = await tx.order.findFirst({
         where: { id: orderId, clubId },
         include: {
@@ -2939,6 +3029,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       });
       if (pending)
         throw conflict('REFUND_ALREADY_REQUESTED', 'La orden ya tiene una devolución en proceso.');
+      const requiresManualReview = await this.orderHasUsedResources(tx, orderId);
       const request = await tx.refundRequest.create({
         data: {
           orderId,
@@ -2946,6 +3037,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           requestedByUserId: user.id,
           reason: reason.trim(),
           requestedAmountCents: amountCents,
+          status: requiresManualReview ? 'UNDER_REVIEW' : 'REQUESTED',
         },
       });
       await tx.order.update({ where: { id: orderId }, data: { status: 'REFUND_PENDING' } });
@@ -2961,6 +3053,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             reason: reason.trim(),
             requestedAmountCents: amountCents,
             refundableCents,
+            requiresManualReview,
           },
         },
       });
@@ -2973,6 +3066,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     refundRequestId: string,
     approvedAmountCents?: number,
     resolutionNote?: string,
+    recoverEventJob = false,
   ) {
     if (user.role !== UserRole.SUPER_ADMIN) {
       throw forbidden('SUPER_ADMIN_REQUIRED', 'Solo la plataforma puede procesar devoluciones.');
@@ -2980,18 +3074,36 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const request = await this.prisma.refundRequest.findUnique({
       where: { id: refundRequestId },
       include: {
+        eventJob: true,
         order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } },
       },
     });
     if (!request)
       throw notFound('REFUND_REQUEST_NOT_FOUND', 'No se encontró la solicitud de devolución.');
-    if (request.status === 'PROCESSING' || request.status === 'COMPLETED') {
+    if ((request.status === 'PROCESSING' && !(recoverEventJob && request.approvedAmountCents != null)) || request.status === 'COMPLETED') {
       return { message: 'La devolución ya fue enviada.', refundRequest: request };
     }
-    if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED'].includes(request.status)) {
+    if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED', ...(recoverEventJob && request.approvedAmountCents != null ? ['PROCESSING'] : [])].includes(request.status)) {
       throw conflict(
         'REFUND_REQUEST_NOT_PROCESSABLE',
         'La solicitud no se puede procesar en su estado actual.',
+      );
+    }
+    const requiresManualReview = await this.orderHasUsedResources(this.prisma, request.orderId);
+    const unresolvedCancellation = await this.prisma.eventCancellation.findFirst({ where: {
+      status: { not: 'AUTHORIZED' }, event: { OR: [
+        { purchasedItems: { some: { orderId: request.orderId } } },
+        { tickets: { some: { orderId: request.orderId } } },
+        { consumableRights: { some: { orderId: request.orderId } } },
+      ] },
+    }, select: { id: true } });
+    if (unresolvedCancellation && !request.eventJob) {
+      throw conflict('EVENT_REFUND_NOT_AUTHORIZED', 'La cancelación todavía no tiene autorización de devolución de Beerry.');
+    }
+    if (requiresManualReview && (!resolutionNote?.trim() || approvedAmountCents === undefined)) {
+      throw conflict(
+        'REFUND_MANUAL_REVIEW_REQUIRED',
+        'La compra tiene entradas o consumos utilizados. Beerry debe indicar expresamente el monto aprobado y el motivo de la resolución.',
       );
     }
     const attempt = request.order.paymentAttempts[0];
@@ -3011,6 +3123,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
     const requested = request.requestedAmountCents ?? attempt.amountCents;
     const amountCents = approvedAmountCents ?? request.approvedAmountCents ?? requested;
+    if (request.approvedAmountCents != null && request.approvedAmountCents !== amountCents) throw conflict('REFUND_AMOUNT_IMMUTABLE', 'No se puede cambiar el importe de un envío de devolución.');
     const refundableCents = attempt.amountCents - attempt.refundedAmountCents;
     if (
       !Number.isInteger(amountCents) ||
@@ -3029,18 +3142,16 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         'La devolución de Mercado Pago no está configurada.',
       );
     }
-    await this.prisma.refundRequest.update({
-      where: { id: request.id },
-      data: {
-        status: 'PROCESSING',
-        approvedAmountCents: amountCents,
-        resolutionNote: resolutionNote?.trim(),
-        reviewedAt: new Date(),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${request.orderId} FOR UPDATE`);
+      const other = await tx.refundRequest.findFirst({ where: { orderId: request.orderId, id: { not: request.id }, status: { in: ['PROCESSING','APPROVED','FAILED'] } }, select: { id: true } });
+      if (other) throw conflict('REFUND_IN_FLIGHT', 'Debe conciliarse la devolución anterior antes de enviar otra.');
+      const updated = await tx.refundRequest.updateMany({ where: { id: request.id, status: request.status }, data: { status: 'PROCESSING', approvedAmountCents: amountCents, resolutionNote: resolutionNote?.trim(), reviewedAt: new Date() } });
+      if (updated.count !== 1) throw conflict('REFUND_CHANGED', 'La devolución cambió; actualiza su estado.');
     });
     try {
       const providerRefund = await this.refundGateway.createRefund({
-        paymentId: attempt.externalPaymentId,
+        paymentId: await this.refundPaymentId(attempt),
         sellerExternalId: attempt.sellerExternalId,
         amountCents,
         idempotencyKey: `refund-${request.id}`,
@@ -3079,6 +3190,51 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async refundPaymentId(attempt: { id: string; externalPaymentId: string | null; providerData: unknown }) {
+    const stored = (attempt.providerData as Record<string, unknown> | null)?.paymentId;
+    if (/^\d+$/.test(String(stored ?? ''))) return String(stored);
+    if (/^\d+$/.test(attempt.externalPaymentId ?? '')) return attempt.externalPaymentId!;
+    const events = await this.prisma.paymentProviderEvent.findMany({ where: { paymentAttemptId: attempt.id, type: 'PAYMENT_APPROVED' }, orderBy: { createdAt: 'desc' }, take: 10 });
+    const ids = [...new Set(events.map((event) => String((event.payload as Prisma.JsonObject | null)?.id ?? '')).filter((id) => /^\d+$/.test(id)))];
+    if (ids.length !== 1) throw conflict('PAYMENT_ID_UNRESOLVED', 'Debe conciliarse el identificador del pago real antes de devolver. Una preferencia no es un pago.');
+    return ids[0];
+  }
+
+  async reconcileEventRefund(requestId: string) {
+    const request = await this.prisma.refundRequest.findUniqueOrThrow({ where: { id: requestId }, include: { eventJob: true, order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } } } });
+    if (request.status === 'COMPLETED') return true;
+    const attempt = request.order.paymentAttempts[0];
+    if (!request.externalRefundId || !attempt?.sellerExternalId || !this.refundGateway?.queryRefund) return false;
+    const verified = await this.refundGateway.queryRefund({ paymentId: await this.refundPaymentId(attempt), sellerExternalId: attempt.sellerExternalId, refundId: request.externalRefundId });
+    if (verified.amountCents !== request.approvedAmountCents) throw new Error('REFUND_AMOUNT_MISMATCH');
+    if (verified.status !== 'approved') return false;
+    await this.processPaymentEvent(verified.payment);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${request.orderId} FOR UPDATE`);
+      await tx.refundRequest.updateMany({ where: { id: requestId, status: { not: 'COMPLETED' } }, data: { status: 'COMPLETED', processedAmountCents: verified.amountCents, completedAt: new Date() } });
+    });
+    return true;
+  }
+
+  private async assertOrderAllowsRedemption(tx: Prisma.TransactionClient, orderId: string) {
+    await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Order" WHERE "id" = ${orderId} FOR UPDATE`);
+    const order = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } });
+    const allocatedPartial = order?.status === 'PARTIALLY_REFUNDED' && !await tx.refundRequest.findFirst({ where: { orderId, status: 'COMPLETED', eventJob: { is: null } }, select: { id: true } });
+    if (!order || (order.status !== 'PAID' && !allocatedPartial)) {
+      throw conflict('ORDER_NOT_REDEEMABLE', 'La compra está en revisión o ya no permite canjes.');
+    }
+  }
+
+  private async orderHasUsedResources(tx: Prisma.TransactionClient, orderId: string): Promise<boolean> {
+    const used = { OR: [{ status: RedeemableStatus.USED }, { usedAt: { not: null } }, { redemptionCount: { gt: 0 } }] };
+    const [ticket, consumable, delivery] = await Promise.all([
+      tx.ticket.findFirst({ where: { orderId, ...used }, select: { id: true } }),
+      tx.consumableRight.findFirst({ where: { orderId, ...used }, select: { id: true } }),
+      tx.productDelivery.findFirst({ where: { orderId, OR: [{ status: RedeemableStatus.USED }, { usedAt: { not: null } }] }, select: { id: true } }),
+    ]);
+    return !!(ticket || consumable || delivery);
+  }
+
   private async processWalletRefund(
     user: AuthenticatedUser,
     requestId: string,
@@ -3090,6 +3246,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         const request = await tx.refundRequest.findUniqueOrThrow({
           where: { id: requestId },
           include: {
+            eventJob: true,
             order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } },
           },
         });
@@ -3098,17 +3255,17 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED'].includes(request.status))
           throw conflict('REFUND_REQUEST_NOT_PROCESSABLE', 'La devolución está en proceso.');
         const attempt = request.order.paymentAttempts[0];
-        if (!attempt || attempt.provider !== 'beerry_wallet' || attempt.status !== 'APPROVED')
+        if (!attempt || attempt.provider !== 'beerry_wallet' || !['APPROVED', 'PARTIALLY_REFUNDED'].includes(attempt.status))
           throw conflict('PAYMENT_NOT_REFUNDABLE', 'La compra de billetera no está aprobada.');
         const amount =
           approvedAmountCents ??
           request.approvedAmountCents ??
           request.requestedAmountCents ??
           attempt.amountCents;
-        // Partial wallet refunds need lot-level allocation; never restore the whole wallet for a partial amount.
+        // Partial refunds require an authorized line allocation; generic requests stay full-only.
         if (
-          amount !== attempt.amountCents ||
-          attempt.refundedAmountCents !== 0 ||
+          (!request.eventJob && (amount !== attempt.amountCents || attempt.refundedAmountCents !== 0)) ||
+          !Number.isSafeInteger(amount) || amount <= 0 || amount > attempt.amountCents - attempt.refundedAmountCents ||
           (request.requestedAmountCents != null && amount > request.requestedAmountCents)
         )
           throw conflict(
@@ -3117,32 +3274,36 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           );
         if (!this.referrals || !this.ledger) throw new Error('WALLET_REFUND_SERVICES_REQUIRED');
         const now = new Date();
-        await this.ledger.reverseSale(tx, {
-          paymentAttemptId: attempt.id,
-          providerEventId: `wallet-refund:${request.id}`,
-          type: 'REFUND',
-        });
-        await this.referrals.reverseOrderEffects(tx, request.orderId, 'REFUNDED');
+        const cumulative = attempt.refundedAmountCents + amount;
+        const full = cumulative === attempt.amountCents;
+        const fee = Math.round(cumulative * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents) - Math.round(attempt.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents);
+        if (amount === attempt.amountCents) {
+          await this.ledger.reverseSale(tx, { paymentAttemptId: attempt.id, providerEventId: `wallet-refund:${request.id}`, type: 'REFUND' });
+        } else {
+          await this.ledger.reverseSalePartial(tx, { paymentAttemptId: attempt.id, providerEventId: `wallet-refund:${request.id}`, amountCents: amount, marketplaceFeeCents: fee });
+        }
+        if (full) await this.referrals.reverseOrderEffects(tx, request.orderId, 'REFUNDED');
+        else await this.referrals.restoreOrderCredits(tx, request.orderId, cumulative, attempt.amountCents);
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
-          data: { status: 'REFUNDED', refundedAmountCents: amount },
+          data: { status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED', refundedAmountCents: cumulative },
         });
-        await tx.order.update({ where: { id: request.orderId }, data: { status: 'REFUNDED' } });
+        await tx.order.update({ where: { id: request.orderId }, data: { status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED' } });
         const revoke = {
           status: 'CANCELLED' as const,
           revokedAt: now,
           revokedReason: 'PAYMENT_REFUNDED',
         };
         await tx.ticket.updateMany({
-          where: { orderId: request.orderId, status: 'AVAILABLE' },
+          where: { orderId: request.orderId, status: 'AVAILABLE', ...(!full && request.eventJob ? { orderItemId: request.eventJob.orderItemId } : {}) },
           data: revoke,
         });
         await tx.consumableRight.updateMany({
-          where: { orderId: request.orderId, status: 'AVAILABLE' },
+          where: { orderId: request.orderId, status: 'AVAILABLE', ...(!full && request.eventJob ? { orderItemId: request.eventJob.orderItemId } : {}) },
           data: revoke,
         });
         await tx.productDelivery.updateMany({
-          where: { orderId: request.orderId, status: 'AVAILABLE' },
+          where: { orderId: request.orderId, status: 'AVAILABLE', ...(!full ? { id: '__no_product_in_event_refund__' } : {}) },
           data: revoke,
         });
         await tx.wallet.update({
@@ -3155,7 +3316,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             status: 'COMPLETED',
             approvedAmountCents: amount,
             processedAmountCents: amount,
-            marketplaceFeeRefundedCents: attempt.marketplaceFeeCents ?? 0,
+            marketplaceFeeRefundedCents: fee,
             reviewedAt: now,
             completedAt: now,
             resolutionNote: note?.trim(),

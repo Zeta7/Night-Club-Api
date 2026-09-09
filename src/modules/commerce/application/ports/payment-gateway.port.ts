@@ -77,4 +77,5 @@ export interface PaymentGateway {
 export interface RefundGateway {
   readonly provider: string;
   createRefund(input: CreateRefundInput): Promise<CreateRefundResult>;
+  queryRefund?(input: { paymentId: string; sellerExternalId: string; refundId: string }): Promise<{ id: string; amountCents: number; status: string; payment: VerifiedPaymentEvent }>;
 }

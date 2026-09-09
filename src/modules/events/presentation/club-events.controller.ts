@@ -5,6 +5,8 @@ import { AccessTokenGuard } from '../../identity/presentation/guards/access-toke
 import { EventsService } from '../application/events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { CancelEventDto, ReviewEventCancellationDto } from './dto/cancel-event.dto';
+import { EventReasonDto, RescheduleEventDto } from './dto/reschedule-event.dto';
 
 @ApiTags('Club Events')
 @ApiBearerAuth()
@@ -12,6 +14,40 @@ import { UpdateEventDto } from './dto/update-event.dto';
 @Controller('clubs/:clubId/events')
 export class ClubEventsController {
   constructor(private readonly eventsService: EventsService) {}
+
+  @Get(':eventId/buyer-refunds')
+  buyerRefunds(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string) {
+    return this.eventsService.listBuyerRefunds(user, clubId, eventId);
+  }
+
+  @Post(':eventId/buyer-refunds/:id/review')
+  reviewBuyerRefund(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string, @Param('id') id: string, @Body() input: ReviewEventCancellationDto) {
+    return this.eventsService.reviewBuyerRefund(user, id, input, clubId, eventId);
+  }
+
+  @Get(':eventId/cancellation')
+  cancellation(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string) {
+    return this.eventsService.getBusinessCancellation(user, clubId, eventId);
+  }
+
+  @Post(':eventId/cancellation/refund-request')
+  requestCancellationRefund(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string, @Body() input: EventReasonDto) {
+    return this.eventsService.requestCancellationRefund(user, clubId, eventId, input);
+  }
+
+  @Patch(':eventId/postpone')
+  postpone(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string, @Body() input: EventReasonDto) {
+    return this.eventsService.postponeEvent(user, clubId, eventId, input);
+  }
+
+  @Patch(':eventId/reschedule')
+  reschedule(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string, @Body() input: RescheduleEventDto) {
+    return this.eventsService.rescheduleEvent(user, clubId, eventId, input);
+  }
 
   @Post()
   @ApiOperation({
@@ -96,8 +132,9 @@ export class ClubEventsController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('eventId') eventId: string,
+    @Body() decision: CancelEventDto,
   ) {
-    return this.eventsService.cancelEvent(currentUser, clubId, eventId);
+    return this.eventsService.cancelEvent(currentUser, clubId, eventId, decision);
   }
 
   @Patch(':eventId/reactivate')

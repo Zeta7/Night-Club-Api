@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BuyerEventRefundsController } from './presentation/buyer-event-refunds.controller';
 import { IdentityModule } from '../identity/identity.module';
 import { UploadsModule } from '../uploads/uploads.module';
 import { EventsService } from './application/events.service';
@@ -10,8 +11,8 @@ import { CapacityController } from './presentation/capacity.controller';
 
 @Module({
   imports: [IdentityModule, UploadsModule],
-  controllers: [AdminEventsController, ClubEventsController, PublicEventsController, CapacityController],
+  controllers: [BuyerEventRefundsController, AdminEventsController, ClubEventsController, PublicEventsController, CapacityController],
   providers: [EventsService, CapacityService],
-  exports: [CapacityService],
+  exports: [CapacityService, EventsService],
 })
 export class EventsModule {}

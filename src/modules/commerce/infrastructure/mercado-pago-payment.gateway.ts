@@ -173,6 +173,14 @@ export class MercadoPagoPaymentGateway {
     };
   }
 
+  async queryRefund(input: { paymentId: string; sellerExternalId: string; refundId: string }) {
+    const connection = await this.prisma.marketplaceSellerConnection.findUniqueOrThrow({ where: { provider_externalSellerId: { provider: this.provider, externalSellerId: input.sellerExternalId } } });
+    const client = this.client(this.cipher.decrypt(connection.accessTokenEncrypted));
+    const refund = await this.sdkCall('refund.get', () => new PaymentRefund(client).get({ payment_id: input.paymentId, refund_id: input.refundId }));
+    if (String(refund.payment_id) !== input.paymentId || String(refund.id) !== input.refundId) throw new Error('REFUND_IDENTITY_MISMATCH');
+    return { id: String(refund.id), amountCents: moneyToCents(refund.amount), status: String(refund.status), payment: await this.queryPayment(input.paymentId, input.sellerExternalId) };
+  }
+
   async queryPayment(paymentId: string, sellerExternalId: string): Promise<VerifiedPaymentEvent> {
     const connection = await this.prisma.marketplaceSellerConnection.findUnique({
       where: {

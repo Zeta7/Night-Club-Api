@@ -628,13 +628,31 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
         data: { status: 'REVERSED', reversedAt: new Date(), reversalReason: reason },
       });
     }
+    await this.restoreOrderCredits(tx, orderId);
+  }
+
+  async restoreOrderCredits(tx: Prisma.TransactionClient, orderId: string, cumulativeRefundCents?: number, orderTotalCents?: number) {
+    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId }, select: { userId: true } });
+    await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${'customer-wallet:' + order.userId}))::text`);
     const consumptions = await tx.walletCreditConsumption.findMany({
       where: { orderId },
       include: { creditLot: true },
+      orderBy: { id: 'asc' },
     });
+    const total = orderTotalCents ?? consumptions.reduce((sum, item) => sum + item.amountCents, 0);
+    const cumulative = cumulativeRefundCents ?? total;
+    if (!Number.isSafeInteger(cumulative) || cumulative < 0 || cumulative > total) throw new Error('INVALID_CREDIT_REFUND_ALLOCATION');
+    let prefix = 0;
     for (const item of consumptions) {
-      if (item.creditLot.expiresAt && item.creditLot.expiresAt <= new Date()) continue;
-      const remaining = item.creditLot.remainingAmountCents + item.amountCents;
+      const before = total > 0 ? Number(BigInt(prefix) * BigInt(cumulative) / BigInt(total)) : 0;
+      prefix += item.amountCents;
+      const target = total > 0 ? Number(BigInt(prefix) * BigInt(cumulative) / BigInt(total)) - before : 0;
+      const delta = target - item.restoredCents;
+      if (delta <= 0) continue;
+      await tx.walletCreditConsumption.update({ where: { id: item.id }, data: { restoredCents: target } });
+      // Keep original reward expiration and origin. Never turn expired rewards into cash.
+      if (item.creditLot.status === 'REVERSED' || (item.creditLot.expiresAt && item.creditLot.expiresAt <= new Date())) continue;
+      const remaining = item.creditLot.remainingAmountCents + delta;
       await tx.walletCreditLot.update({
         where: { id: item.creditLotId },
         data: {
@@ -642,16 +660,17 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
           status: remaining >= item.creditLot.originalAmountCents ? 'AVAILABLE' : 'PARTIALLY_USED',
         },
       });
+      if (item.creditLot.referralRewardId) await tx.referralReward.updateMany({ where: { id: item.creditLot.referralRewardId, status: { not: 'REVERSED' } }, data: { status: remaining >= item.creditLot.originalAmountCents ? 'AVAILABLE' : 'PARTIALLY_USED' } });
       await tx.wallet.update({
         where: { id: item.creditLot.walletId },
-        data: { balanceCents: { increment: item.amountCents } },
+        data: { balanceCents: { increment: delta } },
       });
       await tx.walletMovement.create({
         data: {
           walletId: item.creditLot.walletId,
           type: 'REFUND',
           status: 'COMPLETED',
-          amountCents: item.amountCents,
+          amountCents: delta,
           description: 'Restitución de crédito por reembolso',
           referenceId: orderId,
           completedAt: new Date(),

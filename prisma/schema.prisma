@@ -662,6 +662,7 @@ model WalletCreditConsumption {
   creditLotId String
   orderId     String
   amountCents Int
+  restoredCents Int @default(0)
   createdAt   DateTime @default(now())
 
   creditLot WalletCreditLot @relation(fields: [creditLotId], references: [id], onDelete: Restrict)
@@ -1063,10 +1064,101 @@ model Event {
   workerShifts      WorkerShift[]
   occupancy         EventOccupancy?
   capacityMovements CapacityMovement[]
+  cancellation      EventCancellation?
+  purchasedItems    OrderItem[]
+  acceptedReplacements EventReplacementAcceptance[]
 
   @@index([clubId])
   @@index([status])
   @@index([startsAt])
+}
+
+model EventCancellation {
+  id                 String   @id @default(uuid())
+  eventId            String   @unique
+  mode               String
+  status             String
+  reason             String
+  replacementEventId String?
+  requestedByUserId  String
+  reviewedByUserId   String?
+  reviewReason       String?
+  reviewedAt         DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  event              Event    @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  buyerRequests      EventBuyerRefundRequest[]
+  replacementMappings EventReplacementMapping[]
+  replacements EventReplacementAcceptance[]
+  refundJobs EventRefundJob[]
+
+  @@index([status, createdAt])
+}
+
+model EventBuyerRefundRequest {
+  id String @id @default(uuid())
+  cancellationId String
+  orderItemId String
+  status String @default("PENDING_BUSINESS")
+  reason String
+  businessReason String?
+  businessReviewedBy String?
+  beerryReason String?
+  beerryReviewedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  @@unique([cancellationId, orderItemId])
+  @@index([status, createdAt])
+}
+
+model EventReplacementMapping {
+  id String @id @default(uuid())
+  cancellationId String
+  itemType CommerceItemType
+  sourceItemId String
+  targetItemId String
+  targetName String
+  reservedQuantity Int
+  createdAt DateTime @default(now())
+  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  @@unique([cancellationId, itemType, sourceItemId])
+}
+
+model EventReplacementAcceptance {
+  id String @id @default(uuid())
+  cancellationId String
+  orderItemId String
+  targetEventId String
+  targetItemId String
+  targetEvent Event @relation(fields: [targetEventId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  @@unique([cancellationId, orderItemId])
+}
+
+model EventRefundJob {
+  id String @id @default(uuid())
+  cancellationId String
+  orderItemId String
+  refundRequestId String? @unique
+  status String @default("QUEUED")
+  amountCents Int
+  authorizedBy String
+  attempts Int @default(0)
+  nextRunAt DateTime @default(now())
+  lastError String?
+  leaseToken String?
+  manualReviewNote String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  refundRequest RefundRequest? @relation(fields: [refundRequestId], references: [id], onDelete: Restrict)
+  @@unique([cancellationId, orderItemId])
+  @@index([status, nextRunAt])
 }
 
 model EventOccupancy {
@@ -1162,6 +1254,7 @@ model TicketType {
   currency      String           @default("PEN")
   quantityTotal Int
   quantitySold  Int              @default(0)
+  replacementReserved Int @default(0)
   perUserLimit  Int?
   saleStartAt   DateTime?
   saleEndAt     DateTime?
@@ -1311,6 +1404,7 @@ model RefundRequest {
   updatedAt                   DateTime            @updatedAt
 
   order       Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  eventJob EventRefundJob?
   club        Club  @relation(fields: [clubId], references: [id], onDelete: Restrict)
   requestedBy User  @relation(fields: [requestedByUserId], references: [id], onDelete: Restrict)
 
@@ -1480,6 +1574,12 @@ model OrderItem {
   itemType             CommerceItemType
   itemId               String
   nameSnapshot         String
+  eventId              String?
+  eventSnapshot        Json?
+  eventRefundRequests  EventBuyerRefundRequest[]
+  replacements EventReplacementAcceptance[]
+  eventRefundJobs EventRefundJob[]
+  event                Event?                @relation(fields: [eventId], references: [id], onDelete: Restrict)
   quantity             Int
   productDeliveryMode  ProductDeliveryMode   @default(GROUPED)
   unitPriceCents       Int
@@ -1491,6 +1591,7 @@ model OrderItem {
   productDeliveryItems ProductDeliveryItem[]
 
   @@index([orderId])
+  @@index([eventId, orderId])
   @@index([itemType, itemId])
 }
 

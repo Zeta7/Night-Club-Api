@@ -193,6 +193,26 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
   }
 
   async dispatchPending() {
+    // Transactional event notices are a durable outbox. Unique key prevents duplicate enqueue.
+    await this.prisma.$executeRaw(Prisma.sql`WITH candidates AS (
+      SELECT n.id FROM "Notification" n WHERE n.category = 'EVENT'
+        AND NOT EXISTS (SELECT 1 FROM "NotificationDelivery" d WHERE d."notificationId" = n.id AND d.channel = 'IN_APP')
+      ORDER BY n."createdAt" LIMIT 100
+    ), prepared AS (
+      UPDATE "Notification" n SET "deepLink" = COALESCE(n."deepLink", CASE
+        WHEN n.data->>'orderId' IS NOT NULL AND EXISTS (SELECT 1 FROM "Order" o WHERE o.id = n.data->>'orderId' AND o."userId" = n."userId") THEN 'beerry://customer/operations/orders/' || (n.data->>'orderId')
+        WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'SUPER_ADMIN') THEN 'beerry://admin/event-resolutions'
+        WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'ADMIN') THEN 'beerry://admin/club/events'
+        ELSE 'beerry://customer/wallet' END)
+      FROM candidates c WHERE n.id = c.id RETURNING n.*
+    ) INSERT INTO "NotificationDelivery" (id, "notificationId", channel, status, provider, "updatedAt")
+      SELECT gen_random_uuid()::text, n.id, ch.channel::"NotificationChannelType",
+        CASE WHEN ch.channel = 'IN_APP' AND COALESCE(p."inAppEnabled", true) THEN 'SENT'::"NotificationDeliveryStatus"
+          WHEN ch.channel = 'PUSH' AND COALESCE(p."pushEnabled", true) AND n."createdAt" > NOW() - INTERVAL '24 hours' THEN 'PENDING'::"NotificationDeliveryStatus"
+          ELSE 'SKIPPED'::"NotificationDeliveryStatus" END, 'configured', NOW()
+      FROM prepared n CROSS JOIN (VALUES ('IN_APP'),('PUSH')) ch(channel)
+      LEFT JOIN "NotificationPreference" p ON p."userId" = n."userId" AND p.category = n.category
+      ON CONFLICT ("notificationId", channel) DO NOTHING`);
     const deliveries = await this.prisma.notificationDelivery.findMany({
       where: { channel: 'PUSH', status: 'PENDING', nextAttemptAt: { lte: new Date() } },
       include: { notification: true },
@@ -200,7 +220,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     });
     for (const delivery of deliveries) {
       const claimed = await this.prisma.notificationDelivery.updateMany({
-        where: { id: delivery.id, status: 'PENDING' },
+        where: { id: delivery.id, status: 'PENDING', nextAttemptAt: { lte: new Date() } },
         data: { attempts: { increment: 1 }, nextAttemptAt: new Date(Date.now() + 60_000) },
       });
       if (claimed.count !== 1) continue;

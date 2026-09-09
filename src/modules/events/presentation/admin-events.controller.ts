@@ -1,4 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ReviewEventCancellationDto } from './dto/cancel-event.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -10,6 +11,24 @@ import { EventsService } from '../application/events.service';
 @Controller('events/admin')
 export class AdminEventsController {
   constructor(private readonly eventsService: EventsService) {}
+
+  @Get('buyer-refunds')
+  buyerRefunds(@CurrentUser() user: AuthenticatedUser) { return this.eventsService.listBuyerRefunds(user); }
+
+  @Post('buyer-refunds/:id/review')
+  reviewBuyerRefund(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() input: ReviewEventCancellationDto) {
+    return this.eventsService.reviewBuyerRefund(user, id, input);
+  }
+
+  @Get('cancellations')
+  cancellations(@CurrentUser() user: AuthenticatedUser) {
+    return this.eventsService.listCancellationRequests(user);
+  }
+
+  @Post('cancellations/:id/review')
+  reviewCancellation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() input: ReviewEventCancellationDto) {
+    return this.eventsService.reviewCancellation(user, id, input);
+  }
 
   @Get('dashboard')
   @ApiOperation({
