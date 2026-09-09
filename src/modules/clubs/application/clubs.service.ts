@@ -1059,6 +1059,22 @@ export class ClubsService {
       },
       tickets: await Promise.all(
         event.ticketTypes.map(async (ticket) => {
+          const [reserved, alreadyOwned] = await Promise.all([
+            this.prisma.inventoryReservation.aggregate({
+              where: {
+                resourceType: 'TICKET',
+                resourceId: ticket.id,
+                status: 'ACTIVE',
+                expiresAt: { gt: now },
+              },
+              _sum: { quantity: true },
+            }),
+            ticket.perUserLimit
+              ? this.prisma.ticket.count({
+                  where: { ownerUserId: currentUser.id, ticketTypeId: ticket.id },
+                })
+              : Promise.resolve(0),
+          ]);
           const isInsideSaleWindow =
             (!ticket.saleStartAt || ticket.saleStartAt <= now) &&
             (!ticket.saleEndAt || ticket.saleEndAt >= now);
@@ -1073,7 +1089,13 @@ export class ClubsService {
             description: ticket.description,
             price: ticket.priceCents / 100,
             currency: ticket.currency,
-            quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold, 0),
+            quantityAvailable: Math.max(
+              ticket.quantityTotal - ticket.quantitySold - (reserved._sum.quantity ?? 0),
+              0,
+            ),
+            remainingUserLimit: ticket.perUserLimit
+              ? Math.max(ticket.perUserLimit - alreadyOwned, 0)
+              : null,
             perUserLimit: ticket.perUserLimit,
             saleStartAt: ticket.saleStartAt,
             saleEndAt: ticket.saleEndAt,
@@ -1099,6 +1121,8 @@ export class ClubsService {
           status: promotion.status,
           itemsCount: promotion.items.length,
           scope: 'EVENT',
+          startsAt: promotion.startsAt,
+          endsAt: promotion.endsAt,
         })),
       ),
     };

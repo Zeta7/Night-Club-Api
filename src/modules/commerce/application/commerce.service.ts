@@ -258,6 +258,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             : 0;
           if (
             !source ||
+            (source.eventId && source.event?.status !== EventStatus.SALE_ACTIVE) ||
             availableQuantity < item.quantity ||
             (source.saleStartAt && source.saleStartAt > now) ||
             (source.saleEndAt && source.saleEndAt < now) ||
@@ -329,6 +330,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           const now = new Date();
           if (
             (source.startsAt && source.startsAt > now) ||
+            (source.eventId && source.event?.status !== EventStatus.SALE_ACTIVE) ||
             (source.endsAt && source.endsAt < now)
           ) {
             throw badRequest('PROMOTION_UNAVAILABLE', 'Una promoción está fuera de vigencia.');

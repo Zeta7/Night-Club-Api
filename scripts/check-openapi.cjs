@@ -25,6 +25,11 @@ const EXPECTED_MEDIA_TYPES = {
 const EXPECTED_REQUEST_MEDIA_TYPES = {};
 const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   {
+    pattern: /^AdminBusinessAccessController_(?:get|startReview)Response::properties\.request\.properties\.requestedClub\.properties\.(?:addressJson|contactJson|socialMediaJson|scheduleJson)$/,
+    reason: 'Administrative business access detail returns the stored club JSON fields unchanged.',
+    nullable: true,
+  },
+  {
     pattern: /^NotificationController_listResponse::properties\.items\.items\.properties\.data$/,
     reason: 'Notification data is arbitrary nullable JSON selected by each template.',
     nullable: true,
