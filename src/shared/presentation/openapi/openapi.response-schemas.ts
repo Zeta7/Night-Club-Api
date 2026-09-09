@@ -6276,6 +6276,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo quantity available expuesto por el runtime actual.',
               example: 1,
             },
+            remainingUserLimit: {
+              type: 'number',
+              nullable: true,
+              description: 'Campo remaining user limit expuesto por el runtime actual.',
+            },
             perUserLimit: {
               type: 'number',
               nullable: true,
@@ -6314,6 +6319,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'price',
             'currency',
             'quantityAvailable',
+            'remainingUserLimit',
             'perUserLimit',
             'saleStartAt',
             'saleEndAt',
@@ -6396,6 +6402,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: 'string',
               description: 'Campo scope expuesto por el runtime actual.',
             },
+            startsAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo starts at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            endsAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo ends at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
           },
           required: [
             'id',
@@ -6411,6 +6431,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'status',
             'itemsCount',
             'scope',
+            'startsAt',
+            'endsAt',
           ],
           additionalProperties: false,
         },
@@ -18757,6 +18779,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     ],
     additionalProperties: false,
   },
+  CommerceController_paymentOptionsResponse: {
+    type: 'object',
+    properties: {
+      acceptsWallet: {
+        type: 'boolean',
+        description: 'Campo accepts wallet expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['acceptsWallet'],
+    additionalProperties: false,
+  },
   CommerceController_cartResponse: {
     oneOf: [
       {
@@ -23689,6 +23723,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description: 'Campo marketplace fee bps expuesto por el runtime actual.',
                 },
+                acceptsWalletPayments: {
+                  type: 'boolean',
+                  description: 'Campo accepts wallet payments expuesto por el runtime actual.',
+                  example: false,
+                },
               },
               required: [
                 'id',
@@ -23705,6 +23744,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 'socialMediaJson',
                 'scheduleJson',
                 'marketplaceFeeBps',
+                'acceptsWalletPayments',
               ],
               additionalProperties: false,
               description: 'Campo club expuesto por el runtime actual.',
@@ -23962,6 +24002,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo ticket type id expuesto por el runtime actual.',
               example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
             },
+            ownerUserId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Campo owner user id expuesto por el runtime actual.',
+              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            },
             code: {
               type: 'string',
               description: 'Campo code expuesto por el runtime actual.',
@@ -24016,12 +24062,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo order item id expuesto por el runtime actual.',
               example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
             },
-            ownerUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo owner user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
           },
           required: [
             'club',
@@ -24035,6 +24075,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'clubId',
             'orderId',
             'ticketTypeId',
+            'ownerUserId',
             'code',
             'qrPayload',
             'signatureVersion',
@@ -24045,7 +24086,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'usedAt',
             'revokedReason',
             'orderItemId',
-            'ownerUserId',
           ],
           additionalProperties: false,
         },
@@ -24192,6 +24232,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description: 'Campo marketplace fee bps expuesto por el runtime actual.',
                 },
+                acceptsWalletPayments: {
+                  type: 'boolean',
+                  description: 'Campo accepts wallet payments expuesto por el runtime actual.',
+                  example: false,
+                },
               },
               required: [
                 'id',
@@ -24208,6 +24253,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 'socialMediaJson',
                 'scheduleJson',
                 'marketplaceFeeBps',
+                'acceptsWalletPayments',
               ],
               additionalProperties: false,
               description: 'Campo club expuesto por el runtime actual.',
@@ -24561,6 +24607,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo product id expuesto por el runtime actual.',
               example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
             },
+            ownerUserId: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Campo owner user id expuesto por el runtime actual.',
+              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            },
             code: {
               type: 'string',
               description: 'Campo code expuesto por el runtime actual.',
@@ -24614,12 +24666,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               format: 'uuid',
               description: 'Campo order item id expuesto por el runtime actual.',
               example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-            },
-            ownerUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo owner user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             sourceType: {
               type: 'string',
@@ -24818,12 +24864,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'revokedAt',
             'clubId',
             'orderId',
+            'ownerUserId',
             'code',
             'qrPayload',
             'signatureVersion',
             'usedAt',
             'revokedReason',
-            'ownerUserId',
             'sourceType',
           ],
           additionalProperties: false,
@@ -25943,6 +25989,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     required: ['items', 'summary', 'pagination'],
     additionalProperties: false,
   },
+  MercadoPagoConnectionsController_walletAcceptanceResponse: {
+    type: 'object',
+    properties: {
+      enabled: {
+        type: 'boolean',
+        description: 'Campo enabled expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['enabled'],
+    additionalProperties: false,
+  },
+  MercadoPagoConnectionsController_setWalletAcceptanceResponse: {
+    type: 'object',
+    properties: {
+      enabled: {
+        type: 'boolean',
+        description: 'Campo enabled expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['enabled'],
+    additionalProperties: false,
+  },
   MercadoPagoConnectionsController_statusResponse: {
     type: 'object',
     properties: {
@@ -26406,6 +26476,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description: 'Campo marketplace fee bps expuesto por el runtime actual.',
               },
+              acceptsWalletPayments: {
+                type: 'boolean',
+                description: 'Campo accepts wallet payments expuesto por el runtime actual.',
+                example: false,
+              },
             },
             required: [
               'id',
@@ -26422,6 +26497,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               'socialMediaJson',
               'scheduleJson',
               'marketplaceFeeBps',
+              'acceptsWalletPayments',
             ],
             additionalProperties: false,
             nullable: true,
@@ -26675,6 +26751,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
                 description: 'Campo marketplace fee bps expuesto por el runtime actual.',
               },
+              acceptsWalletPayments: {
+                type: 'boolean',
+                description: 'Campo accepts wallet payments expuesto por el runtime actual.',
+                example: false,
+              },
             },
             required: [
               'id',
@@ -26691,6 +26772,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               'socialMediaJson',
               'scheduleJson',
               'marketplaceFeeBps',
+              'acceptsWalletPayments',
             ],
             additionalProperties: false,
             nullable: true,
@@ -28115,7 +28197,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': ['FINANCIAL_PROFILE_REQUIRED', 'WITHDRAWAL_BELOW_MINIMUM'],
     '403': ['WITHDRAWAL_FORBIDDEN'],
     '404': ['NOTIFICATION_TEMPLATE_NOT_FOUND'],
-    '409': ['INSUFFICIENT_AVAILABLE_BALANCE'],
+    '409': ['INSUFFICIENT_AVAILABLE_BALANCE', 'LEGACY_SPLIT_RECONCILIATION_REQUIRED'],
   },
   WalletsController_clubWithdrawals: {
     '403': ['WITHDRAWAL_FORBIDDEN'],
@@ -28178,8 +28260,10 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
       'RESERVATION_EXPIRED',
       'RESERVATION_NOT_ACTIVE',
       'TICKET_OVERSOLD',
+      'WALLET_NOT_ACCEPTED',
     ],
   },
+  CommerceController_paymentOptions: {},
   CommerceController_cart: {},
   CommerceController_addCartItem: {
     '400': ['CART_ITEM_UNAVAILABLE', 'CART_QUANTITY_UNAVAILABLE', 'MULTI_CLUB_CART'],
@@ -28260,10 +28344,12 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '403': ['SUPER_ADMIN_REQUIRED'],
     '404': ['REFUND_REQUEST_NOT_FOUND'],
     '409': [
+      'PAYMENT_NOT_REFUNDABLE',
       'REFUND_AMOUNT_EXCEEDS_AVAILABLE',
       'REFUND_GATEWAY_UNAVAILABLE',
       'REFUND_PROVIDER_NOT_SUPPORTED',
       'REFUND_REQUEST_NOT_PROCESSABLE',
+      'WALLET_FULL_REFUND_REQUIRED',
     ],
   },
   CommerceController_operations: {
@@ -28383,6 +28469,13 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
   },
   ReferralsController_rewards: {
     '403': ['SUPER_ADMIN_REQUIRED'],
+  },
+  MercadoPagoConnectionsController_walletAcceptance: {
+    '404': ['CLUB_NOT_FOUND'],
+  },
+  MercadoPagoConnectionsController_setWalletAcceptance: {
+    '403': ['CLUB_ADMIN_REQUIRED'],
+    '404': ['CLUB_NOT_FOUND'],
   },
   MercadoPagoConnectionsController_status: {
     '403': ['CLUB_ADMIN_REQUIRED'],
