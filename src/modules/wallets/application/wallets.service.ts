@@ -57,7 +57,12 @@ export class WalletsService {
     const topUp = await this.prisma.walletTopUp.findFirst({ where: { id, userId: user.id },
       select: { id: true, status: true, currency: true, amountCents: true, createdAt: true, approvedAt: true } });
     if (!topUp) throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No encontramos tu recarga.');
-    return { ...topUp, title: 'Detalle de recarga', paymentMethod: 'MERCADO_PAGO', items: [] };
+    return {
+      ...topUp,
+      title: 'Detalle de recarga',
+      paymentMethod: 'MERCADO_PAGO',
+      items: [] as Array<{ nameSnapshot: string; quantity: number; totalCents: number }>,
+    };
   }
 
   async movementDetail(user: AuthenticatedUser, id: string) {

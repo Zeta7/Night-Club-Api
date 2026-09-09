@@ -25,6 +25,12 @@ const EXPECTED_MEDIA_TYPES = {
 const EXPECTED_REQUEST_MEDIA_TYPES = {};
 const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   {
+    pattern:
+      /^AdminBusinessAccessController_(?:get|startReview)Response::properties\.request\.properties\.requestedClub\.properties\.(?:addressJson|contactJson|socialMediaJson|scheduleJson)$/,
+    reason: 'Administrative business access detail returns the stored club JSON fields unchanged.',
+    nullable: true,
+  },
+  {
     pattern: /^NotificationController_listResponse::properties\.items\.items\.properties\.data$/,
     reason: 'Notification data is arbitrary nullable JSON selected by each template.',
     nullable: true,
@@ -93,6 +99,17 @@ const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
     pattern:
       /^CommerceController_(?:tickets|consumables)Response::properties\.items\.items\.properties\.club\.properties\.(?:addressJson|contactJson|socialMediaJson|scheduleJson)$/,
     reason: 'Redeemable rows include the Club JSON columns returned by the runtime.',
+    nullable: true,
+  },
+  {
+    pattern: /^WalletsController_movementResponse::properties\.related$/,
+    reason: 'Movement detail may embed an order, a top-up, or no related operation.',
+    nullable: false,
+  },
+  {
+    pattern:
+      /^CommerceController_(?:clubOrders|clubOrderDetail)Response::properties\.(?:items\.items|order)\.properties\.items\.items\.properties\.eventSnapshot$/,
+    reason: 'Order lines preserve the nullable event snapshot stored as historical JSON.',
     nullable: true,
   },
 ];

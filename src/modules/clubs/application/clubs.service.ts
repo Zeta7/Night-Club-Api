@@ -30,6 +30,12 @@ const CUSTOMER_VISIBLE_EVENT_STATUSES = [
   EventStatus.SOLD_OUT,
   EventStatus.IN_PROGRESS,
 ] as const;
+const CUSTOMER_DETAIL_EVENT_STATUSES = [
+  ...CUSTOMER_VISIBLE_EVENT_STATUSES,
+  EventStatus.FINISHED,
+  EventStatus.CANCELLED,
+  EventStatus.POSTPONED,
+] as const;
 // Customer discovery must reflect newly activated clubs and published events.
 // Keep the cache effectively disabled until mutation-driven invalidation exists.
 const CUSTOMER_HOME_CACHE_TTL_MS = 0;
@@ -251,29 +257,58 @@ export class ClubsService {
     const previousStart = new Date(todayStart.getTime() - 86_400_000);
     const [paidSales, previousSales, validatedQr, customers, latestSales, recentActivity] =
       await Promise.all([
-        this.prisma.order.aggregate({ where: { clubId: club.id, status: 'PAID', paidAt: { gte: todayStart } }, _sum: { totalCents: true }, _count: true }),
-        this.prisma.order.aggregate({ where: { clubId: club.id, status: 'PAID', paidAt: { gte: previousStart, lt: todayStart } }, _sum: { totalCents: true } }),
-        this.prisma.qrValidationAttempt.count({ where: { clubId: club.id, outcome: 'VALID', createdAt: { gte: todayStart } } }),
+        this.prisma.order.aggregate({
+          where: { clubId: club.id, status: 'PAID', paidAt: { gte: todayStart } },
+          _sum: { totalCents: true },
+          _count: true,
+        }),
+        this.prisma.order.aggregate({
+          where: {
+            clubId: club.id,
+            status: 'PAID',
+            paidAt: { gte: previousStart, lt: todayStart },
+          },
+          _sum: { totalCents: true },
+        }),
+        this.prisma.qrValidationAttempt.count({
+          where: { clubId: club.id, outcome: 'VALID', createdAt: { gte: todayStart } },
+        }),
         this.prisma.order.groupBy({ by: ['userId'], where: { clubId: club.id, status: 'PAID' } }),
         this.prisma.order.findMany({
           where: { clubId: club.id },
-          include: { user: { select: { fullName: true } }, items: { orderBy: { createdAt: 'asc' } }, paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } },
-          orderBy: { createdAt: 'desc' }, take: 10,
+          include: {
+            user: { select: { fullName: true } },
+            items: { orderBy: { createdAt: 'asc' } },
+            paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
         }),
-        this.prisma.auditLogEntry.findMany({ where: { clubId: club.id }, include: { actor: { select: { fullName: true } } }, orderBy: { createdAt: 'desc' }, take: 10 }),
+        this.prisma.auditLogEntry.findMany({
+          where: { clubId: club.id },
+          include: { actor: { select: { fullName: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        }),
       ]);
     const currentAmount = paidSales._sum.totalCents ?? 0;
     const previousAmount = previousSales._sum.totalCents ?? 0;
-    const salesTrend = previousAmount > 0
-      ? Math.round(((currentAmount - previousAmount) / previousAmount) * 1000) / 10
-      : currentAmount > 0 ? 100 : 0;
-    const alerts = topProducts.filter((product) => product.stockQuantity <= 5).map((product) => ({
-      type: product.stockQuantity <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK',
-      severity: product.stockQuantity <= 0 ? 'critical' : 'warning',
-      resourceId: product.id,
-      title: product.stockQuantity <= 0 ? `${product.name} agotado` : `Stock bajo: ${product.name}`,
-      value: product.stockQuantity,
-    }));
+    const salesTrend =
+      previousAmount > 0
+        ? Math.round(((currentAmount - previousAmount) / previousAmount) * 1000) / 10
+        : currentAmount > 0
+          ? 100
+          : 0;
+    const alerts = topProducts
+      .filter((product) => product.stockQuantity <= 5)
+      .map((product) => ({
+        type: product.stockQuantity <= 0 ? 'OUT_OF_STOCK' : 'LOW_STOCK',
+        severity: product.stockQuantity <= 0 ? 'critical' : 'warning',
+        resourceId: product.id,
+        title:
+          product.stockQuantity <= 0 ? `${product.name} agotado` : `Stock bajo: ${product.name}`,
+        value: product.stockQuantity,
+      }));
 
     return {
       message: 'Dashboard admin obtenido correctamente.',
@@ -571,7 +606,10 @@ export class ClubsService {
           description: ticket.description,
           price: ticket.priceCents / 100,
           currency: ticket.currency,
-          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved, 0),
+          quantityAvailable: Math.max(
+            ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved,
+            0,
+          ),
           perUserLimit: ticket.perUserLimit,
           saleStartAt: ticket.saleStartAt,
           saleEndAt: ticket.saleEndAt,
@@ -947,7 +985,10 @@ export class ClubsService {
           description: ticket.description,
           price: ticket.priceCents / 100,
           currency: ticket.currency,
-          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved, 0),
+          quantityAvailable: Math.max(
+            ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved,
+            0,
+          ),
           perUserLimit: ticket.perUserLimit,
           saleStartAt: ticket.saleStartAt,
           saleEndAt: ticket.saleEndAt,
@@ -997,7 +1038,7 @@ export class ClubsService {
     const event = await this.prisma.event.findFirst({
       where: {
         id: eventId,
-        status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+        status: { in: [...CUSTOMER_DETAIL_EVENT_STATUSES] },
         club: paymentReadyClubWhere(now),
       },
       include: {
@@ -1052,21 +1093,50 @@ export class ClubsService {
         status: club.status,
       },
       tickets: await Promise.all(
-        event.ticketTypes.map(async (ticket) => ({
-          id: ticket.id,
-          clubId: ticket.clubId,
-          clubName: club.name,
-          eventId: event.id,
-          eventName: event.name,
-          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
-          name: ticket.name,
-          description: ticket.description,
-          price: ticket.priceCents / 100,
-          currency: ticket.currency,
-          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved, 0),
-          perUserLimit: ticket.perUserLimit,
-          status: ticket.status,
-        })),
+        event.ticketTypes.map(async (ticket) => {
+          const [reserved, alreadyOwned] = await Promise.all([
+            this.prisma.inventoryReservation.aggregate({
+              where: {
+                resourceType: 'TICKET',
+                resourceId: ticket.id,
+                status: 'ACTIVE',
+                expiresAt: { gt: now },
+              },
+              _sum: { quantity: true },
+            }),
+            ticket.perUserLimit
+              ? this.prisma.ticket.count({
+                  where: { ownerUserId: currentUser.id, ticketTypeId: ticket.id },
+                })
+              : Promise.resolve(0),
+          ]);
+          return {
+            id: ticket.id,
+            clubId: ticket.clubId,
+            clubName: club.name,
+            eventId: event.id,
+            eventName: event.name,
+            imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+            name: ticket.name,
+            description: ticket.description,
+            price: ticket.priceCents / 100,
+            currency: ticket.currency,
+            quantityAvailable: Math.max(
+              ticket.quantityTotal -
+                ticket.quantitySold -
+                (ticket.replacementReserved ?? 0) -
+                (reserved._sum.quantity ?? 0),
+              0,
+            ),
+            perUserLimit: ticket.perUserLimit,
+            remainingUserLimit: ticket.perUserLimit
+              ? Math.max(ticket.perUserLimit - alreadyOwned, 0)
+              : null,
+            saleStartAt: ticket.saleStartAt,
+            saleEndAt: ticket.saleEndAt,
+            status: ticket.status,
+          };
+        }),
       ),
       promotions: await Promise.all(
         event.promotions.map(async (promotion) => ({
@@ -1083,6 +1153,8 @@ export class ClubsService {
           status: promotion.status,
           itemsCount: promotion.items.length,
           scope: 'EVENT',
+          startsAt: promotion.startsAt,
+          endsAt: promotion.endsAt,
         })),
       ),
     };
@@ -1221,9 +1293,15 @@ export class ClubsService {
       },
       update: {
         ...(input.refundPolicy !== undefined ? { refundPolicy: clean(input.refundPolicy) } : {}),
-        ...(input.responsibleName !== undefined ? { responsibleName: clean(input.responsibleName) } : {}),
-        ...(input.responsibleEmail !== undefined ? { responsibleEmail: clean(input.responsibleEmail) } : {}),
-        ...(input.responsiblePhone !== undefined ? { responsiblePhone: clean(input.responsiblePhone) } : {}),
+        ...(input.responsibleName !== undefined
+          ? { responsibleName: clean(input.responsibleName) }
+          : {}),
+        ...(input.responsibleEmail !== undefined
+          ? { responsibleEmail: clean(input.responsibleEmail) }
+          : {}),
+        ...(input.responsiblePhone !== undefined
+          ? { responsiblePhone: clean(input.responsiblePhone) }
+          : {}),
         ...(input.approvalDocumentUploadIds !== undefined
           ? { approvalDocumentUploadIds: input.approvalDocumentUploadIds }
           : {}),

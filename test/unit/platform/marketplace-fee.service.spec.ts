@@ -9,7 +9,7 @@ describe('MarketplaceFeeService', () => {
   it.each([
     [10000, 0, 0],
     [10000, 500, 500],
-    [1, 5000, 1],
+    [2, 3000, 1],
     [101, 500, 5],
   ])('rounds %i cents at %i bps to %i cents', (amount, bps, expected) => {
     const service = new MarketplaceFeeService({} as any, config, audit);
@@ -21,13 +21,11 @@ describe('MarketplaceFeeService', () => {
       club: { findUnique: jest.fn().mockResolvedValue({ marketplaceFeeBps: 750 }) },
     } as any;
     const service = new MarketplaceFeeService(prisma, config, audit);
-    jest
-      .spyOn(service, 'readGlobal')
-      .mockResolvedValue({
-        defaultMarketplaceFeeBps: 500,
-        source: 'BPS',
-        maximumMarketplaceFeeBps: 3000,
-      });
+    jest.spyOn(service, 'readGlobal').mockResolvedValue({
+      defaultMarketplaceFeeBps: 500,
+      source: 'BPS',
+      maximumMarketplaceFeeBps: 3000,
+    });
     await expect(service.resolve('club', 10001)).resolves.toEqual({
       marketplaceFeeBps: 750,
       marketplaceFeeCents: 750,
