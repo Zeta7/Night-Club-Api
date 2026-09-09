@@ -914,7 +914,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
               : !paymentsReady
                 ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
                 : !eventAllowsPurchase
-                  ? 'La venta de entradas para este evento no está activa.'
+                  ? source.event?.status === EventStatus.PUBLISHED
+                    ? 'Las ventas de este evento todavía no están activas.'
+                    : 'Las ventas de este evento no están activas.'
                   : 'La entrada ya no está disponible.',
           }
         : null;
@@ -1008,7 +1010,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             : !paymentsReady
               ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
               : !eventAllowsPurchase
-                ? 'Las promociones de este evento no están disponibles para compra.'
+                ? source.event?.status === EventStatus.PUBLISHED
+                  ? 'Las ventas de este evento todavía no están activas.'
+                  : 'Las ventas de este evento no están activas.'
                 : 'La promoción ya no está disponible.',
         }
       : null;
