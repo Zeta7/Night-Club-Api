@@ -258,6 +258,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             : 0;
           if (
             !source ||
+            (source.eventId && source.event?.status !== EventStatus.SALE_ACTIVE) ||
             availableQuantity < item.quantity ||
             (source.saleStartAt && source.saleStartAt > now) ||
             (source.saleEndAt && source.saleEndAt < now) ||
@@ -329,6 +330,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           const now = new Date();
           if (
             (source.startsAt && source.startsAt > now) ||
+            (source.eventId && source.event?.status !== EventStatus.SALE_ACTIVE) ||
             (source.endsAt && source.endsAt < now)
           ) {
             throw badRequest('PROMOTION_UNAVAILABLE', 'Una promoción está fuera de vigencia.');
@@ -841,6 +843,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const source = await this.prisma.ticketType.findUnique({
         where: { id },
         include: {
+          event: { select: { status: true } },
           club: {
             include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
           },
@@ -871,9 +874,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const paymentsReady =
         this.paymentGateway.provider !== 'mercado_pago' ||
         Boolean(source?.club.sellerConnections.length);
+      const eventAllowsPurchase =
+        !source?.eventId || source.event?.status === EventStatus.SALE_ACTIVE;
       const available = Boolean(
         source &&
         paymentsReady &&
+        eventAllowsPurchase &&
         source.status === TicketTypeStatus.ACTIVE &&
         source.club.status === ClubStatus.ACTIVE &&
         globalAvailable > 0 &&
@@ -895,7 +901,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
               ? null
               : !paymentsReady
                 ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
-                : 'La entrada ya no está disponible.',
+                : !eventAllowsPurchase
+                  ? 'La venta de entradas para este evento no está activa.'
+                  : 'La entrada ya no está disponible.',
           }
         : null;
     }
@@ -952,6 +960,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const source = await this.prisma.promotion.findUnique({
       where: { id },
       include: {
+        event: { select: { status: true } },
         club: {
           include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
         },
@@ -961,9 +970,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const paymentsReady =
       this.paymentGateway.provider !== 'mercado_pago' ||
       Boolean(source?.club.sellerConnections.length);
+    const eventAllowsPurchase =
+      !source?.eventId || source.event?.status === EventStatus.SALE_ACTIVE;
     const available = Boolean(
       source &&
       paymentsReady &&
+      eventAllowsPurchase &&
       source.status === PromotionStatus.ACTIVE &&
       source.club.status === ClubStatus.ACTIVE &&
       (!source.startsAt || source.startsAt <= now) &&
@@ -983,7 +995,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             ? null
             : !paymentsReady
               ? 'Este negocio todavía no ha habilitado sus pagos con Mercado Pago.'
-              : 'La promoción ya no está disponible.',
+              : !eventAllowsPurchase
+                ? 'Las promociones de este evento no están disponibles para compra.'
+                : 'La promoción ya no está disponible.',
         }
       : null;
   }

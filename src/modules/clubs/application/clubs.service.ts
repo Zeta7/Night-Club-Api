@@ -30,6 +30,12 @@ const CUSTOMER_VISIBLE_EVENT_STATUSES = [
   EventStatus.SOLD_OUT,
   EventStatus.IN_PROGRESS,
 ] as const;
+const CUSTOMER_DETAIL_EVENT_STATUSES = [
+  ...CUSTOMER_VISIBLE_EVENT_STATUSES,
+  EventStatus.FINISHED,
+  EventStatus.CANCELLED,
+  EventStatus.POSTPONED,
+] as const;
 // Customer discovery must reflect newly activated clubs and published events.
 // Keep the cache effectively disabled until mutation-driven invalidation exists.
 const CUSTOMER_HOME_CACHE_TTL_MS = 0;
@@ -997,7 +1003,7 @@ export class ClubsService {
     const event = await this.prisma.event.findFirst({
       where: {
         id: eventId,
-        status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
+        status: { in: [...CUSTOMER_DETAIL_EVENT_STATUSES] },
         club: paymentReadyClubWhere(now),
       },
       include: {
@@ -1052,21 +1058,53 @@ export class ClubsService {
         status: club.status,
       },
       tickets: await Promise.all(
-        event.ticketTypes.map(async (ticket) => ({
-          id: ticket.id,
-          clubId: ticket.clubId,
-          clubName: club.name,
-          eventId: event.id,
-          eventName: event.name,
-          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
-          name: ticket.name,
-          description: ticket.description,
-          price: ticket.priceCents / 100,
-          currency: ticket.currency,
-          quantityAvailable: Math.max(ticket.quantityTotal - ticket.quantitySold, 0),
-          perUserLimit: ticket.perUserLimit,
-          status: ticket.status,
-        })),
+        event.ticketTypes.map(async (ticket) => {
+          const [reserved, alreadyOwned] = await Promise.all([
+            this.prisma.inventoryReservation.aggregate({
+              where: {
+                resourceType: 'TICKET',
+                resourceId: ticket.id,
+                status: 'ACTIVE',
+                expiresAt: { gt: now },
+              },
+              _sum: { quantity: true },
+            }),
+            ticket.perUserLimit
+              ? this.prisma.ticket.count({
+                  where: { ownerUserId: currentUser.id, ticketTypeId: ticket.id },
+                })
+              : Promise.resolve(0),
+          ]);
+          const isInsideSaleWindow =
+            (!ticket.saleStartAt || ticket.saleStartAt <= now) &&
+            (!ticket.saleEndAt || ticket.saleEndAt >= now);
+          return {
+            id: ticket.id,
+            clubId: ticket.clubId,
+            clubName: club.name,
+            eventId: event.id,
+            eventName: event.name,
+            imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+            name: ticket.name,
+            description: ticket.description,
+            price: ticket.priceCents / 100,
+            currency: ticket.currency,
+            quantityAvailable: Math.max(
+              ticket.quantityTotal - ticket.quantitySold - (reserved._sum.quantity ?? 0),
+              0,
+            ),
+            remainingUserLimit: ticket.perUserLimit
+              ? Math.max(ticket.perUserLimit - alreadyOwned, 0)
+              : null,
+            perUserLimit: ticket.perUserLimit,
+            saleStartAt: ticket.saleStartAt,
+            saleEndAt: ticket.saleEndAt,
+            status:
+              ticket.status === TicketTypeStatus.ACTIVE && !isInsideSaleWindow
+                ? TicketTypeStatus.INACTIVE
+                : ticket.status,
+          };
+        }),
       ),
       promotions: await Promise.all(
         event.promotions.map(async (promotion) => ({
@@ -1083,6 +1121,8 @@ export class ClubsService {
           status: promotion.status,
           itemsCount: promotion.items.length,
           scope: 'EVENT',
+          startsAt: promotion.startsAt,
+          endsAt: promotion.endsAt,
         })),
       ),
     };

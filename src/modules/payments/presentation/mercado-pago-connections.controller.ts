@@ -1,15 +1,10 @@
 import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { IsBoolean } from 'class-validator';
+import { WalletAcceptanceDto } from './wallet-acceptance.dto';
 import { ApiBearerAuth, ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SellerConnectionService } from '../application/seller-connection.service';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { ConfigService } from '@nestjs/config';
-
-class WalletAcceptanceDto {
-  @IsBoolean()
-  enabled!: boolean;
-}
 
 @ApiTags('Mercado Pago connections')
 @ApiBearerAuth()
