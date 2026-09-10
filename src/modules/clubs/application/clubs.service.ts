@@ -17,6 +17,7 @@ import {
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
+import { FeaturedCampaignsService } from '../../featured-campaigns/application/featured-campaigns.service';
 import { UploadsService } from '../../uploads/application/uploads.service';
 import { CreateClubDto } from '../presentation/dto/create-club.dto';
 import { CustomerHomeQueryDto } from '../presentation/dto/customer-home-query.dto';
@@ -62,6 +63,7 @@ export class ClubsService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly uploadsService: UploadsService,
+    private readonly featuredCampaigns: FeaturedCampaignsService,
   ) {}
 
   async createClub(currentUser: AuthenticatedUser, input: CreateClubDto) {
@@ -436,6 +438,7 @@ export class ClubsService {
     if (cached && cached.expiresAt > Date.now()) {
       return {
         ...cached.payload,
+        featuredItems: [],
         viewer: {
           id: currentUser.id,
           role: currentUser.role,
@@ -464,6 +467,7 @@ export class ClubsService {
       });
       return {
         ...payload,
+        featuredItems: [],
         viewer: {
           id: currentUser.id,
           role: currentUser.role,
@@ -657,6 +661,11 @@ export class ClubsService {
     });
     return {
       ...payload,
+      featuredItems: await this.featuredCampaigns.selectForHome({
+        viewerUserId: currentUser.id,
+        clubIds,
+        eventIds: events.map((event) => event.id),
+      }),
       viewer: {
         id: currentUser.id,
         role: currentUser.role,

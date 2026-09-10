@@ -1098,27 +1098,33 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       include: {
         order: { include: { items: true, user: { select: { fullName: true } } } },
         walletTopUp: true,
+        featuredCampaign: true,
       },
     });
     if (!attempt || attempt.provider !== event.provider) {
       throw notFound('PAYMENT_ATTEMPT_NOT_FOUND', 'El pago del proveedor no está registrado.');
     }
     if (event.provider === 'mercado_pago') {
+      const commonMismatch =
+        event.attemptId !== attempt.id ||
+        event.currency !== attempt.currency ||
+        event.amountCents !== attempt.amountCents;
       const mismatch =
         attempt.purpose === 'WALLET_TOP_UP'
-          ? event.attemptId !== attempt.id ||
+          ? commonMismatch ||
             event.orderId !== attempt.walletTopUpId ||
             event.clubId != null ||
-            event.currency !== attempt.currency ||
-            event.amountCents !== attempt.amountCents ||
             event.marketplaceFeeCents !== 0
-          : event.attemptId !== attempt.id ||
-            event.orderId !== attempt.orderId ||
-            event.clubId !== attempt.order?.clubId ||
-            event.currency !== attempt.currency ||
-            event.amountCents !== attempt.amountCents ||
-            event.sellerExternalId !== attempt.sellerExternalId ||
-            event.marketplaceFeeCents !== attempt.marketplaceFeeCents;
+          : attempt.purpose === 'FEATURED_CAMPAIGN'
+            ? commonMismatch ||
+              event.orderId !== attempt.featuredCampaignId ||
+              event.clubId != null ||
+              event.marketplaceFeeCents !== 0
+            : commonMismatch ||
+              event.orderId !== attempt.orderId ||
+              event.clubId !== attempt.order?.clubId ||
+              event.sellerExternalId !== attempt.sellerExternalId ||
+              event.marketplaceFeeCents !== attempt.marketplaceFeeCents;
       if (mismatch) {
         throw conflict(
           'MERCADO_PAGO_PAYMENT_MISMATCH',
@@ -1128,6 +1134,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
     if (attempt.purpose === 'WALLET_TOP_UP') {
       return this.processWalletTopUpEvent(attempt, event);
+    }
+    if (attempt.purpose === 'FEATURED_CAMPAIGN') {
+      return this.processFeaturedCampaignEvent(attempt, event);
     }
     if (!attempt.order || !attempt.orderId) {
       throw notFound('ORDER_PAYMENT_NOT_FOUND', 'No se encontró la orden asociada al pago.');
@@ -1841,6 +1850,85 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       },
       data: { status, processedAt: new Date() },
     });
+  }
+
+  private async processFeaturedCampaignEvent(attempt: any, event: VerifiedPaymentEvent) {
+    const campaign = attempt.featuredCampaign;
+    if (!campaign) {
+      throw notFound(
+        'FEATURED_CAMPAIGN_NOT_FOUND',
+        'No se encontró la promoción asociada al pago.',
+      );
+    }
+    try {
+      await this.prisma.paymentProviderEvent.create({
+        data: {
+          paymentAttemptId: attempt.id,
+          provider: event.provider,
+          providerEventId: event.providerEventId,
+          type: `FEATURED_CAMPAIGN_${event.outcome}`,
+          payload: event.payload as Prisma.InputJsonValue | undefined,
+        },
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === 'P2002') {
+        const existing = await this.prisma.paymentProviderEvent.findUnique({
+          where: {
+            provider_providerEventId: {
+              provider: event.provider,
+              providerEventId: event.providerEventId,
+            },
+          },
+        });
+        if (existing?.status === 'PROCESSED' || existing?.status === 'IGNORED') return;
+      } else {
+        throw error;
+      }
+    }
+    if (event.outcome === 'PENDING') {
+      await this.finishProviderEvent(event, 'IGNORED');
+      return;
+    }
+    await this.prisma.$transaction(async (tx) => {
+      const current = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
+      if (!current || current.status !== 'PENDING') return;
+      const now = new Date();
+      if (event.outcome === 'APPROVED') {
+        const configuredEnd = new Date(now.getTime() + campaign.durationDays * 86_400_000);
+        const eventTarget = campaign.eventId
+          ? await tx.event.findUnique({
+              where: { id: campaign.eventId },
+              select: { endsAt: true },
+            })
+          : null;
+        const endsAt =
+          eventTarget && eventTarget.endsAt < configuredEnd ? eventTarget.endsAt : configuredEnd;
+        await tx.paymentAttempt.update({
+          where: { id: attempt.id },
+          data: { status: 'APPROVED', approvedAt: now },
+        });
+        await tx.featuredCampaign.update({
+          where: { id: campaign.id },
+          data: { status: 'ACTIVE', paidAt: now, startsAt: now, endsAt },
+        });
+      } else {
+        const expired = event.outcome === 'EXPIRED';
+        await tx.paymentAttempt.update({
+          where: { id: attempt.id },
+          data: {
+            status: expired ? 'EXPIRED' : 'REJECTED',
+            failureCode: event.failureCode,
+            failureMessage: event.failureMessage,
+            failedAt: now,
+          },
+        });
+        await tx.featuredCampaign.update({
+          where: { id: campaign.id },
+          data: { status: expired ? 'EXPIRED' : 'REJECTED' },
+        });
+      }
+    });
+    await this.finishProviderEvent(event, 'PROCESSED');
   }
 
   private async processWalletTopUpEvent(attempt: any, event: VerifiedPaymentEvent) {

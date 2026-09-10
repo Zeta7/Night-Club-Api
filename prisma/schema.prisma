@@ -248,6 +248,20 @@ enum SellerConnectionStatus {
 enum PaymentPurpose {
   ORDER_PAYMENT
   WALLET_TOP_UP
+  FEATURED_CAMPAIGN
+}
+
+enum FeaturedTargetType {
+  BUSINESS
+  EVENT
+}
+
+enum FeaturedCampaignStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  REJECTED
+  EXPIRED
+  CANCELLED
 }
 
 enum OrderPaymentMethod {
@@ -426,6 +440,7 @@ model User {
   businessAccessRequests   BusinessAccessRequest[]  @relation("BusinessAccessRequester")
   reviewedBusinessRequests BusinessAccessRequest[]  @relation("BusinessAccessReviewer")
   marketplaceOAuthStates   MarketplaceOAuthState[]
+  featuredCampaignsCreated FeaturedCampaign[]       @relation("FeaturedCampaignCreator")
 
   @@unique([phoneCountryCode, phoneNumber])
   @@index([phoneCountryCode, phoneNumber])
@@ -932,6 +947,7 @@ model Club {
   accessRequests         BusinessAccessRequest[]
   sellerConnections      MarketplaceSellerConnection[]
   marketplaceOAuthStates MarketplaceOAuthState[]
+  featuredCampaigns       FeaturedCampaign[]
 
   @@index([status])
 }
@@ -1067,6 +1083,7 @@ model Event {
   cancellation      EventCancellation?
   purchasedItems    OrderItem[]
   acceptedReplacements EventReplacementAcceptance[]
+  featuredCampaigns    FeaturedCampaign[]
 
   @@index([clubId])
   @@index([status])
@@ -1384,6 +1401,33 @@ model Order {
   @@index([status])
 }
 
+model FeaturedCampaign {
+  id              String                   @id @default(uuid())
+  clubId          String
+  eventId         String?
+  createdByUserId String
+  targetType      FeaturedTargetType
+  status          FeaturedCampaignStatus   @default(PENDING_PAYMENT)
+  durationDays    Int
+  priceCents      Int
+  currency        String                   @default("PEN")
+  idempotencyKey  String                   @unique
+  paidAt          DateTime?
+  startsAt        DateTime?
+  endsAt          DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  club           Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  event          Event?          @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  createdBy      User            @relation("FeaturedCampaignCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  paymentAttempt PaymentAttempt?
+
+  @@index([clubId, status, endsAt])
+  @@index([eventId])
+  @@index([status, startsAt, endsAt])
+}
+
 model RefundRequest {
   id                          String              @id @default(uuid())
   orderId                     String
@@ -1485,6 +1529,7 @@ model PaymentAttempt {
   id                          String                @id @default(uuid())
   orderId                     String?
   walletTopUpId               String?               @unique
+  featuredCampaignId          String?               @unique
   purpose                     PaymentPurpose        @default(ORDER_PAYMENT)
   provider                    String
   externalPaymentId           String?               @unique
@@ -1511,11 +1556,13 @@ model PaymentAttempt {
 
   order              Order?                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
   walletTopUp        WalletTopUp?           @relation(fields: [walletTopUpId], references: [id], onDelete: Cascade)
+  featuredCampaign  FeaturedCampaign?       @relation(fields: [featuredCampaignId], references: [id], onDelete: Cascade)
   events             PaymentProviderEvent[]
   ledgerTransactions LedgerTransaction[]
 
   @@index([orderId, createdAt])
   @@index([walletTopUpId])
+  @@index([featuredCampaignId])
   @@index([purpose, status, createdAt])
   @@index([status])
   @@index([expiresAt])

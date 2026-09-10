@@ -11,6 +11,6 @@ import { ClubMarketplaceFeeController } from './presentation/club-marketplace-fe
   imports: [IdentityModule, AuditModule],
   controllers: [PlatformController, ClubMarketplaceFeeController],
   providers: [PlatformService, MarketplaceFeeService, SuperAdminGuard],
-  exports: [MarketplaceFeeService],
+  exports: [MarketplaceFeeService, PlatformService],
 })
 export class PlatformModule {}

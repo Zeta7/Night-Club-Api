@@ -72,6 +72,7 @@ export class MercadoPagoPaymentGateway {
           metadata: {
             attempt_id: input.attemptId,
             order_id: input.orderId,
+            operation_type: input.operationType ?? (input.clubId ? 'ORDER' : 'WALLET_TOP_UP'),
             club_id: input.clubId ?? null,
           },
           items: [
@@ -330,12 +331,17 @@ export class MercadoPagoPaymentGateway {
     if (!attemptId) return undefined;
     const attempt = await this.prisma.paymentAttempt.findUnique({
       where: { id: attemptId },
-      include: { order: { select: { clubId: true } }, walletTopUp: { select: { id: true } } },
+      include: {
+        order: { select: { clubId: true } },
+        walletTopUp: { select: { id: true } },
+        featuredCampaign: { select: { id: true } },
+      },
     });
     if (!attempt) return undefined;
     return {
       externalPaymentId: attempt.externalPaymentId ?? undefined,
-      operationId: attempt.orderId ?? attempt.walletTopUpId ?? undefined,
+      operationId:
+        attempt.orderId ?? attempt.walletTopUpId ?? attempt.featuredCampaignId ?? undefined,
       clubId: attempt.order?.clubId ?? undefined,
     };
   }
@@ -380,7 +386,7 @@ export class MercadoPagoPaymentGateway {
     const query = new URLSearchParams({
       provider: 'mercado_pago',
       attemptId: input.attemptId,
-      operationType: input.clubId ? 'ORDER' : 'WALLET_TOP_UP',
+      operationType: input.operationType ?? (input.clubId ? 'ORDER' : 'WALLET_TOP_UP'),
       operationId: input.orderId,
       result,
     });

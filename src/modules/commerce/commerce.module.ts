@@ -82,5 +82,6 @@ import { MercadoPagoPaymentsController } from './presentation/mercado-pago-payme
       },
     },
   ],
+  exports: [WALLET_TOP_UP_PAYMENT_GATEWAY],
 })
 export class CommerceModule {}

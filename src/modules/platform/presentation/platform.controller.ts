@@ -45,6 +45,15 @@ export class PlatformController {
     return this.platformService.getDashboard();
   }
 
+  @Get('settings')
+  @ApiOperation({ summary: 'Consultar la configuración global (SUPER_ADMIN)' })
+  async getSettings() {
+    return {
+      message: 'Configuración global obtenida correctamente.',
+      settings: await this.platformService.getSettings(),
+    };
+  }
+
   @Get('users')
   @ApiOperation({
     summary: 'Listar usuarios de plataforma (SUPER_ADMIN)',

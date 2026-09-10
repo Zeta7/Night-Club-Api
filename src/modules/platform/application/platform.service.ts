@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserRole, UserStatus } from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { notFound } from '../../../shared/presentation/api-exception';
+import { badRequest, notFound } from '../../../shared/presentation/api-exception';
 import { ChangeUserRoleDto } from '../presentation/dto/change-user-role.dto';
 import { ChangeUserStatusDto } from '../presentation/dto/change-user-status.dto';
 import { ListPlatformUsersDto } from '../presentation/dto/list-platform-users.dto';
@@ -43,7 +43,7 @@ export class PlatformService {
       this.prisma.user.count({ where: { role: UserRole.ADMIN } }),
       this.prisma.user.count({ where: { role: UserRole.WORKER } }),
       this.prisma.user.count({ where: { role: UserRole.CUSTOMER } }),
-      this.getSettingsRecord(),
+      this.getSettings(),
     ]);
 
     return {
@@ -70,14 +70,17 @@ export class PlatformService {
   }
 
   async updateSettings(actor: AuthenticatedUser, input: UpdatePlatformSettingsDto) {
+    this.validateFeaturedCampaignSettings(input.settings);
+    const current = await this.getSettings();
+    const next = { ...current, ...input.settings };
     const settings = await this.prisma.platformSettings.upsert({
       where: { id: PLATFORM_SETTINGS_ID },
       update: {
-        settingsJson: JSON.stringify(input.settings),
+        settingsJson: JSON.stringify(next),
       },
       create: {
         id: PLATFORM_SETTINGS_ID,
-        settingsJson: JSON.stringify(input.settings),
+        settingsJson: JSON.stringify(next),
       },
     });
     await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'UPDATE_PLATFORM_SETTINGS', resourceType: 'PLATFORM_SETTINGS', resourceId: settings.id, severity: 'WARNING', metadata: { settings: input.settings } });
@@ -210,12 +213,38 @@ export class PlatformService {
     return user;
   }
 
-  private async getSettingsRecord() {
+  async getSettings() {
     const settings = await this.prisma.platformSettings.findUnique({
       where: { id: PLATFORM_SETTINGS_ID },
     });
 
     return parseSettings(settings?.settingsJson ?? '{}');
+  }
+
+  private validateFeaturedCampaignSettings(settings: Record<string, unknown>) {
+    for (const key of ['featuredBusinessPriceCents', 'featuredEventPriceCents']) {
+      if (!(key in settings)) continue;
+      const value = settings[key];
+      if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
+        throw badRequest(
+          'FEATURED_CAMPAIGN_PRICE_INVALID',
+          `${key} debe ser un entero positivo expresado en céntimos.`,
+        );
+      }
+    }
+    if (!('featuredCampaignDurationDays' in settings)) return;
+    const duration = settings.featuredCampaignDurationDays;
+    if (
+      typeof duration !== 'number' ||
+      !Number.isInteger(duration) ||
+      duration < 1 ||
+      duration > 90
+    ) {
+      throw badRequest(
+        'FEATURED_CAMPAIGN_DURATION_INVALID',
+        'featuredCampaignDurationDays debe ser un entero entre 1 y 90.',
+      );
+    }
   }
 }
 

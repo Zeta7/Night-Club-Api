@@ -23,6 +23,7 @@ export type CreatePaymentInput = {
   clubId?: string;
   marketplaceFeeCents?: number;
   sellerExternalId?: string;
+  operationType?: 'ORDER' | 'WALLET_TOP_UP' | 'FEATURED_CAMPAIGN';
 };
 
 export type CreatePaymentResult = {
