@@ -216,19 +216,27 @@ export class FeaturedCampaignsService {
       throw notFound('FEATURED_CAMPAIGN_NOT_FOUND', 'No encontramos esta promoción.');
     }
     const attempt = campaign.paymentAttempt;
-    if (
-      campaign.status === FeaturedCampaignStatus.PENDING_PAYMENT &&
-      attempt?.status === 'PENDING' &&
-      attempt.externalPaymentId &&
-      /^\d+$/.test(attempt.externalPaymentId) &&
-      this.paymentGateway.queryExternalPayment
-    ) {
+    if (campaign.status === FeaturedCampaignStatus.PENDING_PAYMENT && attempt?.status === 'PENDING') {
       try {
-        const event = await this.paymentGateway.queryExternalPayment(
-          attempt.externalPaymentId,
-          attempt.sellerExternalId ?? undefined,
-        );
-        await this.commerce.processPaymentEvent(event);
+        const sellerExternalId = attempt.sellerExternalId ?? undefined;
+        const event =
+          attempt.externalPaymentId &&
+          /^\d+$/.test(attempt.externalPaymentId) &&
+          this.paymentGateway.queryExternalPayment
+            ? await this.paymentGateway.queryExternalPayment(
+                attempt.externalPaymentId,
+                sellerExternalId,
+              )
+            : this.paymentGateway.queryPaymentByExternalReference
+              ? await this.paymentGateway.queryPaymentByExternalReference(
+                  attempt.id,
+                  sellerExternalId,
+                )
+              : null;
+        if (event) {
+          await this.commerce.bindAuthoritativeExternalPayment(event);
+          await this.commerce.processPaymentEvent(event);
+        }
       } catch {
         // La consulta externa no debe impedir que el admin vea o retome su pago pendiente.
       }

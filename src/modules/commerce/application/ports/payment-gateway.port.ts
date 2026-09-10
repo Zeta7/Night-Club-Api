@@ -71,6 +71,10 @@ export interface PaymentGateway {
     externalPaymentId: string,
     sellerExternalId?: string,
   ): Promise<VerifiedPaymentEvent>;
+  queryPaymentByExternalReference?(
+    externalReference: string,
+    sellerExternalId?: string,
+  ): Promise<VerifiedPaymentEvent | null>;
   verifyPaymentToken?(token: string): Promise<VerifiedPaymentEvent>;
   createSimulatedEvent?(externalPaymentId: string, outcome: PaymentOutcome): VerifiedPaymentEvent;
 }

@@ -17,6 +17,15 @@ describe('Mercado Pago SDK gateway', () => {
       marketplaceSellerConnection: {
         findUnique: async () => ({ status: 'CONNECTED', accessTokenEncrypted: 'encrypted' }),
       },
+      paymentAttempt: {
+        findUnique: async () => ({
+          externalPaymentId: 'preference-id',
+          orderId: null,
+          walletTopUpId: null,
+          featuredCampaignId: 'campaign',
+          order: null,
+        }),
+      },
     } as never,
     { decrypt: () => 'seller-token' } as never,
   );
@@ -66,6 +75,42 @@ describe('Mercado Pago SDK gateway', () => {
       'INVALID_MARKETPLACE_FEE',
     );
     expect(create).not.toHaveBeenCalled();
+  });
+  it('finds an approved advertising payment by its attempt reference', async () => {
+    const search = jest.spyOn(Payment.prototype, 'search').mockResolvedValue({
+      results: [{ id: '987654', external_reference: 'attempt' }],
+    } as never);
+    const get = jest.spyOn(Payment.prototype, 'get').mockResolvedValue({
+      id: 987654,
+      status: 'approved',
+      status_detail: 'accredited',
+      external_reference: 'attempt',
+      metadata: {
+        attempt_id: 'attempt',
+        order_id: 'campaign',
+        operation_type: 'FEATURED_CAMPAIGN',
+      },
+      transaction_amount: 25,
+      currency_id: 'PEN',
+      collector_id: 123,
+      fee_details: [],
+      date_last_updated: '2026-09-10T12:00:00Z',
+    } as never);
+
+    const event = await gateway.queryPaymentByExternalReference('attempt', '123');
+
+    expect(search).toHaveBeenCalledWith({
+      options: expect.objectContaining({ external_reference: 'attempt' }),
+    });
+    expect(get).toHaveBeenCalledWith({ id: '987654' });
+    expect(event).toEqual(
+      expect.objectContaining({
+        externalPaymentId: '987654',
+        attemptId: 'attempt',
+        orderId: 'campaign',
+        outcome: 'APPROVED',
+      }),
+    );
   });
   it('refunds using the payment ID and numeric amount', async () => {
     jest.spyOn(Payment.prototype, 'get').mockResolvedValue({ transaction_amount: 25 } as never);

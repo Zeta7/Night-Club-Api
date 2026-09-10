@@ -186,6 +186,26 @@ export class MercadoPagoPaymentGateway {
     return this.queryPayment(externalPaymentId, sellerExternalId ?? '');
   }
 
+  async queryPaymentByExternalReference(externalReference: string, sellerExternalId?: string) {
+    const sellerId = sellerExternalId ?? '';
+    const accessToken = await this.accessTokenForSeller(sellerId);
+    const search = await this.sdkCall('payment.search', () =>
+      new Payment(this.client(accessToken)).search({
+        options: {
+          external_reference: externalReference,
+          sort: 'date_last_updated',
+          criteria: 'desc',
+          limit: 10,
+        },
+      }),
+    );
+    const paymentId = search.results?.find(
+      (payment) =>
+        String(payment.external_reference ?? '') === externalReference && payment.id != null,
+    )?.id;
+    return paymentId ? this.queryPayment(String(paymentId), sellerId) : null;
+  }
+
   async queryPayment(paymentId: string, sellerExternalId: string): Promise<VerifiedPaymentEvent> {
     const connection = await this.prisma.marketplaceSellerConnection.findUnique({
       where: {
@@ -204,7 +224,7 @@ export class MercadoPagoPaymentGateway {
     const event: VerifiedPaymentEvent = {
       provider: this.provider,
       providerEventId: `payment:${paymentId}:${String(body.status)}:${String(body.date_last_updated ?? '')}`,
-      externalPaymentId: snapshot?.externalPaymentId ?? String(body.id),
+      externalPaymentId: String(body.id),
       outcome: mapStatus(String(body.status), String(body.status_detail ?? '')),
       failureCode:
         body.status === 'rejected'
@@ -268,7 +288,7 @@ export class MercadoPagoPaymentGateway {
     const event: VerifiedPaymentEvent = {
       provider: this.provider,
       providerEventId: `order:${mercadoPagoOrderId}:${status}:${String(body.last_updated_date ?? '')}`,
-      externalPaymentId: snapshot?.externalPaymentId ?? String(body.id),
+      externalPaymentId: stringValue(payment?.id) ?? snapshot?.externalPaymentId ?? String(body.id),
       outcome: mapOrderStatus(status, statusDetail),
       failureCode:
         status === 'failed' || status === 'rejected'
