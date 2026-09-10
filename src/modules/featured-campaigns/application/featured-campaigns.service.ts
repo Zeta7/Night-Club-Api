@@ -86,7 +86,10 @@ export class FeaturedCampaignsService {
       );
     }
     await this.expireFinishedCampaigns(clubId);
-    const offer = this.offerFor(await this.platform.getSettings(), input.targetType);
+    const offer = this.requirePurchasableOffer(
+      await this.platform.getSettings(),
+      input.targetType,
+    );
     const eventId = input.targetType === FeaturedTargetType.EVENT ? input.eventId?.trim() : null;
     if (input.targetType === FeaturedTargetType.EVENT) {
       const event = await this.prisma.event.findFirst({
@@ -269,28 +272,40 @@ export class FeaturedCampaignsService {
         : 'featuredEventPriceCents';
     const priceCents = Number(settings[priceKey]);
     const durationDays = Number(settings.featuredCampaignDurationDays ?? 7);
-    if (!Number.isInteger(priceCents) || priceCents <= 0) {
-      throw conflict(
-        'FEATURED_CAMPAIGN_SETTINGS_REQUIRED',
-        'El superadmin debe configurar los precios de promoción.',
-      );
-    }
-    if (!Number.isInteger(durationDays) || durationDays <= 0 || durationDays > 90) {
-      throw conflict(
-        'FEATURED_CAMPAIGN_DURATION_INVALID',
-        'La duración global debe estar entre 1 y 90 días.',
-      );
-    }
+    const hasValidPrice = Number.isInteger(priceCents) && priceCents > 0;
+    const hasValidDuration =
+      Number.isInteger(durationDays) && durationDays > 0 && durationDays <= 90;
     return {
       targetType,
       title:
         targetType === FeaturedTargetType.BUSINESS
           ? 'Promocionar mi negocio'
           : 'Promocionar un evento',
-      durationDays,
-      priceCents,
+      durationDays: hasValidDuration ? durationDays : 7,
+      priceCents: hasValidPrice ? priceCents : null,
       currency: 'PEN',
+      configured: hasValidPrice && hasValidDuration,
     };
+  }
+
+  private requirePurchasableOffer(
+    settings: Record<string, unknown>,
+    targetType: FeaturedTargetType,
+  ) {
+    const offer = this.offerFor(settings, targetType);
+    if (offer.priceCents === null) {
+      throw conflict(
+        'FEATURED_CAMPAIGN_SETTINGS_REQUIRED',
+        'El superadmin debe configurar los precios de promoción.',
+      );
+    }
+    if (!offer.configured) {
+      throw conflict(
+        'FEATURED_CAMPAIGN_DURATION_INVALID',
+        'La duración global debe estar entre 1 y 90 días.',
+      );
+    }
+    return { ...offer, priceCents: offer.priceCents };
   }
 
   private campaignResponse(campaign: any) {
