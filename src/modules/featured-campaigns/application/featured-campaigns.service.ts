@@ -10,6 +10,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { conflict, forbidden, notFound } from '../../../shared/presentation/api-exception';
+import { CommerceService } from '../../commerce/application/commerce.service';
 import {
   PaymentGateway,
   WALLET_TOP_UP_PAYMENT_GATEWAY,
@@ -46,6 +47,7 @@ export class FeaturedCampaignsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly platform: PlatformService,
+    private readonly commerce: CommerceService,
     @Inject(WALLET_TOP_UP_PAYMENT_GATEWAY)
     private readonly paymentGateway: PaymentGateway,
   ) {}
@@ -86,10 +88,14 @@ export class FeaturedCampaignsService {
       );
     }
     await this.expireFinishedCampaigns(clubId);
-    const offer = this.requirePurchasableOffer(
-      await this.platform.getSettings(),
-      input.targetType,
-    );
+    const offer = this.requirePurchasableOffer(await this.platform.getSettings(), input.targetType);
+    const priceCents = offer.dailyPriceCents * input.durationDays;
+    if (!Number.isSafeInteger(priceCents) || priceCents > 2_147_483_647) {
+      throw conflict(
+        'FEATURED_CAMPAIGN_TOTAL_INVALID',
+        'El importe total de la promoción supera el máximo permitido.',
+      );
+    }
     const eventId = input.targetType === FeaturedTargetType.EVENT ? input.eventId?.trim() : null;
     if (input.targetType === FeaturedTargetType.EVENT) {
       const event = await this.prisma.event.findFirst({
@@ -137,8 +143,8 @@ export class FeaturedCampaignsService {
           eventId,
           createdByUserId: user.id,
           targetType: input.targetType,
-          durationDays: offer.durationDays,
-          priceCents: offer.priceCents,
+          durationDays: input.durationDays,
+          priceCents,
           currency: offer.currency,
           idempotencyKey: input.idempotencyKey,
         },
@@ -165,8 +171,8 @@ export class FeaturedCampaignsService {
         currency: created.campaign.currency,
         subject:
           input.targetType === FeaturedTargetType.BUSINESS
-            ? 'Promoción de negocio en Beerry'
-            : 'Promoción de evento en Beerry',
+            ? `Promoción de negocio en Beerry por ${input.durationDays} días`
+            : `Promoción de evento en Beerry por ${input.durationDays} días`,
       });
       const paymentAttempt = await this.prisma.paymentAttempt.update({
         where: { id: created.paymentAttempt.id },
@@ -202,14 +208,36 @@ export class FeaturedCampaignsService {
 
   async getPayment(user: AuthenticatedUser, clubId: string, campaignId: string) {
     await this.assertCanManageClub(user, clubId);
-    await this.expireFinishedCampaigns(clubId);
-    const campaign = await this.prisma.featuredCampaign.findFirst({
+    let campaign = await this.prisma.featuredCampaign.findFirst({
       where: { id: campaignId, clubId },
       include: { paymentAttempt: true, event: { select: { name: true } } },
     });
     if (!campaign) {
       throw notFound('FEATURED_CAMPAIGN_NOT_FOUND', 'No encontramos esta promoción.');
     }
+    const attempt = campaign.paymentAttempt;
+    if (
+      campaign.status === FeaturedCampaignStatus.PENDING_PAYMENT &&
+      attempt?.status === 'PENDING' &&
+      attempt.externalPaymentId &&
+      /^\d+$/.test(attempt.externalPaymentId) &&
+      this.paymentGateway.queryExternalPayment
+    ) {
+      try {
+        const event = await this.paymentGateway.queryExternalPayment(
+          attempt.externalPaymentId,
+          attempt.sellerExternalId ?? undefined,
+        );
+        await this.commerce.processPaymentEvent(event);
+      } catch {
+        // La consulta externa no debe impedir que el admin vea o retome su pago pendiente.
+      }
+    }
+    await this.expireFinishedCampaigns(clubId);
+    campaign = await this.prisma.featuredCampaign.findFirstOrThrow({
+      where: { id: campaignId, clubId },
+      include: { paymentAttempt: true, event: { select: { name: true } } },
+    });
     return this.checkoutResponse(campaign);
   }
 
@@ -267,32 +295,22 @@ export class FeaturedCampaignsService {
 
   private offerFor(settings: Record<string, unknown>, targetType: FeaturedTargetType) {
     const advertisingSettings =
-      toSettingsRecord(settings.advertisingSettings) ??
-      toSettingsRecord(settings.settings) ??
-      {};
+      toSettingsRecord(settings.advertisingSettings) ?? toSettingsRecord(settings.settings) ?? {};
     const priceKey =
       targetType === FeaturedTargetType.BUSINESS
-        ? 'featuredBusinessPriceCents'
-        : 'featuredEventPriceCents';
-    const priceCents = Number(advertisingSettings[priceKey] ?? settings[priceKey]);
-    const durationDays = Number(
-      advertisingSettings.featuredCampaignDurationDays ??
-        settings.featuredCampaignDurationDays ??
-        7,
-    );
-    const hasValidPrice = Number.isInteger(priceCents) && priceCents > 0;
-    const hasValidDuration =
-      Number.isInteger(durationDays) && durationDays > 0 && durationDays <= 90;
+        ? 'featuredBusinessDailyPriceCents'
+        : 'featuredEventDailyPriceCents';
+    const dailyPriceCents = Number(advertisingSettings[priceKey] ?? settings[priceKey]);
+    const configured = Number.isInteger(dailyPriceCents) && dailyPriceCents > 0;
     return {
       targetType,
       title:
         targetType === FeaturedTargetType.BUSINESS
           ? 'Promocionar mi negocio'
           : 'Promocionar un evento',
-      durationDays: hasValidDuration ? durationDays : 7,
-      priceCents: hasValidPrice ? priceCents : null,
+      dailyPriceCents: configured ? dailyPriceCents : null,
       currency: 'PEN',
-      configured: hasValidPrice && hasValidDuration,
+      configured,
     };
   }
 
@@ -301,19 +319,13 @@ export class FeaturedCampaignsService {
     targetType: FeaturedTargetType,
   ) {
     const offer = this.offerFor(settings, targetType);
-    if (offer.priceCents === null) {
+    if (offer.dailyPriceCents === null) {
       throw conflict(
         'FEATURED_CAMPAIGN_SETTINGS_REQUIRED',
         'El superadmin debe configurar los precios de promoción.',
       );
     }
-    if (!offer.configured) {
-      throw conflict(
-        'FEATURED_CAMPAIGN_DURATION_INVALID',
-        'La duración global debe estar entre 1 y 90 días.',
-      );
-    }
-    return { ...offer, priceCents: offer.priceCents };
+    return { ...offer, dailyPriceCents: offer.dailyPriceCents };
   }
 
   private campaignResponse(campaign: any) {
@@ -346,6 +358,9 @@ export class FeaturedCampaignsService {
         paymentAttemptId: campaign.paymentAttempt?.id ?? null,
         status: campaign.paymentAttempt?.status ?? null,
         checkoutUrl: providerData?.checkoutUrl ?? null,
+        expiresAt: campaign.paymentAttempt?.expiresAt ?? null,
+        failureCode: campaign.paymentAttempt?.failureCode ?? null,
+        failureMessage: campaign.paymentAttempt?.failureMessage ?? null,
       },
     };
   }

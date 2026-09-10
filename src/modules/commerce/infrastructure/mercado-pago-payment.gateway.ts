@@ -182,6 +182,10 @@ export class MercadoPagoPaymentGateway {
     return { id: String(refund.id), amountCents: moneyToCents(refund.amount), status: String(refund.status), payment: await this.queryPayment(input.paymentId, input.sellerExternalId) };
   }
 
+  queryExternalPayment(externalPaymentId: string, sellerExternalId?: string) {
+    return this.queryPayment(externalPaymentId, sellerExternalId ?? '');
+  }
+
   async queryPayment(paymentId: string, sellerExternalId: string): Promise<VerifiedPaymentEvent> {
     const connection = await this.prisma.marketplaceSellerConnection.findUnique({
       where: {

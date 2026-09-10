@@ -239,7 +239,7 @@ export class PlatformService {
       toSettingsRecord(settings.advertisingSettings) ??
       toSettingsRecord(settings.settings) ??
       settings;
-    for (const key of ['featuredBusinessPriceCents', 'featuredEventPriceCents']) {
+    for (const key of ['featuredBusinessDailyPriceCents', 'featuredEventDailyPriceCents']) {
       if (!(key in advertisingSettings)) continue;
       const value = advertisingSettings[key];
       if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
@@ -248,19 +248,6 @@ export class PlatformService {
           `${key} debe ser un entero positivo expresado en céntimos.`,
         );
       }
-    }
-    if (!('featuredCampaignDurationDays' in advertisingSettings)) return;
-    const duration = advertisingSettings.featuredCampaignDurationDays;
-    if (
-      typeof duration !== 'number' ||
-      !Number.isInteger(duration) ||
-      duration < 1 ||
-      duration > 90
-    ) {
-      throw badRequest(
-        'FEATURED_CAMPAIGN_DURATION_INVALID',
-        'featuredCampaignDurationDays debe ser un entero entre 1 y 90.',
-      );
     }
   }
 }

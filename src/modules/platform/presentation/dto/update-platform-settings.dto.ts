@@ -10,9 +10,8 @@ export class UpdatePlatformSettingsDto {
       supportPhone: '+51999999999',
       withdrawalsEnabled: true,
       advertisingSettings: {
-        featuredBusinessPriceCents: 5000,
-        featuredEventPriceCents: 3000,
-        featuredCampaignDurationDays: 7,
+        featuredBusinessDailyPriceCents: 1000,
+        featuredEventDailyPriceCents: 300,
       },
     },
   })
