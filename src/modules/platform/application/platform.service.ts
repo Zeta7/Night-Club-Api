@@ -72,7 +72,20 @@ export class PlatformService {
   async updateSettings(actor: AuthenticatedUser, input: UpdatePlatformSettingsDto) {
     this.validateFeaturedCampaignSettings(input.settings);
     const current = await this.getSettings();
-    const next = { ...current, ...input.settings };
+    const currentAdvertisingSettings = toSettingsRecord(current.advertisingSettings) ?? {};
+    const requestedAdvertisingSettings = toSettingsRecord(input.settings.advertisingSettings);
+    const next = {
+      ...current,
+      ...input.settings,
+      ...(requestedAdvertisingSettings
+        ? {
+            advertisingSettings: {
+              ...currentAdvertisingSettings,
+              ...requestedAdvertisingSettings,
+            },
+          }
+        : {}),
+    };
     const settings = await this.prisma.platformSettings.upsert({
       where: { id: PLATFORM_SETTINGS_ID },
       update: {
@@ -222,9 +235,13 @@ export class PlatformService {
   }
 
   private validateFeaturedCampaignSettings(settings: Record<string, unknown>) {
+    const advertisingSettings =
+      toSettingsRecord(settings.advertisingSettings) ??
+      toSettingsRecord(settings.settings) ??
+      settings;
     for (const key of ['featuredBusinessPriceCents', 'featuredEventPriceCents']) {
-      if (!(key in settings)) continue;
-      const value = settings[key];
+      if (!(key in advertisingSettings)) continue;
+      const value = advertisingSettings[key];
       if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
         throw badRequest(
           'FEATURED_CAMPAIGN_PRICE_INVALID',
@@ -232,8 +249,8 @@ export class PlatformService {
         );
       }
     }
-    if (!('featuredCampaignDurationDays' in settings)) return;
-    const duration = settings.featuredCampaignDurationDays;
+    if (!('featuredCampaignDurationDays' in advertisingSettings)) return;
+    const duration = advertisingSettings.featuredCampaignDurationDays;
     if (
       typeof duration !== 'number' ||
       !Number.isInteger(duration) ||
@@ -257,6 +274,11 @@ const parseSettings = (settingsJson: string): Record<string, unknown> => {
     return {};
   }
 };
+
+const toSettingsRecord = (value: unknown): Record<string, unknown> | undefined =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 
 const toPlatformUser = (user: {
   id: string;

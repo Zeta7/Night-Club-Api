@@ -266,12 +266,20 @@ export class FeaturedCampaignsService {
   }
 
   private offerFor(settings: Record<string, unknown>, targetType: FeaturedTargetType) {
+    const advertisingSettings =
+      toSettingsRecord(settings.advertisingSettings) ??
+      toSettingsRecord(settings.settings) ??
+      {};
     const priceKey =
       targetType === FeaturedTargetType.BUSINESS
         ? 'featuredBusinessPriceCents'
         : 'featuredEventPriceCents';
-    const priceCents = Number(settings[priceKey]);
-    const durationDays = Number(settings.featuredCampaignDurationDays ?? 7);
+    const priceCents = Number(advertisingSettings[priceKey] ?? settings[priceKey]);
+    const durationDays = Number(
+      advertisingSettings.featuredCampaignDurationDays ??
+        settings.featuredCampaignDurationDays ??
+        7,
+    );
     const hasValidPrice = Number.isInteger(priceCents) && priceCents > 0;
     const hasValidDuration =
       Number.isInteger(durationDays) && durationDays > 0 && durationDays <= 90;
@@ -398,4 +406,10 @@ function hash(seed: string, value: string) {
     result = Math.imul(result, 16777619);
   }
   return result >>> 0;
+}
+
+function toSettingsRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 }
