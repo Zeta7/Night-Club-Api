@@ -68,7 +68,7 @@ const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   },
   {
     pattern:
-      /^PlatformController_(?:getDashboard|updateSettings)Response::properties\.(?:dashboard\.properties\.)?settings\.additionalProperties$/,
+      /^PlatformController_(?:getDashboard|getSettings|updateSettings)Response::properties\.(?:dashboard\.properties\.)?settings\.additionalProperties$/,
     reason: 'Platform settings are a map whose values are arbitrary JSON.',
     nullable: false,
   },
