@@ -61,6 +61,14 @@ const WALLET_TOP_UP_STATUSES = [
   'CHARGEDBACK',
 ];
 const PAYMENT_PROVIDERS = ['mercado_pago', 'simulated', 'beerry_wallet'];
+const FEATURED_TARGET_TYPES = ['BUSINESS', 'EVENT'];
+const FEATURED_CAMPAIGN_STATUSES = [
+  'PENDING_PAYMENT',
+  'ACTIVE',
+  'REJECTED',
+  'EXPIRED',
+  'CANCELLED',
+];
 const FINANCIAL_ACCOUNT_OWNER_TYPES = ['CUSTOMER', 'CLUB', 'PLATFORM', 'PROVIDER'];
 const LEDGER_TRANSACTION_TYPES = [
   'SALE',
@@ -498,6 +506,67 @@ function ledgerTransactionSchema(includeEntries = false) {
   });
 }
 
+function featuredCampaignSchema() {
+  return documentedObject({
+    id: stringSchema({ format: 'uuid' }),
+    targetType: stringSchema({ enum: FEATURED_TARGET_TYPES }),
+    eventId: stringSchema({ format: 'uuid', nullable: true }),
+    eventName: stringSchema({ nullable: true }),
+    status: stringSchema({ enum: FEATURED_CAMPAIGN_STATUSES }),
+    durationDays: { type: 'integer', format: 'int32' },
+    priceCents: integerSchema(),
+    currency: stringSchema(),
+    startsAt: dateTimeSchema(true),
+    endsAt: dateTimeSchema(true),
+    createdAt: dateTimeSchema(),
+    paymentStatus: stringSchema({ enum: PAYMENT_ATTEMPT_STATUSES, nullable: true }),
+  });
+}
+
+function featuredCampaignPaymentSchema() {
+  return documentedObject({
+    provider: stringSchema({ enum: PAYMENT_PROVIDERS, nullable: true }),
+    paymentAttemptId: stringSchema({ format: 'uuid', nullable: true }),
+    status: stringSchema({ enum: PAYMENT_ATTEMPT_STATUSES, nullable: true }),
+    checkoutUrl: stringSchema({ format: 'uri', nullable: true }),
+    expiresAt: dateTimeSchema(true),
+    failureCode: stringSchema({ nullable: true }),
+    failureMessage: stringSchema({ nullable: true }),
+  });
+}
+
+function featuredCampaignManagementSchema() {
+  return documentedObject({
+    offers: {
+      type: 'array',
+      items: documentedObject({
+        targetType: stringSchema({ enum: FEATURED_TARGET_TYPES }),
+        title: stringSchema(),
+        dailyPriceCents: integerSchema({ nullable: true }),
+        currency: stringSchema(),
+        configured: { type: 'boolean' },
+      }),
+    },
+    events: {
+      type: 'array',
+      items: documentedObject({
+        id: stringSchema({ format: 'uuid' }),
+        name: stringSchema(),
+        startsAt: dateTimeSchema(),
+        endsAt: dateTimeSchema(),
+      }),
+    },
+    campaigns: { type: 'array', items: featuredCampaignSchema() },
+  });
+}
+
+function featuredCampaignCheckoutSchema() {
+  return documentedObject({
+    campaign: featuredCampaignSchema(),
+    payment: featuredCampaignPaymentSchema(),
+  });
+}
+
 function platformWithdrawalClubSchema() {
   return documentedObject({
     id: stringSchema({ format: 'uuid' }),
@@ -544,6 +613,12 @@ function openApiResponseSchemaOverride(operationId, inferredSchema, contracts) {
       return hasClubResponseSchema(operationId, inferredSchema);
     case 'ClubsController_getCustomerHome':
       return contracts.customerHome;
+    case 'FeaturedCampaignsController_getManagement':
+      return featuredCampaignManagementSchema();
+    case 'FeaturedCampaignsController_createCheckout':
+    case 'FeaturedCampaignsController_getPayment':
+    case 'FeaturedCampaignPaymentsController_getPayment':
+      return featuredCampaignCheckoutSchema();
     case 'ClubsController_exploreCustomerContent':
     case 'ClubsController_getCustomerClubDetail':
       return customerDiscoveryResponseSchema(operationId, inferredSchema, contracts.customerHome);
