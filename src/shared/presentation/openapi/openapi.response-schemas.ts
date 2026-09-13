@@ -31106,6 +31106,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': ['EVENT_REASON_REQUIRED', 'EVENT_STATUS_TRANSITION_NOT_ALLOWED'],
     '403': ['CLUB_MANAGE_FORBIDDEN'],
     '404': ['CLUB_NOT_FOUND', 'EVENT_NOT_FOUND'],
+    '409': ['EVENT_ALREADY_ENDED'],
   },
   ClubEventsController_reschedule: {
     '400': [
@@ -31142,6 +31143,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': [
       'CANCELLATION_DECISION_REQUIRED',
       'EVENT_ALREADY_ENDED',
+      'EVENT_PAYMENTS_NOT_READY',
       'EVENT_STATUS_TRANSITION_NOT_ALLOWED',
       'REPLACEMENT_INVALID',
       'REPLACEMENT_NOT_ALLOWED',
@@ -31155,6 +31157,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': [
       'CANCELLATION_DECISION_REQUIRED',
       'EVENT_ALREADY_ENDED',
+      'EVENT_PAYMENTS_NOT_READY',
       'EVENT_STATUS_TRANSITION_NOT_ALLOWED',
       'REPLACEMENT_INVALID',
       'REPLACEMENT_NOT_ALLOWED',
@@ -31168,6 +31171,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': [
       'CANCELLATION_DECISION_REQUIRED',
       'EVENT_ALREADY_ENDED',
+      'EVENT_PAYMENTS_NOT_READY',
       'EVENT_STATUS_TRANSITION_NOT_ALLOWED',
       'REPLACEMENT_INVALID',
       'REPLACEMENT_NOT_ALLOWED',
@@ -31181,6 +31185,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': [
       'CANCELLATION_DECISION_REQUIRED',
       'EVENT_ALREADY_ENDED',
+      'EVENT_PAYMENTS_NOT_READY',
       'EVENT_STATUS_TRANSITION_NOT_ALLOWED',
       'REPLACEMENT_INVALID',
       'REPLACEMENT_NOT_ALLOWED',
@@ -31194,6 +31199,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '400': [
       'CANCELLATION_DECISION_REQUIRED',
       'EVENT_ALREADY_ENDED',
+      'EVENT_PAYMENTS_NOT_READY',
       'EVENT_STATUS_TRANSITION_NOT_ALLOWED',
       'REPLACEMENT_INVALID',
       'REPLACEMENT_NOT_ALLOWED',
@@ -31528,6 +31534,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '409': ['UPLOAD_ALREADY_USED', 'UPLOAD_NOT_TEMPORARY'],
   },
   ClubPromotionsController_activatePromotion: {
+    '400': ['PROMOTION_EXPIRED'],
     '403': ['CLUB_MANAGE_FORBIDDEN'],
     '404': ['CLUB_NOT_FOUND', 'PROMOTION_NOT_FOUND'],
   },
@@ -31558,6 +31565,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '404': ['CLUB_NOT_FOUND', 'TICKET_TYPE_NOT_FOUND'],
   },
   ClubTicketsController_activateTicketType: {
+    '400': ['TICKET_SALE_ENDED'],
     '403': ['CLUB_MANAGE_FORBIDDEN'],
     '404': ['CLUB_NOT_FOUND', 'TICKET_TYPE_NOT_FOUND'],
   },
@@ -31585,6 +31593,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '404': ['CLUB_NOT_FOUND', 'EVENT_NOT_FOUND', 'TICKET_TYPE_NOT_FOUND'],
   },
   EventTicketsController_activateEventTicketType: {
+    '400': ['TICKET_SALE_ENDED'],
     '403': ['CLUB_MANAGE_FORBIDDEN'],
     '404': ['CLUB_NOT_FOUND', 'EVENT_NOT_FOUND', 'TICKET_TYPE_NOT_FOUND'],
   },
