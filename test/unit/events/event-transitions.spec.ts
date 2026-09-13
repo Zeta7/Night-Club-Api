@@ -7,6 +7,7 @@ describe('Event transition protection', () => {
   function fixture(status: EventStatus, lockedStatus = status, hasPurchases = false) {
     const event = { id: 'event', clubId: 'club', status, endsAt: new Date('2099-01-01'), imageUrl: null };
     const tx = {
+      club: { findFirst: jest.fn().mockResolvedValue({ id: 'club' }) },
       eventCancellation: { findUnique: jest.fn().mockResolvedValue(null) },
       $queryRaw: jest.fn().mockResolvedValue([]),
       event: { findUniqueOrThrow: jest.fn().mockResolvedValue({ ...event, status: lockedStatus }), update: jest.fn().mockResolvedValue(event) },
@@ -31,4 +32,19 @@ describe('Event transition protection', () => {
     await expect(service.reactivateEvent(user, 'club', 'event')).rejects.toThrow();
     expect(tx.event.update).not.toHaveBeenCalled();
   });
+  it.each([EventStatus.DRAFT, EventStatus.PUBLISHED])('requires a payment-ready club to publish or start sales from %s', async (status) => {
+    const { service, tx } = fixture(status);
+    tx.club.findFirst.mockResolvedValue(null as never);
+    await expect(status === EventStatus.DRAFT ? service.publishEvent(user, 'club', 'event') : service.startSale(user, 'club', 'event')).rejects.toMatchObject({ response: { error: { code: 'EVENT_PAYMENTS_NOT_READY' } } });
+    expect(tx.event.update).not.toHaveBeenCalled();
+  });
+  it('publishing requires the same seller connection that makes the catalogue visible', async () => {
+    const { service, tx } = fixture(EventStatus.DRAFT);
+    // Stop after the guarded write: response hydration is independent of eligibility.
+    tx.event.update.mockRejectedValue(new Error('reached-write'));
+    await expect(service.publishEvent(user, 'club', 'event')).rejects.toThrow('reached-write');
+    expect(tx.club.findFirst).toHaveBeenCalledWith({ where: expect.objectContaining({ id: 'club', status: 'ACTIVE', sellerConnections: expect.any(Object) }), select: { id: true } });
+    expect(tx.event.update).toHaveBeenCalledWith(expect.objectContaining({ data: { status: 'PUBLISHED' } }));
+  });
+
 });

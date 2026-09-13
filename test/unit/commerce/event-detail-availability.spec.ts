@@ -16,7 +16,7 @@ describe('Event detail inventory', () => {
             id: 'event',
             clubId: 'club',
             status: 'SALE_ACTIVE',
-            club: { id: 'club', name: 'Club', status: 'ACTIVE' },
+            club: { id: 'club', name: 'Club', status: 'ACTIVE', sellerConnections: [{ id: 'seller' }] },
             promotions: [],
             ticketTypes: [
               {
@@ -42,7 +42,7 @@ describe('Event detail inventory', () => {
       };
       const service = new ClubsService(prisma as never, new ConfigService(), {
         createReadableImageUrl: jest.fn().mockResolvedValue(null),
-      } as never);
+      } as never, {} as never);
       const result = await service.getCustomerEventDetail(
         { id: 'user', role: UserRole.CUSTOMER },
         'event',

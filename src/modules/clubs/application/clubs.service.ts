@@ -25,6 +25,10 @@ import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-qu
 import { UpdateClubDto } from '../presentation/dto/update-club.dto';
 import { UpdateClubOperationalProfileDto } from '../presentation/dto/update-club-operational-profile.dto';
 
+import { currentEventsWhere, effectiveEventStatus } from '../../events/application/event-availability';
+import { paymentReadyClubWhere } from './club-commerce-availability';
+import { currentPromotionsWhere } from '../../promotions/application/promotion-availability';
+
 const CUSTOMER_VISIBLE_EVENT_STATUSES = [
   EventStatus.PUBLISHED,
   EventStatus.SALE_ACTIVE,
@@ -42,16 +46,6 @@ const CUSTOMER_DETAIL_EVENT_STATUSES = [
 const CUSTOMER_HOME_CACHE_TTL_MS = 0;
 const MERCADO_PAGO_PROVIDER = 'mercado_pago';
 
-const paymentReadyClubWhere = (now: Date): Prisma.ClubWhereInput => ({
-  status: ClubStatus.ACTIVE,
-  sellerConnections: {
-    some: {
-      provider: MERCADO_PAGO_PROVIDER,
-      status: SellerConnectionStatus.CONNECTED,
-      OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: now } }],
-    },
-  },
-});
 const customerHomeCache = new Map<
   string,
   { expiresAt: number; payload: Record<string, unknown> }
@@ -170,17 +164,11 @@ export class ClubsService {
       where: { clubId: club.id },
     });
 
+    const now = new Date();
     const activeEventCount = await this.prisma.event.count({
       where: {
         clubId: club.id,
-        status: {
-          in: [
-            EventStatus.PUBLISHED,
-            EventStatus.SALE_ACTIVE,
-            EventStatus.SOLD_OUT,
-            EventStatus.IN_PROGRESS,
-          ],
-        },
+        ...currentEventsWhere(now),
       },
     });
 
@@ -196,7 +184,7 @@ export class ClubsService {
     const promotionCount = await this.prisma.promotion.count({
       where: {
         clubId: club.id,
-        status: PromotionStatus.ACTIVE,
+        ...currentPromotionsWhere(now),
       },
     });
 
@@ -214,7 +202,7 @@ export class ClubsService {
     const topPromotions = await this.prisma.promotion.findMany({
       where: {
         clubId: club.id,
-        status: PromotionStatus.ACTIVE,
+        ...currentPromotionsWhere(now),
       },
       orderBy: [{ updatedAt: 'desc' }],
       take: 5,
@@ -249,7 +237,7 @@ export class ClubsService {
           capacity: event.capacity,
           sold: cheapestTicket?.quantitySold ?? 0,
           priceFrom: cheapestTicket ? cheapestTicket.priceCents / 100 : 0,
-          status: event.status,
+          status: effectiveEventStatus(event, now),
         };
       }),
     );
@@ -486,7 +474,7 @@ export class ClubsService {
         where: {
           clubId: { in: paymentReadyClubIds },
           status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-          endsAt: { gte: now },
+          endsAt: { gt: now },
         },
         orderBy: [{ startsAt: 'asc' }],
         take: 12,
@@ -509,14 +497,14 @@ export class ClubsService {
           status: PromotionStatus.ACTIVE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-            { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
             {
               OR: [
                 { eventId: null },
                 {
                   event: {
                     status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-                    endsAt: { gte: now },
+                    endsAt: { gt: now },
                   },
                 },
               ],
@@ -551,7 +539,7 @@ export class ClubsService {
             {
               event: {
                 status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-                endsAt: { gte: now },
+                endsAt: { gt: now },
               },
             },
           ],
@@ -591,7 +579,7 @@ export class ClubsService {
           imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
           startsAt: event.startsAt,
           endsAt: event.endsAt,
-          status: event.status,
+          status: effectiveEventStatus(event, now),
           capacity: event.capacity,
           sold: event.ticketTypes[0]?.quantitySold ?? 0,
           priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
@@ -706,7 +694,7 @@ export class ClubsService {
         where: {
           club: clubRelationFilter,
           status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-          endsAt: { gte: now },
+          endsAt: { gt: now },
           OR: [
             { clubId: { in: matchedClubIds } },
             { name: { contains: search, mode: 'insensitive' } },
@@ -730,7 +718,8 @@ export class ClubsService {
           status: PromotionStatus.ACTIVE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-            { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
+            { OR: [{ eventId: null }, { event: currentEventsWhere(now) }] },
             {
               OR: [
                 { clubId: { in: matchedClubIds } },
@@ -805,7 +794,7 @@ export class ClubsService {
           imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
           startsAt: event.startsAt,
           endsAt: event.endsAt,
-          status: event.status,
+          status: effectiveEventStatus(event, now),
           capacity: event.capacity,
           sold: event.ticketTypes[0]?.quantitySold ?? 0,
           priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
@@ -880,7 +869,7 @@ export class ClubsService {
         where: {
           clubId: { in: paidContentClubIds },
           status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-          endsAt: { gte: now },
+          endsAt: { gt: now },
         },
         orderBy: { startsAt: 'asc' },
         include: {
@@ -898,14 +887,14 @@ export class ClubsService {
           status: PromotionStatus.ACTIVE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-            { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+            { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
             {
               OR: [
                 { eventId: null },
                 {
                   event: {
                     status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-                    endsAt: { gte: now },
+                    endsAt: { gt: now },
                   },
                 },
               ],
@@ -932,7 +921,7 @@ export class ClubsService {
             {
               event: {
                 status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
-                endsAt: { gte: now },
+                endsAt: { gt: now },
               },
             },
           ],
@@ -975,7 +964,7 @@ export class ClubsService {
           imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
           startsAt: event.startsAt,
           endsAt: event.endsAt,
-          status: event.status,
+          status: effectiveEventStatus(event, now),
           capacity: event.capacity,
           sold: event.ticketTypes[0]?.quantitySold ?? 0,
           priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
@@ -1061,7 +1050,7 @@ export class ClubsService {
             status: PromotionStatus.ACTIVE,
             AND: [
               { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-              { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+              { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
             ],
           },
           orderBy: { updatedAt: 'desc' },
@@ -1084,7 +1073,7 @@ export class ClubsService {
         imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
         startsAt: event.startsAt,
         endsAt: event.endsAt,
-        status: event.status,
+        status: effectiveEventStatus(event, now),
         priceFrom: event.ticketTypes[0]?.priceCents ? event.ticketTypes[0].priceCents / 100 : null,
         currency: event.ticketTypes[0]?.currency ?? 'PEN',
       },
@@ -1826,6 +1815,7 @@ const buildAdminDashboardClubInclude = (currentUserId: string) => ({
     },
   },
   events: {
+    where: currentEventsWhere(),
     orderBy: { startsAt: 'asc' as const },
     take: 6,
     include: {

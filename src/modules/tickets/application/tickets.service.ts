@@ -3,6 +3,7 @@ import { TicketTypeStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
+import { eventCanActivateOffer } from '../../events/application/event-availability';
 import { CreateTicketTypeDto } from '../presentation/dto/create-ticket-type.dto';
 import { UpdateTicketTypeDto } from '../presentation/dto/update-ticket-type.dto';
 
@@ -79,7 +80,7 @@ export class TicketsService {
   ) {
     const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, null);
     await this.assertCanManageClub(currentUser, clubId);
-    const data = this.normalizeTicketUpdateInput(input, current.quantitySold, current.replacementReserved);
+    const data = this.normalizeTicketUpdateInput(input, current);
     const ticketType = await this.prisma.ticketType.update({
       where: { id: ticketTypeId },
       data,
@@ -114,7 +115,7 @@ export class TicketsService {
   ) {
     const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, eventId);
     await this.assertCanManageEvent(currentUser, clubId, eventId);
-    const data = this.normalizeTicketUpdateInput(input, current.quantitySold, current.replacementReserved);
+    const data = this.normalizeTicketUpdateInput(input, current);
     const ticketType = await this.prisma.ticketType.update({
       where: { id: ticketTypeId },
       data,
@@ -148,6 +149,7 @@ export class TicketsService {
   async activateTicketType(currentUser: AuthenticatedUser, clubId: string, ticketTypeId: string) {
     const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, null);
     await this.assertCanManageClub(currentUser, clubId);
+    this.assertCanActivateTicket(current);
     const nextStatus =
       current.quantityTotal > 0 && current.quantitySold >= current.quantityTotal
         ? TicketTypeStatus.SOLD_OUT
@@ -171,6 +173,7 @@ export class TicketsService {
   ) {
     const current = await this.findTicketTypeOrFail(clubId, ticketTypeId, eventId);
     await this.assertCanManageEvent(currentUser, clubId, eventId);
+    this.assertCanActivateTicket(current);
     const nextStatus =
       current.quantityTotal > 0 && current.quantitySold >= current.quantityTotal
         ? TicketTypeStatus.SOLD_OUT
@@ -215,6 +218,13 @@ export class TicketsService {
     };
   }
 
+  private assertCanActivateTicket(ticket: { saleEndAt: Date | null; event: Parameters<typeof eventCanActivateOffer>[0] | null }) {
+    if ((ticket.saleEndAt && ticket.saleEndAt <= new Date()) ||
+        (ticket.event && !eventCanActivateOffer(ticket.event))) {
+      throw badRequest('TICKET_SALE_ENDED', 'La venta terminó. Actualiza la vigencia antes de activar esta entrada.');
+    }
+  }
+
   private normalizeTicketInput(input: CreateTicketTypeDto) {
     const saleStartAt = parseOptionalDate(input.saleStartAt);
     const saleEndAt = parseOptionalDate(input.saleEndAt);
@@ -231,7 +241,11 @@ export class TicketsService {
     };
   }
 
-  private normalizeTicketUpdateInput(input: UpdateTicketTypeDto, quantitySold: number, replacementReserved = 0) {
+  private normalizeTicketUpdateInput(input: UpdateTicketTypeDto, current: {
+    quantitySold: number; replacementReserved: number; status: TicketTypeStatus;
+    saleStartAt: Date | null; saleEndAt: Date | null;
+  }) {
+    const { quantitySold, replacementReserved } = current;
     const data: {
       name?: string;
       description?: string | null;
@@ -257,15 +271,16 @@ export class TicketsService {
       }
       data.quantityTotal = input.quantityTotal;
       data.status =
-        input.quantityTotal === quantitySold ? TicketTypeStatus.SOLD_OUT : TicketTypeStatus.ACTIVE;
+        current.status === TicketTypeStatus.INACTIVE ? TicketTypeStatus.INACTIVE :
+        input.quantityTotal <= quantitySold + replacementReserved ? TicketTypeStatus.SOLD_OUT : TicketTypeStatus.ACTIVE;
     }
     if (input.perUserLimit !== undefined) data.perUserLimit = input.perUserLimit ?? null;
     if (input.saleStartAt !== undefined || input.saleEndAt !== undefined) {
-      const saleStartAt = parseOptionalDate(input.saleStartAt);
-      const saleEndAt = parseOptionalDate(input.saleEndAt);
+      const saleStartAt = input.saleStartAt !== undefined ? parseOptionalDate(input.saleStartAt) : current.saleStartAt;
+      const saleEndAt = input.saleEndAt !== undefined ? parseOptionalDate(input.saleEndAt) : current.saleEndAt;
       this.assertSaleRange(saleStartAt, saleEndAt);
-      data.saleStartAt = saleStartAt;
-      data.saleEndAt = saleEndAt;
+      if (input.saleStartAt !== undefined) data.saleStartAt = saleStartAt;
+      if (input.saleEndAt !== undefined) data.saleEndAt = saleEndAt;
     }
     return data;
   }
@@ -323,7 +338,7 @@ export class TicketsService {
   ) {
     const ticketType = await this.prisma.ticketType.findFirst({
       where: { id: ticketTypeId, clubId, eventId },
-      select: { id: true, quantitySold: true, quantityTotal: true, replacementReserved: true, status: true },
+      select: { id: true, quantitySold: true, quantityTotal: true, replacementReserved: true, status: true, saleStartAt: true, saleEndAt: true, event: { select: { status: true, endsAt: true } } },
     });
     if (!ticketType)
       throw notFound('TICKET_TYPE_NOT_FOUND', 'No encontramos la entrada solicitada.');
