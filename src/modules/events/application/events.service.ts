@@ -5,7 +5,6 @@ import {
   EventStatus,
   Prisma,
   RedeemableStatus,
-  SellerConnectionStatus,
   UserRole,
 } from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
@@ -13,27 +12,12 @@ import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.serv
 import { badRequest, conflict, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { UploadsService } from '../../uploads/application/uploads.service';
+import { paymentReadyClubWhere } from '../../clubs/application/club-commerce-availability';
+import { currentEventsWhere, effectiveEventStatus } from './event-availability';
 import { CreateEventDto } from '../presentation/dto/create-event.dto';
 import { UpdateEventDto } from '../presentation/dto/update-event.dto';
 import { CancelEventDto, ReviewEventCancellationDto } from '../presentation/dto/cancel-event.dto';
 import { EventReasonDto, RescheduleEventDto } from '../presentation/dto/reschedule-event.dto';
-
-const PUBLIC_EVENT_STATUSES = [
-  EventStatus.PUBLISHED,
-  EventStatus.SALE_ACTIVE,
-  EventStatus.SOLD_OUT,
-  EventStatus.IN_PROGRESS,
-];
-const mercadoPagoReadyClubWhere = () => ({
-  status: ClubStatus.ACTIVE,
-  sellerConnections: {
-    some: {
-      provider: 'mercado_pago',
-      status: SellerConnectionStatus.CONNECTED,
-      OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: new Date() } }],
-    },
-  },
-});
 
 @Injectable()
 export class EventsService {
@@ -98,8 +82,8 @@ export class EventsService {
   async listPublicEvents() {
     const events = await this.prisma.event.findMany({
       where: {
-        status: { in: PUBLIC_EVENT_STATUSES },
-        club: mercadoPagoReadyClubWhere(),
+        ...currentEventsWhere(),
+        club: paymentReadyClubWhere(),
       },
       orderBy: { startsAt: 'asc' },
       include: eventInclude,
@@ -136,8 +120,8 @@ export class EventsService {
       EventStatus.SOLD_OUT,
       EventStatus.IN_PROGRESS,
     ];
-    const activeEvents = club.events.filter((event) => activeStatuses.includes(event.status));
-    const publishedEvents = club.events.filter((event) => event.status !== EventStatus.CANCELLED);
+    const activeEvents = club.events.filter((event) => activeStatuses.includes(effectiveEventStatus(event, now)));
+    const publishedEvents = activeEvents;
     const visibleEvents = club.events.filter((event) => event.status !== EventStatus.CANCELLED);
     const nearlySoldOutEvent = activeEvents.find((event) => event.capacity > 0);
     const allTicketTypes = club.events.flatMap((event) => event.ticketTypes ?? []);
@@ -198,8 +182,8 @@ export class EventsService {
     const event = await this.prisma.event.findFirst({
       where: {
         id: eventId,
-        status: { in: PUBLIC_EVENT_STATUSES },
-        club: mercadoPagoReadyClubWhere(),
+        ...currentEventsWhere(),
+        club: paymentReadyClubWhere(),
       },
       include: eventInclude,
     });
@@ -421,6 +405,15 @@ export class EventsService {
       if ((status === EventStatus.PUBLISHED || status === EventStatus.SALE_ACTIVE) && current.endsAt <= new Date()) {
         throw badRequest('EVENT_ALREADY_ENDED', 'No puedes publicar o activar ventas de un evento cuya fecha ya terminó.');
       }
+      if (status === EventStatus.PUBLISHED || status === EventStatus.SALE_ACTIVE) {
+        const club = await tx.club.findFirst({
+          where: { id: current.clubId, ...paymentReadyClubWhere() }, select: { id: true },
+        });
+        if (!club) throw badRequest(
+          'EVENT_PAYMENTS_NOT_READY',
+          'Tu catálogo está oculto. Activa el local y conecta Mercado Pago antes de publicar o iniciar la venta.',
+        );
+      }
       if (expectedStatus === EventStatus.CANCELLED && await this.hasCommercialHistory(tx, eventId)) {
         throw conflict('EVENT_REACTIVATION_UNSAFE', 'Este evento tiene compras asociadas. Crea un nuevo evento; no se pueden restaurar automáticamente sus entradas.');
       }
@@ -491,6 +484,9 @@ export class EventsService {
       await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR UPDATE`);
       const event = await tx.event.findUniqueOrThrow({ where: { id: eventId } });
       this.assertTransitionAllowed(event.status, [EventStatus.PUBLISHED, EventStatus.SALE_ACTIVE, EventStatus.SOLD_OUT]);
+      if (event.endsAt <= new Date()) {
+        throw conflict('EVENT_ALREADY_ENDED', 'El evento ya terminó y no puede postergarse.');
+      }
       if (input.reason.trim().length < 5) throw badRequest('EVENT_REASON_REQUIRED', 'Indica el motivo.');
       await tx.event.update({ where: { id: eventId }, data: { status: 'POSTPONED' } });
       await this.notifyEventBuyers(tx, eventId, 'Evento postergado', `${event.name}: conservas tu compra. Las ventas y los canjes están suspendidos hasta confirmar una nueva fecha.`);
@@ -851,7 +847,7 @@ const toEventResponse = async (
     startsAt: event.startsAt,
     endsAt: event.endsAt,
     capacity: event.capacity,
-    status: event.status,
+    status: effectiveEventStatus(event),
     createdAt: event.createdAt,
     updatedAt: event.updatedAt,
     club: {
@@ -962,28 +958,4 @@ const toEventTicketTypeResponse = (ticket: {
 const getAdminEventDisplayStatus = (
   event: { startsAt: Date; endsAt: Date; status: EventStatus },
   now: Date,
-) => {
-  if (event.status === EventStatus.CANCELLED || event.status === EventStatus.POSTPONED || event.status === EventStatus.DRAFT) return event.status.toLowerCase();
-  if (event.status === EventStatus.FINISHED || event.endsAt.getTime() < now.getTime()) {
-    return 'finished';
-  }
-
-  if (
-    (
-      [
-        EventStatus.PUBLISHED,
-        EventStatus.SALE_ACTIVE,
-        EventStatus.SOLD_OUT,
-        EventStatus.IN_PROGRESS,
-      ] as EventStatus[]
-    ).includes(event.status)
-  ) {
-    return 'active';
-  }
-
-  if (event.startsAt.getTime() > now.getTime()) {
-    return 'upcoming';
-  }
-
-  return event.status.toLowerCase();
-};
+) => effectiveEventStatus(event, now).toLowerCase();

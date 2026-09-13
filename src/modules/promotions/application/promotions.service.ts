@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  EventStatus,
   ProductStatus,
   PromotionDiscountType,
   PromotionItemType,
@@ -14,6 +15,7 @@ import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.serv
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { UploadsService } from '../../uploads/application/uploads.service';
+import { eventCanActivateOffer } from '../../events/application/event-availability';
 import { CreatePromotionDto } from '../presentation/dto/create-promotion.dto';
 import { PromotionItemDto } from '../presentation/dto/promotion-item.dto';
 import { UpdatePromotionDto } from '../presentation/dto/update-promotion.dto';
@@ -228,7 +230,11 @@ export class PromotionsService {
 
   async activatePromotion(currentUser: AuthenticatedUser, clubId: string, promotionId: string) {
     await this.assertCanManageClub(currentUser, clubId);
-    await this.findPromotionOrFail(clubId, promotionId);
+    const current = await this.findPromotionOrFail(clubId, promotionId);
+    if ((current.endsAt && current.endsAt <= new Date()) ||
+        (current.event && !eventCanActivateOffer(current.event))) {
+      throw badRequest('PROMOTION_EXPIRED', 'Actualiza la vigencia antes de activar esta promoción.');
+    }
 
     const promotion = await this.prisma.promotion.update({
       where: { id: promotionId },
@@ -411,7 +417,7 @@ export class PromotionsService {
 
 const promotionInclude = {
   club: { select: { id: true, name: true } },
-  event: { select: { id: true, name: true, startsAt: true, endsAt: true } },
+  event: { select: { id: true, name: true, startsAt: true, endsAt: true, status: true } },
   items: {
     orderBy: { createdAt: 'asc' },
     include: {
@@ -586,7 +592,7 @@ const toPromotionResponse = (
     createdAt: Date;
     updatedAt: Date;
     club: { id: string; name: string };
-    event: { id: string; name: string; startsAt: Date; endsAt: Date } | null;
+    event: { id: string; name: string; startsAt: Date; endsAt: Date; status: EventStatus } | null;
     items: Array<{
       id: string;
       itemType: PromotionItemType;
@@ -625,7 +631,7 @@ const toPromotionResponse = (
   createdAt: promotion.createdAt,
   updatedAt: promotion.updatedAt,
   club: promotion.club,
-  event: promotion.event,
+  event: promotion.event ? { id: promotion.event.id, name: promotion.event.name, startsAt: promotion.event.startsAt, endsAt: promotion.event.endsAt } : null,
   items: promotion.items.map((item) => ({
     id: item.id,
     itemType: item.itemType,

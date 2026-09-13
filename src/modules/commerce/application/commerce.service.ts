@@ -47,7 +47,7 @@ import { LedgerService } from '../../wallets/application/ledger.service';
 import { ClubOrdersQueryDto } from '../presentation/club-orders-query.dto';
 import { UpdateProductDeliveryDto } from '../presentation/update-product-delivery.dto';
 import { CapacityService } from '../../events/application/capacity.service';
-import { eventAllowsSales, eventAllowsRedemption } from '../../events/application/event-availability';
+import { currentEventsWhere, eventAllowsSales, eventAllowsRedemption } from '../../events/application/event-availability';
 import { ReferralsService } from '../../referrals/application/referrals.service';
 import {
   PAYMENT_GATEWAY,
@@ -260,10 +260,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             : 0;
           if (
             !source ||
-            (source.eventId && source.event?.status !== EventStatus.SALE_ACTIVE) ||
+            (source.eventId && (!source.event || !eventAllowsSales(source.event, now))) ||
             availableQuantity < item.quantity ||
             (source.saleStartAt && source.saleStartAt > now) ||
-            (source.saleEndAt && source.saleEndAt < now) ||
+            (source.saleEndAt && source.saleEndAt <= now) ||
             (source.perUserLimit && alreadyOwned + item.quantity > source.perUserLimit)
           ) {
             throw badRequest('TICKET_UNAVAILABLE', 'Una entrada ya no está disponible.');
@@ -333,8 +333,8 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           const now = new Date();
           if (
             (source.startsAt && source.startsAt > now) ||
-            (source.eventId && source.event?.status !== EventStatus.SALE_ACTIVE) ||
-            (source.endsAt && source.endsAt < now)
+            (source.eventId && (!source.event || !eventAllowsSales(source.event, now))) ||
+            (source.endsAt && source.endsAt <= now)
           ) {
             throw badRequest('PROMOTION_UNAVAILABLE', 'Una promoción está fuera de vigencia.');
           }
@@ -855,7 +855,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const source = await this.prisma.ticketType.findUnique({
         where: { id },
         include: {
-          event: { select: { status: true } },
+          event: { select: { status: true, endsAt: true } },
           club: {
             include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
           },
@@ -887,7 +887,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         this.paymentGateway.provider !== 'mercado_pago' ||
         Boolean(source?.club.sellerConnections.length);
       const eventAllowsPurchase =
-        !source?.eventId || source.event?.status === EventStatus.SALE_ACTIVE;
+        !source?.eventId || Boolean(source.event && eventAllowsSales(source.event, now));
       const available = Boolean(
         source &&
         paymentsReady &&
@@ -897,7 +897,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         globalAvailable > 0 &&
         userAvailable > 0 &&
         (!source.saleStartAt || source.saleStartAt <= now) &&
-        (!source.saleEndAt || source.saleEndAt >= now),
+        (!source.saleEndAt || source.saleEndAt > now),
       );
       return source
         ? {
@@ -974,7 +974,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const source = await this.prisma.promotion.findUnique({
       where: { id },
       include: {
-        event: { select: { status: true } },
+        event: { select: { status: true, endsAt: true } },
         club: {
           include: { sellerConnections: { where: mercadoPagoReadyRelation().some } },
         },
@@ -985,7 +985,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       this.paymentGateway.provider !== 'mercado_pago' ||
       Boolean(source?.club.sellerConnections.length);
     const eventAllowsPurchase =
-      !source?.eventId || source.event?.status === EventStatus.SALE_ACTIVE;
+      !source?.eventId || Boolean(source.event && eventAllowsSales(source.event, now));
     const available = Boolean(
       source &&
       paymentsReady &&
@@ -993,7 +993,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       source.status === PromotionStatus.ACTIVE &&
       source.club.status === ClubStatus.ACTIVE &&
       (!source.startsAt || source.startsAt <= now) &&
-      (!source.endsAt || source.endsAt >= now),
+      (!source.endsAt || source.endsAt > now),
     );
     return source
       ? {
@@ -2267,7 +2267,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         'Este código todavía no se puede utilizar.',
       );
     }
-    if (resource.validUntil && resource.validUntil.getTime() < Date.now()) {
+    if (resource.validUntil && resource.validUntil.getTime() <= Date.now()) {
       await this.recordValidationAttempt(
         user,
         clubId,
@@ -3456,7 +3456,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         orderBy: { stockQuantity: 'asc' },
       }),
       this.prisma.event.findMany({
-        where: { clubId, status: { in: ['PUBLISHED', 'SALE_ACTIVE', 'SOLD_OUT', 'IN_PROGRESS'] } },
+        where: { clubId, ...currentEventsWhere(now) },
         include: { occupancy: true },
         orderBy: { startsAt: 'asc' },
       }),

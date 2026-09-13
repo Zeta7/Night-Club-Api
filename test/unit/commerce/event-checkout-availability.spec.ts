@@ -4,13 +4,13 @@ import { CommerceItemType, EventStatus, UserRole } from '@prisma/client';
 import { CommerceService } from '../../../src/modules/commerce/application/commerce.service';
 
 describe('Event checkout availability', () => {
-  function fixture(type: CommerceItemType, status: EventStatus | null) {
+  function fixture(type: CommerceItemType, status: EventStatus | null, endsAt = new Date(Date.now() + 60_000)) {
     const source = {
       id: 'item',
       clubId: 'club',
       club: { name: 'Club' },
       eventId: status === null ? null : 'event',
-      event: status === null ? null : { status },
+      event: status === null ? null : { status, endsAt },
       priceCents: 1000,
       finalPriceCents: 1000,
       quantityTotal: 10,
@@ -28,7 +28,7 @@ describe('Event checkout availability', () => {
         findUnique: jest
           .fn()
           .mockResolvedValue(
-            status === null ? null : { status, endsAt: new Date(Date.now() + 60_000) },
+            status === null ? null : { status, endsAt },
           ),
       },
       inventoryReservation: { aggregate: jest.fn().mockResolvedValue({ _sum: { quantity: 0 } }) },
@@ -54,23 +54,24 @@ describe('Event checkout availability', () => {
       EventStatus.CANCELLED,
       EventStatus.POSTPONED,
       EventStatus.SOLD_OUT,
-      EventStatus.IN_PROGRESS,
       EventStatus.FINISHED,
     ])(`${type}: rejects a cart item when its event changed to %s`, async (status) => {
       const f = fixture(type, status);
       await expect(f.checkout()).rejects.toMatchObject({
         response: {
           error: {
-            code:
-              status === EventStatus.IN_PROGRESS
-                ? `${type}_UNAVAILABLE`
-                : 'EVENT_SALES_UNAVAILABLE',
+            code: 'EVENT_SALES_UNAVAILABLE',
           },
         },
       });
       expect(f.tx.order.create).not.toHaveBeenCalled();
     });
-    it.each([EventStatus.SALE_ACTIVE, null])(
+    it(`${type}: rejects a still-active event at its end time`, async () => {
+      const f = fixture(type, EventStatus.SALE_ACTIVE, new Date(0));
+      await expect(f.checkout()).rejects.toMatchObject({ response: { error: { code: 'EVENT_SALES_UNAVAILABLE' } } });
+      expect(f.tx.order.create).not.toHaveBeenCalled();
+    });
+    it.each([EventStatus.SALE_ACTIVE, EventStatus.IN_PROGRESS, null])(
       `${type}: permits sale state %s through to price validation`,
       async (status) => {
         const f = fixture(type, status);
