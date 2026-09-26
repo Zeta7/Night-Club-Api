@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiProperty, ApiResponse } from '@nestjs/swagger';
 import { IsDateString, IsIn, IsString, IsUUID, MaxLength, Min, MinLength } from 'class-validator';
 import { IsInteger } from '../../../shared/presentation/dto-fields';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
@@ -59,11 +59,13 @@ export class EventResolutionController {
     private readonly replacements: EventReplacementService,
     private readonly refunds: EventRefundWorker,
   ) {}
+  @ApiOperation({ summary: 'Listar devoluciones de eventos de la plataforma (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: EventRefundJobsResponseDto })
   @Get('events/admin/refund-jobs')
   jobs(@CurrentUser() user: AuthenticatedUser): Promise<EventRefundJobsResponseDto> {
     return this.refunds.list(user);
   }
+  @ApiOperation({ summary: 'Listar devoluciones de un evento del club (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: EventRefundJobsResponseDto })
   @Get('clubs/:clubId/events/:eventId/refund-jobs')
   businessJobs(
@@ -73,6 +75,9 @@ export class EventResolutionController {
   ): Promise<EventRefundJobsResponseDto> {
     return this.refunds.list(user, club, event);
   }
+  @ApiOperation({
+    summary: 'Aprobar o rechazar una devolución de evento en revisión (SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: ReviewRefundJobResponseDto })
   @Post('events/admin/refund-jobs/:id/review')
   reviewJob(
@@ -88,6 +93,9 @@ export class EventResolutionController {
       input.decision === 'APPROVE',
     );
   }
+  @ApiOperation({
+    summary: 'Procesar una devolución de evento sin asignación automática (SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: UnallocatedRefundResponseDto })
   @Post('events/admin/unallocated-refunds/:id/process')
   processUnallocated(
@@ -99,6 +107,10 @@ export class EventResolutionController {
       throw new BadRequestException('Se requiere aprobación explícita.');
     return this.refunds.processUnallocated(user, id, input.amountCents, input.reason);
   }
+  @ApiOperation({
+    summary:
+      'Consultar entradas y promociones para reemplazar las compras de un evento (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: ReplacementOptionsResponseDto })
   @Get('clubs/:clubId/events/:eventId/replacement-options')
   options(
@@ -108,6 +120,7 @@ export class EventResolutionController {
   ): Promise<ReplacementOptionsResponseDto> {
     return this.replacements.options(user, club, event);
   }
+  @ApiOperation({ summary: 'Asignar una entrada o promoción de reemplazo (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: ReplacementMappingResponseDto })
   @Post('clubs/:clubId/events/:eventId/replacement-mappings')
   configure(
@@ -125,6 +138,9 @@ export class EventResolutionController {
       input.targetItemId,
     );
   }
+  @ApiOperation({
+    summary: 'Aceptar el reemplazo de mi compra de evento (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: AcceptReplacementResponseDto })
   @Post('events/me/purchases/:id/accept-replacement')
   accept(

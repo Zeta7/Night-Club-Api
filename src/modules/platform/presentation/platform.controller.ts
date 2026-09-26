@@ -75,7 +75,7 @@ export class PlatformController {
 
   @Get('dashboard')
   @ApiOperation({
-    summary: 'Obtener dashboard global de plataforma (SUPER_ADMIN)',
+    summary: 'Consultar el panel global de la plataforma (SUPER_ADMIN)',
     description:
       'Usado por: Super Admin. Requiere accessToken. Se usa para consultar el panel global de administracion con metricas generales de usuarios, clubes y configuracion de la plataforma.',
   })
@@ -115,7 +115,7 @@ export class PlatformController {
 
   @Patch('settings')
   @ApiOperation({
-    summary: 'Actualizar configuracion global de plataforma (SUPER_ADMIN)',
+    summary: 'Actualizar la configuración global de la plataforma (SUPER_ADMIN)',
     description:
       'Usado por: Super Admin. Requiere accessToken. Se usa para modificar parametros globales que afectan el comportamiento general de la plataforma.',
   })

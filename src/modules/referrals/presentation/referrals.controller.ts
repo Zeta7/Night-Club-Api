@@ -26,19 +26,23 @@ import {
 export class ReferralsController {
   constructor(private readonly service: ReferralsService) {}
 
-  @ApiOperation({ summary: 'Obtener mi programa de referidos' })
+  @ApiOperation({
+    summary: 'Obtener mi programa de referidos (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: ReferralOverviewResponseDto })
   @Get('referrals/me')
   mine(@CurrentUser() user: AuthenticatedUser): Promise<ReferralOverviewResponseDto> {
     return this.service.getMine(user);
   }
-  @ApiOperation({ summary: 'Previsualizar un código de referido' })
+  @ApiOperation({
+    summary: 'Previsualizar un código de referido (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: ReferralPreviewResponseDto })
   @Get('referrals/preview/:code')
   preview(@Param('code') code: string): Promise<ReferralPreviewResponseDto> {
     return this.service.preview(code);
   }
-  @ApiOperation({ summary: 'Asociar un referido' })
+  @ApiOperation({ summary: 'Asociar un referido (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: ReferralAssociationResponseDto })
   @Post('referrals/associate')
   associate(
@@ -47,7 +51,9 @@ export class ReferralsController {
   ): Promise<ReferralAssociationResponseDto> {
     return this.service.associate(user, body.code, body.captureMethod);
   }
-  @ApiOperation({ summary: 'Transferir recompensas de referidos' })
+  @ApiOperation({
+    summary: 'Transferir recompensas de referidos (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: ReferralTransferResponseDto })
   @Post('referrals/transfers')
   transfer(
@@ -57,14 +63,14 @@ export class ReferralsController {
     return this.service.transfer(user, body);
   }
 
-  @ApiOperation({ summary: 'Obtener la configuración de referidos' })
+  @ApiOperation({ summary: 'Obtener la configuración de referidos (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: ReferralSettingsResponseDto })
   @Get('platform/referrals/settings')
   settings(@CurrentUser() user: AuthenticatedUser): Promise<ReferralSettingsResponseDto> {
     this.assertAdmin(user);
     return this.service.getSettings();
   }
-  @ApiOperation({ summary: 'Actualizar la configuración de referidos' })
+  @ApiOperation({ summary: 'Actualizar la configuración de referidos (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: ReferralSettingsResponseDto })
   @Patch('platform/referrals/settings')
   updateSettings(
@@ -73,7 +79,7 @@ export class ReferralsController {
   ): Promise<ReferralSettingsResponseDto> {
     return this.service.updateSettings(user, body);
   }
-  @ApiOperation({ summary: 'Listar recompensas de referidos' })
+  @ApiOperation({ summary: 'Listar recompensas de referidos (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: ReferralRewardsResponseDto })
   @Get('platform/referrals/rewards')
   rewards(

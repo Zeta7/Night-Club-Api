@@ -19,7 +19,10 @@ export class BusinessAccessController {
 
   @ApiResponse({ status: 201, type: BusinessAccessRequestRecordResponseDto })
   @Post()
-  @ApiOperation({ summary: 'Solicitar acceso para registrar o administrar un negocio' })
+  @ApiOperation({
+    summary:
+      'Solicitar acceso para registrar o administrar un negocio (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: CreateBusinessAccessRequestDto,
@@ -29,14 +32,18 @@ export class BusinessAccessController {
 
   @ApiResponse({ status: 200, type: MyBusinessAccessRequestsResponseDto })
   @Get('mine')
-  @ApiOperation({ summary: 'Consultar mis solicitudes comerciales' })
+  @ApiOperation({
+    summary: 'Consultar mis solicitudes comerciales (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   mine(@CurrentUser() user: AuthenticatedUser): Promise<MyBusinessAccessRequestsResponseDto> {
     return this.service.mine(user.id);
   }
 
   @ApiResponse({ status: 200, type: MyBusinessAccessRequestResponseDto })
   @Get(':id')
-  @ApiOperation({ summary: 'Consultar una solicitud propia' })
+  @ApiOperation({
+    summary: 'Consultar una solicitud propia (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   get(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
@@ -46,7 +53,9 @@ export class BusinessAccessController {
 
   @ApiResponse({ status: 201, type: MyBusinessAccessRequestResponseDto })
   @Post(':id/cancel')
-  @ApiOperation({ summary: 'Cancelar una solicitud propia pendiente' })
+  @ApiOperation({
+    summary: 'Cancelar una solicitud propia pendiente (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   cancel(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,

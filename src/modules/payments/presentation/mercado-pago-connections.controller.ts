@@ -24,12 +24,19 @@ import { WalletAcceptanceDto } from './wallet-acceptance.dto';
 export class MercadoPagoConnectionsController {
   constructor(private readonly connections: SellerConnectionService) {}
 
+  @ApiOperation({
+    summary:
+      'Consultar si un club acepta pagos con billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: WalletAcceptanceResponseDto })
   @Get('wallet-acceptance')
   walletAcceptance(@Param('clubId') clubId: string): Promise<WalletAcceptanceResponseDto> {
     return this.connections.walletAcceptance(clubId);
   }
 
+  @ApiOperation({
+    summary: 'Configurar la aceptación de pagos con billetera del club (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: WalletAcceptanceResponseDto })
   @Post('wallet-acceptance')
   setWalletAcceptance(
@@ -42,7 +49,7 @@ export class MercadoPagoConnectionsController {
 
   @ApiResponse({ status: 200, type: SellerConnectionResponseDto })
   @Get()
-  @ApiOperation({ summary: 'Consultar estado de conexión Mercado Pago' })
+  @ApiOperation({ summary: 'Consultar estado de conexión Mercado Pago (ADMIN, SUPER_ADMIN)' })
   status(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
@@ -52,7 +59,9 @@ export class MercadoPagoConnectionsController {
 
   @ApiResponse({ status: 201, type: SellerConnectionAuthorizationResponseDto })
   @Post('connect')
-  @ApiOperation({ summary: 'Crear URL OAuth de un solo uso para Mercado Pago' })
+  @ApiOperation({
+    summary: 'Crear URL OAuth de un solo uso para Mercado Pago (ADMIN, SUPER_ADMIN)',
+  })
   connect(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
@@ -62,7 +71,7 @@ export class MercadoPagoConnectionsController {
 
   @ApiResponse({ status: 201, type: SellerConnectionResponseDto })
   @Post('disconnect')
-  @ApiOperation({ summary: 'Desconectar Mercado Pago del negocio' })
+  @ApiOperation({ summary: 'Desconectar Mercado Pago del negocio (ADMIN, SUPER_ADMIN)' })
   disconnect(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,

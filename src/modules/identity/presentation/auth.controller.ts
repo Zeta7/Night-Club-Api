@@ -25,9 +25,9 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({
-    summary: 'Registrar cliente con telefono y contrasena (CLIENTE)',
+    summary: 'Registrar una cuenta de cliente (PUBLIC)',
     description:
-      'Usado por: Cliente. No requiere token. Se usa para crear una cuenta de cliente con telefono, contrasena y datos basicos; deja el usuario pendiente de confirmacion y envia un codigo al telefono registrado.',
+      'Acceso público. Crea una cuenta CUSTOMER pendiente de confirmación y envía un código al teléfono registrado.',
   })
   @ApiResponse({
     type: UserProfileResponseDto,
@@ -41,9 +41,9 @@ export class AuthController {
   @ApiResponse({ status: 201, type: MessageResponseDto })
   @Post('confirm-phone')
   @ApiOperation({
-    summary: 'Confirmar telefono con codigo de verificacion (CLIENTE)',
+    summary: 'Confirmar el teléfono con un código de verificación (PUBLIC)',
     description:
-      'Usado por: Cliente. No requiere token. Se usa para validar el codigo recibido por telefono, confirmar la propiedad del numero y completar la activacion inicial de la cuenta.',
+      'Acceso público para cualquier rol. Valida el código enviado al teléfono y activa la cuenta.',
   })
   confirmPhone(@Body() body: ConfirmPhoneDto): Promise<MessageResponseDto> {
     return this.authService.confirmPhone(body);
@@ -52,9 +52,9 @@ export class AuthController {
   @ApiResponse({ status: 201, type: MessageResponseDto })
   @Post('resend-phone-code')
   @ApiOperation({
-    summary: 'Reenviar codigo de confirmacion telefonica (CLIENTE)',
+    summary: 'Reenviar el código de confirmación del teléfono (PUBLIC)',
     description:
-      'Usado por: Cliente. No requiere token. Se usa cuando el cliente necesita recibir nuevamente el codigo de confirmacion para poder verificar su telefono.',
+      'Acceso público para cualquier rol. Envía un nuevo código al teléfono de una cuenta pendiente de confirmación.',
   })
   resendPhoneCode(@Body() body: ResendPhoneCodeDto): Promise<MessageResponseDto> {
     return this.authService.resendPhoneCode(body);
@@ -62,9 +62,9 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({
-    summary: 'Iniciar sesion con telefono y contrasena (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    summary: 'Iniciar sesión con teléfono y contraseña (PUBLIC)',
     description:
-      'Usado por: Cliente, Trabajador, Admin y Super Admin. No requiere token. Se usa para autenticar credenciales validas y obtener accessToken y refreshToken para consumir endpoints protegidos.',
+      'Acceso público para CUSTOMER, WORKER, ADMIN y SUPER_ADMIN. Valida las credenciales y devuelve accessToken y refreshToken.',
   })
   @ApiResponse({ type: LoginResponseDto, status: 201, description: 'Inicio de sesion correcto.' })
   @ApiResponse({ status: 401, description: 'Credenciales invalidas o usuario no activo.' })
@@ -74,9 +74,9 @@ export class AuthController {
 
   @Post('refresh')
   @ApiOperation({
-    summary: 'Renovar token de acceso (USUARIO AUTENTICADO)',
+    summary: 'Renovar el token de acceso (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Usado por: Usuario autenticado previamente. No requiere accessToken; requiere refreshToken valido. Se usa para generar un nuevo accessToken sin volver a iniciar sesion.',
+      'No requiere accessToken. Requiere un refreshToken válido de la sesión que se desea renovar.',
   })
   @ApiResponse({
     type: RefreshTokenResponseDto,
@@ -89,9 +89,9 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({
-    summary: 'Cerrar sesion actual (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    summary: 'Cerrar mi sesión (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Usado por: Cliente, Trabajador, Admin y Super Admin. Requiere refreshToken para revocar la sesion. Se usa para cerrar sesion e invalidar el refreshToken entregado.',
+      'No requiere accessToken. Recibe el refreshToken de la sesión que se desea revocar.',
   })
   @ApiResponse({
     type: MessageResponseDto,
@@ -104,9 +104,9 @@ export class AuthController {
 
   @Post('password-reset/request')
   @ApiOperation({
-    summary: 'Solicitar codigo para recuperar contrasena (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    summary: 'Solicitar un código para recuperar la contraseña (PUBLIC)',
     description:
-      'Usado por: Cliente, Trabajador, Admin y Super Admin. No requiere token. Se usa para iniciar la recuperacion de contrasena enviando un codigo de verificacion al telefono registrado.',
+      'Acceso público para cualquier rol. Envía un código de recuperación al teléfono registrado.',
   })
   @ApiResponse({
     type: MessageResponseDto,
@@ -119,10 +119,9 @@ export class AuthController {
 
   @Post('password-reset/confirm')
   @ApiOperation({
-    summary:
-      'Confirmar codigo y establecer nueva contrasena (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    summary: 'Confirmar el código y establecer una nueva contraseña (PUBLIC)',
     description:
-      'Usado por: Cliente, Trabajador, Admin y Super Admin. No requiere token. Se usa para validar el codigo de recuperacion y guardar una nueva contrasena para la cuenta.',
+      'Acceso público para cualquier rol. Valida el código de recuperación y actualiza la contraseña de la cuenta.',
   })
   @ApiResponse({
     type: MessageResponseDto,
@@ -137,7 +136,7 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Obtener usuario autenticado actual (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    summary: 'Consultar mi usuario autenticado (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Usado por: Cliente, Trabajador, Admin y Super Admin. Requiere accessToken. Se usa para consultar los datos del usuario asociado al token enviado en la peticion.',
   })

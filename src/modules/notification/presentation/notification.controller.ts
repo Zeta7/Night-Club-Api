@@ -34,7 +34,7 @@ import {
 export class NotificationController {
   constructor(private readonly notifications: NotificationService) {}
 
-  @ApiOperation({ summary: 'Listar mis notificaciones' })
+  @ApiOperation({ summary: 'Listar mis notificaciones (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: NotificationsResponseDto })
   @Get('notifications')
   list(
@@ -47,7 +47,9 @@ export class NotificationController {
     });
   }
 
-  @ApiOperation({ summary: 'Marcar una notificación como leída' })
+  @ApiOperation({
+    summary: 'Marcar una notificación como leída (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: ReadNotificationResponseDto })
   @Patch('notifications/:notificationId/read')
   markRead(
@@ -57,20 +59,27 @@ export class NotificationController {
     return this.notifications.markRead(user.id, id);
   }
 
-  @ApiOperation({ summary: 'Marcar todas las notificaciones como leídas' })
+  @ApiOperation({
+    summary: 'Marcar todas las notificaciones como leídas (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: ReadAllNotificationsResponseDto })
   @Post('notifications/read-all')
   markAllRead(@CurrentUser() user: AuthenticatedUser): Promise<ReadAllNotificationsResponseDto> {
     return this.notifications.markAllRead(user.id);
   }
 
-  @ApiOperation({ summary: 'Obtener preferencias de notificación' })
+  @ApiOperation({
+    summary: 'Consultar mis preferencias de notificación (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: NotificationPreferencesResponseDto })
   @Get('notification-preferences')
   preferences(@CurrentUser() user: AuthenticatedUser): Promise<NotificationPreferencesResponseDto> {
     return this.notifications.getPreferences(user.id);
   }
 
+  @ApiOperation({
+    summary: 'Actualizar mis preferencias de notificación (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: NotificationPreferencesResponseDto })
   @Patch('notification-preferences')
   updatePreference(
@@ -80,6 +89,10 @@ export class NotificationController {
     return this.notifications.updatePreference(user.id, body);
   }
 
+  @ApiOperation({
+    summary:
+      'Registrar mi dispositivo para recibir notificaciones (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: RegisteredNotificationDeviceResponseDto })
   @Post('devices')
   registerDevice(
@@ -89,6 +102,9 @@ export class NotificationController {
     return this.notifications.registerDevice(user.id, body.token, body.platform);
   }
 
+  @ApiOperation({
+    summary: 'Desvincular mi dispositivo de notificaciones (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: RemovedNotificationDeviceResponseDto })
   @Delete('devices/:deviceId')
   removeDevice(

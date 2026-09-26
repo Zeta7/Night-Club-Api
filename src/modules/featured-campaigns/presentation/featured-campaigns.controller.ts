@@ -18,7 +18,9 @@ export class FeaturedCampaignsController {
 
   @ApiResponse({ status: 200, type: FeaturedCampaignManagementResponseDto })
   @Get()
-  @ApiOperation({ summary: 'Obtener ofertas, eventos y promociones contratadas' })
+  @ApiOperation({
+    summary: 'Obtener ofertas, eventos y promociones contratadas (ADMIN, SUPER_ADMIN)',
+  })
   getManagement(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
@@ -28,7 +30,9 @@ export class FeaturedCampaignsController {
 
   @ApiResponse({ status: 201, type: FeaturedCampaignCheckoutResponseDto })
   @Post('checkout')
-  @ApiOperation({ summary: 'Crear el pago de una promoción de negocio o evento' })
+  @ApiOperation({
+    summary: 'Crear el pago de una promoción de negocio o evento (ADMIN, SUPER_ADMIN)',
+  })
   createCheckout(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
@@ -39,7 +43,7 @@ export class FeaturedCampaignsController {
 
   @ApiResponse({ status: 200, type: FeaturedCampaignCheckoutResponseDto })
   @Get(':campaignId/payment')
-  @ApiOperation({ summary: 'Consultar el estado del pago y de la promoción' })
+  @ApiOperation({ summary: 'Consultar el estado del pago y de la promoción (ADMIN, SUPER_ADMIN)' })
   getPayment(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
@@ -58,7 +62,7 @@ export class FeaturedCampaignPaymentsController {
 
   @ApiResponse({ status: 200, type: FeaturedCampaignCheckoutResponseDto })
   @Get(':campaignId/payment')
-  @ApiOperation({ summary: 'Consultar un pago de promoción por campaña' })
+  @ApiOperation({ summary: 'Consultar un pago de promoción por campaña (ADMIN, SUPER_ADMIN)' })
   getPayment(
     @CurrentUser() user: AuthenticatedUser,
     @Param('campaignId') campaignId: string,

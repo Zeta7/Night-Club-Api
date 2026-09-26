@@ -45,9 +45,9 @@ export class ClubsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Listar clubes visibles segun el rol (CLIENTE, ADMIN, SUPER_ADMIN)',
+    summary: 'Listar clubes visibles según el rol (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Roles permitidos: CLIENTE, ADMIN, SUPER_ADMIN. Requiere accessToken. Se usa para obtener el listado de clubes disponibles segun el rol: cliente ve clubes activos, ADMIN ve clubes que administra y SUPER_ADMIN ve todos.',
+      'Requiere accessToken. CUSTOMER y WORKER ven clubes activos; ADMIN ve los clubes que administra; SUPER_ADMIN ve todos.',
   })
   @ApiResponse({
     type: ClubsResponseDto,
@@ -60,9 +60,9 @@ export class ClubsController {
 
   @Get('admin/dashboard')
   @ApiOperation({
-    summary: 'Obtener dashboard admin del club (ADMIN, SUPER_ADMIN, WORKER)',
+    summary: 'Consultar el panel operativo del club (WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Roles permitidos: ADMIN, SUPER_ADMIN, WORKER. Requiere accessToken. Devuelve el estado del dashboard operativo del club; si el usuario es WORKER tambien incluye su contexto de permisos para que mobile pueda mostrar solo los modulos habilitados.',
+      'Requiere accessToken. Devuelve el panel del club vinculado al usuario. Para WORKER incluye su contexto y permisos operativos.',
   })
   @ApiResponse({
     type: ClubDashboardResponseDto,
@@ -77,7 +77,7 @@ export class ClubsController {
 
   @Get('customer/home')
   @ApiOperation({
-    summary: 'Obtener home del cliente por ubicacion (AUTENTICADO)',
+    summary: 'Consultar el inicio por ubicación (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve el contenido del inicio del cliente filtrado por la ciudad/zona enviada desde mobile y solo considera locales nocturnos activos con eventos, promociones y productos visibles.',
   })
@@ -95,7 +95,8 @@ export class ClubsController {
 
   @Get('customer/explore')
   @ApiOperation({
-    summary: 'Buscar contenido del cliente en todo Perú (AUTENTICADO)',
+    summary:
+      'Buscar clubes, eventos, promociones y productos en Perú (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Busca nacionalmente por nombre de negocio, ciudad, evento, promoción o producto. Solo devuelve negocios activos y contenido visible vigente.',
   })
@@ -113,7 +114,8 @@ export class ClubsController {
 
   @Get('customer/clubs/:clubId')
   @ApiOperation({
-    summary: 'Obtener el detalle publico de un club (AUTENTICADO)',
+    summary:
+      'Consultar el detalle y catálogo visible de un club (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Devuelve el negocio activo y todo su contenido visible sin restringirlo a la ubicacion actual del cliente.',
   })
@@ -130,7 +132,10 @@ export class ClubsController {
   }
 
   @Get('customer/events/:eventId')
-  @ApiOperation({ summary: 'Obtener el detalle publico de un evento (AUTENTICADO)' })
+  @ApiOperation({
+    summary:
+      'Consultar el detalle y catálogo visible de un evento (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({
     type: CustomerEventDetailResponseDto,
     status: 200,
@@ -145,9 +150,9 @@ export class ClubsController {
 
   @Get(':clubId')
   @ApiOperation({
-    summary: 'Obtener detalle de club (CLIENTE, ADMIN, SUPER_ADMIN)',
+    summary: 'Obtener detalle de club (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Roles permitidos: CLIENTE, ADMIN, SUPER_ADMIN. Requiere accessToken. Se usa para consultar la informacion detallada de un club especifico respetando la visibilidad permitida para cada rol.',
+      'Requiere accessToken. CUSTOMER y WORKER pueden consultar clubes activos; ADMIN, los clubes que administra; SUPER_ADMIN, cualquier club.',
   })
   @ApiResponse({ type: ClubResponseDto, status: 200, description: 'Club obtenido correctamente.' })
   getClub(
@@ -176,7 +181,9 @@ export class ClubsController {
     return this.clubsService.updateClub(currentUser, clubId, body);
   }
 
-  @ApiOperation({ summary: 'Obtener el perfil operativo de un local nocturno' })
+  @ApiOperation({
+    summary: 'Obtener el perfil operativo de un local nocturno (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: ClubOperationalProfileResponseDto })
   @Get(':clubId/operational-profile')
   getOperationalProfile(
@@ -186,7 +193,9 @@ export class ClubsController {
     return this.clubsService.getOperationalProfile(currentUser, clubId);
   }
 
-  @ApiOperation({ summary: 'Actualizar el perfil operativo de un local nocturno' })
+  @ApiOperation({
+    summary: 'Actualizar el perfil operativo de un local nocturno (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: UpdateClubOperationalProfileResponseDto })
   @Patch(':clubId/operational-profile')
   updateOperationalProfile(

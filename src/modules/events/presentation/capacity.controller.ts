@@ -23,7 +23,11 @@ import {
 @Controller('clubs/:clubId/events/:eventId/capacity')
 export class CapacityController {
   constructor(private readonly service: CapacityService) {}
-  @ApiOperation({ summary: 'Obtener el aforo actual' })
+  @ApiOperation({
+    summary: 'Consultar el aforo actual de un evento (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_CAPACITY.',
+  })
   @ApiResponse({ status: 200, type: CapacityResponseDto })
   @Get()
   get(
@@ -33,7 +37,12 @@ export class CapacityController {
   ): Promise<CapacityResponseDto> {
     return this.service.get(user, clubId, eventId);
   }
-  @ApiOperation({ summary: 'Transmitir actualizaciones de aforo' })
+  @ApiOperation({
+    summary:
+      'Recibir actualizaciones del aforo de un evento en tiempo real (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_CAPACITY.',
+  })
   @Sse('stream')
   @ApiProduces('text/event-stream')
   @ApiOkResponse({
@@ -56,7 +65,11 @@ export class CapacityController {
   ) {
     return this.service.stream(user, clubId, eventId);
   }
-  @ApiOperation({ summary: 'Listar el historial de aforo' })
+  @ApiOperation({
+    summary: 'Listar el historial de aforo de un evento (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_CAPACITY.',
+  })
   @ApiResponse({ status: 200, type: CapacityHistoryResponseDto })
   @Get('history')
   history(
@@ -66,7 +79,11 @@ export class CapacityController {
   ): Promise<CapacityHistoryResponseDto> {
     return this.service.history(user, clubId, eventId);
   }
-  @ApiOperation({ summary: 'Configurar el aforo de un local nocturno' })
+  @ApiOperation({
+    summary: 'Configurar el aforo de un evento (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso MANAGE_CAPACITY.',
+  })
   @ApiResponse({ status: 200, type: CapacityResponseDto })
   @Patch('settings')
   configure(
@@ -77,7 +94,11 @@ export class CapacityController {
   ): Promise<CapacityResponseDto> {
     return this.service.configure(user, clubId, eventId, body.reentryAllowed);
   }
-  @ApiOperation({ summary: 'Registrar una salida de aforo' })
+  @ApiOperation({
+    summary: 'Registrar una salida del evento (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso MANAGE_CAPACITY.',
+  })
   @ApiResponse({ status: 201, type: CapacityResponseDto })
   @Post('exits')
   exit(
@@ -88,7 +109,11 @@ export class CapacityController {
   ): Promise<CapacityResponseDto> {
     return this.service.registerExit(user, clubId, eventId, body.ticketId, body.idempotencyKey);
   }
-  @ApiOperation({ summary: 'Corregir el aforo de un local nocturno' })
+  @ApiOperation({
+    summary: 'Corregir el aforo de un evento (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso MANAGE_CAPACITY.',
+  })
   @ApiResponse({ status: 201, type: CapacityResponseDto })
   @Post('corrections')
   correct(

@@ -23,6 +23,9 @@ import { EventResponseDto, EventsResponseDto } from './events.response.dto';
 export class ClubEventsController {
   constructor(private readonly eventsService: EventsService) {}
 
+  @ApiOperation({
+    summary: 'Listar solicitudes de devolución de compradores de un evento (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: BuyerRefundsResponseDto })
   @Get(':eventId/buyer-refunds')
   buyerRefunds(
@@ -33,6 +36,9 @@ export class ClubEventsController {
     return this.eventsService.listBuyerRefunds(user, clubId, eventId);
   }
 
+  @ApiOperation({
+    summary: 'Aceptar o rechazar una solicitud de devolución de un comprador (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: BuyerRefundRequestResponseDto })
   @Post(':eventId/buyer-refunds/:id/review')
   reviewBuyerRefund(
@@ -45,6 +51,9 @@ export class ClubEventsController {
     return this.eventsService.reviewBuyerRefund(user, id, input, clubId, eventId);
   }
 
+  @ApiOperation({
+    summary: 'Consultar la cancelación y resolución de un evento (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: EventCancellationResponseDto })
   @Get(':eventId/cancellation')
   cancellation(
@@ -55,6 +64,9 @@ export class ClubEventsController {
     return this.eventsService.getBusinessCancellation(user, clubId, eventId);
   }
 
+  @ApiOperation({
+    summary: 'Solicitar devoluciones por la cancelación de un evento (ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: CancellationRefundResponseDto })
   @Post(':eventId/cancellation/refund-request')
   requestCancellationRefund(
@@ -66,6 +78,7 @@ export class ClubEventsController {
     return this.eventsService.requestCancellationRefund(user, clubId, eventId, input);
   }
 
+  @ApiOperation({ summary: 'Posponer un evento (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: MessageResponseDto })
   @Patch(':eventId/postpone')
   postpone(
@@ -77,6 +90,7 @@ export class ClubEventsController {
     return this.eventsService.postponeEvent(user, clubId, eventId, input);
   }
 
+  @ApiOperation({ summary: 'Reprogramar las fechas de un evento (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: MessageResponseDto })
   @Patch(':eventId/reschedule')
   reschedule(

@@ -63,7 +63,9 @@ import { WalletTopUpDto } from './wallet-top-up.dto';
 export class CommerceController {
   constructor(private readonly service: CommerceService) {}
 
-  @ApiOperation({ summary: 'Completar el checkout del carrito' })
+  @ApiOperation({
+    summary: 'Completar la compra de mi carrito (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: CheckoutResponseDto })
   @Post('cart/checkout')
   @ApiInternalServerErrorResponse({
@@ -83,20 +85,23 @@ export class CommerceController {
     return this.service.checkout(user, body);
   }
 
+  @ApiOperation({
+    summary: 'Consultar las opciones de pago de mi carrito (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: PaymentOptionsResponseDto })
   @Get('cart/payment-options')
   paymentOptions(@CurrentUser() user: AuthenticatedUser): Promise<PaymentOptionsResponseDto> {
     return this.service.paymentOptions(user);
   }
 
-  @ApiOperation({ summary: 'Obtener el carrito actual' })
+  @ApiOperation({ summary: 'Obtener el carrito actual (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: CartResponseDto })
   @Get('cart')
   cart(@CurrentUser() user: AuthenticatedUser): Promise<CartResponseDto> {
     return this.service.getCart(user);
   }
 
-  @ApiOperation({ summary: 'Añadir un ítem al carrito' })
+  @ApiOperation({ summary: 'Añadir un ítem al carrito (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: CartResponseDto })
   @Post('cart/items')
   addCartItem(
@@ -106,7 +111,9 @@ export class CommerceController {
     return this.service.addCartItem(user, body);
   }
 
-  @ApiOperation({ summary: 'Actualizar un ítem del carrito' })
+  @ApiOperation({
+    summary: 'Actualizar un ítem del carrito (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: CartResponseDto })
   @Patch('cart/items/:cartItemId')
   updateCartItem(
@@ -117,6 +124,10 @@ export class CommerceController {
     return this.service.updateCartItem(user, cartItemId, body.quantity);
   }
 
+  @ApiOperation({
+    summary:
+      'Configurar la entrega de productos de mi carrito (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: CartResponseDto })
   @Patch('cart/product-delivery')
   updateProductDelivery(
@@ -126,7 +137,7 @@ export class CommerceController {
     return this.service.updateProductDelivery(user, body);
   }
 
-  @ApiOperation({ summary: 'Eliminar un ítem del carrito' })
+  @ApiOperation({ summary: 'Eliminar un ítem del carrito (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: CartResponseDto })
   @Delete('cart/items/:cartItemId')
   deleteCartItem(
@@ -136,7 +147,11 @@ export class CommerceController {
     return this.service.deleteCartItem(user, cartItemId);
   }
 
-  @ApiOperation({ summary: 'Obtener métricas de reservas' })
+  @ApiOperation({
+    summary: 'Obtener métricas de reservas (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_DASHBOARD.',
+  })
   @ApiResponse({ status: 200, type: ReservationMetricsResponseDto })
   @Get('clubs/:clubId/inventory/reservations/metrics')
   reservationMetrics(
@@ -146,7 +161,9 @@ export class CommerceController {
     return this.service.getReservationMetrics(user, clubId);
   }
 
-  @ApiOperation({ summary: 'Obtener el estado del pago de una orden' })
+  @ApiOperation({
+    summary: 'Consultar el estado del pago de mi orden (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: CheckoutResponseDto })
   @Get('orders/:orderId/payment')
   payment(
@@ -156,7 +173,9 @@ export class CommerceController {
     return this.service.getPayment(user, orderId);
   }
 
-  @ApiOperation({ summary: 'Crear una recarga de billetera' })
+  @ApiOperation({
+    summary: 'Crear una recarga de mi billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: WalletTopUpResponseDto })
   @Post('wallet/top-ups')
   @ApiInternalServerErrorResponse({
@@ -176,14 +195,18 @@ export class CommerceController {
     return this.service.createWalletTopUp(user, body.amountCents, body.idempotencyKey);
   }
 
-  @ApiOperation({ summary: 'Listar recargas de billetera' })
+  @ApiOperation({
+    summary: 'Listar las recargas de mi billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: WalletTopUpsResponseDto })
   @Get('wallet/top-ups')
   walletTopUps(@CurrentUser() user: AuthenticatedUser): Promise<WalletTopUpsResponseDto> {
     return this.service.listWalletTopUps(user);
   }
 
-  @ApiOperation({ summary: 'Obtener una recarga de billetera' })
+  @ApiOperation({
+    summary: 'Consultar una recarga de mi billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: WalletTopUpResponseDto })
   @Get('wallet/top-ups/:topUpId')
   walletTopUp(
@@ -193,7 +216,11 @@ export class CommerceController {
     return this.service.getWalletTopUp(user, topUpId);
   }
 
-  @ApiOperation({ summary: 'Listar órdenes de un local nocturno' })
+  @ApiOperation({
+    summary: 'Listar órdenes de un local nocturno (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_SALES.',
+  })
   @ApiResponse({ status: 200, type: ClubOrdersResponseDto })
   @Get('clubs/:clubId/orders')
   clubOrders(
@@ -204,7 +231,11 @@ export class CommerceController {
     return this.service.listClubOrders(user, clubId, query);
   }
 
-  @ApiOperation({ summary: 'Exportar órdenes de un local nocturno' })
+  @ApiOperation({
+    summary: 'Exportar órdenes de un local nocturno (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_SALES.',
+  })
   @Get('clubs/:clubId/orders/export')
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="ventas-beerry.csv"')
@@ -234,7 +265,11 @@ export class CommerceController {
     return this.service.exportClubOrders(user, clubId, query);
   }
 
-  @ApiOperation({ summary: 'Obtener el detalle de una orden de un local nocturno' })
+  @ApiOperation({
+    summary: 'Obtener el detalle de una orden de un local nocturno (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_SALES.',
+  })
   @ApiResponse({ status: 200, type: ClubOrderResponseDto })
   @Get('clubs/:clubId/orders/:orderId')
   clubOrderDetail(
@@ -245,6 +280,11 @@ export class CommerceController {
     return this.service.getClubOrder(user, clubId, orderId);
   }
 
+  @ApiOperation({
+    summary: 'Solicitar la devolución de una orden del club (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso REQUEST_REFUNDS.',
+  })
   @ApiResponse({ status: 201, type: RequestedRefundResponseDto })
   @Post('clubs/:clubId/orders/:orderId/refund-requests')
   requestRefund(
@@ -256,6 +296,7 @@ export class CommerceController {
     return this.service.requestOrderRefund(user, clubId, orderId, body.reason, body.amountCents);
   }
 
+  @ApiOperation({ summary: 'Procesar una solicitud de devolución (SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: RequestedRefundResponseDto })
   @Post('admin/refund-requests/:refundRequestId/process')
   processRefund(
@@ -271,7 +312,11 @@ export class CommerceController {
     );
   }
 
-  @ApiOperation({ summary: 'Obtener el panel operativo de un local nocturno' })
+  @ApiOperation({
+    summary: 'Obtener el panel operativo de un local nocturno (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso VIEW_OPERATIONS.',
+  })
   @ApiResponse({ status: 200, type: CommerceOperationsResponseDto })
   @Get('clubs/:clubId/operations')
   operations(
@@ -281,6 +326,11 @@ export class CommerceController {
     return this.service.getClubOperations(user, clubId);
   }
 
+  @ApiOperation({
+    summary: 'Simular el resultado de uno de mis pagos (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Solo admite intentos de pago propios. Disponible únicamente fuera de producción y con un proveedor que permita simulaciones.',
+  })
   @ApiResponse({ status: 201, type: SimulatedPaymentResponseDto })
   @Post('payment-attempts/:attemptId/simulate')
   simulatePayment(
@@ -291,6 +341,11 @@ export class CommerceController {
     return this.service.simulatePayment(user, attemptId, body.outcome);
   }
 
+  @ApiOperation({
+    summary: 'Validar o canjear una entrada (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con VALIDATE_TICKETS. Si el trabajador tiene dispositivos autorizados, también requiere un turno activo. confirm=true realiza el canje.',
+  })
   @ApiResponse({ status: 201, type: CodeValidationResponseDto })
   @Post('clubs/:clubId/validate/ticket')
   validateTicket(
@@ -307,7 +362,12 @@ export class CommerceController {
     );
   }
 
-  @ApiOperation({ summary: 'Validar un código detectado' })
+  @ApiOperation({
+    summary:
+      'Validar o canjear un código de entrada, producto o promoción (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Detecta el tipo de código y aplica VALIDATE_TICKETS, VALIDATE_PRODUCTS o VALIDATE_PROMOTIONS. Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con el permiso correspondiente; si tiene dispositivos autorizados, requiere un turno activo. confirm=true realiza el canje.',
+  })
   @ApiResponse({ status: 201, type: CodeValidationResponseDto })
   @Post('clubs/:clubId/validate/code')
   validateDetectedCode(
@@ -323,6 +383,11 @@ export class CommerceController {
     );
   }
 
+  @ApiOperation({
+    summary: 'Validar o entregar un producto (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con VALIDATE_PRODUCTS. Si el trabajador tiene dispositivos autorizados, también requiere un turno activo. confirm=true realiza el canje.',
+  })
   @ApiResponse({ status: 201, type: CodeValidationResponseDto })
   @Post('clubs/:clubId/validate/product')
   validateProduct(
@@ -339,6 +404,11 @@ export class CommerceController {
     );
   }
 
+  @ApiOperation({
+    summary: 'Validar o canjear una promoción (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Requiere ser administrador del club, SUPER_ADMIN o trabajador activo con VALIDATE_PROMOTIONS. Si el trabajador tiene dispositivos autorizados, también requiere un turno activo. confirm=true realiza el canje.',
+  })
   @ApiResponse({ status: 201, type: CodeValidationResponseDto })
   @Post('clubs/:clubId/validate/promotion')
   validatePromotion(
@@ -355,13 +425,17 @@ export class CommerceController {
     );
   }
 
-  @ApiOperation({ summary: 'Listar mis entradas' })
+  @ApiOperation({ summary: 'Listar mis entradas (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: OwnedTicketsResponseDto })
   @Get('me/tickets')
   tickets(@CurrentUser() user: AuthenticatedUser): Promise<OwnedTicketsResponseDto> {
     return this.service.listTickets(user);
   }
 
+  @ApiOperation({
+    summary: 'Revertir un canje de entrada, producto o promoción (ADMIN, SUPER_ADMIN)',
+    description: 'Requiere ser administrador del club o SUPER_ADMIN.',
+  })
   @ApiResponse({ status: 201, type: RedemptionReversalResponseDto })
   @Post('clubs/:clubId/redemptions/:kind/:resourceId/reverse')
   @ApiParam({ name: 'kind', enum: ['TICKET', 'PRODUCT', 'PROMOTION'] })
@@ -375,14 +449,18 @@ export class CommerceController {
     return this.service.reverseRedemption(user, clubId, kind, resourceId, body.reason);
   }
 
-  @ApiOperation({ summary: 'Listar mis consumibles' })
+  @ApiOperation({ summary: 'Listar mis consumibles (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: OwnedConsumablesResponseDto })
   @Get('me/consumables')
   consumables(@CurrentUser() user: AuthenticatedUser): Promise<OwnedConsumablesResponseDto> {
     return this.service.listConsumables(user);
   }
 
-  @ApiOperation({ summary: 'Listar validaciones auditadas' })
+  @ApiOperation({
+    summary: 'Listar validaciones auditadas (WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'SUPER_ADMIN y los administradores del club pueden ver todos sus canjes. Los trabajadores activos solo ven sus propias validaciones.',
+  })
   @ApiResponse({ status: 200, type: RedemptionAuditResponseDto })
   @Get('audit-logs')
   auditLogs(

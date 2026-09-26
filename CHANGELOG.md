@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Títulos descriptivos y alcance de acceso explícito en todos los endpoints
+  publicados en Swagger, con los roles CUSTOMER, WORKER, ADMIN y SUPER_ADMIN,
+  o PUBLIC cuando no se requiere sesión. Se aclaran permisos de trabajadores,
+  acceso a recursos propios y requisitos de autenticación.
 - Limpieza del tipado de pagos, OAuth, QR, auditoría y notificaciones: JSON
   comprobado en los límites, metadatos serializables y eliminación de conversiones
   forzadas. Firebase devuelve únicamente tokens inválidos presentes en el lote.

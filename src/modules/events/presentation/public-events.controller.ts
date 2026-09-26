@@ -10,9 +10,9 @@ export class PublicEventsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Listar eventos publicos (PUBLICO)',
+    summary: 'Listar eventos públicos (PUBLIC)',
     description:
-      'Acceso: PUBLICO. No requiere token. Se usa para mostrar a clientes y visitantes los eventos publicados y visibles de clubes activos.',
+      'Acceso: PUBLIC. No requiere token. Devuelve eventos publicados y visibles de clubes activos.',
   })
   @ApiResponse({
     type: EventsResponseDto,
@@ -25,9 +25,9 @@ export class PublicEventsController {
 
   @Get(':eventId')
   @ApiOperation({
-    summary: 'Obtener detalle publico de evento (PUBLICO)',
+    summary: 'Consultar el detalle público de un evento (PUBLIC)',
     description:
-      'Acceso: PUBLICO. No requiere token. Se usa para consultar el detalle publico de un evento visible, incluyendo la informacion necesaria para explorarlo antes de comprar o asistir.',
+      'Acceso: PUBLIC. No requiere token. Devuelve el detalle de un evento visible para consultarlo antes de comprar o asistir.',
   })
   @ApiResponse({
     type: EventResponseDto,

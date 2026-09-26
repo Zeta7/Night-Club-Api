@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { EventsService } from '../application/events.service';
@@ -10,6 +10,10 @@ import { EventReasonDto } from './dto/reschedule-event.dto';
 @Controller('events/me')
 export class BuyerEventRefundsController {
   constructor(private readonly events: EventsService) {}
+  @ApiOperation({
+    summary:
+      'Solicitar una devolución por rechazo del evento de reemplazo (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 201, type: BuyerRefundRequestResponseDto })
   @Post('purchases/:orderItemId/replacement-refund')
   request(

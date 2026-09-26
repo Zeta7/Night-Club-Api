@@ -14,7 +14,7 @@ export class ClubMarketplaceFeeController {
 
   @ApiResponse({ status: 200, type: ClubMarketplaceFeeResponseDto })
   @Get()
-  @ApiOperation({ summary: 'Consultar la comisión efectiva del negocio (solo lectura)' })
+  @ApiOperation({ summary: 'Consultar la comisión efectiva del negocio (ADMIN, SUPER_ADMIN)' })
   get(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,

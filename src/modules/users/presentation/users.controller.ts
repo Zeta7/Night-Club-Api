@@ -17,7 +17,7 @@ export class UsersController {
 
   @Get('search')
   @ApiOperation({
-    summary: 'Buscar usuarios por nombre o telefono (ADMIN, SUPER_ADMIN)',
+    summary: 'Buscar usuarios por nombre o teléfono (ADMIN, SUPER_ADMIN)',
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Se usa para buscar usuarios por nombre, telefono o email y seleccionar uno sin ingresar su ID manualmente. ADMIN recibe usuarios activos; SUPER_ADMIN puede buscar usuarios de la plataforma.',
   })
@@ -35,7 +35,7 @@ export class UsersController {
 
   @Patch('me')
   @ApiOperation({
-    summary: 'Actualizar perfil propio (CLIENTE, TRABAJADOR, ADMIN, SUPER_ADMIN)',
+    summary: 'Actualizar perfil propio (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Permite actualizar nombre, email y foto de perfil del usuario autenticado usando accessToken.',
   })

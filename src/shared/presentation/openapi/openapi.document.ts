@@ -30,7 +30,8 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
   let builder = new DocumentBuilder()
     .setTitle('Beerry API')
     .setDescription(
-      'Contrato REST de Beerry Platform. Las respuestas correctas devuelven los datos directamente. Los errores usan la estructura { data, meta, error }.',
+      'Contrato REST de Beerry Platform. Las respuestas correctas devuelven los datos directamente. Los errores usan la estructura { data, meta, error }.\n\n' +
+        'Los títulos indican el alcance de acceso: PUBLIC, CUSTOMER, WORKER, ADMIN o SUPER_ADMIN. PUBLIC no requiere una sesión. Las operaciones de negocio también pueden exigir una vinculación al club, permisos o un turno activo; consulta la descripción de cada operación.',
     )
     .setVersion('0.1.0')
     .addServer('/api/v1', 'Prefijo canónico de la API v1.')

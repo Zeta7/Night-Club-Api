@@ -15,7 +15,7 @@ export class UploadsController {
 
   @Post('presigned-url')
   @ApiOperation({
-    summary: 'Generar URL firmada para subir imagen',
+    summary: 'Generar una URL firmada para subir una imagen (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Requiere accessToken. Se usa para generar una URL temporal de subida directa a S3 para imagenes que luego seran confirmadas y consumidas por otros modulos.',
   })
@@ -33,7 +33,7 @@ export class UploadsController {
 
   @Post(':uploadId/confirm')
   @ApiOperation({
-    summary: 'Confirmar upload temporal',
+    summary: 'Confirmar la carga temporal de una imagen (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Requiere accessToken. Verifica el objeto en S3, valida tamano/tipo y deja el archivo disponible temporalmente para ser consumido por otro modulo.',
   })

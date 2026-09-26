@@ -8,9 +8,9 @@ export class HealthController {
   @ApiResponse({ status: 200, type: HealthResponseDto })
   @Get()
   @ApiOperation({
-    summary: 'Verificar estado de la API (PUBLICO)',
+    summary: 'Verificar estado de la API (PUBLIC)',
     description:
-      'Acceso: PUBLICO. No requiere token. Se usa para comprobar que la API esta disponible y devuelve informacion basica de estado del servicio.',
+      'Acceso: PUBLIC. No requiere token. Permite comprobar la disponibilidad de la API y consultar el estado del servicio.',
   })
   check(): HealthResponseDto {
     return {

@@ -50,7 +50,7 @@ export class WalletsController {
 
   @Get('me')
   @ApiOperation({
-    summary: 'Obtener la billetera del usuario autenticado',
+    summary: 'Consultar mi billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
       'Devuelve saldo real, total gastado, ultima recarga, movimientos recientes y estadisticas de la billetera.',
   })
@@ -63,6 +63,9 @@ export class WalletsController {
     return this.walletsService.getMine(currentUser);
   }
 
+  @ApiOperation({
+    summary: 'Consultar un movimiento de mi billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: WalletMovementResponseDto })
   @Get('me/movements/:id')
   movement(
@@ -72,6 +75,9 @@ export class WalletsController {
     return this.walletsService.movementDetail(user, id);
   }
 
+  @ApiOperation({
+    summary: 'Consultar el detalle de una de mis órdenes (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: WalletOrderDetailResponseDto })
   @Get('me/orders/:id')
   orderDetail(
@@ -81,6 +87,10 @@ export class WalletsController {
     return this.walletsService.orderDetail(user, id);
   }
 
+  @ApiOperation({
+    summary:
+      'Consultar el detalle de una recarga de mi billetera (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+  })
   @ApiResponse({ status: 200, type: WalletTopUpDetailResponseDto })
   @Get('me/top-ups/:id')
   topUpDetail(
@@ -90,7 +100,7 @@ export class WalletsController {
     return this.walletsService.topUpDetail(user, id);
   }
 
-  @ApiOperation({ summary: 'Obtener el libro mayor de un local nocturno' })
+  @ApiOperation({ summary: 'Obtener el libro mayor de un local nocturno (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: ClubLedgerResponseDto })
   @Get('clubs/:clubId')
   getClubLedger(
@@ -100,7 +110,7 @@ export class WalletsController {
     return this.walletsService.getClubLedger(currentUser, clubId);
   }
 
-  @ApiOperation({ summary: 'Conciliar una orden' })
+  @ApiOperation({ summary: 'Consultar la conciliación de una orden (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: OrderReconciliationResponseDto })
   @Get('reconciliation/orders/:orderId')
   reconcileOrder(
@@ -110,7 +120,7 @@ export class WalletsController {
     return this.walletsService.reconcileOrder(currentUser, orderId);
   }
 
-  @ApiOperation({ summary: 'Obtener las diferencias diarias' })
+  @ApiOperation({ summary: 'Consultar las diferencias diarias de conciliación (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: LedgerDifferencesResponseDto })
   @Get('reconciliation/daily')
   dailyDifferences(
@@ -120,7 +130,9 @@ export class WalletsController {
     return this.walletsService.dailyDifferences(currentUser, query.date);
   }
 
-  @ApiOperation({ summary: 'Obtener el perfil financiero de un local nocturno' })
+  @ApiOperation({
+    summary: 'Obtener el perfil financiero de un local nocturno (ADMIN, SUPER_ADMIN)',
+  })
   @ApiExtraModels(FinancialProfileResponseDto)
   @ApiResponse({
     status: 200,
@@ -138,7 +150,7 @@ export class WalletsController {
     return this.withdrawalsService.getProfile(user, clubId);
   }
 
-  @ApiOperation({ summary: 'Crear o actualizar el perfil financiero' })
+  @ApiOperation({ summary: 'Crear o actualizar el perfil financiero (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: FinancialProfileResponseDto })
   @Put('clubs/:clubId/financial-profile')
   upsertFinancialProfile(
@@ -149,6 +161,7 @@ export class WalletsController {
     return this.withdrawalsService.upsertProfile(user, clubId, body);
   }
 
+  @ApiOperation({ summary: 'Solicitar un retiro de fondos del club (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: WithdrawalResponseDto })
   @Post('clubs/:clubId/withdrawals')
   requestWithdrawal(
@@ -159,7 +172,7 @@ export class WalletsController {
     return this.withdrawalsService.request(user, clubId, body);
   }
 
-  @ApiOperation({ summary: 'Listar retiros de un local nocturno' })
+  @ApiOperation({ summary: 'Listar retiros de un local nocturno (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: ClubWithdrawalsResponseDto })
   @Get('clubs/:clubId/withdrawals')
   clubWithdrawals(
@@ -169,7 +182,7 @@ export class WalletsController {
     return this.withdrawalsService.listClub(user, clubId);
   }
 
-  @ApiOperation({ summary: 'Listar retiros de la plataforma' })
+  @ApiOperation({ summary: 'Listar retiros de la plataforma (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: PlatformWithdrawalsResponseDto })
   @Get('withdrawals')
   platformWithdrawals(
@@ -179,6 +192,7 @@ export class WalletsController {
     return this.withdrawalsService.listPlatform(user, query.status);
   }
 
+  @ApiOperation({ summary: 'Aprobar o rechazar una solicitud de retiro (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: WithdrawalResponseDto })
   @Patch('withdrawals/:id/review')
   reviewWithdrawal(
@@ -189,6 +203,7 @@ export class WalletsController {
     return this.withdrawalsService.review(user, id, body.action, body.reason);
   }
 
+  @ApiOperation({ summary: 'Marcar un retiro como en procesamiento (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: WithdrawalResponseDto })
   @Patch('withdrawals/:id/processing')
   processWithdrawal(
@@ -198,7 +213,7 @@ export class WalletsController {
     return this.withdrawalsService.markProcessing(user, id);
   }
 
-  @ApiOperation({ summary: 'Marcar un retiro como pagado' })
+  @ApiOperation({ summary: 'Marcar un retiro como pagado (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: WithdrawalResponseDto })
   @Patch('withdrawals/:id/paid')
   payWithdrawal(
@@ -209,7 +224,7 @@ export class WalletsController {
     return this.withdrawalsService.markPaid(user, id, body.paymentReference, body.proofUrl);
   }
 
-  @ApiOperation({ summary: 'Marcar un retiro como fallido' })
+  @ApiOperation({ summary: 'Marcar un retiro como fallido (SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: WithdrawalResponseDto })
   @Patch('withdrawals/:id/failed')
   failWithdrawal(

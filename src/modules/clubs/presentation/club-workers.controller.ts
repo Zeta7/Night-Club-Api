@@ -32,7 +32,11 @@ import {
 export class ClubWorkersController {
   constructor(private readonly clubWorkersService: ClubWorkersService) {}
 
-  @ApiOperation({ summary: 'Iniciar mi turno' })
+  @ApiOperation({
+    summary: 'Iniciar mi turno (WORKER)',
+    description:
+      'Requiere una vinculación activa como trabajador del club y un dispositivo autorizado.',
+  })
   @ApiResponse({ status: 201, type: WorkerShiftResponseDto })
   @Post('me/shifts')
   startMyShift(
@@ -43,7 +47,11 @@ export class ClubWorkersController {
     return this.clubWorkersService.startShift(currentUser, clubId, body);
   }
 
-  @ApiOperation({ summary: 'Sincronizar mi turno' })
+  @ApiOperation({
+    summary: 'Sincronizar mi turno (WORKER)',
+    description:
+      'Requiere una vinculación activa como trabajador del club y un turno propio activo.',
+  })
   @ApiResponse({ status: 201, type: WorkerShiftSyncResponseDto })
   @Post('me/shifts/:shiftId/sync')
   syncMyShift(
@@ -55,6 +63,7 @@ export class ClubWorkersController {
     return this.clubWorkersService.syncShift(currentUser, clubId, shiftId, body);
   }
 
+  @ApiOperation({ summary: 'Listar los turnos de un trabajador (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: WorkerShiftsResponseDto })
   @Get(':workerId/shifts')
   listShifts(
@@ -65,6 +74,7 @@ export class ClubWorkersController {
     return this.clubWorkersService.listShifts(user, clubId, workerId);
   }
 
+  @ApiOperation({ summary: 'Cerrar el turno de un trabajador (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: ClosedWorkerShiftResponseDto })
   @Post(':workerId/shifts/:shiftId/close')
   closeShift(
@@ -77,6 +87,7 @@ export class ClubWorkersController {
     return this.clubWorkersService.closeShift(user, clubId, workerId, shiftId, body.reason);
   }
 
+  @ApiOperation({ summary: 'Autorizar un dispositivo de un trabajador (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 201, type: WorkerDeviceResponseDto })
   @Post(':workerId/devices')
   authorizeDevice(
@@ -88,6 +99,7 @@ export class ClubWorkersController {
     return this.clubWorkersService.authorizeDevice(user, clubId, workerId, body);
   }
 
+  @ApiOperation({ summary: 'Revocar un dispositivo de un trabajador (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: RevokedWorkerDeviceResponseDto })
   @Delete(':workerId/devices/:deviceId')
   revokeDevice(
@@ -99,6 +111,7 @@ export class ClubWorkersController {
     return this.clubWorkersService.revokeDevice(user, clubId, workerId, deviceId);
   }
 
+  @ApiOperation({ summary: 'Consultar la actividad de un trabajador (ADMIN, SUPER_ADMIN)' })
   @ApiResponse({ status: 200, type: WorkerOperationsReportResponseDto })
   @Get(':workerId/report')
   report(
