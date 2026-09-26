@@ -85,7 +85,11 @@ por Prisma. No se mantienen schemas paralelos por endpoint ni se deducen tipos
 por nombres de campos. La generación falla ante retornos con `any`, `unknown`
 o listas vacías sin tipo. Los campos que sólo devuelven `null` deben declarar
 su tipo completo. Los JSON abiertos se permiten únicamente en las rutas
-revisadas por el control de contrato.
+revisadas por el control de contrato; sus objetos y arrays conservan los elementos null.
+Los formatos no JSON se declaran con `@ApiProduces` y `@ApiOkResponse` en el
+controlador. Los errores particulares también se documentan allí. No se
+sustituyen respuestas mediante excepciones por nombre de endpoint.
+Un parámetro sin schema provoca un error de generación.
 
 Los enteros de Prisma conservan su tipo; un número calculado que deba publicarse
 como entero debe declararlo mediante `/** @integer */` en su propiedad de retorno.

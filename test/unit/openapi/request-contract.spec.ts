@@ -14,6 +14,10 @@ import {
 import 'reflect-metadata';
 import { INestApplication, Module, Type, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '../../../src/shared/infrastructure/prisma/prisma.service';
+import { UploadsService } from '../../../src/modules/uploads/application/uploads.service';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { ReferralExpirationMode, UserRole, UserStatus } from '@prisma/client';
@@ -38,6 +42,10 @@ class ContractModule {}
 
 describe('Request contract: integers and PATCH presence', () => {
   let app: INestApplication;
+  const modules: TestingModule[] = [];
+  afterEach(async () => {
+    await Promise.all(modules.splice(0).map((module) => module.close()));
+  });
   let document: OpenAPIObject;
   const pipe = new ValidationPipe({
     transform: true,
@@ -168,7 +176,16 @@ describe('Request contract: integers and PATCH presence', () => {
       user: { findUnique: jest.fn().mockResolvedValue(user) },
       $transaction: (fn: (value: typeof tx) => unknown) => fn(tx),
     };
-    const service = new UsersService(prisma as never, {} as never, {} as never);
+    const module = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: new ConfigService() },
+        { provide: UploadsService, useValue: {} },
+      ],
+    }).compile();
+    modules.push(module);
+    const service = module.get(UsersService);
     await service.updateMyProfile(
       { id: user.id, role: user.role },
       plainToInstance(UpdateMyProfileDto, {}),
@@ -195,7 +212,15 @@ describe('Request contract: integers and PATCH presence', () => {
       clubWorker: { findFirst: jest.fn().mockResolvedValue(worker) },
       $transaction: (fn: (value: typeof tx) => unknown) => fn(tx),
     };
-    const service = new ClubWorkersService(prisma as never, {} as never);
+    const module = await Test.createTestingModule({
+      providers: [
+        ClubWorkersService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: new ConfigService() },
+      ],
+    }).compile();
+    modules.push(module);
+    const service = module.get(ClubWorkersService);
     const actor = { id: 'admin', role: UserRole.SUPER_ADMIN };
     await service.updateWorker(actor, 'club', 'worker', await input(UpdateClubWorkerDto, {}));
     expect(update.mock.calls[0][0].data).toEqual({});
@@ -231,9 +256,19 @@ describe('Request contract: integers and PATCH presence', () => {
       version: 1,
     };
     const update = jest.fn().mockResolvedValue(current);
-    const service = new ReferralsService({
-      referralProgramSettings: { upsert: jest.fn().mockResolvedValue(current), update },
-    } as never);
+    const module = await Test.createTestingModule({
+      providers: [
+        ReferralsService,
+        {
+          provide: PrismaService,
+          useValue: {
+            referralProgramSettings: { upsert: jest.fn().mockResolvedValue(current), update },
+          },
+        },
+      ],
+    }).compile();
+    modules.push(module);
+    const service = module.get(ReferralsService);
     const actor = { id: 'admin', role: UserRole.SUPER_ADMIN };
     await service.updateSettings(actor, await input(UpdateReferralSettingsDto, {}));
     expect(update.mock.calls[0][0].data).toMatchObject({
@@ -388,6 +423,29 @@ describe('Request contract: integers and PATCH presence', () => {
     expect(enhanced.paths['/contract'].post?.responses['201']).toMatchObject({
       content: { 'application/json': { schema: { type: 'string', enum: ['created'] } } },
     });
+  });
+
+  it('rejects parameters without a schema instead of inventing a string type', () => {
+    expect(() =>
+      enhanceOpenApiDocument({
+        openapi: '3.0.0',
+        info: { title: 'Contract', version: '1' },
+        paths: {
+          '/contract': {
+            get: {
+              operationId: 'ContractController_get',
+              parameters: [{ in: 'query', name: 'value' }],
+              responses: {
+                '200': {
+                  description: 'OK',
+                  content: { 'application/json': { schema: { type: 'string' } } },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ).toThrow('Missing OpenAPI schema for ContractController_get parameter value.');
   });
 
   it('uses the generated response when the Nest plugin supplies an empty Object placeholder', () => {

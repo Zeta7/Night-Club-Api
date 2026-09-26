@@ -21,10 +21,6 @@ function generateResponseSchemas(program) {
     conflict: '409',
     serviceUnavailable: '503',
   };
-  const RESPONSE_SCHEMA_EXCLUSIONS = new Set([
-    'CapacityController_stream',
-    'CommerceController_exportClubOrders',
-  ]);
 
   function decoratorsOf(node) {
     return ts.canHaveDecorators(node) ? (ts.getDecorators(node) ?? []) : [];
@@ -46,6 +42,19 @@ function generateResponseSchemas(program) {
 
   function isHttpMethod(node) {
     return decoratorsOf(node).some((decorator) => HTTP_DECORATORS.has(decoratorName(decorator)));
+  }
+
+  function producesNonJsonResponse(node) {
+    return decoratorsOf(node).some((decorator) => {
+      if (decoratorName(decorator) !== 'ApiProduces') return false;
+      const mediaTypes = decorator.expression.arguments;
+      return (
+        mediaTypes.length > 0 &&
+        mediaTypes.every(
+          (media) => ts.isStringLiteral(media) && !/(?:\/|\+)json(?:;|$)/i.test(media.text),
+        )
+      );
+    });
   }
 
   function words(value) {
@@ -405,8 +414,9 @@ function generateResponseSchemas(program) {
       ].includes(jsonName)
     ) {
       if (jsonName.endsWith('Object'))
-        return { type: 'object', additionalProperties: dynamicValueSchema() };
-      if (jsonName.endsWith('Array')) return { type: 'array', items: dynamicValueSchema() };
+        return { type: 'object', additionalProperties: dynamicValueSchema(undefined, true) };
+      if (jsonName.endsWith('Array'))
+        return { type: 'array', items: dynamicValueSchema(undefined, true) };
       return dynamicValueSchema(undefined, jsonName === 'JsonValue');
     }
     if (flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) {
@@ -627,14 +637,8 @@ function generateResponseSchemas(program) {
         const signature = checker.getSignatureFromDeclaration(member);
         if (!signature) continue;
         const operationId = `${node.name.text}_${member.name.text}`;
-        const isServerSentEvents = decoratorsOf(member).some(
-          (decorator) => decoratorName(decorator) === 'Sse',
-        );
-        const responseSchema = isServerSentEvents
-          ? {
-              type: 'string',
-              description: 'Secuencia de eventos Server-Sent Events emitida por el runtime.',
-            }
+        const responseSchema = producesNonJsonResponse(member)
+          ? undefined
           : typeToSchema(checker.getReturnTypeOfSignature(signature), member);
         controllerOperations.push({
           operationId,
@@ -646,7 +650,7 @@ function generateResponseSchemas(program) {
   }
 
   for (const { operationId, responseSchema, collectedErrorCodes } of controllerOperations) {
-    if (!RESPONSE_SCHEMA_EXCLUSIONS.has(operationId)) {
+    if (responseSchema) {
       schemas[`${operationId}Response`] = responseSchema;
     }
     errorCodes[operationId] = collectedErrorCodes;

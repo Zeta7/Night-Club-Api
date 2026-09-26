@@ -7,6 +7,9 @@ import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
 import { ClubsService } from '@modules/clubs/application/clubs.service';
 import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 import { CommerceService } from '@modules/commerce/application/commerce.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { FeaturedCampaignsService } from '@modules/featured-campaigns/application/featured-campaigns.service';
 
 jest.setTimeout(180_000);
 
@@ -20,7 +23,8 @@ describe('Module 8 - business administration', () => {
     uploads as any,
     new SimulatedPaymentGateway(),
   );
-  const clubs = new ClubsService(prisma, config, uploads as any, {} as never);
+  let clubs: ClubsService;
+  let module: TestingModule;
   const suffix = randomUUID().slice(0, 8);
   let adminId: string;
   let workerId: string;
@@ -34,6 +38,16 @@ describe('Module 8 - business administration', () => {
   const worker = () => ({ id: workerId, role: UserRole.WORKER });
 
   beforeAll(async () => {
+    module = await Test.createTestingModule({
+      providers: [
+        ClubsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: config },
+        { provide: UploadsService, useValue: uploads },
+        { provide: FeaturedCampaignsService, useValue: {} },
+      ],
+    }).compile();
+    clubs = module.get(ClubsService);
     await prisma.$connect();
     const stamp = Date.now().toString().slice(-7);
     const [adminUser, workerUser, customer] = await Promise.all([
@@ -157,7 +171,7 @@ describe('Module 8 - business administration', () => {
     await prisma.clubAdmin.deleteMany({ where: { clubId } });
     await prisma.club.delete({ where: { id: clubId } });
     await prisma.user.deleteMany({ where: { id: { in: [adminId, workerId, customerId] } } });
-    await prisma.$disconnect();
+    await module.close();
   });
 
   it('lists and filters real orders with customer, items and payment', async () => {

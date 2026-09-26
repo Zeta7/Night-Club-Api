@@ -75,8 +75,8 @@ const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   {
     pattern:
       /^PlatformController_(?:getDashboard|getSettings|updateSettings)Response::properties\.(?:dashboard\.properties\.)?settings\.additionalProperties$/,
-    reason: 'Platform settings are a map whose values are arbitrary JSON.',
-    nullable: false,
+    reason: 'Platform settings are a map whose values are arbitrary JSON, including null.',
+    nullable: true,
   },
   {
     pattern: /^AuditController_searchResponse::properties\.items\.items\.properties\.metadata$/,

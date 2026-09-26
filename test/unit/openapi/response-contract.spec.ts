@@ -12,7 +12,7 @@ const { generateResponseSchemas } =
     generateResponseSchemas(program: ts.Program): { schemas: Record<string, SchemaObject> };
   };
 
-function generate(methods: string) {
+function generate(methods: string, declarations = '') {
   const file = path.resolve('src/contract-fixture.controller.ts').replaceAll('\\', '/');
   const options: ts.CompilerOptions = {
     strict: true,
@@ -27,7 +27,10 @@ function generate(methods: string) {
     name === file
       ? ts.createSourceFile(
           name,
-          'declare function Get(): MethodDecorator; class FixtureController {' + methods + '}',
+          declarations +
+            'declare function Get(): MethodDecorator; declare function ApiProduces(...media: string[]): MethodDecorator; class FixtureController {' +
+            methods +
+            '}',
           language,
           true,
         )
@@ -80,6 +83,33 @@ count: number } { throw new Error(); }
     expect(schemas.FixtureController_amountResponse).toMatchObject({
       properties: { value: { type: 'number' }, count: { type: 'integer' } },
     });
+  });
+
+  it('preserves null values inside Prisma JSON objects and arrays', () => {
+    const schemas = generate(
+      '@Get() json(): { settings: Prisma.JsonObject; items: Prisma.JsonArray } { throw new Error(); }',
+      "import type { Prisma } from '@prisma/client';",
+    );
+    expect(schemas.FixtureController_jsonResponse).toMatchObject({
+      properties: {
+        settings: { type: 'object', additionalProperties: { nullable: true } },
+        items: { type: 'array', items: { nullable: true } },
+      },
+    });
+  });
+
+  it('uses declared media types instead of endpoint names to exclude non-JSON responses', () => {
+    const schemas = generate(`
+      @Get() @ApiProduces('text/csv') exportFile(): string { return ''; }
+      @Get() @ApiProduces('application/json') detail(): { id: string } { throw new Error(); }
+    `);
+    expect(schemas).not.toHaveProperty('FixtureController_exportFileResponse');
+    expect(schemas).toHaveProperty('FixtureController_detailResponse');
+    expect(() =>
+      generate(
+        '@Get() @ApiProduces("application/problem+json") detail(): unknown { throw new Error(); }',
+      ),
+    ).toThrow('Untyped response fields:');
   });
 
   it.each(['any', 'unknown'])(

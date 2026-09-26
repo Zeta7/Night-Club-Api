@@ -1,9 +1,13 @@
 import { Body, Controller, Get, Param, Patch, Post, Sse, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiProduces, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { CapacityService } from '../application/capacity.service';
-import { CorrectCapacityDto, RegisterCapacityExitDto, UpdateCapacitySettingsDto } from './dto/capacity.dto';
+import {
+  CorrectCapacityDto,
+  RegisterCapacityExitDto,
+  UpdateCapacitySettingsDto,
+} from './dto/capacity.dto';
 
 @ApiTags('Capacity')
 @ApiBearerAuth()
@@ -11,10 +15,71 @@ import { CorrectCapacityDto, RegisterCapacityExitDto, UpdateCapacitySettingsDto 
 @Controller('clubs/:clubId/events/:eventId/capacity')
 export class CapacityController {
   constructor(private readonly service: CapacityService) {}
-  @Get() get(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string) { return this.service.get(user, clubId, eventId); }
-  @Sse('stream') stream(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string) { return this.service.stream(user, clubId, eventId); }
-  @Get('history') history(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string) { return this.service.history(user, clubId, eventId); }
-  @Patch('settings') configure(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string, @Body() body: UpdateCapacitySettingsDto) { return this.service.configure(user, clubId, eventId, body.reentryAllowed); }
-  @Post('exits') exit(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string, @Body() body: RegisterCapacityExitDto) { return this.service.registerExit(user, clubId, eventId, body.ticketId, body.idempotencyKey); }
-  @Post('corrections') correct(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('eventId') eventId: string, @Body() body: CorrectCapacityDto) { return this.service.correct(user, clubId, eventId, body.targetCount, body.reason, body.idempotencyKey); }
+  @Get() get(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string,
+  ) {
+    return this.service.get(user, clubId, eventId);
+  }
+  @Sse('stream')
+  @ApiProduces('text/event-stream')
+  @ApiOkResponse({
+    description:
+      'Stream SSE que emite eventos capacity.updated cada vez que cambia la revisión del aforo.',
+    content: {
+      'text/event-stream': {
+        schema: {
+          type: 'string',
+          example:
+            'event: capacity.updated\ndata: {"current":120,"capacity":300,"available":180,"revision":8}\n\n',
+        },
+      },
+    },
+  })
+  stream(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string,
+  ) {
+    return this.service.stream(user, clubId, eventId);
+  }
+  @Get('history') history(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string,
+  ) {
+    return this.service.history(user, clubId, eventId);
+  }
+  @Patch('settings') configure(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string,
+    @Body() body: UpdateCapacitySettingsDto,
+  ) {
+    return this.service.configure(user, clubId, eventId, body.reentryAllowed);
+  }
+  @Post('exits') exit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string,
+    @Body() body: RegisterCapacityExitDto,
+  ) {
+    return this.service.registerExit(user, clubId, eventId, body.ticketId, body.idempotencyKey);
+  }
+  @Post('corrections') correct(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('eventId') eventId: string,
+    @Body() body: CorrectCapacityDto,
+  ) {
+    return this.service.correct(
+      user,
+      clubId,
+      eventId,
+      body.targetCount,
+      body.reason,
+      body.idempotencyKey,
+    );
+  }
 }

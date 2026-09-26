@@ -10,7 +10,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiProduces,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { CommerceService } from '../application/commerce.service';
@@ -34,6 +41,16 @@ export class CommerceController {
   constructor(private readonly service: CommerceService) {}
 
   @Post('cart/checkout')
+  @ApiInternalServerErrorResponse({
+    description:
+      'La configuración, red o respuesta de Mercado Pago produce un Error que el manejador predeterminado de NestJS convierte en 500.',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/NestInternalServerError' },
+        example: { statusCode: 500, message: 'Internal server error' },
+      },
+    },
+  })
   checkout(@CurrentUser() user: AuthenticatedUser, @Body() body: CheckoutDto) {
     return this.service.checkout(user, body);
   }
@@ -86,6 +103,16 @@ export class CommerceController {
   }
 
   @Post('wallet/top-ups')
+  @ApiInternalServerErrorResponse({
+    description:
+      'La configuración, red o respuesta de Mercado Pago produce un Error que el manejador predeterminado de NestJS convierte en 500.',
+    content: {
+      'application/json': {
+        schema: { $ref: '#/components/schemas/NestInternalServerError' },
+        example: { statusCode: 500, message: 'Internal server error' },
+      },
+    },
+  })
   createWalletTopUp(@CurrentUser() user: AuthenticatedUser, @Body() body: WalletTopUpDto) {
     return this.service.createWalletTopUp(user, body.amountCents, body.idempotencyKey);
   }
@@ -112,6 +139,24 @@ export class CommerceController {
   @Get('clubs/:clubId/orders/export')
   @Header('Content-Type', 'text/csv; charset=utf-8')
   @Header('Content-Disposition', 'attachment; filename="ventas-beerry.csv"')
+  @ApiProduces('text/csv')
+  @ApiOkResponse({
+    description: 'CSV UTF-8 con las órdenes visibles para el local nocturno.',
+    headers: {
+      'Content-Disposition': {
+        description: 'Fuerza la descarga con el nombre ventas-beerry.csv.',
+        schema: { type: 'string', example: 'attachment; filename="ventas-beerry.csv"' },
+      },
+    },
+    content: {
+      'text/csv': {
+        schema: {
+          type: 'string',
+          example: 'orderId,status,totalCents\nc4e91a67-3b58-4fd2-8a06-7d25e9c1b340,PAID,18500',
+        },
+      },
+    },
+  })
   exportClubOrders(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,

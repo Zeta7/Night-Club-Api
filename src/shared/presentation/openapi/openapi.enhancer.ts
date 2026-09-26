@@ -5,7 +5,6 @@ type PathItemObject = OpenAPIObject['paths'][string];
 type OperationObject = NonNullable<PathItemObject['get']>;
 type ReferenceObject = { $ref: string };
 type ParameterObject = Exclude<NonNullable<OperationObject['parameters']>[number], ReferenceObject>;
-type RequestBodyObject = Exclude<NonNullable<OperationObject['requestBody']>, ReferenceObject>;
 type ResponseObject = Exclude<NonNullable<OperationObject['responses'][string]>, ReferenceObject>;
 type SchemasObject = NonNullable<NonNullable<OpenAPIObject['components']>['schemas']>;
 type SchemaObject = Exclude<SchemasObject[string], ReferenceObject>;
@@ -784,7 +783,17 @@ function normalizeParameters(operation: OperationObject): void {
       PARAMETER_DESCRIPTIONS[parameter.name] ??
       `Valor de ${translateWords(parameter.name)} aceptado por la operación.`;
     parameter.required = parameter.in === 'path' ? true : Boolean(parameter.required);
-    const schema = (parameter.schema ??= { type: 'string' }) as SchemaObject;
+    if (!parameter.schema) {
+      throw new Error(
+        'Missing OpenAPI schema for ' +
+          operation.operationId +
+          ' parameter ' +
+          parameter.name +
+          '.',
+      );
+    }
+    if (isReference(parameter.schema)) continue;
+    const schema = parameter.schema;
     if (parameter.in === 'query' && schema.default !== undefined) parameter.required = false;
     parameter.example ??= parameterExample(parameter.name, schema);
   }
@@ -804,11 +813,9 @@ function parameterExample(name: string, schema: SchemaObject): unknown {
 
 function normalizeRequestBody(operation: OperationObject, document: OpenAPIObject): void {
   if (!operation.requestBody || isReference(operation.requestBody)) return;
-  const requestBody = operation.requestBody as RequestBodyObject;
+  const requestBody = operation.requestBody;
   requestBody.description ??= 'Solo acepta las propiedades documentadas; rechaza cualquier otra.';
-  for (const media of Object.values(requestBody.content) as Array<{
-    schema?: SchemaObject | ReferenceObject;
-  }>) {
+  for (const media of Object.values(requestBody.content)) {
     if (!media.schema || !isReference(media.schema)) continue;
     const name = media.schema.$ref.split('/').pop()!;
     closeRequestSchema(name, document, new Set());
@@ -832,7 +839,7 @@ function closeRequestSchema(name: string, document: OpenAPIObject, visited: Set<
       closeRequestSchema(target, document, visited);
       continue;
     }
-    const property = raw as SchemaObject;
+    const property = raw;
     property.description ??= requestPropertyDescription(propertyName);
     property.example ??= requestPropertyExample(
       propertyName,
@@ -919,40 +926,6 @@ function normalizeResponses(
         : {}),
     };
 
-  if (operationId === 'CommerceController_exportClubOrders') {
-    operation.responses[successStatus] = {
-      description: 'CSV UTF-8 con las órdenes visibles para el local nocturno.',
-      headers: {
-        'Content-Disposition': {
-          description: 'Fuerza la descarga con el nombre ventas-beerry.csv.',
-          schema: { type: 'string', example: 'attachment; filename="ventas-beerry.csv"' },
-        },
-      },
-      content: {
-        'text/csv': {
-          schema: {
-            type: 'string',
-            example: 'orderId,status,totalCents\nc4e91a67-3b58-4fd2-8a06-7d25e9c1b340,PAID,18500',
-          },
-        },
-      },
-    };
-  }
-  if (operationId === 'CapacityController_stream') {
-    operation.responses[successStatus] = {
-      description:
-        'Stream SSE que emite eventos capacity.updated cada vez que cambia la revisión del aforo.',
-      content: {
-        'text/event-stream': {
-          schema: {
-            type: 'string',
-            example:
-              'event: capacity.updated\ndata: {"current":120,"capacity":300,"available":180,"revision":8}\n\n',
-          },
-        },
-      },
-    };
-  }
   if (
     operation.requestBody ||
     (operation.parameters ?? []).some(
@@ -964,15 +937,6 @@ function normalizeResponses(
       '400',
       'VALIDATION_ERROR',
       'La entrada o una regla de solicitud no es válida.',
-    );
-  }
-  if (
-    operationId === 'CommerceController_checkout' ||
-    operationId === 'CommerceController_createWalletTopUp'
-  ) {
-    addInternalServerError(
-      operation,
-      'La configuración, red o respuesta de Mercado Pago produce un Error que el manejador predeterminado de NestJS convierte en 500.',
     );
   }
   if (!isPublic) {
@@ -1043,18 +1007,6 @@ function normalizeResponses(
 
   // Ensure every response reference resolves after response replacement.
   document.components!.schemas ??= {};
-}
-
-function addInternalServerError(operation: OperationObject, description: string): void {
-  operation.responses['500'] = {
-    description,
-    content: {
-      'application/json': {
-        schema: { $ref: '#/components/schemas/NestInternalServerError' },
-        example: { statusCode: 500, message: 'Internal server error' },
-      },
-    },
-  };
 }
 
 function applyErrorCodes(response: ResponseObject, codes: string[]): void {

@@ -26,7 +26,10 @@ import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-qu
 import { UpdateClubDto } from '../presentation/dto/update-club.dto';
 import { UpdateClubOperationalProfileDto } from '../presentation/dto/update-club-operational-profile.dto';
 
-import { currentEventsWhere, effectiveEventStatus } from '../../events/application/event-availability';
+import {
+  currentEventsWhere,
+  effectiveEventStatus,
+} from '../../events/application/event-availability';
 import { paymentReadyClubWhere } from './club-commerce-availability';
 import { currentPromotionsWhere } from '../../promotions/application/promotion-availability';
 
@@ -616,7 +619,7 @@ export class ClubsService {
           status: product.status,
         })),
       ),
-      emptyState: null as ReturnType<typeof buildCustomerHomeEmptyState> | null,
+      emptyState: null,
     };
     return {
       ...payload,
@@ -632,7 +635,10 @@ export class ClubsService {
     };
   }
 
-  async exploreCustomerContent(currentUser: AuthenticatedUser, query: CustomerExploreQueryDto) {
+  async exploreCustomerContent(
+    currentUser: AuthenticatedUser,
+    query: CustomerExploreQueryDto,
+  ): Promise<CustomerExploreResponse> {
     const search = query.q.trim();
     const now = new Date();
     const searchPattern = `%${search}%`;
@@ -772,7 +778,7 @@ export class ClubsService {
           currency: event.ticketTypes[0]?.currency ?? 'PEN',
         })),
       ),
-      tickets: [] as Awaited<ReturnType<ClubsService['getCustomerHome']>>['tickets'],
+      tickets: [],
       promotions: await Promise.all(
         promotions.map(async (promotion) => ({
           id: promotion.id,
@@ -804,12 +810,15 @@ export class ClubsService {
           status: product.status,
         })),
       ),
-      emptyState: null as ReturnType<typeof buildCustomerHomeEmptyState> | null,
+      emptyState: null,
       viewer: { id: currentUser.id, role: currentUser.role },
     };
   }
 
-  async getCustomerClubDetail(currentUser: AuthenticatedUser, clubId: string) {
+  async getCustomerClubDetail(
+    currentUser: AuthenticatedUser,
+    clubId: string,
+  ): Promise<CustomerClubDetailResponse> {
     const now = new Date();
     const club = await this.prisma.club.findFirst({
       where: {
@@ -997,7 +1006,7 @@ export class ClubsService {
           status: product.status,
         })),
       ),
-      emptyState: null as ReturnType<typeof buildCustomerHomeEmptyState> | null,
+      emptyState: null,
       viewer: { id: currentUser.id, role: currentUser.role },
     };
   }
@@ -1285,7 +1294,10 @@ export class ClubsService {
         resourceId: clubId,
       },
     });
-    return { message: 'Configuración operativa actualizada.', profile: toOperationalProfileResponse(profile) };
+    return {
+      message: 'Configuración operativa actualizada.',
+      profile: toOperationalProfileResponse(profile),
+    };
   }
 
   async deactivateClub(currentUser: AuthenticatedUser, clubId: string) {
@@ -1458,6 +1470,16 @@ export class ClubsService {
     return club;
   }
 }
+
+type CustomerHomeResponse = Awaited<ReturnType<ClubsService['getCustomerHome']>>;
+type CustomerExploreResponse = Omit<CustomerHomeResponse, 'featuredItems' | 'promotions'> & {
+  query: string;
+  scope: 'PERU';
+  promotions: Array<Omit<CustomerHomeResponse['promotions'][number], 'startsAt' | 'endsAt'>>;
+};
+type CustomerClubDetailResponse = Omit<CustomerHomeResponse, 'featuredItems' | 'hasResults'> & {
+  hasResults: true;
+};
 
 const clubInclude = {
   admins: {
@@ -1855,7 +1877,9 @@ function toOperationalProfileResponse(profile: ClubOperationalProfile) {
   return {
     ...profile,
     approvalDocumentUploadIds: Array.isArray(profile.approvalDocumentUploadIds)
-      ? profile.approvalDocumentUploadIds.filter((value): value is string => typeof value === 'string')
+      ? profile.approvalDocumentUploadIds.filter(
+          (value): value is string => typeof value === 'string',
+        )
       : [],
   };
 }
