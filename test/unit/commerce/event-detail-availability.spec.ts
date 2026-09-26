@@ -17,7 +17,7 @@ describe('Event detail inventory', () => {
             id: 'event',
             clubId: 'club',
             status: 'SALE_ACTIVE',
-            club: { id: 'club', name: 'Club', status: 'ACTIVE', sellerConnections: [{ id: 'seller' }] },
+            club: { id: 'club', name: 'Club', type: 'club', status: 'ACTIVE', sellerConnections: [{ id: 'seller' }] },
             promotions: [],
             ticketTypes: [
               {

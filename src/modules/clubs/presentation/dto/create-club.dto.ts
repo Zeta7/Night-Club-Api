@@ -5,6 +5,7 @@ import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -17,9 +18,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { OptionalField } from '../../../../shared/presentation/dto-fields';
+import { BusinessType } from '../../domain/business-type';
 import { CLUB_SCHEDULE_DAYS, CLUB_SOCIAL_TYPES } from '../../domain/club-profile';
-
-const businessTypes = ['club', 'discoteca', 'karaoke', 'bar', 'restobar', 'lounge'] as const;
 
 export class ClubAddressDto {
   @ApiPropertyOptional({ example: 'Av. Larco 1234' })
@@ -132,9 +132,9 @@ export class CreateClubDto {
   @MaxLength(120, { message: 'El nombre del club no debe superar 120 caracteres.' })
   name!: string;
 
-  @ApiProperty({ example: 'club', enum: businessTypes })
-  @IsIn(businessTypes, { message: 'El tipo de negocio no es valido.' })
-  type!: (typeof businessTypes)[number];
+  @ApiProperty({ example: BusinessType.CLUB, enum: BusinessType, enumName: 'BusinessType' })
+  @IsEnum(BusinessType, { message: 'El tipo de negocio no es valido.' })
+  type!: BusinessType;
 
   @ApiPropertyOptional({ example: 'Local nocturno ubicado en el centro de la ciudad.' })
   @IsString({ message: 'La descripcion debe ser texto.' })

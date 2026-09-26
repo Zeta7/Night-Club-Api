@@ -12,6 +12,7 @@ import {
   UserStatus,
   WorkerPermission,
 } from '@prisma/client';
+import { BusinessType } from '../domain/business-type';
 import {
   ClubAddressResponseDto,
   ClubContactResponseDto,
@@ -29,8 +30,8 @@ export class DashboardClubDto {
   @ApiProperty({ type: 'string', nullable: true })
   description!: string | null;
 
-  @ApiProperty({ type: 'string' })
-  type!: string;
+  @ApiProperty({ enum: BusinessType, enumName: 'BusinessType' })
+  type!: BusinessType;
 
   @ApiProperty({ enum: ClubStatus, enumName: 'ClubStatus' })
   status!: ClubStatus;

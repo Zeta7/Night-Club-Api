@@ -5,6 +5,7 @@ import {
   PromotionPricingMode,
   PromotionStatus,
 } from '@prisma/client';
+import { OfferScope } from '../../../shared/domain/offer-scope';
 
 export class PromotionClubDto {
   @ApiProperty({ type: 'string' })
@@ -119,8 +120,8 @@ export class PromotionDto {
   @ApiProperty({ type: 'string', nullable: true })
   eventId!: string | null;
 
-  @ApiProperty({ type: 'string' })
-  scope!: string;
+  @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
+  scope!: OfferScope;
 
   @ApiProperty({ type: 'string' })
   name!: string;

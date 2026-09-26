@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TicketTypeStatus } from '@prisma/client';
+import { OfferScope } from '../../../shared/domain/offer-scope';
 
 export class TicketTypeClubDto {
   @ApiProperty({ type: 'string' })
@@ -30,8 +31,8 @@ export class TicketTypeDto {
   @ApiProperty({ type: 'string', nullable: true })
   eventId!: string | null;
 
-  @ApiProperty({ type: 'string' })
-  scope!: string;
+  @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
+  scope!: OfferScope;
 
   @ApiProperty({ type: 'string' })
   name!: string;

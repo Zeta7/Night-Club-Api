@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ClubStatus, EventStatus } from '@prisma/client';
+import { BusinessType } from '../../clubs/domain/business-type';
 import { EventTicketTypeDto } from './events.response.dto';
 
 export class EventsDashboardSummaryDto {
@@ -110,8 +111,8 @@ export class EventsDashboardClubDto {
   @ApiProperty({ type: 'string' })
   name!: string;
 
-  @ApiProperty({ type: 'string' })
-  type!: string;
+  @ApiProperty({ enum: BusinessType, enumName: 'BusinessType' })
+  type!: BusinessType;
 
   @ApiProperty({ enum: ClubStatus, enumName: 'ClubStatus' })
   status!: ClubStatus;

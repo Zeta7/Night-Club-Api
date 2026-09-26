@@ -10,6 +10,7 @@ import {
   TicketTypeStatus,
   UserRole,
 } from '@prisma/client';
+import { OfferScope } from '../../../shared/domain/offer-scope';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
@@ -616,7 +617,7 @@ const toPromotionResponse = (
   id: promotion.id,
   clubId: promotion.clubId,
   eventId: promotion.eventId,
-  scope: promotion.eventId != null ? 'event' : 'club',
+  scope: promotion.eventId != null ? OfferScope.EVENT : OfferScope.CLUB,
   name: promotion.name,
   description: promotion.description,
   imageUrl: buildMediaUrl(promotion.imageUrl, config),

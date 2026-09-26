@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TicketTypeStatus, UserRole } from '@prisma/client';
+import { OfferScope } from '../../../shared/domain/offer-scope';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
@@ -384,7 +385,7 @@ const toTicketTypeResponse = (ticketType: {
   id: ticketType.id,
   clubId: ticketType.clubId,
   eventId: ticketType.eventId,
-  scope: ticketType.eventId ? 'event' : 'club',
+  scope: ticketType.eventId ? OfferScope.EVENT : OfferScope.CLUB,
   name: ticketType.name,
   description: ticketType.description,
   price: centsToPrice(ticketType.priceCents),

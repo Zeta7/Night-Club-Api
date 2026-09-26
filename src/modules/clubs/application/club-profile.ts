@@ -1,4 +1,5 @@
 import { Club, Prisma } from '@prisma/client';
+import { readBusinessType } from '../domain/business-type';
 import { CLUB_SCHEDULE_DAYS, CLUB_SOCIAL_TYPES } from '../domain/club-profile';
 
 function object(value: Prisma.JsonValue | undefined): Prisma.JsonObject {
@@ -62,6 +63,7 @@ export function readClubSchedule(value: Prisma.JsonValue) {
 export function clubWithProfile(club: Club) {
   return {
     ...club,
+    type: readBusinessType(club.type),
     addressJson: readClubAddress(club.addressJson),
     contactJson: readClubContact(club.contactJson),
     socialMediaJson: readClubSocialMedia(club.socialMediaJson),

@@ -18,6 +18,7 @@ import {
   notFound,
 } from '../../../shared/presentation/api-exception';
 import { paymentReadyClubWhere } from '../../clubs/application/club-commerce-availability';
+import { readBusinessType } from '../../clubs/domain/business-type';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { UploadsService } from '../../uploads/application/uploads.service';
 import { CancelEventDto, ReviewEventCancellationDto } from '../presentation/dto/cancel-event.dto';
@@ -156,7 +157,7 @@ export class EventsService {
       club: {
         id: club.id,
         name: club.name,
-        type: club.type,
+        type: readBusinessType(club.type),
         status: club.status,
       },
       summary: {

@@ -11,6 +11,7 @@ import {
   TicketTypeStatus,
   UserRole,
 } from '@prisma/client';
+import { OfferScope } from '../../../shared/domain/offer-scope';
 import {
   buildMediaUrl,
   extractObjectKeyFromUrl,
@@ -25,6 +26,7 @@ import { FeaturedCampaignsService } from '../../featured-campaigns/application/f
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { currentPromotionsWhere } from '../../promotions/application/promotion-availability';
 import { UploadsService } from '../../uploads/application/uploads.service';
+import { readBusinessType } from '../domain/business-type';
 import { CLUB_SCHEDULE_DAYS as scheduleDayOrder } from '../domain/club-profile';
 import { CreateClubDto } from '../presentation/dto/create-club.dto';
 import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-query.dto';
@@ -89,7 +91,7 @@ export class ClubsService {
         data: {
           name: normalizeText(input.name),
           description: normalizeOptionalText(input.description),
-          type: normalizeBusinessType(input.type),
+          type: input.type,
           addressJson: toNullableJson(address),
           contactJson: toNullableJson(contact),
           coverImageUrl:
@@ -321,7 +323,7 @@ export class ClubsService {
         id: club.id,
         name: club.name,
         description: club.description,
-        type: club.type,
+        type: readBusinessType(club.type),
         status: club.status,
         profileImage,
         coverImage,
@@ -555,7 +557,7 @@ export class ClubsService {
           id: club.id,
           name: club.name,
           description: club.description,
-          type: club.type,
+          type: readBusinessType(club.type),
           profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
           coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
           address: toLocationAddress(club.addressJson),
@@ -620,7 +622,7 @@ export class ClubsService {
           endsAt: promotion.endsAt,
           status: promotion.status,
           itemsCount: promotion.items.length,
-          scope: promotion.eventId ? 'EVENT' : 'CLUB',
+          scope: promotion.eventId ? OfferScope.EVENT : OfferScope.CLUB,
         })),
       ),
       products: await Promise.all(
@@ -769,7 +771,7 @@ export class ClubsService {
           id: club.id,
           name: club.name,
           description: club.description,
-          type: club.type,
+          type: readBusinessType(club.type),
           profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
           coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
           address: toLocationAddress(club.addressJson),
@@ -811,7 +813,7 @@ export class ClubsService {
           currency: promotion.currency,
           status: promotion.status,
           itemsCount: promotion.items.length,
-          scope: promotion.eventId ? 'EVENT' : 'CLUB',
+          scope: promotion.eventId ? OfferScope.EVENT : OfferScope.CLUB,
         })),
       ),
       products: await Promise.all(
@@ -942,7 +944,7 @@ export class ClubsService {
           id: club.id,
           name: club.name,
           description: club.description,
-          type: club.type,
+          type: readBusinessType(club.type),
           profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
           coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
           address: toLocationAddress(club.addressJson),
@@ -1007,7 +1009,7 @@ export class ClubsService {
           endsAt: promotion.endsAt,
           status: promotion.status,
           itemsCount: promotion.items.length,
-          scope: promotion.eventId ? 'EVENT' : 'CLUB',
+          scope: promotion.eventId ? OfferScope.EVENT : OfferScope.CLUB,
         })),
       ),
       products: await Promise.all(
@@ -1079,7 +1081,7 @@ export class ClubsService {
         id: club.id,
         name: club.name,
         description: club.description,
-        type: club.type,
+        type: readBusinessType(club.type),
         profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
         coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
         address: toLocationAddress(club.addressJson),
@@ -1148,7 +1150,7 @@ export class ClubsService {
           currency: promotion.currency,
           status: promotion.status,
           itemsCount: promotion.items.length,
-          scope: 'EVENT',
+          scope: OfferScope.EVENT,
           startsAt: promotion.startsAt,
           endsAt: promotion.endsAt,
         })),
@@ -1186,7 +1188,7 @@ export class ClubsService {
     }
 
     if (input.type !== undefined) {
-      data.type = normalizeBusinessType(input.type);
+      data.type = input.type;
     }
 
     if (input.address !== undefined) {
@@ -1532,8 +1534,6 @@ const toNullableJson = (
   value: Prisma.InputJsonValue | null,
 ): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput => value ?? Prisma.JsonNull;
 
-const normalizeBusinessType = (value?: string): string => value?.trim().toLowerCase() || 'club';
-
 const normalizeAddress = (value?: CreateClubDto['address']): Record<string, string | number> => ({
   direccion: value?.direccion?.trim() ?? '',
   distrito: value?.distrito?.trim() ?? '',
@@ -1825,7 +1825,7 @@ const toClubResponse = (
   id: club.id,
   name: club.name,
   description: club.description,
-  type: club.type,
+  type: readBusinessType(club.type),
   coverImage: buildMediaUrl(club.coverImageUrl, config),
   coverImageObjectKey: club.coverImageUrl,
   profileImage: buildMediaUrl(club.profileImageUrl, config),

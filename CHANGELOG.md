@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Enums compartidos `BusinessType` y `OfferScope` en requests y respuestas HTTP.
+  El alcance de promociones Customer cambia de `CLUB`/`EVENT` a `club`/`event`,
+  igual que promociones y entradas operativas. Requiere regenerar el SDK.
+
 - Títulos descriptivos y alcance de acceso explícito en todos los endpoints
   publicados en Swagger, con los roles CUSTOMER, WORKER, ADMIN y SUPER_ADMIN,
   o PUBLIC cuando no se requiere sesión. Se aclaran permisos de trabajadores,

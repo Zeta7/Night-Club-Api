@@ -8,6 +8,8 @@ import {
   TicketTypeStatus,
   UserRole,
 } from '@prisma/client';
+import { OfferScope } from '../../../shared/domain/offer-scope';
+import { BusinessType } from '../domain/business-type';
 import { ClubContactResponseDto, ClubScheduleResponseDto } from './club-profile.response.dto';
 
 export class CustomerHomeFeaturedItemDto {
@@ -73,8 +75,8 @@ export class CustomerClubDto {
   @ApiProperty({ type: 'string', nullable: true })
   description!: string | null;
 
-  @ApiProperty({ type: 'string' })
-  type!: string;
+  @ApiProperty({ enum: BusinessType, enumName: 'BusinessType' })
+  type!: BusinessType;
 
   @ApiProperty({ type: 'string', nullable: true })
   profileImage!: string | null;
@@ -229,8 +231,8 @@ export class CustomerPromotionDto {
   @ApiProperty({ type: 'integer' })
   itemsCount!: number;
 
-  @ApiProperty({ type: 'string' })
-  scope!: string;
+  @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
+  scope!: OfferScope;
 }
 
 export class CustomerProductDto {
@@ -362,8 +364,8 @@ export class CustomerExplorePromotionDto {
   @ApiProperty({ type: 'number' })
   finalPrice!: number;
 
-  @ApiProperty({ type: 'string' })
-  scope!: string;
+  @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
+  scope!: OfferScope;
 }
 
 export class CustomerExploreResponseDto {
@@ -558,8 +560,8 @@ export class CustomerEventDetailPromotionDto {
   @ApiProperty({ type: 'integer' })
   itemsCount!: number;
 
-  @ApiProperty({ type: 'string' })
-  scope!: string;
+  @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
+  scope!: OfferScope;
 
   @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
   startsAt!: Date | null;
