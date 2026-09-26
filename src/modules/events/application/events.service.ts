@@ -784,7 +784,7 @@ const adminEventsClubInclude = {
 
 const normalizeText = (value: string): string => value.trim();
 
-const normalizeOptionalText = (value?: string): string | null => {
+const normalizeOptionalText = (value?: string | null): string | null => {
   const normalized = value?.trim();
 
   return normalized ? normalized : null;

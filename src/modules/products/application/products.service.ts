@@ -223,7 +223,7 @@ export class ProductsService {
 }
 
 const normalizeText = (value: string) => value.trim();
-const normalizeOptionalText = (value?: string) => {
+const normalizeOptionalText = (value?: string | null) => {
   const normalized = value?.trim();
   return normalized ? normalized : null;
 };

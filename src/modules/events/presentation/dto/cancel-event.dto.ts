@@ -1,4 +1,5 @@
-import { IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
+import { IsIn, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class CancelEventDto {
   @IsIn(['REFUND_REQUESTED', 'REFUND_DECLINED', 'REPLACEMENT'])
@@ -9,7 +10,7 @@ export class CancelEventDto {
   @MaxLength(1000)
   reason!: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsUUID()
   replacementEventId?: string;
 }

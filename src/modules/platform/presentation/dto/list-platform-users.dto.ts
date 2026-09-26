@@ -1,30 +1,31 @@
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 import { UserRole, UserStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsEnum, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class ListPlatformUsersDto {
-  @IsOptional()
+  @OptionalField()
   @IsString()
   @MaxLength(80)
   query?: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsEnum(UserRole)
   role?: UserRole;
 
-  @IsOptional()
+  @OptionalField()
   @IsEnum(UserStatus)
   status?: UserStatus;
 
-  @IsOptional()
+  @OptionalField()
   @Transform(({ value }) => Number(value))
-  @IsInt()
+  @IsInteger()
   @Min(1)
   page = 1;
 
-  @IsOptional()
+  @OptionalField()
   @Transform(({ value }) => Number(value))
-  @IsInt()
+  @IsInteger()
   @Min(1)
   @Max(100)
   pageSize = 10;

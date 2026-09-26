@@ -33,6 +33,4 @@ run(process.execPath, [
 runNodeModule('@nestjs/cli/bin/nest.js', ['build']);
 run(process.execPath, [path.join(ROOT, 'dist', 'src', 'generate-openapi.js')]);
 
-if (CHECK_MODE) {
-  run(process.execPath, [path.join(ROOT, 'scripts', 'check-openapi.cjs')]);
-}
+run(process.execPath, [path.join(ROOT, 'scripts', 'check-openapi.cjs')]);

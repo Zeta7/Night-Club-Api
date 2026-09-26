@@ -1,12 +1,13 @@
-import { IsInt, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
+import { IsString, MaxLength, Min } from 'class-validator';
 
 export class ProcessRefundDto {
-  @IsOptional()
-  @IsInt()
+  @OptionalField()
+  @IsInteger()
   @Min(1)
   approvedAmountCents?: number;
 
-  @IsOptional()
+  @OptionalField()
   @IsString()
   @MaxLength(500)
   resolutionNote?: string;

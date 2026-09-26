@@ -1,4 +1,5 @@
-import { IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
+import { IsDateString, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class AuthorizeWorkerDeviceDto {
   @IsString() @MinLength(8) @MaxLength(200) fingerprint!: string;
@@ -7,7 +8,7 @@ export class AuthorizeWorkerDeviceDto {
 }
 
 export class StartWorkerShiftDto {
-  @IsOptional() @IsUUID() eventId?: string;
+  @OptionalField() @IsUUID() eventId?: string;
   @IsString() @MinLength(8) @MaxLength(200) deviceFingerprint!: string;
 }
 

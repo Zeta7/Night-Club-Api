@@ -66,12 +66,23 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
       );
     }
     const expirationMode = input.expirationMode ?? current.expirationMode;
-    const expirationDays = input.expirationDays ?? current.expirationDays;
+    const expirationDays =
+      input.expirationDays !== undefined ? input.expirationDays : current.expirationDays;
     if (expirationMode === ReferralExpirationMode.FIXED_DAYS && !expirationDays) {
       throw badRequest('REFERRAL_EXPIRATION_DAYS_REQUIRED', 'Debes indicar los días de vigencia.');
     }
-    const startsAt = input.startsAt === undefined ? current.startsAt : new Date(input.startsAt);
-    const endsAt = input.endsAt === undefined ? current.endsAt : new Date(input.endsAt);
+    const startsAt =
+      input.startsAt === undefined
+        ? current.startsAt
+        : input.startsAt === null
+          ? null
+          : new Date(input.startsAt);
+    const endsAt =
+      input.endsAt === undefined
+        ? current.endsAt
+        : input.endsAt === null
+          ? null
+          : new Date(input.endsAt);
     if (startsAt && endsAt && startsAt >= endsAt)
       throw badRequest(
         'REFERRAL_CAMPAIGN_DATES_INVALID',

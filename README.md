@@ -64,3 +64,15 @@ Swagger UI esta disponible en:
 ```text
 /api/docs
 ```
+
+## Contrato OpenAPI
+
+Ejecuta `pnpm docs:build` para regenerar el contrato y `pnpm docs:check` para
+comprobarlo. El despliegue exige este control y las pruebas de contrato.
+
+En los DTOs, `@IsInteger()` valida y documenta enteros. `@OptionalField()`
+permite omitir un campo; aceptar `null` requiere `nullable: true`, un tipo
+Swagger explícito y `| null` en TypeScript. Las actualizaciones usan
+`PartialType(CreateDto, { skipNullProperties: false })`: omitir conserva y
+`null` borra sólo los campos anulables. Los objetos y listas enviados reemplazan
+el valor completo de esa propiedad.

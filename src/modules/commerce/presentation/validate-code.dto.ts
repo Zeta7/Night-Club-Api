@@ -1,5 +1,6 @@
+import { OptionalField } from '../../../shared/presentation/dto-fields';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class ValidateCodeDto {
   @IsString()
@@ -7,13 +8,13 @@ export class ValidateCodeDto {
   @MaxLength(2048)
   code!: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsString()
   @MaxLength(2048)
   qrCode?: string;
 
-  @IsOptional()
-  @Transform(({ value }) => value === true || value === 'true')
+  @OptionalField()
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
   @IsBoolean()
   confirm?: boolean;
 }

@@ -1278,7 +1278,7 @@ export class ClubsService {
     input: UpdateClubOperationalProfileDto,
   ) {
     await this.assertCanManageClub(currentUser, clubId);
-    const clean = (value: string | undefined) => value?.trim() || null;
+    const clean = (value: string | null | undefined) => value?.trim() || null;
     const profile = await this.prisma.clubOperationalProfile.upsert({
       where: { clubId },
       create: {
@@ -1511,7 +1511,7 @@ const customerHomeClubSelect = {
 
 const normalizeText = (value: string): string => value.trim();
 
-const normalizeOptionalText = (value?: string): string | null => {
+const normalizeOptionalText = (value?: string | null): string | null => {
   const normalized = value?.trim();
 
   return normalized ? normalized : null;
@@ -1529,8 +1529,8 @@ const normalizeAddress = (value?: CreateClubDto['address']): Record<string, stri
   provincia: value?.provincia?.trim() ?? '',
   departamento: value?.departamento?.trim() ?? '',
   pais: value?.pais?.trim() || 'Perú',
-  ...(value?.latitude !== undefined ? { latitude: value.latitude } : {}),
-  ...(value?.longitude !== undefined ? { longitude: value.longitude } : {}),
+  ...(value?.latitude != null ? { latitude: value.latitude } : {}),
+  ...(value?.longitude != null ? { longitude: value.longitude } : {}),
 });
 
 const normalizeCustomerLocationQuery = (query: CustomerHomeQueryDto) => ({

@@ -27,11 +27,10 @@ cd "$PROJECT_DIR"
 echo "Instalando dependencias..."
 pnpm install --frozen-lockfile
 
-echo "Generando Prisma Client..."
-pnpm prisma:generate
+echo "Compilando y verificando el contrato OpenAPI..."
+pnpm docs:check
 
-echo "Compilando NestJS..."
-pnpm build
+pnpm exec jest test/unit/openapi --runInBand
 
 echo "Aplicando migraciones pendientes..."
 pnpm exec prisma migrate deploy

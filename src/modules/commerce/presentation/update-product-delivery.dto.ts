@@ -1,6 +1,7 @@
+import { OptionalField } from '../../../shared/presentation/dto-fields';
 import { ProductDeliveryMode } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsOptional, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsUUID, ValidateNested } from 'class-validator';
 
 export class ProductDeliveryItemDto {
   @IsUUID()
@@ -11,11 +12,11 @@ export class ProductDeliveryItemDto {
 }
 
 export class UpdateProductDeliveryDto {
-  @IsOptional()
+  @OptionalField()
   @IsBoolean()
   combineProducts?: boolean;
 
-  @IsOptional()
+  @OptionalField()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ProductDeliveryItemDto)

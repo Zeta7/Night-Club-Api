@@ -20,7 +20,7 @@ describe('Module 8 - business administration', () => {
     uploads as any,
     new SimulatedPaymentGateway(),
   );
-  const clubs = new ClubsService(prisma, config, uploads as any);
+  const clubs = new ClubsService(prisma, config, uploads as any, {} as never);
   const suffix = randomUUID().slice(0, 8);
   let adminId: string;
   let workerId: string;

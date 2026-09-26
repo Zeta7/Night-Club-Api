@@ -352,14 +352,14 @@ const ticketTypeInclude = {
 } as const;
 
 const normalizeText = (value: string) => value.trim();
-const normalizeOptionalText = (value?: string) => {
+const normalizeOptionalText = (value?: string | null) => {
   const normalized = value?.trim();
   return normalized ? normalized : null;
 };
 const normalizeCurrency = (value?: string) => (value?.trim().toUpperCase() || 'PEN').slice(0, 3);
 const priceToCents = (value: number) => Math.round(value * 100);
 const centsToPrice = (value: number) => value / 100;
-const parseOptionalDate = (value?: string) => (value ? new Date(value) : null);
+const parseOptionalDate = (value?: string | null) => (value ? new Date(value) : null);
 
 const toTicketTypeResponse = (ticketType: {
   id: string;

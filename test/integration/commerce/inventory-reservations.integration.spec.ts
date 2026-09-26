@@ -38,6 +38,7 @@ describe('Inventory reservations integration', () => {
     notifications.onModuleDestroy();
     await prisma.consumableRight.deleteMany({ where: { ownerUserId: { in: userIds } } });
     await prisma.ticket.deleteMany({ where: { ownerUserId: { in: userIds } } });
+    await prisma.productDelivery.deleteMany({ where: { ownerUserId: { in: userIds } } });
     await prisma.order.deleteMany({ where: { userId: { in: userIds } } });
     await prisma.cart.deleteMany({ where: { userId: { in: userIds } } });
     await prisma.wallet.deleteMany({ where: { userId: { in: userIds } } });
@@ -148,16 +149,23 @@ describe('Inventory reservations integration', () => {
     await service.processPaymentEvent(event);
     await service.processPaymentEvent(event);
 
-    const [afterPayment, confirmedReservations, rights] = await Promise.all([
+    const [afterPayment, confirmedReservations, deliveries] = await Promise.all([
       prisma.product.findUniqueOrThrow({ where: { id: product.id } }),
       prisma.inventoryReservation.count({
         where: { resourceType: 'PRODUCT', resourceId: product.id, status: 'CONFIRMED' },
       }),
-      prisma.consumableRight.count({ where: { orderId: winner.orderId } }),
+      prisma.productDelivery.findMany({
+        where: { orderId: winner.orderId },
+        include: { items: true },
+      }),
     ]);
     expect(afterPayment.stockQuantity).toBe(0);
     expect(confirmedReservations).toBe(1);
-    expect(rights).toBe(1);
+    expect(deliveries).toHaveLength(1);
+    expect(deliveries[0].items).toHaveLength(1);
+    expect(deliveries[0].items[0]).toEqual(
+      expect.objectContaining({ productId: product.id, quantity: 1 }),
+    );
     const paidOrder = await prisma.order.findUniqueOrThrow({ where: { id: winner.orderId } });
     expect(await prisma.notification.count({ where: { userId: paidOrder.userId } })).toBe(2);
     const adminSaleNotification = await prisma.notification.findFirstOrThrow({

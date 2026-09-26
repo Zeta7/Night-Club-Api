@@ -101,10 +101,10 @@ export class ClubWorkersService {
         where: { id: workerId },
         data: {
           ...(input.status != null ? { status: input.status } : {}),
-          ...(input.roleLabel != null ? { roleLabel: input.roleLabel.trim() } : {}),
-          ...(input.assignedDoor !== undefined ? { assignedDoor: input.assignedDoor.trim() || null } : {}),
-          ...(input.assignedZone !== undefined ? { assignedZone: input.assignedZone.trim() || null } : {}),
-          ...(input.assignedPoint !== undefined ? { assignedPoint: input.assignedPoint.trim() || null } : {}),
+          ...(input.roleLabel !== undefined ? { roleLabel: input.roleLabel?.trim() ?? null } : {}),
+          ...(input.assignedDoor !== undefined ? { assignedDoor: input.assignedDoor?.trim() || null } : {}),
+          ...(input.assignedZone !== undefined ? { assignedZone: input.assignedZone?.trim() || null } : {}),
+          ...(input.assignedPoint !== undefined ? { assignedPoint: input.assignedPoint?.trim() || null } : {}),
         },
         include: workerInclude,
       });

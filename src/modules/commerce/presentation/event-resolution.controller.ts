@@ -1,14 +1,6 @@
+import { IsInteger } from '../../../shared/presentation/dto-fields';
 import { Body, Controller, Get, Param, Post, UseGuards, BadRequestException } from '@nestjs/common';
-import {
-  IsIn,
-  IsUUID,
-  IsInt,
-  Min,
-  IsString,
-  MinLength,
-  MaxLength,
-  IsDateString,
-} from 'class-validator';
+import { IsIn, IsUUID, Min, IsString, MinLength, MaxLength, IsDateString } from 'class-validator';
 import { CommerceItemType } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
@@ -43,7 +35,7 @@ class ReviewJobDto {
   @IsIn(['APPROVE', 'REJECT'])
   decision!: string;
   @ApiProperty({ minimum: 1, description: 'Importe exacto a devolver, en céntimos.' })
-  @IsInt()
+  @IsInteger()
   @Min(1)
   amountCents!: number;
   @ApiProperty({ minLength: 5, maxLength: 1000 })

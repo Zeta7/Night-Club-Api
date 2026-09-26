@@ -1,9 +1,9 @@
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BusinessAccessRequestType } from '@prisma/client';
 import {
   IsBoolean,
   IsEnum,
-  IsOptional,
   IsString,
   IsUUID,
   IsUrl,
@@ -24,7 +24,7 @@ export class CreateBusinessAccessRequestDto {
   businessName!: string;
 
   @ApiPropertyOptional({ maxLength: 20 })
-  @IsOptional()
+  @OptionalField()
   @IsString()
   @MaxLength(20)
   taxId?: string;
@@ -42,7 +42,7 @@ export class CreateBusinessAccessRequestDto {
   phone!: string;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @OptionalField()
   @IsUrl({ require_protocol: true })
   @MaxLength(500)
   socialUrl?: string;
@@ -52,13 +52,14 @@ export class CreateBusinessAccessRequestDto {
   })
   @ValidateIf(
     (value: CreateBusinessAccessRequestDto) =>
+      value.requestedClubId !== undefined ||
       value.type === BusinessAccessRequestType.ADMINISTER_EXISTING_BUSINESS,
   )
   @IsUUID()
   requestedClubId?: string;
 
   @ApiPropertyOptional({ maxLength: 1000 })
-  @IsOptional()
+  @OptionalField()
   @IsString()
   @MaxLength(1000)
   comment?: string;

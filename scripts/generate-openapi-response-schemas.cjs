@@ -1208,7 +1208,7 @@ async function writeGeneratedSchemas() {
 
   if (process.argv.includes('--check')) {
     const current = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : undefined;
-    if (current !== formatted) {
+    if (current?.replaceAll('\r\n', '\n') !== formatted.replaceAll('\r\n', '\n')) {
       process.stderr.write(
         `OpenAPI response schemas are out of date. Run \"pnpm docs:build\" and commit ${target}.\n`,
       );

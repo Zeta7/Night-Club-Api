@@ -1,4 +1,5 @@
-import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
+import { IsIn, IsString, MaxLength, Min, MinLength } from 'class-validator';
 
 export class UpsertFinancialProfileDto {
   @IsString() @MinLength(2) @MaxLength(150) legalName!: string;
@@ -11,18 +12,18 @@ export class UpsertFinancialProfileDto {
 }
 
 export class CreateWithdrawalDto {
-  @IsInt() @Min(1) amountCents!: number;
-  @IsOptional() @IsString() @MaxLength(300) note?: string;
+  @IsInteger() @Min(1) amountCents!: number;
+  @OptionalField() @IsString() @MaxLength(300) note?: string;
 }
 
 export class ReviewWithdrawalDto {
   @IsIn(['APPROVE', 'REJECT']) action!: 'APPROVE' | 'REJECT';
-  @IsOptional() @IsString() @MaxLength(300) reason?: string;
+  @OptionalField() @IsString() @MaxLength(300) reason?: string;
 }
 
 export class PayWithdrawalDto {
   @IsString() @MinLength(3) @MaxLength(120) paymentReference!: string;
-  @IsOptional() @IsString() @MaxLength(1000) proofUrl?: string;
+  @OptionalField() @IsString() @MaxLength(1000) proofUrl?: string;
 }
 
 export class FailWithdrawalDto {

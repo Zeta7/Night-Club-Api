@@ -1,9 +1,10 @@
+import { IsInteger } from '../../../shared/presentation/dto-fields';
 import { Type } from 'class-transformer';
-import { IsInt, Max, Min } from 'class-validator';
+import { Max, Min } from 'class-validator';
 
 export class UpdateCartItemDto {
   @Type(() => Number)
-  @IsInt()
+  @IsInteger()
   @Min(1)
   @Max(20)
   quantity!: number;

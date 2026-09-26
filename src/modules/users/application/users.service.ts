@@ -72,7 +72,7 @@ export class UsersService {
     }
 
     if (input.email !== undefined) {
-      const normalizedEmail = input.email.trim().toLowerCase();
+      const normalizedEmail = (input.email?.trim() ?? '').toLowerCase();
       if (!normalizedEmail) {
         data.email = null;
       } else {

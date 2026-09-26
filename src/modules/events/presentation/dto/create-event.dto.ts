@@ -1,15 +1,6 @@
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsDateString,
-  IsBoolean,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsDateString, IsBoolean, IsNotEmpty, IsString, MaxLength, Min } from 'class-validator';
 
 export class CreateEventDto {
   @ApiProperty({ example: 'Fiesta de apertura' })
@@ -20,18 +11,17 @@ export class CreateEventDto {
 
   @ApiPropertyOptional({ example: 'Evento especial de apertura de temporada.' })
   @IsString({ message: 'La descripcion debe ser texto.' })
-  @IsOptional()
-  description?: string;
+  @OptionalField({ nullable: true, type: String })
+  description?: string | null;
 
   @ApiPropertyOptional({ example: 'upload-id-uuid' })
   @IsString({ message: 'El upload de la imagen debe ser texto.' })
-  @IsOptional()
+  @OptionalField()
   imageUploadId?: string;
 
   @ApiPropertyOptional({ example: true })
-  @ValidateIf((object: CreateEventDto) => object.imageUploadId === undefined)
   @IsBoolean({ message: 'El indicador removeImage debe ser booleano.' })
-  @IsOptional()
+  @OptionalField()
   removeImage?: boolean;
 
   @ApiProperty({ example: '2026-08-01T22:00:00.000Z' })
@@ -43,7 +33,7 @@ export class CreateEventDto {
   endsAt!: string;
 
   @ApiProperty({ example: 500, minimum: 1 })
-  @IsInt({ message: 'El aforo debe ser un numero entero.' })
+  @IsInteger({ message: 'El aforo debe ser un numero entero.' })
   @Min(1, { message: 'El aforo debe ser mayor a cero.' })
   capacity!: number;
 }

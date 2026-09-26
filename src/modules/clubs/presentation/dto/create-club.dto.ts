@@ -1,3 +1,4 @@
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -7,7 +8,6 @@ import {
   IsIn,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsString,
   IsUrl,
   IsUUID,
@@ -33,51 +33,51 @@ const scheduleDays = [
 export class ClubAddressDto {
   @ApiPropertyOptional({ example: 'Av. Larco 1234' })
   @IsString({ message: 'La direccion debe ser texto.' })
-  @IsOptional()
-  direccion?: string;
+  @OptionalField({ nullable: true, type: String })
+  direccion?: string | null;
 
   @ApiPropertyOptional({ example: 'Miraflores' })
   @IsString({ message: 'El distrito debe ser texto.' })
-  @IsOptional()
-  distrito?: string;
+  @OptionalField({ nullable: true, type: String })
+  distrito?: string | null;
 
   @ApiPropertyOptional({ example: 'Lima' })
   @IsString({ message: 'La provincia debe ser texto.' })
-  @IsOptional()
-  provincia?: string;
+  @OptionalField({ nullable: true, type: String })
+  provincia?: string | null;
 
   @ApiPropertyOptional({ example: 'Lima' })
   @IsString({ message: 'El departamento debe ser texto.' })
-  @IsOptional()
-  departamento?: string;
+  @OptionalField({ nullable: true, type: String })
+  departamento?: string | null;
 
   @ApiPropertyOptional({ example: 'Peru' })
   @IsString({ message: 'El pais debe ser texto.' })
-  @IsOptional()
+  @OptionalField()
   pais?: string;
 
   @ApiPropertyOptional({ example: -12.1219 })
   @IsNumber({}, { message: 'La latitud debe ser numerica.' })
-  @IsOptional()
-  latitude?: number;
+  @OptionalField({ nullable: true, type: Number })
+  latitude?: number | null;
 
   @ApiPropertyOptional({ example: -77.0306 })
   @IsNumber({}, { message: 'La longitud debe ser numerica.' })
-  @IsOptional()
-  longitude?: number;
+  @OptionalField({ nullable: true, type: Number })
+  longitude?: number | null;
 }
 
 export class ClubContactDto {
   @ApiPropertyOptional({ example: '+51987654321' })
   @IsString({ message: 'El telefono debe ser texto.' })
-  @IsOptional()
-  phone?: string;
+  @OptionalField({ nullable: true, type: String })
+  phone?: string | null;
 
   @ApiPropertyOptional({ example: 'contacto@minegocio.pe' })
   @ValidateIf((_, value) => value !== undefined && value !== '')
   @IsEmail({}, { message: 'El correo del club no tiene un formato valido.' })
-  @IsOptional()
-  email?: string;
+  @OptionalField({ nullable: true, type: String })
+  email?: string | null;
 }
 
 export class ClubSocialMediaDto {
@@ -104,16 +104,16 @@ export class ClubScheduleDayDto {
   @Matches(/^$|^([01]\d|2[0-3]):[0-5]\d$/, {
     message: 'La hora de apertura debe tener formato HH:mm.',
   })
-  @IsOptional()
-  openTime?: string;
+  @OptionalField({ nullable: true, type: String })
+  openTime?: string | null;
 
   @ApiPropertyOptional({ example: '07:00' })
   @IsString({ message: 'La hora de cierre debe ser texto.' })
   @Matches(/^$|^([01]\d|2[0-3]):[0-5]\d$/, {
     message: 'La hora de cierre debe tener formato HH:mm.',
   })
-  @IsOptional()
-  closeTime?: string;
+  @OptionalField({ nullable: true, type: String })
+  closeTime?: string | null;
 }
 
 export class CreateClubDto {
@@ -122,7 +122,7 @@ export class CreateClubDto {
   coverImage!: string;
 
   @ApiPropertyOptional({ description: 'ID temporal de la nueva imagen de portada.' })
-  @IsOptional()
+  @OptionalField()
   @IsUUID('4', { message: 'El identificador de portada no es valido.' })
   coverImageUploadId?: string;
 
@@ -131,7 +131,7 @@ export class CreateClubDto {
   profileImage!: string;
 
   @ApiPropertyOptional({ description: 'ID temporal de la nueva imagen de perfil.' })
-  @IsOptional()
+  @OptionalField()
   @IsUUID('4', { message: 'El identificador de perfil no es valido.' })
   profileImageUploadId?: string;
 
@@ -147,8 +147,8 @@ export class CreateClubDto {
 
   @ApiPropertyOptional({ example: 'Local nocturno ubicado en el centro de la ciudad.' })
   @IsString({ message: 'La descripcion debe ser texto.' })
-  @IsOptional()
-  description?: string;
+  @OptionalField({ nullable: true, type: String })
+  description?: string | null;
 
   @ApiProperty({ type: ClubAddressDto })
   @ValidateNested()
@@ -165,8 +165,8 @@ export class CreateClubDto {
   @ArrayMaxSize(10, { message: 'No puedes registrar mas de 10 redes sociales.' })
   @ValidateNested({ each: true })
   @Type(() => ClubSocialMediaDto)
-  @IsOptional()
-  socialMedia?: ClubSocialMediaDto[];
+  @OptionalField({ nullable: true, type: [ClubSocialMediaDto] })
+  socialMedia?: ClubSocialMediaDto[] | null;
 
   @ApiProperty({ type: [ClubScheduleDayDto] })
   @IsArray({ message: 'El horario debe enviarse como una lista.' })

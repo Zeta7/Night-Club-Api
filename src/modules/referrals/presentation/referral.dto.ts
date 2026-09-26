@@ -1,5 +1,15 @@
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsBoolean,
+  IsEnum,
+  IsString,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { ReferralCaptureMethod, ReferralExpirationMode } from '@prisma/client';
 
 export class AssociateReferralDto {
@@ -7,29 +17,65 @@ export class AssociateReferralDto {
   @MaxLength(64)
   code!: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsEnum(ReferralCaptureMethod)
   captureMethod?: ReferralCaptureMethod;
 }
 
 export class UpdateReferralSettingsDto {
-  @IsOptional() @IsBoolean() enabled?: boolean;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(10000) platformCommissionBps?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(10000) rewardBps?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(10000) minimumPlatformMarginBps?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) minimumPurchaseCents?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) maximumRewardPerOrderCents?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) maximumMonthlyRewardCents?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(720) holdHours?: number;
-  @IsOptional() @IsEnum(ReferralExpirationMode) expirationMode?: ReferralExpirationMode;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(3650) expirationDays?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(365) associationWindowDays?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(10000) maxCreditUsageBps?: number;
-  @IsOptional() @IsBoolean() transfersEnabled?: boolean;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) maxDailyTransferCents?: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) maxMonthlyTransferCents?: number;
-  @IsOptional() @IsString() startsAt?: string;
-  @IsOptional() @IsString() endsAt?: string;
+  @OptionalField() @IsBoolean() enabled?: boolean;
+  @OptionalField()
+  @Type(() => Number)
+  @IsInteger()
+  @Min(0)
+  @Max(10000)
+  platformCommissionBps?: number;
+  @OptionalField() @Type(() => Number) @IsInteger() @Min(0) @Max(10000) rewardBps?: number;
+  @OptionalField()
+  @Type(() => Number)
+  @IsInteger()
+  @Min(0)
+  @Max(10000)
+  minimumPlatformMarginBps?: number;
+  @OptionalField() @Type(() => Number) @IsInteger() @Min(0) minimumPurchaseCents?: number;
+  @OptionalField({ nullable: true, type: 'integer' })
+  @Type(() => Number)
+  @IsInteger()
+  @Min(1)
+  maximumRewardPerOrderCents?: number | null;
+  @OptionalField({ nullable: true, type: 'integer' })
+  @Type(() => Number)
+  @IsInteger()
+  @Min(1)
+  maximumMonthlyRewardCents?: number | null;
+  @OptionalField() @Type(() => Number) @IsInteger() @Min(0) @Max(720) holdHours?: number;
+  @OptionalField() @IsEnum(ReferralExpirationMode) expirationMode?: ReferralExpirationMode;
+  @OptionalField({ nullable: true, type: 'integer' })
+  @Type(() => Number)
+  @IsInteger()
+  @Min(1)
+  @Max(3650)
+  expirationDays?: number | null;
+  @OptionalField()
+  @Type(() => Number)
+  @IsInteger()
+  @Min(0)
+  @Max(365)
+  associationWindowDays?: number;
+  @OptionalField() @Type(() => Number) @IsInteger() @Min(0) @Max(10000) maxCreditUsageBps?: number;
+  @OptionalField() @IsBoolean() transfersEnabled?: boolean;
+  @OptionalField({ nullable: true, type: 'integer' })
+  @Type(() => Number)
+  @IsInteger()
+  @Min(1)
+  maxDailyTransferCents?: number | null;
+  @OptionalField({ nullable: true, type: 'integer' })
+  @Type(() => Number)
+  @IsInteger()
+  @Min(1)
+  maxMonthlyTransferCents?: number | null;
+  @OptionalField({ nullable: true, type: String }) @IsDateString() startsAt?: string | null;
+  @OptionalField({ nullable: true, type: String }) @IsDateString() endsAt?: string | null;
 }
 
 export class TransferCreditDto {
@@ -40,7 +86,7 @@ export class TransferCreditDto {
   phoneNumber!: string;
 
   @Type(() => Number)
-  @IsInt()
+  @IsInteger()
   @Min(1)
   amountCents!: number;
 
@@ -48,15 +94,15 @@ export class TransferCreditDto {
   @MaxLength(100)
   idempotencyKey!: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsString()
   @MaxLength(160)
   note?: string;
 }
 
 export class ReferralAdminQueryDto {
-  @IsOptional() @IsString() status?: string;
-  @IsOptional() @IsString() search?: string;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) pageSize = 20;
+  @OptionalField() @IsString() status?: string;
+  @OptionalField() @IsString() search?: string;
+  @OptionalField() @Type(() => Number) @IsInteger() @Min(1) page = 1;
+  @OptionalField() @Type(() => Number) @IsInteger() @Min(1) @Max(100) pageSize = 20;
 }

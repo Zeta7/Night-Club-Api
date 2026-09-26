@@ -1,19 +1,20 @@
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
+import { IsIn, Min } from 'class-validator';
 
 export class CheckoutDto {
   @Type(() => Number)
-  @IsInt()
+  @IsInteger()
   @Min(0)
   expectedTotalCents!: number;
 
-  @IsOptional()
+  @OptionalField()
   @Type(() => Number)
-  @IsInt()
+  @IsInteger()
   @Min(0)
   promotionalCreditCents?: number;
 
-  @IsOptional()
+  @OptionalField()
   @IsIn(['MERCADO_PAGO', 'BEERRY_WALLET'])
   paymentMethod?: 'MERCADO_PAGO' | 'BEERRY_WALLET';
 }

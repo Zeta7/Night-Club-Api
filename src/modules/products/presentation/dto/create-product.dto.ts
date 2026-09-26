@@ -1,15 +1,6 @@
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  MaxLength,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString, MaxLength, Min } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Whisky Red Label 750ml' })
@@ -20,18 +11,17 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({ example: 'Botella de whisky para venta en barra.' })
   @IsString({ message: 'La descripcion debe ser texto.' })
-  @IsOptional()
-  description?: string;
+  @OptionalField({ nullable: true, type: String })
+  description?: string | null;
 
   @ApiPropertyOptional({ example: 'upload-id-uuid' })
   @IsString({ message: 'El upload de la imagen debe ser texto.' })
-  @IsOptional()
+  @OptionalField()
   imageUploadId?: string;
 
   @ApiPropertyOptional({ example: true })
-  @ValidateIf((object: CreateProductDto) => object.imageUploadId === undefined)
   @IsBoolean({ message: 'El indicador removeImage debe ser booleano.' })
-  @IsOptional()
+  @OptionalField()
   removeImage?: boolean;
 
   @ApiProperty({ example: 35.5 })
@@ -41,11 +31,11 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({ example: 'PEN' })
   @IsString({ message: 'La moneda debe ser texto.' })
-  @IsOptional()
+  @OptionalField()
   currency?: string;
 
   @ApiProperty({ example: 24, minimum: 0 })
-  @IsInt({ message: 'El stock debe ser un numero entero.' })
+  @IsInteger({ message: 'El stock debe ser un numero entero.' })
   @Min(0, { message: 'El stock no puede ser negativo.' })
   stockQuantity!: number;
 }

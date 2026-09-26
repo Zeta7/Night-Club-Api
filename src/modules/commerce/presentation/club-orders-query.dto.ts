@@ -1,27 +1,37 @@
-import { IsDateString, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import { OptionalField } from '../../../shared/presentation/dto-fields';
+import { IsDateString, IsIn, IsString, IsUUID } from 'class-validator';
 
 export class ClubOrdersQueryDto {
-  @IsOptional()
+  @OptionalField()
   @IsDateString()
   from?: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsDateString()
   to?: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsUUID()
   eventId?: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsUUID()
   productId?: string;
 
-  @IsOptional()
-  @IsIn(['PENDING', 'PAID', 'FAILED', 'EXPIRED', 'CANCELLED', 'REFUND_PENDING', 'REFUNDED', 'PARTIALLY_REFUNDED'])
+  @OptionalField()
+  @IsIn([
+    'PENDING',
+    'PAID',
+    'FAILED',
+    'EXPIRED',
+    'CANCELLED',
+    'REFUND_PENDING',
+    'REFUNDED',
+    'PARTIALLY_REFUNDED',
+  ])
   status?: string;
 
-  @IsOptional()
+  @OptionalField()
   @IsString()
   search?: string;
 }

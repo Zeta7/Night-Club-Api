@@ -1,5 +1,6 @@
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class RegisterUserDto {
   @ApiProperty({ example: '+51', description: 'Código internacional del teléfono.' })
@@ -28,6 +29,6 @@ export class RegisterUserDto {
 
   @ApiPropertyOptional({ example: 'juan@example.com', description: 'Correo opcional de contacto.' })
   @IsEmail({}, { message: 'El correo electrónico no tiene un formato válido.' })
-  @IsOptional()
+  @OptionalField()
   email?: string;
 }

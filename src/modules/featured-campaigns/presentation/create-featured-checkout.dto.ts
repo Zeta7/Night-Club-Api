@@ -1,15 +1,7 @@
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
 import { FeaturedTargetType } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { IsEnum, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateFeaturedCheckoutDto {
   @ApiProperty({ enum: FeaturedTargetType })
@@ -17,12 +9,12 @@ export class CreateFeaturedCheckoutDto {
   targetType!: FeaturedTargetType;
 
   @ApiPropertyOptional({ format: 'uuid' })
-  @IsOptional()
+  @OptionalField()
   @IsString()
   eventId?: string;
 
   @ApiProperty({ description: 'Cantidad de días a contratar.', minimum: 1, maximum: 90 })
-  @IsInt()
+  @IsInteger()
   @Min(1)
   @Max(90)
   durationDays!: number;

@@ -1,5 +1,6 @@
+import { IsInteger } from '../../../shared/presentation/dto-fields';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsUUID, Max, Min } from 'class-validator';
+import { IsEnum, IsUUID, Max, Min } from 'class-validator';
 import { CommerceItemType } from '@prisma/client';
 
 export class AddCartItemDto {
@@ -10,7 +11,7 @@ export class AddCartItemDto {
   type!: CommerceItemType;
 
   @Type(() => Number)
-  @IsInt()
+  @IsInteger()
   @Min(1)
   @Max(20)
   quantity!: number;

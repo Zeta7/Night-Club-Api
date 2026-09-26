@@ -1,3 +1,4 @@
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { PromotionPricingMode } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -8,7 +9,6 @@ import {
   IsDateString,
   IsEnum,
   IsNumber,
-  IsOptional,
   IsString,
   IsUUID,
   Min,
@@ -22,45 +22,49 @@ export class CreatePromotionDto {
   name!: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField({ nullable: true, type: String })
   @IsString()
-  description?: string;
+  description?: string | null;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField({ nullable: true, type: String })
   @IsUUID()
-  eventId?: string;
+  eventId?: string | null;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField()
   @IsUUID()
   imageUploadId?: string;
 
-  @ApiProperty({ enum: PromotionPricingMode, required: false, default: PromotionPricingMode.CALCULATED })
-  @IsOptional()
+  @ApiProperty({
+    enum: PromotionPricingMode,
+    required: false,
+    default: PromotionPricingMode.CALCULATED,
+  })
+  @OptionalField()
   @IsEnum(PromotionPricingMode)
   pricingMode?: PromotionPricingMode;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField()
   @IsNumber()
   @Min(0)
   finalPrice?: number;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField()
   @IsString()
   currency?: string;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField({ nullable: true, type: String })
   @IsDateString()
-  startsAt?: string;
+  startsAt?: string | null;
 
   @ApiProperty({ required: false })
-  @IsOptional()
+  @OptionalField({ nullable: true, type: String })
   @IsDateString()
-  endsAt?: string;
+  endsAt?: string | null;
 
   @ApiProperty({ type: [PromotionItemDto] })
   @IsArray()
@@ -70,7 +74,7 @@ export class CreatePromotionDto {
   items!: PromotionItemDto[];
 
   @ApiProperty({ required: false, default: false })
-  @IsOptional()
+  @OptionalField()
   @IsBoolean()
   removeImage?: boolean;
 }

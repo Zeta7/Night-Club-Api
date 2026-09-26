@@ -1,9 +1,10 @@
+import { IsInteger } from '../../../shared/presentation/dto-fields';
 import { Type } from 'class-transformer';
-import { IsInt, IsString, Min, MinLength } from 'class-validator';
+import { IsString, Min, MinLength } from 'class-validator';
 
 export class WalletTopUpDto {
   @Type(() => Number)
-  @IsInt()
+  @IsInteger()
   @Min(200)
   amountCents!: number;
 

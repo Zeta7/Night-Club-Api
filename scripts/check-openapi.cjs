@@ -1,5 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
+require('reflect-metadata');
+const { Module } = require('@nestjs/common');
+const { NestFactory } = require('@nestjs/core');
+const { SwaggerModule, DocumentBuilder } = require('@nestjs/swagger');
+const { getMetadataStorage, validateSync } = require('class-validator');
+const { plainToInstance } = require('class-transformer');
 
 const ROOT = path.resolve(__dirname, '..');
 const DOCUMENT_PATH = path.join(ROOT, 'dist', 'openapi.json');
@@ -276,145 +282,256 @@ function operationContentTypes(operation) {
   return [...types];
 }
 
-const document = JSON.parse(fs.readFileSync(DOCUMENT_PATH, 'utf8'));
-const operations = [];
-
-for (const [route, pathItem] of Object.entries(document.paths ?? {})) {
-  for (const [method, operation] of Object.entries(pathItem)) {
-    if (!HTTP_METHODS.has(method)) continue;
-    operations.push({ route, method, operation });
-  }
-}
-
-check(document.openapi === '3.0.0', `Expected OpenAPI 3.0.0, received ${document.openapi}.`);
-check(
-  JSON.stringify(document.servers ?? []) ===
-    JSON.stringify([{ url: '/api/v1', description: 'Prefijo canónico de la API v1.' }]),
-  'servers must contain only the canonical /api/v1 base URL.',
-);
-check(
-  JSON.stringify(document['x-excluded-operations'] ?? []) === JSON.stringify(EXPECTED_EXCLUSIONS),
-  'The explicit operation exclusion allowlist changed.',
-);
-
-const operationIds = operations.map(({ operation }) => operation.operationId).filter(Boolean);
-const publicOperationIds = [];
-check(operationIds.length === operations.length, 'Every operation must define operationId.');
-check(new Set(operationIds).size === operations.length, 'Every operationId must be unique.');
-
-for (const { route, method, operation } of operations) {
-  const label = `${method.toUpperCase()} ${route} (${operation.operationId ?? 'missing operationId'})`;
-  check(route.startsWith('/'), `${label}: paths must be absolute.`);
-  check(!route.startsWith('/api/v1/'), `${label}: global prefix must not be repeated in paths.`);
-  check(Array.isArray(operation.security), `${label}: security must be explicit.`);
-  if (Array.isArray(operation.security)) {
-    if (operation.security.length === 0) {
-      publicOperationIds.push(operation.operationId);
-    } else {
-      check(
-        JSON.stringify(operation.security) === JSON.stringify([{ bearer: [] }]),
-        `${label}: protected operations must use the canonical bearer scheme.`,
-      );
-    }
-  }
-
-  if (operation.requestBody && !operation.requestBody.$ref) {
-    for (const [contentType, media] of Object.entries(operation.requestBody.content ?? {})) {
-      check(
-        !isClosedEmptyObject(document, media.schema),
-        `${label}: ${contentType} request schema is a closed empty object.`,
-      );
-    }
-  }
-
-  for (const contentType of EXPECTED_MEDIA_TYPES[operation.operationId] ?? []) {
-    check(
-      operationContentTypes(operation).includes(contentType),
-      `${label}: successful response must document ${contentType}.`,
-    );
-  }
-
-  for (const contentType of EXPECTED_REQUEST_MEDIA_TYPES[operation.operationId] ?? []) {
-    check(
-      Object.hasOwn(operation.requestBody?.content ?? {}, contentType),
-      `${label}: request body must document ${contentType}.`,
-    );
-  }
-}
-
-check(
-  JSON.stringify(publicOperationIds.sort()) === JSON.stringify(EXPECTED_PUBLIC_OPERATIONS),
-  'The explicit public-operation allowlist changed.',
-);
-
-for (const reference of collectReferences(document)) {
-  check(Boolean(resolvePointer(document, reference)), `Broken local reference: ${reference}.`);
-}
-
-const dynamicResponses = [];
-for (const [name, schema] of Object.entries(document.components?.schemas ?? {})) {
-  if (!name.endsWith('Response')) continue;
-  check(
-    !isDynamicRootSchema(schema),
-    `${name}: a stable response cannot use JsonValue as its root.`,
-  );
-  visitSchema(schema, (nested, path) => {
-    const label = normalizedSchemaPath(name, path);
-    if (isDynamicRootSchema(nested)) {
-      dynamicResponses.push({ path: label, nullable: nested.nullable === true });
-    }
-    check(
-      nested['x-generated-never'] !== true && nested['x-generated-null'] !== true,
-      `${label}: an internal inference marker leaked into the public document.`,
-    );
-    check(isClosedObjectOrTypedMap(nested), `${label}: object must be closed or a typed map.`);
-    for (const keyword of ['oneOf', 'anyOf']) {
-      const variants = nested[keyword];
-      if (!Array.isArray(variants)) continue;
-      unionVariantsAreComplete(document, name, path.join('.') || '<root>', keyword, variants);
-      if (keyword === 'oneOf') {
-        for (let left = 0; left < variants.length; left += 1) {
-          for (let right = left + 1; right < variants.length; right += 1) {
-            check(
-              schemaVariantsAreDisjoint(document, variants[left], variants[right]),
-              `${label}: oneOf variants ${left} and ${right} are not provably disjoint.`,
-            );
-          }
-        }
-      }
-    }
+function filesIn(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    return entry.isDirectory() ? filesIn(file) : [file];
   });
 }
 
-for (const occurrence of dynamicResponses) {
-  const matches = DYNAMIC_RESPONSE_PATH_ALLOWLIST.filter(({ pattern }) =>
-    pattern.test(occurrence.path),
-  );
-  check(
-    matches.length === 1,
-    `${occurrence.path}: JsonValue must match exactly one reviewed dynamic-field allowlist entry.`,
-  );
-  if (matches.length === 1) {
-    check(
-      occurrence.nullable === matches[0].nullable,
-      `${occurrence.path}: JsonValue nullable=${occurrence.nullable} does not match the reviewed contract nullable=${matches[0].nullable}.`,
-    );
+// Include query DTOs and DTOs declared inside controllers, even if Swagger inlines them.
+function requestModels() {
+  const models = new Set();
+  const add = (type) => {
+    if (typeof type === 'function' && type.name.endsWith('Dto')) models.add(type);
+  };
+  for (const file of filesIn(path.join(ROOT, 'dist', 'src', 'modules'))) {
+    if (!/\.(dto|controller)\.js$/.test(file)) continue;
+    for (const type of Object.values(require(file))) {
+      if (typeof type !== 'function' || !type.prototype) continue;
+      add(type);
+      if (!type.name.endsWith('Controller')) continue;
+      for (const method of Object.getOwnPropertyNames(type.prototype)) {
+        for (const parameter of Reflect.getMetadata('design:paramtypes', type.prototype, method) ??
+          []) {
+          add(parameter);
+        }
+      }
+    }
+  }
+  return [...models];
+}
+
+function checkRequestSchemas(models, schemas) {
+  const failures = [];
+  let fields = 0;
+  function checkShape(schema, label) {
+    if (!schema || typeof schema !== 'object') return;
+    if (schema.required !== undefined && !Array.isArray(schema.required)) {
+      failures.push(`${label}: Schema Object required must be an array of property names.`);
+    }
+    for (const [name, property] of Object.entries(schema.properties ?? {}))
+      checkShape(property, `${label}.${name}`);
+    if (schema.items) checkShape(schema.items, `${label}[]`);
+    for (const keyword of ['allOf', 'oneOf', 'anyOf']) {
+      for (const [index, variant] of (schema[keyword] ?? []).entries())
+        checkShape(variant, `${label}.${keyword}[${index}]`);
+    }
+  }
+  for (const model of models) {
+    const schema = schemas[model.name];
+    if (!schema) {
+      failures.push(`${model.name}: missing request schema.`);
+      continue;
+    }
+    checkShape(schema, model.name);
+    const metadata = getMetadataStorage().getTargetValidationMetadatas(model, '', false, false);
+    for (const property of new Set(metadata.map((item) => item.propertyName))) {
+      fields += 1;
+      const field = schema.properties?.[property];
+      const label = `${model.name}.${property}`;
+      if (!field) {
+        failures.push(`${label}: validated property is missing from Swagger.`);
+        continue;
+      }
+      const rules = metadata.filter((item) => item.propertyName === property);
+      if (rules.some((item) => item.name === 'isInt') && field.type !== 'integer') {
+        failures.push(`${label}: @IsInt requires OpenAPI type integer; use @IsInteger().`);
+      }
+      const errors = validateSync(plainToInstance(model, { [property]: null }));
+      const acceptsNull = !errors.some((error) => error.property === property);
+      if (acceptsNull !== (field.nullable === true)) {
+        failures.push(
+          `${label}: validation accepts null=${acceptsNull}, Swagger nullable=${field.nullable === true}. Use @OptionalField and explicit nullable types; PATCH PartialType must set skipNullProperties: false.`,
+        );
+      }
+    }
+  }
+  return { failures, fields };
+}
+
+async function checkRequestDocument(document) {
+  const models = requestModels();
+  class ContractModule {}
+  Module({})(ContractModule);
+  const app = await NestFactory.create(ContractModule, { logger: false });
+  try {
+    const dtoDocument = SwaggerModule.createDocument(app, new DocumentBuilder().build(), {
+      extraModels: models,
+    });
+    // Query DTOs may be inlined rather than published as components.
+    const schemas = { ...dtoDocument.components.schemas, ...document.components.schemas };
+    return { models: models.length, ...checkRequestSchemas(models, schemas) };
+  } finally {
+    await app.close();
   }
 }
-const dynamicResponsePaths = new Set(dynamicResponses.map(({ path }) => path));
-for (const { pattern, reason } of DYNAMIC_RESPONSE_PATH_ALLOWLIST) {
+
+async function main() {
+  const document = JSON.parse(fs.readFileSync(DOCUMENT_PATH, 'utf8'));
+  const operations = [];
+
+  for (const [route, pathItem] of Object.entries(document.paths ?? {})) {
+    for (const [method, operation] of Object.entries(pathItem)) {
+      if (!HTTP_METHODS.has(method)) continue;
+      operations.push({ route, method, operation });
+    }
+  }
+
+  check(document.openapi === '3.0.0', `Expected OpenAPI 3.0.0, received ${document.openapi}.`);
   check(
-    [...dynamicResponsePaths].some((path) => pattern.test(path)),
-    `Stale JsonValue allowlist entry (${reason})`,
+    JSON.stringify(document.servers ?? []) ===
+      JSON.stringify([{ url: '/api/v1', description: 'Prefijo canónico de la API v1.' }]),
+    'servers must contain only the canonical /api/v1 base URL.',
+  );
+  check(
+    JSON.stringify(document['x-excluded-operations'] ?? []) === JSON.stringify(EXPECTED_EXCLUSIONS),
+    'The explicit operation exclusion allowlist changed.',
+  );
+
+  const operationIds = operations.map(({ operation }) => operation.operationId).filter(Boolean);
+  const publicOperationIds = [];
+  check(operationIds.length === operations.length, 'Every operation must define operationId.');
+  check(new Set(operationIds).size === operations.length, 'Every operationId must be unique.');
+
+  for (const { route, method, operation } of operations) {
+    const label = `${method.toUpperCase()} ${route} (${operation.operationId ?? 'missing operationId'})`;
+    check(route.startsWith('/'), `${label}: paths must be absolute.`);
+    check(!route.startsWith('/api/v1/'), `${label}: global prefix must not be repeated in paths.`);
+    check(Array.isArray(operation.security), `${label}: security must be explicit.`);
+    if (Array.isArray(operation.security)) {
+      if (operation.security.length === 0) {
+        publicOperationIds.push(operation.operationId);
+      } else {
+        check(
+          JSON.stringify(operation.security) === JSON.stringify([{ bearer: [] }]),
+          `${label}: protected operations must use the canonical bearer scheme.`,
+        );
+      }
+    }
+
+    if (operation.requestBody && !operation.requestBody.$ref) {
+      for (const [contentType, media] of Object.entries(operation.requestBody.content ?? {})) {
+        check(
+          !isClosedEmptyObject(document, media.schema),
+          `${label}: ${contentType} request schema is a closed empty object.`,
+        );
+      }
+    }
+
+    for (const contentType of EXPECTED_MEDIA_TYPES[operation.operationId] ?? []) {
+      check(
+        operationContentTypes(operation).includes(contentType),
+        `${label}: successful response must document ${contentType}.`,
+      );
+    }
+
+    for (const contentType of EXPECTED_REQUEST_MEDIA_TYPES[operation.operationId] ?? []) {
+      check(
+        Object.hasOwn(operation.requestBody?.content ?? {}, contentType),
+        `${label}: request body must document ${contentType}.`,
+      );
+    }
+  }
+
+  check(
+    JSON.stringify(publicOperationIds.sort()) === JSON.stringify(EXPECTED_PUBLIC_OPERATIONS),
+    'The explicit public-operation allowlist changed.',
+  );
+
+  for (const reference of collectReferences(document)) {
+    check(Boolean(resolvePointer(document, reference)), `Broken local reference: ${reference}.`);
+  }
+
+  const dynamicResponses = [];
+  for (const [name, schema] of Object.entries(document.components?.schemas ?? {})) {
+    if (!name.endsWith('Response')) continue;
+    check(
+      !isDynamicRootSchema(schema),
+      `${name}: a stable response cannot use JsonValue as its root.`,
+    );
+    visitSchema(schema, (nested, path) => {
+      const label = normalizedSchemaPath(name, path);
+      if (isDynamicRootSchema(nested)) {
+        dynamicResponses.push({ path: label, nullable: nested.nullable === true });
+      }
+      check(
+        nested['x-generated-never'] !== true && nested['x-generated-null'] !== true,
+        `${label}: an internal inference marker leaked into the public document.`,
+      );
+      check(isClosedObjectOrTypedMap(nested), `${label}: object must be closed or a typed map.`);
+      for (const keyword of ['oneOf', 'anyOf']) {
+        const variants = nested[keyword];
+        if (!Array.isArray(variants)) continue;
+        unionVariantsAreComplete(document, name, path.join('.') || '<root>', keyword, variants);
+        if (keyword === 'oneOf') {
+          for (let left = 0; left < variants.length; left += 1) {
+            for (let right = left + 1; right < variants.length; right += 1) {
+              check(
+                schemaVariantsAreDisjoint(document, variants[left], variants[right]),
+                `${label}: oneOf variants ${left} and ${right} are not provably disjoint.`,
+              );
+            }
+          }
+        }
+      }
+    });
+  }
+
+  for (const occurrence of dynamicResponses) {
+    const matches = DYNAMIC_RESPONSE_PATH_ALLOWLIST.filter(({ pattern }) =>
+      pattern.test(occurrence.path),
+    );
+    check(
+      matches.length === 1,
+      `${occurrence.path}: JsonValue must match exactly one reviewed dynamic-field allowlist entry.`,
+    );
+    if (matches.length === 1) {
+      check(
+        occurrence.nullable === matches[0].nullable,
+        `${occurrence.path}: JsonValue nullable=${occurrence.nullable} does not match the reviewed contract nullable=${matches[0].nullable}.`,
+      );
+    }
+  }
+  const dynamicResponsePaths = new Set(dynamicResponses.map(({ path }) => path));
+  for (const { pattern, reason } of DYNAMIC_RESPONSE_PATH_ALLOWLIST) {
+    check(
+      [...dynamicResponsePaths].some((path) => pattern.test(path)),
+      `Stale JsonValue allowlist entry (${reason})`,
+    );
+  }
+
+  const requests = await checkRequestDocument(document);
+  failures.push(...requests.failures);
+
+  if (failures.length) {
+    process.stderr.write(`OpenAPI contract check failed with ${failures.length} finding(s):\n`);
+    for (const failure of failures) process.stderr.write(`- ${failure}\n`);
+    process.exit(1);
+  }
+
+  process.stdout.write(
+    `OpenAPI contract verified: ${Object.keys(document.paths).length} paths, ${operations.length} operations, ${operationIds.length} unique operationIds, ${Object.keys(document.components.schemas).length} schemas, 0 broken references.\n`,
+  );
+
+  process.stdout.write(
+    `Request contract verified: ${requests.models} DTOs, ${requests.fields} fields.\n`,
   );
 }
 
-if (failures.length) {
-  process.stderr.write(`OpenAPI contract check failed with ${failures.length} finding(s):\n`);
-  for (const failure of failures) process.stderr.write(`- ${failure}\n`);
-  process.exit(1);
-}
-
-process.stdout.write(
-  `OpenAPI contract verified: ${Object.keys(document.paths).length} paths, ${operations.length} operations, ${operationIds.length} unique operationIds, ${Object.keys(document.components.schemas).length} schemas, 0 broken references.\n`,
-);
+module.exports = { checkRequestSchemas };
+if (require.main === module)
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });

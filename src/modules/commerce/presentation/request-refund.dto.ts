@@ -1,4 +1,5 @@
-import { IsInt, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
+import { IsString, MaxLength, Min, MinLength } from 'class-validator';
 
 export class RequestRefundDto {
   @IsString()
@@ -6,8 +7,8 @@ export class RequestRefundDto {
   @MaxLength(500)
   reason!: string;
 
-  @IsOptional()
-  @IsInt()
+  @OptionalField()
+  @IsInteger()
   @Min(1)
   amountCents?: number;
 }

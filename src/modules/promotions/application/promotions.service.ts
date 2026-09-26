@@ -36,7 +36,7 @@ export class PromotionsService {
     const endsAt = parseOptionalDate(input.endsAt);
     assertDateRange(startsAt, endsAt);
 
-    const resolvedItems = await this.resolveItems(clubId, input.eventId, input.items);
+    const resolvedItems = await this.resolveItems(clubId, input.eventId ?? undefined, input.items);
     const totals = resolvePromotionTotals({
       pricingMode: input.pricingMode,
       finalPrice: input.finalPrice,
@@ -436,7 +436,7 @@ const promotionInclude = {
 } as const;
 
 const normalizeText = (value: string) => value.trim();
-const normalizeOptionalText = (value?: string) => {
+const normalizeOptionalText = (value?: string | null) => {
   const normalized = value?.trim();
   return normalized ? normalized : null;
 };

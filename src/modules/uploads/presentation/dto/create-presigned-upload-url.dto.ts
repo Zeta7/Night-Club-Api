@@ -1,5 +1,6 @@
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsNotEmpty, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class CreatePresignedUploadUrlDto {
   @ApiProperty({ example: 'cover.png', maxLength: 180 })
@@ -14,13 +15,13 @@ export class CreatePresignedUploadUrlDto {
   contentType!: string;
 
   @ApiProperty({ example: 1048576, minimum: 1, maximum: 10485760 })
-  @IsInt({ message: 'El tamano del archivo debe ser un numero entero.' })
+  @IsInteger({ message: 'El tamano del archivo debe ser un numero entero.' })
   @Min(1, { message: 'El tamano del archivo debe ser mayor a cero.' })
   @Max(10 * 1024 * 1024, { message: 'La imagen no debe superar 10 MB.' })
   sizeBytes!: number;
 
   @ApiPropertyOptional({ example: 'local-nocturno-nebula', maxLength: 120 })
-  @IsOptional()
+  @OptionalField()
   @IsString({ message: 'La carpeta del upload debe ser texto.' })
   @MaxLength(120, { message: 'La carpeta del upload no debe superar 120 caracteres.' })
   folderName?: string;

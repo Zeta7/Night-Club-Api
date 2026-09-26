@@ -1,11 +1,12 @@
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ClubWorkerStatus } from '@prisma/client';
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEnum, IsString, MaxLength } from 'class-validator';
 
 export class UpdateClubWorkerDto {
   @ApiPropertyOptional({ enum: ClubWorkerStatus, example: ClubWorkerStatus.ACTIVE })
   @IsEnum(ClubWorkerStatus, { message: 'El estado del trabajador no es valido.' })
-  @IsOptional()
+  @OptionalField()
   status?: ClubWorkerStatus;
 
   @ApiPropertyOptional({
@@ -14,10 +15,13 @@ export class UpdateClubWorkerDto {
   })
   @IsString({ message: 'El rol del trabajador debe ser texto.' })
   @MaxLength(80, { message: 'El rol del trabajador no puede exceder 80 caracteres.' })
-  @IsOptional()
-  roleLabel?: string;
+  @OptionalField({ nullable: true, type: String })
+  roleLabel?: string | null;
 
-  @IsString() @MaxLength(100) @IsOptional() assignedDoor?: string;
-  @IsString() @MaxLength(100) @IsOptional() assignedZone?: string;
-  @IsString() @MaxLength(100) @IsOptional() assignedPoint?: string;
+  @IsString() @MaxLength(100) @OptionalField({ nullable: true, type: String }) assignedDoor?:
+    string | null;
+  @IsString() @MaxLength(100) @OptionalField({ nullable: true, type: String }) assignedZone?:
+    string | null;
+  @IsString() @MaxLength(100) @OptionalField({ nullable: true, type: String }) assignedPoint?:
+    string | null;
 }
