@@ -2,7 +2,6 @@
 import { MercadoPagoPaymentGateway } from '@modules/commerce/infrastructure/mercado-pago-payment.gateway';
 import { Payment, PaymentRefund, Preference } from 'mercadopago';
 
-
 describe('Mercado Pago SDK gateway', () => {
   afterEach(() => jest.restoreAllMocks());
   const values: Record<string, string> = {
@@ -39,6 +38,7 @@ describe('Mercado Pago SDK gateway', () => {
     marketplaceFeeCents: 250,
     currency: 'PEN',
     subject: 'Compra',
+    expiresAt: new Date('2030-01-01T12:30:00.000Z'),
   };
   it.each(['test', 'production'])(
     'creates a preference in %s using seller credentials',
@@ -63,6 +63,9 @@ describe('Mercado Pago SDK gateway', () => {
           requestOptions: { idempotencyKey: 'attempt' },
           body: expect.objectContaining({
             marketplace_fee: 2.5,
+            expires: true,
+            expiration_date_from: expect.any(String),
+            expiration_date_to: input.expiresAt.toISOString(),
             items: [expect.objectContaining({ unit_price: 25, currency_id: 'PEN' })],
           }),
         }),

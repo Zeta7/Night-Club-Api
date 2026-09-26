@@ -70,6 +70,13 @@ export class MercadoPagoPaymentGateway {
             failure: this.mobileReturnUrl(input, 'failure'),
           },
           auto_return: 'approved',
+          ...(input.expiresAt
+            ? {
+                expires: true,
+                expiration_date_from: new Date().toISOString(),
+                expiration_date_to: input.expiresAt.toISOString(),
+              }
+            : {}),
           metadata: {
             attempt_id: input.attemptId,
             order_id: input.orderId,

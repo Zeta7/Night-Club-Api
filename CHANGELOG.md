@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Recargas abandonadas con vencimiento efectivo de 30 minutos: revisión al iniciar
+  API y cada minuto, recuperación de registros antiguos sin fecha y cierre de
+  intento y recarga en una transacción. Las consultas de detalle reconcilian
+  Mercado Pago por ID de pago o referencia del intento y no devuelven enlaces
+  vencidos. Las nuevas preferencias llevan el mismo plazo; una aprobación tardía
+  verificada acredita saldo y ledger una sola vez, incluso con callbacks
+  concurrentes. No requiere migración ni cambios del SDK. API #11, Mobile #10.
+
 - Enums compartidos `BusinessType` y `OfferScope` en requests y respuestas HTTP.
   El alcance de promociones Customer cambia de `CLUB`/`EVENT` a `club`/`event`,
   igual que promociones y entradas operativas. Requiere regenerar el SDK.

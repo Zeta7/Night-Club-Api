@@ -72,6 +72,8 @@ import {
 } from './ports/payment-gateway.port';
 import { buildProductDeliveryPlan } from './product-delivery-plan';
 
+const WALLET_TOP_UP_WINDOW_MS = 30 * 60 * 1000;
+
 const mercadoPagoReadyRelation = (now = new Date()) => ({
   some: {
     provider: 'mercado_pago',
@@ -84,6 +86,7 @@ const mercadoPagoReadyRelation = (now = new Date()) => ({
 export class CommerceService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CommerceService.name);
   private expirationTimer?: NodeJS.Timeout;
+  private expirationRunning = false;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -103,9 +106,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     this.signingKeys();
-    this.expirationTimer = setInterval(() => void this.expirePendingOrders(), 60_000);
+    this.expirationTimer = setInterval(() => void this.expirePendingPayments(), 60_000);
     this.expirationTimer.unref();
-    void this.expirePendingOrders();
+    void this.expirePendingPayments();
   }
 
   onModuleDestroy() {
@@ -667,7 +670,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     if (existing) {
       if (existing.userId !== user.id)
         throw conflict('IDEMPOTENCY_KEY_CONFLICT', 'La clave ya fue utilizada.');
-      return this.topUpResponse(existing, existing.paymentAttempt);
+      return this.getWalletTopUp(user, existing.id);
     }
     const payer = await this.prisma.user.findUnique({
       where: { id: user.id },
@@ -688,7 +691,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           purpose: 'WALLET_TOP_UP',
           provider: this.walletTopUpGateway().provider,
           amountCents,
-          expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+          expiresAt: new Date(Date.now() + WALLET_TOP_UP_WINDOW_MS),
         },
       });
       return { topUp, attempt };
@@ -700,6 +703,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       currency: created.topUp.currency,
       payerEmail: this.paymentPayerEmail(payer?.email),
       subject: `Recarga de billetera Beerry - ${payer?.fullName ?? user.id}`,
+      expiresAt: created.attempt.expiresAt ?? undefined,
     });
     const attempt = await this.prisma.paymentAttempt.update({
       where: { id: created.attempt.id },
@@ -735,24 +739,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       include: { paymentAttempt: true },
     });
     if (!topUp) throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No se encontró la recarga.');
-    if (
-      topUp.status === 'PENDING' &&
-      topUp.paymentAttempt?.provider === this.walletTopUpGateway().provider &&
-      topUp.paymentAttempt.externalPaymentId &&
-      this.walletTopUpGateway().verifyPaymentToken
-    ) {
-      try {
-        const event = await this.walletTopUpGateway().verifyPaymentToken!(
-          topUp.paymentAttempt.externalPaymentId,
-        );
-        await this.processPaymentEvent(event);
-        topUp = await this.prisma.walletTopUp.findFirstOrThrow({
-          where: { id: topUpId, userId: user.id },
-          include: { paymentAttempt: true },
-        });
-      } catch {
-        // La consulta del estado no debe impedir que el cliente vea su recarga pendiente.
-      }
+    const attempt = topUp.paymentAttempt;
+    if (attempt && (topUp.status === 'PENDING' || topUp.status === 'EXPIRED')) {
+      await this.reconcileWalletTopUp(attempt);
+      await this.expireWalletTopUp(attempt.id);
+      topUp = await this.prisma.walletTopUp.findFirstOrThrow({
+        where: { id: topUpId, userId: user.id },
+        include: { paymentAttempt: true },
+      });
     }
     return this.topUpResponse(topUp, topUp.paymentAttempt);
   }
@@ -1909,6 +1903,93 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  async expirePendingPayments() {
+    if (this.expirationRunning) return;
+    this.expirationRunning = true;
+    try {
+      const results = await Promise.allSettled([
+        this.expirePendingOrders(),
+        this.expirePendingWalletTopUps(),
+      ]);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          this.logger.error('No se pudo completar el vencimiento de pagos', result.reason);
+        }
+      }
+    } finally {
+      this.expirationRunning = false;
+    }
+  }
+
+  private expiredTopUpAttemptsWhere(now: Date): Prisma.PaymentAttemptWhereInput {
+    return {
+      purpose: 'WALLET_TOP_UP',
+      status: 'PENDING',
+      OR: [
+        { expiresAt: { lte: now } },
+        { expiresAt: null, createdAt: { lte: new Date(now.getTime() - WALLET_TOP_UP_WINDOW_MS) } },
+      ],
+    };
+  }
+
+  async expirePendingWalletTopUps() {
+    const attempts = await this.prisma.paymentAttempt.findMany({
+      where: this.expiredTopUpAttemptsWhere(new Date()),
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      take: 100,
+    });
+    for (const attempt of attempts) {
+      await this.reconcileWalletTopUp(attempt);
+      await this.expireWalletTopUp(attempt.id);
+    }
+  }
+
+  private async expireWalletTopUp(attemptId: string) {
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      const expired = await tx.paymentAttempt.updateMany({
+        where: { id: attemptId, ...this.expiredTopUpAttemptsWhere(now) },
+        data: { status: 'EXPIRED', failedAt: now, failureCode: 'PAYMENT_TIMEOUT' },
+      });
+      if (expired.count !== 1) return;
+      await tx.walletTopUp.updateMany({
+        where: { paymentAttempt: { id: attemptId }, status: 'PENDING' },
+        data: { status: 'EXPIRED', rejectedAt: now, failureCode: 'PAYMENT_TIMEOUT' },
+      });
+    });
+  }
+
+  private async reconcileWalletTopUp(attempt: PaymentAttempt) {
+    const gateway = this.walletTopUpGateway();
+    if (attempt.provider !== gateway.provider || !['PENDING', 'EXPIRED'].includes(attempt.status))
+      return;
+    try {
+      const sellerExternalId = attempt.sellerExternalId ?? undefined;
+      const event =
+        attempt.externalPaymentId &&
+        gateway.queryExternalPayment &&
+        (attempt.provider !== 'mercado_pago' || /^\d+$/.test(attempt.externalPaymentId))
+          ? await gateway.queryExternalPayment(attempt.externalPaymentId, sellerExternalId)
+          : gateway.queryPaymentByExternalReference
+            ? await gateway.queryPaymentByExternalReference(attempt.id, sellerExternalId)
+            : attempt.externalPaymentId && gateway.verifyPaymentToken
+              ? await gateway.verifyPaymentToken(attempt.externalPaymentId)
+              : null;
+      if (!event) return;
+      if (event.provider === 'mercado_pago') {
+        if (event.attemptId !== attempt.id) throw new Error('MERCADO_PAGO_ATTEMPT_MISMATCH');
+        await this.bindAuthoritativeExternalPayment(event);
+      }
+      await this.processPaymentEvent(event);
+    } catch (error) {
+      this.logger.warn({
+        event: 'wallet.top_up.reconciliation_failed',
+        attemptId: attempt.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
   async expirePendingOrders() {
     const now = new Date();
     const attempts = await this.prisma.paymentAttempt.findMany({
@@ -2112,17 +2193,38 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       return;
     }
     await this.prisma.$transaction(async (tx) => {
+      // Expiration and every callback serialize on the same attempt before crediting.
+      await tx.$queryRaw(
+        Prisma.sql`SELECT id FROM "PaymentAttempt" WHERE id = ${attempt.id} FOR UPDATE`,
+      );
       const current = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
-      if (!current || current.status !== 'PENDING') return;
+      if (
+        !current ||
+        (current.status !== 'PENDING' &&
+          !(current.status === 'EXPIRED' && event.outcome === 'APPROVED'))
+      )
+        return;
       const now = new Date();
       if (event.outcome === 'APPROVED') {
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
-          data: { status: 'APPROVED', approvedAt: now },
+          data: {
+            status: 'APPROVED',
+            approvedAt: now,
+            failedAt: null,
+            failureCode: null,
+            failureMessage: null,
+          },
         });
         await tx.walletTopUp.update({
           where: { id: topUp.id },
-          data: { status: 'APPROVED', approvedAt: now },
+          data: {
+            status: 'APPROVED',
+            approvedAt: now,
+            rejectedAt: null,
+            failureCode: null,
+            failureMessage: null,
+          },
         });
         await tx.wallet.update({
           where: { id: topUp.walletId },
@@ -2224,10 +2326,15 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       paymentStatus: attempt?.status ?? null,
       paymentProvider: attempt?.provider ?? null,
       checkoutUrl:
-        checkoutUrl ??
-        (typeof storedProviderData?.checkoutUrl === 'string'
-          ? storedProviderData.checkoutUrl
-          : null),
+        topUp.status === 'PENDING' &&
+        attempt?.status === 'PENDING' &&
+        (attempt.expiresAt?.getTime() ?? attempt.createdAt.getTime() + WALLET_TOP_UP_WINDOW_MS) >
+          Date.now()
+          ? (checkoutUrl ??
+            (typeof storedProviderData?.checkoutUrl === 'string'
+              ? storedProviderData.checkoutUrl
+              : null))
+          : null,
       createdAt: topUp.createdAt,
       approvedAt: topUp.approvedAt,
     };

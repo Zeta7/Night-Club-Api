@@ -21,6 +21,7 @@ export type CreatePaymentInput = {
   currency: string;
   payerEmail?: string;
   subject: string;
+  expiresAt?: Date;
   clubId?: string;
   marketplaceFeeCents?: number;
   sellerExternalId?: string;

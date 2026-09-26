@@ -64,6 +64,18 @@ El backend vuelve a validar que todo el carrito pertenezca al mismo negocio, cal
 
 El retorno de navegador contiene únicamente `provider`, `attemptId`, `operationType` y `operationId` en `beerry://payments/result`; Flutter consulta el estado al backend.
 
+## Vencimiento de recargas
+
+Cada recarga tiene un plazo de 30 minutos. Al iniciar API y cada minuto se revisan hasta 100 intentos pendientes vencidos, empezando por los más antiguos. Los registros históricos sin fecha usan su creación más 30 minutos. El trabajo de órdenes y el de recargas se ejecutan por separado y los ciclos programados no se superponen.
+
+Antes de vencer una recarga se consulta la pasarela configurada, por ID de pago cuando está disponible o por la referencia externa del intento cuando solo se conoce la preferencia. Si la consulta no confirma un pago, se marcan intento y recarga como `EXPIRED` en una transacción, sin mover saldo. Una falla de la pasarela no deja el intento pendiente indefinidamente. Consultar el detalle también reconcilia y aplica el vencimiento; cargar el historial no dispara consultas masivas a la pasarela.
+
+Las nuevas preferencias de recarga envían `expires`, `expiration_date_from` y `expiration_date_to` conforme a la [vigencia de preferencias de Mercado Pago](https://www.mercadopago.com.pe/developers/es/docs/checkout-pro-preferences/additional-settings/term-of-preference). Las preferencias antiguas no se modifican retroactivamente, pero API deja de entregar su enlace cuando vence la recarga.
+
+El vencimiento cierra el plazo del intento; no representa una cancelación bancaria. Una aprobación autoritativa posterior, recibida por webhook o al consultar el detalle, todavía acredita la recarga. El bloqueo del intento serializa vencimiento y callbacks para crear un único abono, movimiento, lote y asiento de ledger. Mobile permite volver a consultar una recarga vencida y reflejar esa aprobación.
+
+Este arreglo no requiere migración de datos ni regeneración del SDK. Es necesario desplegar API para activar la limpieza de registros existentes. Coordinación: [API #11](https://github.com/Zeta7/Night-Club-Api/issues/11) y [Mobile #10](https://github.com/Zeta7/Night-Club-Mobile/issues/10).
+
 ## Comisión
 
 La resolución es `club.marketplaceFeeBps ?? platform.defaultMarketplaceFeeBps`. `null` conserva la herencia. Para compatibilidad, si aún no existe el campo nuevo se lee `commissionPercentage` y se convierte a puntos base. La modificación nueva elimina ese valor legado.
