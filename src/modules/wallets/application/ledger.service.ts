@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '@prisma/client';
+import { FinancialAccountOwnerType, FinancialBalanceBucket, LedgerEntryDirection, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 
 type Tx = Prisma.TransactionClient | PrismaService;
@@ -27,7 +27,7 @@ export class LedgerService {
       marketplaceFeeCents?: number;
     },
   ) {
-    const db = tx as any;
+    const db = tx;
     const reference = `SALE:${input.paymentAttemptId}`;
     const existing = await db.ledgerTransaction.findUnique({ where: { reference } });
     if (existing) return existing;
@@ -150,7 +150,7 @@ export class LedgerService {
     tx: Tx,
     input: { paymentAttemptId: string; providerEventId: string; type: 'REFUND' | 'CHARGEBACK' },
   ) {
-    const db = tx as any;
+    const db = tx;
     const reference = `${input.type}:${input.paymentAttemptId}`;
     const existing = await db.ledgerTransaction.findUnique({ where: { reference } });
     if (existing) return existing;
@@ -159,7 +159,7 @@ export class LedgerService {
       include: { entries: true },
     });
     if (!sale) throw new Error('LEDGER_SALE_NOT_FOUND');
-    const entries = sale.entries.map((entry: any) => ({
+    const entries = sale.entries.map<Prisma.LedgerEntryUncheckedCreateWithoutTransactionInput>((entry) => ({
       accountId: entry.accountId,
       direction: entry.direction === 'DEBIT' ? 'CREDIT' : 'DEBIT',
       bucket: entry.bucket,
@@ -202,7 +202,7 @@ export class LedgerService {
       marketplaceFeeCents: number;
     },
   ) {
-    const db = tx as any;
+    const db = tx;
     const reference = `REFUND:${input.paymentAttemptId}:${input.providerEventId}`;
     const existing = await db.ledgerTransaction.findUnique({ where: { reference } });
     if (existing) return existing;
@@ -211,10 +211,10 @@ export class LedgerService {
       include: { entries: { include: { account: true } } },
     });
     if (!sale) throw new Error('LEDGER_SALE_NOT_FOUND');
-    const customer = sale.entries.find((entry: any) => entry.account.ownerType === 'CUSTOMER');
-    const club = sale.entries.find((entry: any) => entry.account.ownerType === 'CLUB');
+    const customer = sale.entries.find((entry) => entry.account.ownerType === 'CUSTOMER');
+    const club = sale.entries.find((entry) => entry.account.ownerType === 'CLUB');
     const platform = sale.entries.find(
-      (entry: any) => entry.account.ownerType === 'PLATFORM' && entry.direction === 'CREDIT',
+      (entry) => entry.account.ownerType === 'PLATFORM' && entry.direction === 'CREDIT',
     );
     if (!customer || !club || !platform) throw new Error('LEDGER_SALE_ENTRIES_NOT_FOUND');
     const clubAmountCents = input.amountCents - input.marketplaceFeeCents;
@@ -290,7 +290,7 @@ export class LedgerService {
       currency: string;
     },
   ) {
-    const db = tx as any;
+    const db = tx;
     const reference = `WALLET_TOP_UP:${input.topUpId}`;
     const existing = await db.ledgerTransaction.findUnique({ where: { reference } });
     if (existing) return existing;
@@ -347,17 +347,17 @@ export class LedgerService {
   }
 
   async reconcileOrder(orderId: string) {
-    const transactions = await (this.prisma as any).ledgerTransaction.findMany({
+    const transactions = await this.prisma.ledgerTransaction.findMany({
       where: { orderId },
       include: { entries: { include: { account: true } } },
       orderBy: { postedAt: 'asc' },
     });
     const debitTotalCents = transactions.reduce(
-      (sum: number, item: any) => sum + item.debitTotalCents,
+      (sum: number, item) => sum + item.debitTotalCents,
       0,
     );
     const creditTotalCents = transactions.reduce(
-      (sum: number, item: any) => sum + item.creditTotalCents,
+      (sum: number, item) => sum + item.creditTotalCents,
       0,
     );
     return {
@@ -375,12 +375,12 @@ export class LedgerService {
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
     end.setDate(end.getDate() + 1);
-    const rows = await (this.prisma as any).ledgerTransaction.findMany({
+    const rows = await this.prisma.ledgerTransaction.findMany({
       where: { postedAt: { gte: start, lt: end } },
     });
-    const debitTotalCents = rows.reduce((sum: number, item: any) => sum + item.debitTotalCents, 0);
+    const debitTotalCents = rows.reduce((sum: number, item) => sum + item.debitTotalCents, 0);
     const creditTotalCents = rows.reduce(
-      (sum: number, item: any) => sum + item.creditTotalCents,
+      (sum: number, item) => sum + item.creditTotalCents,
       0,
     );
     return {
@@ -406,7 +406,7 @@ export class LedgerService {
       type?: 'SETTLEMENT' | 'WITHDRAWAL' | 'ADJUSTMENT';
     },
   ) {
-    const db = tx as any;
+    const db = tx;
     const existing = await db.ledgerTransaction.findUnique({
       where: { reference: input.reference },
     });
@@ -448,11 +448,11 @@ export class LedgerService {
   private account(
     tx: Tx,
     code: string,
-    ownerType: string,
+    ownerType: FinancialAccountOwnerType,
     currency: string,
-    extra: Record<string, unknown> = {},
+    extra: Pick<Prisma.FinancialAccountUncheckedCreateInput, 'userId' | 'clubId' | 'provider'> = {},
   ) {
-    return (tx as any).financialAccount.upsert({
+    return tx.financialAccount.upsert({
       where: { code },
       update: {},
       create: { code, ownerType, currency, ...extra },
@@ -461,8 +461,8 @@ export class LedgerService {
 
   private entry(
     accountId: string,
-    direction: string,
-    bucket: string,
+    direction: LedgerEntryDirection,
+    bucket: FinancialBalanceBucket,
     amountCents: number,
     description: string,
   ) {
@@ -470,7 +470,7 @@ export class LedgerService {
   }
 
   private async commissionBps(tx: Tx) {
-    const record = await (tx as any).platformSettings.findUnique({ where: { id: 'platform' } });
+    const record = await tx.platformSettings.findUnique({ where: { id: 'platform' } });
     if (record) {
       try {
         const percentage = Number(JSON.parse(record.settingsJson).commissionPercentage);
@@ -486,7 +486,7 @@ export class LedgerService {
     return Number.isFinite(value) && value >= 0 ? Math.round(value) : fallback;
   }
 
-  private bucketField(bucket: string) {
+  private bucketField(bucket: FinancialBalanceBucket) {
     return bucket === 'PENDING'
       ? 'pendingCents'
       : bucket === 'HELD'

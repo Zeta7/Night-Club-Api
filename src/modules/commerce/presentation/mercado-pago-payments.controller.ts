@@ -22,29 +22,30 @@ export class MercadoPagoPaymentsController {
     @Query('data.id') queryDataId: string | undefined,
     @Headers('x-signature') signature: string | undefined,
     @Headers('x-request-id') requestId: string | undefined,
-    @Body() body: Record<string, any>,
+    @Body() body: unknown,
   ) {
-    const dataId = queryDataId ?? String(body?.data?.id ?? '');
+    const payload = asRecord(body);
+    const dataId = queryDataId ?? String(asRecord(payload.data).id ?? '');
     this.logger.log(
       JSON.stringify({
         event: 'mercado_pago.webhook.received',
         requestId: requestId ?? null,
-        type: typeof body?.type === 'string' ? body.type : null,
+        type: typeof payload.type === 'string' ? payload.type : null,
         dataId: dataId || null,
-        sellerId: body?.user_id == null ? null : String(body.user_id),
+        sellerId: payload.user_id == null ? null : String(payload.user_id),
         hasSignature: Boolean(signature),
       }),
     );
     try {
       this.verifySignature(signature, requestId, dataId);
       if (!dataId) return { received: true };
-      const sellerId = String(body.user_id ?? '');
+      const sellerId = String(payload.user_id ?? '');
       if (!sellerId)
         throw unauthorized(
           'MERCADO_PAGO_SELLER_REQUIRED',
           'La notificación no identifica al vendedor.',
         );
-      const type = String(body?.type ?? '').toLowerCase();
+      const type = String(payload.type ?? '').toLowerCase();
       const event =
         type === 'payment'
           ? await this.mercadoPago.queryPayment(dataId, sellerId)
@@ -101,4 +102,10 @@ export class MercadoPagoPaymentsController {
     if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
       throw unauthorized('INVALID_MERCADO_PAGO_SIGNATURE', 'La firma del webhook es inválida.');
   }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
 }

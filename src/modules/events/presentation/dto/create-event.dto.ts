@@ -24,11 +24,11 @@ export class CreateEventDto {
   @OptionalField()
   removeImage?: boolean;
 
-  @ApiProperty({ example: '2026-08-01T22:00:00.000Z' })
+  @ApiProperty({ format: 'date-time', example: '2026-08-01T22:00:00.000Z' })
   @IsDateString({}, { message: 'La fecha de inicio debe tener formato ISO valido.' })
   startsAt!: string;
 
-  @ApiProperty({ example: '2026-08-02T05:00:00.000Z' })
+  @ApiProperty({ format: 'date-time', example: '2026-08-02T05:00:00.000Z' })
   @IsDateString({}, { message: 'La fecha de fin debe tener formato ISO valido.' })
   endsAt!: string;
 

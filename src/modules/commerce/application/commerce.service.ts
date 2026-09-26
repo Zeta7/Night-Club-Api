@@ -20,6 +20,10 @@ import {
   ClubWorkerStatus,
   CommerceItemType,
   EventStatus,
+  Order,
+  OrderItem,
+  PaymentAttempt,
+  WalletTopUp,
   OrderStatus,
   ProductStatus,
   ProductDeliveryMode,
@@ -1483,13 +1487,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async issueOrderResources(
-    tx: any,
-    order: { id: string; userId: string; combineProducts: boolean; items: any[] },
+    tx: Prisma.TransactionClient,
+    order: { id: string; userId: string; combineProducts: boolean; items: OrderItem[] },
   ) {
     // Cancellation and late payment issuance serialize on the same event lock.
     // Payment approval remains a financial fact; cancelled rights must not become usable.
     const eventStates = new Map<string, { status: string; startsAt: Date; endsAt: Date }>();
-    const eventIds = [...new Set<string>(order.items.map((item) => item.eventId).filter(Boolean))].sort();
+    const eventIds = [...new Set<string>(order.items.map((item) => item.eventId).filter((id): id is string => id !== null))].sort();
     for (const eventId of eventIds) {
       await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR SHARE`);
       eventStates.set(eventId, await tx.event.findUniqueOrThrow({ where: { id: eventId } }));
@@ -1510,7 +1514,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             include: { event: true },
           });
           const eventId = item.eventId ?? ticketType?.eventId;
-          const event = eventStates.get(eventId) ?? ticketType?.event;
+          const event = (eventId ? eventStates.get(eventId) : undefined) ?? ticketType?.event;
           const cancelled = event?.status === 'CANCELLED';
           await tx.ticket.create({
             data: {
@@ -1535,7 +1539,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             include: { event: true },
           });
           const eventId = item.eventId ?? promotion?.eventId;
-          const event = eventStates.get(eventId) ?? promotion?.event;
+          const event = (eventId ? eventStates.get(eventId) : undefined) ?? promotion?.event;
           const cancelled = event?.status === 'CANCELLED';
           await tx.consumableRight.create({
             data: {
@@ -1565,14 +1569,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         body: 'El pago fue recibido, pero el evento está cancelado. Los QR afectados no son válidos. Revisa el estado de tu compra; aún no hay una devolución confirmada.',
         data: { orderId: order.id },
       } });
-      await tx.auditLogEntry.create({ data: { action: 'PAYMENT_APPROVED_AFTER_EVENT_CANCELLATION',
+      await tx.auditLogEntry.create({ data: { actorUserId: order.userId, action: 'PAYMENT_APPROVED_AFTER_EVENT_CANCELLATION',
         resourceType: 'ORDER', resourceId: order.id, metadata: { eventIds },
       } });
     }
   }
 
   private async createProductDelivery(
-    tx: any,
+    tx: Prisma.TransactionClient,
     order: { id: string; userId: string },
     items: Array<{
       id: string;
@@ -1852,7 +1856,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private async processFeaturedCampaignEvent(attempt: any, event: VerifiedPaymentEvent) {
+  private async processFeaturedCampaignEvent(attempt: Prisma.PaymentAttemptGetPayload<{ include: { featuredCampaign: true } }>, event: VerifiedPaymentEvent) {
     const campaign = attempt.featuredCampaign;
     if (!campaign) {
       throw notFound(
@@ -1931,8 +1935,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
-  private async processWalletTopUpEvent(attempt: any, event: VerifiedPaymentEvent) {
-    if (!attempt.walletTopUp)
+  private async processWalletTopUpEvent(attempt: Prisma.PaymentAttemptGetPayload<{ include: { walletTopUp: true } }>, event: VerifiedPaymentEvent) {
+    const topUp = attempt.walletTopUp;
+    if (!topUp)
       throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No se encontró la recarga asociada.');
     try {
       await this.prisma.paymentProviderEvent.create({
@@ -1973,38 +1978,38 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           data: { status: 'APPROVED', approvedAt: now },
         });
         await tx.walletTopUp.update({
-          where: { id: attempt.walletTopUp.id },
+          where: { id: topUp.id },
           data: { status: 'APPROVED', approvedAt: now },
         });
         await tx.wallet.update({
-          where: { id: attempt.walletTopUp.walletId },
+          where: { id: topUp.walletId },
           data: { balanceCents: { increment: attempt.amountCents } },
         });
         await tx.walletCreditLot.create({
           data: {
-            walletId: attempt.walletTopUp.walletId,
+            walletId: topUp.walletId,
             source: 'TOP_UP',
-            sourceReferenceId: attempt.walletTopUp.id,
+            sourceReferenceId: topUp.id,
             originalAmountCents: attempt.amountCents,
             remainingAmountCents: attempt.amountCents,
           },
         });
         await tx.walletMovement.create({
           data: {
-            walletId: attempt.walletTopUp.walletId,
+            walletId: topUp.walletId,
             type: 'TOP_UP',
             status: 'COMPLETED',
             amountCents: attempt.amountCents,
             description: `Recarga confirmada por ${event.provider}`,
-            referenceId: attempt.walletTopUp.id,
+            referenceId: topUp.id,
             completedAt: now,
           },
         });
         await this.ledger?.postWalletTopUp(tx, {
-          topUpId: attempt.walletTopUp.id,
+          topUpId: topUp.id,
           paymentAttemptId: attempt.id,
           providerEventId: event.providerEventId,
-          customerUserId: attempt.walletTopUp.userId,
+          customerUserId: topUp.userId,
           provider: event.provider,
           amountCents: attempt.amountCents,
           currency: attempt.currency,
@@ -2021,7 +2026,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           },
         });
         await tx.walletTopUp.update({
-          where: { id: attempt.walletTopUp.id },
+          where: { id: topUp.id },
           data: {
             status: expired ? 'EXPIRED' : 'REJECTED',
             rejectedAt: now,
@@ -2034,7 +2039,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
-  private paymentResponse(order: any, attempt: any, checkoutUrl?: string) {
+  private paymentResponse(order: Order, attempt: PaymentAttempt | null | undefined, checkoutUrl?: string) {
     const storedProviderData =
       attempt?.providerData && typeof attempt.providerData === 'object'
         ? (attempt.providerData as Record<string, unknown>)
@@ -2050,14 +2055,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       paymentStatus: attempt?.status ?? null,
       paymentProvider: attempt?.provider ?? null,
       paymentMethod: order.paymentMethod ?? null,
-      checkoutUrl: checkoutUrl ?? storedProviderData?.checkoutUrl ?? null,
+      checkoutUrl: checkoutUrl ?? (typeof storedProviderData?.checkoutUrl === 'string' ? storedProviderData.checkoutUrl : null),
       total: order.totalCents / 100,
       currency: order.currency,
       generatedCount: order.status === 'PAID' ? undefined : 0,
     };
   }
 
-  private topUpResponse(topUp: any, attempt: any, checkoutUrl?: string) {
+  private topUpResponse(topUp: WalletTopUp, attempt: PaymentAttempt | null | undefined, checkoutUrl?: string) {
     const storedProviderData =
       attempt?.providerData && typeof attempt.providerData === 'object'
         ? (attempt.providerData as Record<string, unknown>)
@@ -2070,7 +2075,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       paymentAttemptId: attempt?.id ?? null,
       paymentStatus: attempt?.status ?? null,
       paymentProvider: attempt?.provider ?? null,
-      checkoutUrl: checkoutUrl ?? storedProviderData?.checkoutUrl ?? null,
+      checkoutUrl: checkoutUrl ?? (typeof storedProviderData?.checkoutUrl === 'string' ? storedProviderData.checkoutUrl : null),
       createdAt: topUp.createdAt,
       approvedAt: topUp.approvedAt,
     };
@@ -2450,7 +2455,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const attendeeImageUrl = await this.uploadsService.createReadableImageUrl(
       delivery.owner.profileImageUrl,
     );
-    const response = (overrides: Record<string, unknown>) => ({
+    const response = (overrides: Partial<{ isValid: boolean; statusLabel: string; title: string; message: string }>) => ({
       validation: {
         isValid: true,
         statusLabel: confirmUse ? 'ENTREGADO CORRECTAMENTE' : 'LISTO PARA ENTREGAR',
@@ -2797,7 +2802,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     reasonCode: string | null,
     tx: Prisma.TransactionClient | PrismaService = this.prisma,
   ) {
-    return (tx as any).qrValidationAttempt.create({
+    return tx.qrValidationAttempt.create({
       data: {
         clubId,
         actorUserId: user.id,
@@ -2996,7 +3001,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         : undefined;
     return {
       clubId,
-      ...(query.status ? { status: query.status as OrderStatus } : {}),
+      ...(query.status ? { status: query.status } : {}),
       ...(createdAt ? { createdAt } : {}),
       ...(query.eventId
         ? {

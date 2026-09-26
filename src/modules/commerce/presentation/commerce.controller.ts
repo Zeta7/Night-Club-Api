@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { CommerceService } from '../application/commerce.service';
@@ -232,6 +232,7 @@ export class CommerceController {
   }
 
   @Post('clubs/:clubId/redemptions/:kind/:resourceId/reverse')
+  @ApiParam({ name: 'kind', enum: ['TICKET', 'PRODUCT', 'PROMOTION'] })
   reverseRedemption(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,

@@ -152,6 +152,7 @@ describe('Module 6 - business withdrawals', () => {
       where: { clubId },
     });
     expect(stored.bankAccountEncrypted).not.toContain('00112345678901234567');
+    expect(publicProfile).not.toHaveProperty('bankAccountEncrypted');
     expect(publicProfile.maskedBankAccount).toBe('•••• 4567');
     await expect(service.request(admin(), clubId, { amountCents: 4999 })).rejects.toBeDefined();
   });
@@ -167,6 +168,9 @@ describe('Module 6 - business withdrawals', () => {
     const account = await (prisma as any).financialAccount.findUniqueOrThrow({
       where: { code: `CLUB:${clubId}` },
     });
+    const listed = await service.listPlatform(superAdmin());
+    expect(listed.items).toHaveLength(1);
+    expect(listed.items[0].requestedBy).not.toHaveProperty('passwordHash');
     expect(account.availableCents).toBe(30_000);
     expect(account.heldCents).toBe(70_000);
     expect(await (prisma as any).withdrawalRequest.count({ where: { clubId } })).toBe(1);

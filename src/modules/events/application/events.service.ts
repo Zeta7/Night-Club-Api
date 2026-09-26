@@ -105,7 +105,7 @@ export class EventsService {
     if (!club) {
       return {
         message: 'Dashboard de eventos obtenido correctamente.',
-        hasClub: false,
+        hasClub: false as const,
         summary: emptyAdminEventsSummary(),
         alerts: [],
         events: [],
@@ -143,7 +143,7 @@ export class EventsService {
 
     return {
       message: 'Dashboard de eventos obtenido correctamente.',
-      hasClub: true,
+      hasClub: true as const,
       club: {
         id: club.id,
         name: club.name,

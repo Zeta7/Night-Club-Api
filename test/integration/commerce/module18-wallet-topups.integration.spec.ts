@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { ok } from 'node:assert';
 import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
@@ -65,6 +66,7 @@ describe('Module 18 - wallet top-ups', () => {
   it('credits an approved top-up exactly once and creates no referral reward', async () => {
     const authUser = { id: userId, role: 'CUSTOMER' as const };
     const created = await service.createWalletTopUp(authUser, 2500, `topup-${suffix}-approved`);
+    ok(created.paymentAttemptId, 'This payment scenario must create a payment attempt');
 
     expect(created.status).toBe('PENDING');
     await service.simulatePayment(authUser, created.paymentAttemptId, 'APPROVED');
@@ -97,6 +99,7 @@ describe('Module 18 - wallet top-ups', () => {
     const authUser = { id: userId, role: 'CUSTOMER' as const };
     const before = await prisma.wallet.findUniqueOrThrow({ where: { userId } });
     const created = await service.createWalletTopUp(authUser, 3000, `topup-${suffix}-rejected`);
+    ok(created.paymentAttemptId, 'This payment scenario must create a payment attempt');
 
     await service.simulatePayment(authUser, created.paymentAttemptId, 'REJECTED');
 
@@ -122,6 +125,7 @@ describe('Module 18 - wallet top-ups', () => {
   it('recovers an approved callback that was previously left in RECEIVED', async () => {
     const authUser = { id: userId, role: 'CUSTOMER' as const };
     const created = await service.createWalletTopUp(authUser, 5000, `topup-${suffix}-recovery`);
+    ok(created.paymentAttemptId, 'This payment scenario must create a payment attempt');
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
       where: { id: created.paymentAttemptId },
     });

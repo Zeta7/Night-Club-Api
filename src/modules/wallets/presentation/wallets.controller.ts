@@ -4,7 +4,7 @@ import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/curr
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { WalletsService } from '../application/wallets.service';
 import { WithdrawalsService } from '../application/withdrawals.service';
-import { CreateWithdrawalDto, FailWithdrawalDto, PayWithdrawalDto, ReviewWithdrawalDto, UpsertFinancialProfileDto } from './withdrawal.dto';
+import { DailyReconciliationQueryDto, ListWithdrawalsDto, CreateWithdrawalDto, FailWithdrawalDto, PayWithdrawalDto, ReviewWithdrawalDto, UpsertFinancialProfileDto } from './withdrawal.dto';
 
 @ApiTags('Wallets')
 @ApiBearerAuth()
@@ -61,9 +61,9 @@ export class WalletsController {
   @Get('reconciliation/daily')
   dailyDifferences(
     @CurrentUser() currentUser: AuthenticatedUser,
-    @Query('date') date?: string,
+    @Query() query: DailyReconciliationQueryDto,
   ) {
-    return this.walletsService.dailyDifferences(currentUser, date);
+    return this.walletsService.dailyDifferences(currentUser, query.date);
   }
 
   @Get('clubs/:clubId/financial-profile')
@@ -95,8 +95,8 @@ export class WalletsController {
   }
 
   @Get('withdrawals')
-  platformWithdrawals(@CurrentUser() user: AuthenticatedUser, @Query('status') status?: string) {
-    return this.withdrawalsService.listPlatform(user, status);
+  platformWithdrawals(@CurrentUser() user: AuthenticatedUser, @Query() query: ListWithdrawalsDto) {
+    return this.withdrawalsService.listPlatform(user, query.status);
   }
 
   @Patch('withdrawals/:id/review')

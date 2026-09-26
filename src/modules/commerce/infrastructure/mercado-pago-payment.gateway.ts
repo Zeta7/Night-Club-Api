@@ -215,10 +215,10 @@ export class MercadoPagoPaymentGateway {
     const accessToken = connection
       ? this.cipher.decrypt(connection.accessTokenEncrypted)
       : this.required('MERCADO_PAGO_PLATFORM_ACCESS_TOKEN');
-    const body = (await this.sdkCall('payment.get', () =>
+    const body = await this.sdkCall('payment.get', () =>
       new Payment(this.client(accessToken)).get({ id: paymentId }),
-    )) as unknown as Record<string, any>;
-    const metadata = body.metadata && typeof body.metadata === 'object' ? body.metadata : {};
+    );
+    const metadata: Record<string, unknown> = body.metadata && typeof body.metadata === 'object' && !Array.isArray(body.metadata) ? body.metadata : {};
     const attemptId = stringValue(metadata.attempt_id) ?? stringValue(body.external_reference);
     const snapshot = await this.paymentSnapshot(attemptId);
     const event: VerifiedPaymentEvent = {
@@ -238,9 +238,8 @@ export class MercadoPagoPaymentGateway {
       currency: stringValue(body.currency_id),
       sellerExternalId: String(body.collector_id ?? sellerExternalId),
       marketplaceFeeCents: moneyToCents(
-        body.fee_details?.find((fee: any) => fee?.type === 'application_fee')?.amount ??
-          body.marketplace_fee ??
-          0,
+        body.fee_details?.find((fee) => fee?.type === 'application_fee')?.amount ??
+          ('marketplace_fee' in body ? body.marketplace_fee : 0),
       ),
       refundedAmountCents: moneyToCents(body.transaction_amount_refunded ?? 0),
       payload: {
@@ -275,9 +274,9 @@ export class MercadoPagoPaymentGateway {
     sellerExternalId: string,
   ): Promise<VerifiedPaymentEvent> {
     const accessToken = await this.accessTokenForSeller(sellerExternalId);
-    const body = (await this.sdkCall('order.get', () =>
+    const body = await this.sdkCall('order.get', () =>
       new Order(this.client(accessToken)).get({ id: mercadoPagoOrderId }),
-    )) as unknown as Record<string, any>;
+    );
     const attemptId = stringValue(body.external_reference);
     const snapshot = await this.paymentSnapshot(attemptId);
     const payment = Array.isArray(body.transactions?.payments)
@@ -305,7 +304,7 @@ export class MercadoPagoPaymentGateway {
       marketplaceFeeCents: moneyToCents(body.marketplace_fee ?? 0),
       refundedAmountCents: Array.isArray(body.transactions?.refunds)
         ? body.transactions.refunds.reduce(
-            (total: number, refund: any) => total + moneyToCents(refund?.amount ?? 0),
+            (total: number, refund) => total + moneyToCents(refund?.amount ?? 0),
             0,
           )
         : 0,

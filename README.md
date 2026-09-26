@@ -76,3 +76,16 @@ Swagger explícito y `| null` en TypeScript. Las actualizaciones usan
 `PartialType(CreateDto, { skipNullProperties: false })`: omitir conserva y
 `null` borra sólo los campos anulables. Los objetos y listas enviados reemplazan
 el valor completo de esa propiedad.
+
+Las respuestas se infieren de los retornos TypeScript y de los tipos generados
+por Prisma. No se mantienen schemas paralelos por endpoint ni se deducen tipos
+por nombres de campos. La generación falla ante retornos con `any`, `unknown`
+o listas vacías sin tipo. Los campos que sólo devuelven `null` deben declarar
+su tipo completo. Los JSON abiertos se permiten únicamente en las rutas
+revisadas por el control de contrato.
+
+Los enteros de Prisma conservan su tipo; un número calculado que deba publicarse
+como entero debe declararlo mediante `/** @integer */` en su propiedad de retorno.
+Las variantes de objeto se publican como un modelo con campos opcionales para
+las propiedades ausentes en alguna rama. `docs:check` valida además OpenAPI 3.0,
+referencias, enums, nulabilidad y la correspondencia con los validadores de los DTOs.

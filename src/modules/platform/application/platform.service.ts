@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, notFound } from '../../../shared/presentation/api-exception';
@@ -252,11 +252,11 @@ export class PlatformService {
   }
 }
 
-const parseSettings = (settingsJson: string): Record<string, unknown> => {
+const parseSettings = (settingsJson: string): Prisma.JsonObject => {
   try {
-    const parsed = JSON.parse(settingsJson);
+    const parsed: Prisma.JsonValue = JSON.parse(settingsJson);
 
-    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }

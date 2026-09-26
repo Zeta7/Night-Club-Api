@@ -57,6 +57,7 @@
     "twilio": "^6.0.2"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
     "@nestjs/cli": "^11.0.23",
     "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^11.1.27",

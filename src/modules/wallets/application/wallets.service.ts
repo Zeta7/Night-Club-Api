@@ -69,7 +69,7 @@ export class WalletsService {
     const movement = await this.prisma.walletMovement.findFirst({ where: { id, wallet: { userId: user.id } },
       select: { id: true, type: true, status: true, amountCents: true, description: true, referenceId: true, createdAt: true, completedAt: true, wallet: { select: { currency: true } } } });
     if (!movement) throw notFound('MOVEMENT_NOT_FOUND', 'No encontramos tu movimiento.');
-    let related: unknown = null;
+    let related: Awaited<ReturnType<WalletsService['orderDetail']>> | Awaited<ReturnType<WalletsService['topUpDetail']>> | null = null;
     if (movement.referenceId && ['PURCHASE', 'REFUND'].includes(movement.type)) {
       const order = await this.prisma.order.findFirst({ where: { id: movement.referenceId, userId: user.id }, select: { id: true } });
       if (order) related = await this.orderDetail(user, order.id);
@@ -154,7 +154,7 @@ export class WalletsService {
 
   async getClubLedger(currentUser: AuthenticatedUser, clubId: string) {
     await this.assertClubFinanceAccess(currentUser, clubId);
-    const account = await (this.prisma as any).financialAccount.findUnique({
+    const account = await this.prisma.financialAccount.findUnique({
       where: { code: `CLUB:${clubId}` },
       include: {
         entries: {

@@ -23,6 +23,6 @@ describe('payment approved after event cancellation', () => {
       expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ eventId: 'event', status: 'CANCELLED', revokedReason: 'EVENT_CANCELLED:event' }) });
     }
     expect(tx.notification.create).toHaveBeenCalledTimes(1);
-    expect(tx.auditLogEntry.create).toHaveBeenCalledTimes(1);
+    expect(tx.auditLogEntry.create).toHaveBeenCalledWith({ data: expect.objectContaining({ actorUserId: 'buyer', action: 'PAYMENT_APPROVED_AFTER_EVENT_CANCELLATION', resourceId: 'order' }) });
   });
 });

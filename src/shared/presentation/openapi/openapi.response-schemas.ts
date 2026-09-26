@@ -13,6 +13,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         items: {
           type: 'object',
           properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            title: {
+              type: 'string',
+              description: 'Campo title expuesto por el runtime actual.',
+            },
             category: {
               type: 'string',
               enum: [
@@ -29,41 +37,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo category expuesto por el runtime actual.',
               example: 'PAYMENT',
             },
-            id: {
+            createdAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
             userId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            templateKey: {
-              type: 'string',
-              nullable: true,
-              description: 'Campo template key expuesto por el runtime actual.',
-            },
-            templateVersion: {
-              type: 'number',
-              nullable: true,
-              description: 'Campo template version expuesto por el runtime actual.',
-              example: 1,
-            },
-            title: {
-              type: 'string',
-              description: 'Campo title expuesto por el runtime actual.',
-            },
-            body: {
-              type: 'string',
-              description: 'Campo body expuesto por el runtime actual.',
-            },
-            deepLink: {
-              type: 'string',
-              nullable: true,
-              description: 'Campo deep link expuesto por el runtime actual.',
             },
             data: {
               description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -74,6 +56,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               ],
               nullable: true,
             },
+            templateKey: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo template key expuesto por el runtime actual.',
+            },
+            templateVersion: {
+              type: 'integer',
+              nullable: true,
+              description: 'Campo template version expuesto por el runtime actual.',
+            },
+            body: {
+              type: 'string',
+              description: 'Campo body expuesto por el runtime actual.',
+            },
+            deepLink: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo deep link expuesto por el runtime actual.',
+            },
             readAt: {
               type: 'string',
               format: 'date-time',
@@ -81,34 +82,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo read at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
           },
           required: [
-            'category',
             'id',
+            'title',
+            'category',
+            'createdAt',
             'userId',
+            'data',
             'templateKey',
             'templateVersion',
-            'title',
             'body',
             'deepLink',
-            'data',
             'readAt',
-            'createdAt',
           ],
           additionalProperties: false,
         },
         description: 'Campo items expuesto por el runtime actual.',
       },
       unreadCount: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo unread count expuesto por el runtime actual.',
+        example: 1,
       },
     },
     required: ['items', 'unreadCount'],
@@ -119,9 +114,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       notificationId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo notification id expuesto por el runtime actual.',
-        example: '1c6e8a42-9f35-4d70-b821-5a3c97e4d608',
       },
       read: {
         type: 'boolean',
@@ -136,7 +129,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     type: 'object',
     properties: {
       updated: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo updated expuesto por el runtime actual.',
       },
     },
@@ -256,15 +249,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
+        description: 'Identificador del recurso.',
       },
-      userId: {
+      token: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+        description: 'Campo token expuesto por el runtime actual.',
+        example:
+          'dQw4w9WgXcQ:APA91bG7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0eT7uY2iO9pA4sD8fG1hJ5kL3zX6cV0bN2mQ',
+      },
+      platform: {
+        type: 'string',
+        description: 'Campo platform expuesto por el runtime actual.',
       },
       createdAt: {
         type: 'string',
@@ -278,15 +273,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Fecha y hora de la última actualización en formato ISO 8601.',
         example: '2026-08-28T14:15:00.000Z',
       },
-      token: {
+      userId: {
         type: 'string',
-        description: 'Campo token expuesto por el runtime actual.',
-        example:
-          'dQw4w9WgXcQ:APA91bG7Kp4mN9xQ2vL8sD5cB1hJ6wF3aR0eT7uY2iO9pA4sD8fG1hJ5kL3zX6cV0bN2mQ',
-      },
-      platform: {
-        type: 'string',
-        description: 'Campo platform expuesto por el runtime actual.',
+        description: 'Campo user id expuesto por el runtime actual.',
       },
       enabled: {
         type: 'boolean',
@@ -302,11 +291,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     },
     required: [
       'id',
-      'userId',
-      'createdAt',
-      'updatedAt',
       'token',
       'platform',
+      'createdAt',
+      'updatedAt',
+      'userId',
       'enabled',
       'lastSeenAt',
     ],
@@ -317,9 +306,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       deviceId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo device id expuesto por el runtime actual.',
-        example: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
       },
       enabled: {
         type: 'boolean',
@@ -342,9 +329,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -358,10 +343,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -443,9 +426,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -459,10 +440,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -642,9 +621,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -658,10 +635,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -718,24 +693,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       uploadId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo upload id expuesto por el runtime actual.',
-        example: 'f7a2c864-1d39-4e5b-90a6-3c8d27b154ef',
       },
       uploadUrl: {
         type: 'string',
-        format: 'uri',
         description: 'Campo upload url expuesto por el runtime actual.',
-        example:
-          'https://nightclub-platform-assets.s3.amazonaws.com/uploads/2026/08/nebula-cover.webp?X-Amz-Expires=300',
       },
       objectKey: {
         type: 'string',
         description: 'Campo object key expuesto por el runtime actual.',
       },
       expiresIn: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo expires in expuesto por el runtime actual.',
       },
       headers: {
@@ -743,7 +712,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           'Content-Type': {
             type: 'string',
+            enum: ['image/jpeg', 'image/png', 'image/webp'],
             description: 'Campo content-type expuesto por el runtime actual.',
+            example: 'image/jpeg',
           },
         },
         required: ['Content-Type'],
@@ -763,9 +734,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       uploadId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo upload id expuesto por el runtime actual.',
-        example: 'f7a2c864-1d39-4e5b-90a6-3c8d27b154ef',
       },
       status: {
         type: 'string',
@@ -779,10 +748,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       url: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo url expuesto por el runtime actual.',
-        example: 'https://cdn.beerry.app/uploads/2026/08/nebula-cover.webp',
       },
     },
     required: ['message', 'uploadId', 'status', 'objectKey', 'url'],
@@ -796,9 +763,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -806,17 +771,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
-          status: {
-            type: 'string',
-            enum: ['ACTIVE', 'CLOSED', 'REVOKED'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'ACTIVE',
-          },
           updatedAt: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la última actualización en formato ISO 8601.',
             example: '2026-08-28T14:15:00.000Z',
+          },
+          status: {
+            type: 'string',
+            enum: ['ACTIVE', 'REVOKED', 'CLOSED'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'ACTIVE',
           },
           assignedDoor: {
             type: 'string',
@@ -833,23 +798,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             nullable: true,
             description: 'Campo assigned point expuesto por el runtime actual.',
           },
+          eventId: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo event id expuesto por el runtime actual.',
+          },
           deviceFingerprint: {
             type: 'string',
             nullable: true,
             description: 'Campo device fingerprint expuesto por el runtime actual.',
           },
+          workerId: {
+            type: 'string',
+            description: 'Campo worker id expuesto por el runtime actual.',
+          },
           openedByUserId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo opened by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           closedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo closed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           startedAt: {
             type: 'string',
@@ -882,29 +852,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo last sync at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          workerId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo worker id expuesto por el runtime actual.',
-            example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
-          },
-          eventId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-          },
         },
         required: [
           'id',
           'createdAt',
-          'status',
           'updatedAt',
+          'status',
           'assignedDoor',
           'assignedZone',
           'assignedPoint',
+          'eventId',
           'deviceFingerprint',
+          'workerId',
           'openedByUserId',
           'closedByUserId',
           'startedAt',
@@ -912,8 +871,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           'closeReason',
           'lastActivityAt',
           'lastSyncAt',
-          'workerId',
-          'eventId',
         ],
         additionalProperties: false,
         description: 'Campo shift expuesto por el runtime actual.',
@@ -927,9 +884,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       shiftId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo shift id expuesto por el runtime actual.',
-        example: '6a1d9f42-3c75-4e8b-b206-5d7a91c4f638',
       },
       syncedAt: {
         type: 'string',
@@ -954,9 +909,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -971,9 +924,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -981,17 +932,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
             },
-            status: {
-              type: 'string',
-              enum: ['ACTIVE', 'CLOSED', 'REVOKED'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'ACTIVE',
-            },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de la última actualización en formato ISO 8601.',
               example: '2026-08-28T14:15:00.000Z',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'REVOKED', 'CLOSED'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
             },
             assignedDoor: {
               type: 'string',
@@ -1008,23 +959,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description: 'Campo assigned point expuesto por el runtime actual.',
             },
+            eventId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
             deviceFingerprint: {
               type: 'string',
               nullable: true,
               description: 'Campo device fingerprint expuesto por el runtime actual.',
             },
+            workerId: {
+              type: 'string',
+              description: 'Campo worker id expuesto por el runtime actual.',
+            },
             openedByUserId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo opened by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             closedByUserId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo closed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             startedAt: {
               type: 'string',
@@ -1057,30 +1013,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo last sync at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            workerId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo worker id expuesto por el runtime actual.',
-              example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
-            },
-            eventId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-            },
           },
           required: [
             'event',
             'id',
             'createdAt',
-            'status',
             'updatedAt',
+            'status',
             'assignedDoor',
             'assignedZone',
             'assignedPoint',
+            'eventId',
             'deviceFingerprint',
+            'workerId',
             'openedByUserId',
             'closedByUserId',
             'startedAt',
@@ -1088,8 +1033,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'closeReason',
             'lastActivityAt',
             'lastSyncAt',
-            'workerId',
-            'eventId',
           ],
           additionalProperties: false,
         },
@@ -1104,9 +1047,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       shiftId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo shift id expuesto por el runtime actual.',
-        example: '6a1d9f42-3c75-4e8b-b206-5d7a91c4f638',
       },
       status: {
         type: 'string',
@@ -1130,9 +1071,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
+            description: 'Identificador del recurso.',
+          },
+          platform: {
+            type: 'string',
+            description: 'Campo platform expuesto por el runtime actual.',
           },
           createdAt: {
             type: 'string',
@@ -1140,26 +1083,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
-          status: {
-            type: 'string',
-            enum: ['REVOKED', 'AUTHORIZED'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'REVOKED',
-          },
-          name: {
-            type: 'string',
-            description: 'Campo name expuesto por el runtime actual.',
-            example: 'iPhone 15 Pro de Valeria',
-          },
           updatedAt: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la última actualización en formato ISO 8601.',
             example: '2026-08-28T14:15:00.000Z',
           },
-          platform: {
+          name: {
             type: 'string',
-            description: 'Campo platform expuesto por el runtime actual.',
+            description: 'Campo name expuesto por el runtime actual.',
+            example: 'iPhone 15 Pro de Valeria',
+          },
+          status: {
+            type: 'string',
+            enum: ['AUTHORIZED', 'REVOKED'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'AUTHORIZED',
           },
           lastSeenAt: {
             type: 'string',
@@ -1175,28 +1114,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo revoked at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          workerId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo worker id expuesto por el runtime actual.',
-            example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
-          },
           fingerprint: {
             type: 'string',
             description: 'Campo fingerprint expuesto por el runtime actual.',
           },
+          workerId: {
+            type: 'string',
+            description: 'Campo worker id expuesto por el runtime actual.',
+          },
           authorizedByUserId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo authorized by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           revokedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo revoked by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           authorizedAt: {
             type: 'string',
@@ -1207,15 +1140,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         },
         required: [
           'id',
-          'createdAt',
-          'status',
-          'name',
-          'updatedAt',
           'platform',
+          'createdAt',
+          'updatedAt',
+          'name',
+          'status',
           'lastSeenAt',
           'revokedAt',
-          'workerId',
           'fingerprint',
+          'workerId',
           'authorizedByUserId',
           'revokedByUserId',
           'authorizedAt',
@@ -1232,9 +1165,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       deviceId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo device id expuesto por el runtime actual.',
-        example: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
       },
       status: {
         type: 'string',
@@ -1249,9 +1180,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       workerId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo worker id expuesto por el runtime actual.',
-        example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
       },
       shifts: {
         type: 'array',
@@ -1260,9 +1189,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -1270,17 +1197,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
             },
-            status: {
-              type: 'string',
-              enum: ['ACTIVE', 'CLOSED', 'REVOKED'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'ACTIVE',
-            },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de la última actualización en formato ISO 8601.',
               example: '2026-08-28T14:15:00.000Z',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'REVOKED', 'CLOSED'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
             },
             assignedDoor: {
               type: 'string',
@@ -1297,23 +1224,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description: 'Campo assigned point expuesto por el runtime actual.',
             },
+            eventId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
             deviceFingerprint: {
               type: 'string',
               nullable: true,
               description: 'Campo device fingerprint expuesto por el runtime actual.',
             },
+            workerId: {
+              type: 'string',
+              description: 'Campo worker id expuesto por el runtime actual.',
+            },
             openedByUserId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo opened by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             closedByUserId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo closed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             startedAt: {
               type: 'string',
@@ -1346,29 +1278,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo last sync at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            workerId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo worker id expuesto por el runtime actual.',
-              example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
-            },
-            eventId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-            },
           },
           required: [
             'id',
             'createdAt',
-            'status',
             'updatedAt',
+            'status',
             'assignedDoor',
             'assignedZone',
             'assignedPoint',
+            'eventId',
             'deviceFingerprint',
+            'workerId',
             'openedByUserId',
             'closedByUserId',
             'startedAt',
@@ -1376,8 +1297,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'closeReason',
             'lastActivityAt',
             'lastSyncAt',
-            'workerId',
-            'eventId',
           ],
           additionalProperties: false,
         },
@@ -1402,9 +1321,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
+              description: 'Identificador del recurso.',
+            },
+            platform: {
+              type: 'string',
+              description: 'Campo platform expuesto por el runtime actual.',
             },
             createdAt: {
               type: 'string',
@@ -1412,26 +1333,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
             },
-            status: {
-              type: 'string',
-              enum: ['REVOKED', 'AUTHORIZED'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'REVOKED',
-            },
-            name: {
-              type: 'string',
-              description: 'Campo name expuesto por el runtime actual.',
-              example: 'iPhone 15 Pro de Valeria',
-            },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de la última actualización en formato ISO 8601.',
               example: '2026-08-28T14:15:00.000Z',
             },
-            platform: {
+            name: {
               type: 'string',
-              description: 'Campo platform expuesto por el runtime actual.',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'iPhone 15 Pro de Valeria',
+            },
+            status: {
+              type: 'string',
+              enum: ['AUTHORIZED', 'REVOKED'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'AUTHORIZED',
             },
             lastSeenAt: {
               type: 'string',
@@ -1447,28 +1364,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo revoked at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            workerId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo worker id expuesto por el runtime actual.',
-              example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
-            },
             fingerprint: {
               type: 'string',
               description: 'Campo fingerprint expuesto por el runtime actual.',
             },
+            workerId: {
+              type: 'string',
+              description: 'Campo worker id expuesto por el runtime actual.',
+            },
             authorizedByUserId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo authorized by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             revokedByUserId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo revoked by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             authorizedAt: {
               type: 'string',
@@ -1479,15 +1390,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           required: [
             'id',
-            'createdAt',
-            'status',
-            'name',
-            'updatedAt',
             'platform',
+            'createdAt',
+            'updatedAt',
+            'name',
+            'status',
             'lastSeenAt',
             'revokedAt',
-            'workerId',
             'fingerprint',
+            'workerId',
             'authorizedByUserId',
             'revokedByUserId',
             'authorizedAt',
@@ -1512,21 +1423,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           userId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           status: {
             type: 'string',
@@ -1578,9 +1483,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                description: 'Identificador del recurso.',
               },
               fullName: {
                 type: 'string',
@@ -1599,10 +1502,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               email: {
                 type: 'string',
-                format: 'email',
                 nullable: true,
                 description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
               },
               profileImage: {
                 type: 'string',
@@ -1671,21 +1572,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             userId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             status: {
               type: 'string',
@@ -1737,9 +1632,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -1758,10 +1651,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 email: {
                   type: 'string',
-                  format: 'email',
                   nullable: true,
                   description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
                 },
                 profileImage: {
                   type: 'string',
@@ -1829,21 +1720,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           userId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           status: {
             type: 'string',
@@ -1895,9 +1780,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                description: 'Identificador del recurso.',
               },
               fullName: {
                 type: 'string',
@@ -1916,10 +1799,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               email: {
                 type: 'string',
-                format: 'email',
                 nullable: true,
                 description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
               },
               profileImage: {
                 type: 'string',
@@ -1986,21 +1867,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           userId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
           },
           status: {
             type: 'string',
@@ -2052,9 +1927,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                description: 'Identificador del recurso.',
               },
               fullName: {
                 type: 'string',
@@ -2073,10 +1946,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               email: {
                 type: 'string',
-                format: 'email',
                 nullable: true,
                 description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
               },
               profileImage: {
                 type: 'string',
@@ -2154,9 +2025,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Identificador del recurso.',
           },
           name: {
             type: 'string',
@@ -2249,9 +2118,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -2270,10 +2137,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 email: {
                   type: 'string',
-                  format: 'email',
                   nullable: true,
                   description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
                 },
                 profileImage: {
                   type: 'string',
@@ -2333,9 +2198,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -2428,9 +2291,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                    description: 'Identificador del recurso.',
                   },
                   fullName: {
                     type: 'string',
@@ -2449,10 +2310,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   },
                   email: {
                     type: 'string',
-                    format: 'email',
                     nullable: true,
                     description: 'Campo email expuesto por el runtime actual.',
-                    example: 'valeria.mendoza@correo.pe',
                   },
                   profileImage: {
                     type: 'string',
@@ -2500,2305 +2359,811 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   ClubsController_getAdminDashboardResponse: {
-    oneOf: [
-      {
-        type: 'object',
-        properties: {
-          message: {
-            type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          hasClub: {
-            type: 'boolean',
-            description: 'Campo has club expuesto por el runtime actual.',
-            example: false,
-            enum: [false],
-          },
-          club: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-              },
-              name: {
-                type: 'string',
-                description: 'Campo name expuesto por el runtime actual.',
-                example: 'Nébula Club',
-              },
-              description: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo description expuesto por el runtime actual.',
-              },
-              type: {
-                type: 'string',
-                description: 'Campo type expuesto por el runtime actual.',
-              },
-              status: {
-                type: 'string',
-                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'ACTIVE',
-              },
-              profileImage: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo profile image expuesto por el runtime actual.',
-              },
-              coverImage: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo cover image expuesto por el runtime actual.',
-              },
-              address: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-              contact: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-              socialMedia: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-              schedule: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-            },
-            required: [
-              'id',
-              'name',
-              'description',
-              'type',
-              'status',
-              'profileImage',
-              'coverImage',
-              'address',
-              'contact',
-              'socialMedia',
-              'schedule',
-            ],
-            additionalProperties: false,
-            description: 'Campo club expuesto por el runtime actual.',
-            nullable: true,
-            enum: [null],
-          },
-          emptyState: {
-            type: 'object',
-            properties: {
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              text: {
-                type: 'string',
-                description: 'Campo text expuesto por el runtime actual.',
-              },
-              actionLabel: {
-                type: 'string',
-                description: 'Campo action label expuesto por el runtime actual.',
-              },
-            },
-            required: ['title', 'text', 'actionLabel'],
-            additionalProperties: false,
-            description: 'Campo empty state expuesto por el runtime actual.',
-          },
-          features: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                icon: {
-                  type: 'string',
-                  description: 'Campo icon expuesto por el runtime actual.',
-                },
-                title: {
-                  type: 'string',
-                  description: 'Campo title expuesto por el runtime actual.',
-                },
-                text: {
-                  type: 'string',
-                  description: 'Campo text expuesto por el runtime actual.',
-                },
-              },
-              required: ['icon', 'title', 'text'],
-              additionalProperties: false,
-            },
-            description: 'Campo features expuesto por el runtime actual.',
-          },
-        },
-        required: ['message', 'hasClub', 'club', 'emptyState', 'features'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          message: {
-            type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          hasClub: {
-            type: 'boolean',
-            description: 'Campo has club expuesto por el runtime actual.',
-            example: true,
-            enum: [true],
-          },
-          club: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-              },
-              name: {
-                type: 'string',
-                description: 'Campo name expuesto por el runtime actual.',
-                example: 'Nébula Club',
-              },
-              description: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo description expuesto por el runtime actual.',
-              },
-              type: {
-                type: 'string',
-                description: 'Campo type expuesto por el runtime actual.',
-              },
-              status: {
-                type: 'string',
-                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'ACTIVE',
-              },
-              profileImage: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo profile image expuesto por el runtime actual.',
-              },
-              coverImage: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo cover image expuesto por el runtime actual.',
-              },
-              address: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-              contact: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-              socialMedia: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-              schedule: {
-                description: 'Valor JSON dinámico expuesto por el runtime.',
-                allOf: [
-                  {
-                    $ref: '#/components/schemas/JsonValue',
-                  },
-                ],
-              },
-            },
-            required: [
-              'id',
-              'name',
-              'description',
-              'type',
-              'status',
-              'profileImage',
-              'coverImage',
-              'address',
-              'contact',
-              'socialMedia',
-              'schedule',
-            ],
-            additionalProperties: false,
-            description: 'Campo club expuesto por el runtime actual.',
-          },
-          workerContext: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-              },
-              clubId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo club id expuesto por el runtime actual.',
-                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-              },
-              userId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo user id expuesto por el runtime actual.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-              },
-              roleLabel: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo role label expuesto por el runtime actual.',
-              },
-              status: {
-                type: 'string',
-                enum: ['ACTIVE', 'INACTIVE'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'ACTIVE',
-              },
-              permissions: {
-                type: 'array',
-                items: {
-                  type: 'string',
-                  enum: [
-                    'VALIDATE_TICKETS',
-                    'VALIDATE_PRODUCTS',
-                    'VALIDATE_PROMOTIONS',
-                    'VIEW_CAPACITY',
-                    'MANAGE_CAPACITY',
-                    'VIEW_DASHBOARD',
-                    'VIEW_EVENT_ATTENDANCE',
-                    'VIEW_SALES',
-                    'REQUEST_REFUNDS',
-                    'VIEW_OPERATIONS',
-                    'MANAGE_BUSINESS_CONFIG',
-                  ],
-                },
-                description: 'Campo permissions expuesto por el runtime actual.',
-              },
-              createdAt: {
-                type: 'string',
-                format: 'date-time',
-                description: 'Fecha y hora de creación en formato ISO 8601.',
-                example: '2026-08-27T18:30:00.000Z',
-              },
-              updatedAt: {
-                type: 'string',
-                format: 'date-time',
-                description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                example: '2026-08-28T14:15:00.000Z',
-              },
-              user: {
-                type: 'object',
-                properties: {
-                  id: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-                  },
-                  fullName: {
-                    type: 'string',
-                    description: 'Campo full name expuesto por el runtime actual.',
-                    example: 'Valeria Mendoza',
-                  },
-                  phoneCountryCode: {
-                    type: 'string',
-                    description: 'Campo phone country code expuesto por el runtime actual.',
-                    example: '+51',
-                  },
-                  phoneNumber: {
-                    type: 'string',
-                    description: 'Campo phone number expuesto por el runtime actual.',
-                    example: '987654321',
-                  },
-                  email: {
-                    type: 'string',
-                    format: 'email',
-                    nullable: true,
-                    description: 'Campo email expuesto por el runtime actual.',
-                    example: 'valeria.mendoza@correo.pe',
-                  },
-                  role: {
-                    type: 'string',
-                    enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
-                    description: 'Campo role expuesto por el runtime actual.',
-                    example: 'WORKER',
-                  },
-                  status: {
-                    type: 'string',
-                    enum: ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'],
-                    description: 'Estado actual expuesto por el runtime.',
-                    example: 'PENDING_PHONE_CONFIRMATION',
-                  },
-                },
-                required: [
-                  'id',
-                  'fullName',
-                  'phoneCountryCode',
-                  'phoneNumber',
-                  'email',
-                  'role',
-                  'status',
-                ],
-                additionalProperties: false,
-                description: 'Campo user expuesto por el runtime actual.',
-              },
-            },
-            required: [
-              'id',
-              'clubId',
-              'userId',
-              'roleLabel',
-              'status',
-              'permissions',
-              'createdAt',
-              'updatedAt',
-              'user',
-            ],
-            additionalProperties: false,
-            nullable: true,
-            description: 'Campo worker context expuesto por el runtime actual.',
-          },
-          summary: {
-            type: 'object',
-            properties: {
-              capacity: {
-                type: 'object',
-                properties: {
-                  current: {
-                    type: 'number',
-                    description: 'Campo current expuesto por el runtime actual.',
-                  },
-                  total: {
-                    type: 'number',
-                    description: 'Campo total expuesto por el runtime actual.',
-                    example: 1,
-                  },
-                },
-                required: ['current', 'total'],
-                additionalProperties: false,
-                description: 'Campo capacity expuesto por el runtime actual.',
-              },
-              counts: {
-                type: 'object',
-                properties: {
-                  events: {
-                    type: 'number',
-                    description: 'Campo events expuesto por el runtime actual.',
-                  },
-                  activeEvents: {
-                    type: 'number',
-                    description: 'Campo active events expuesto por el runtime actual.',
-                  },
-                  promotions: {
-                    type: 'number',
-                    description: 'Campo promotions expuesto por el runtime actual.',
-                  },
-                  products: {
-                    type: 'number',
-                    description: 'Campo products expuesto por el runtime actual.',
-                  },
-                },
-                required: ['events', 'activeEvents', 'promotions', 'products'],
-                additionalProperties: false,
-                description: 'Campo counts expuesto por el runtime actual.',
-              },
-            },
-            required: ['capacity', 'counts'],
-            additionalProperties: false,
-            description: 'Campo summary expuesto por el runtime actual.',
-          },
-          metrics: {
-            type: 'object',
-            properties: {
-              sales: {
-                type: 'object',
-                properties: {
-                  amount: {
-                    type: 'number',
-                    description: 'Campo amount expuesto por el runtime actual.',
-                  },
-                  currency: {
-                    type: 'string',
-                    description: 'Campo currency expuesto por el runtime actual.',
-                  },
-                  trendPercent: {
-                    type: 'number',
-                    description: 'Campo trend percent expuesto por el runtime actual.',
-                  },
-                },
-                required: ['amount', 'currency', 'trendPercent'],
-                additionalProperties: false,
-                description: 'Campo sales expuesto por el runtime actual.',
-              },
-              purchases: {
-                type: 'number',
-                description: 'Campo purchases expuesto por el runtime actual.',
-              },
-              validatedQr: {
-                type: 'number',
-                description: 'Campo validated qr expuesto por el runtime actual.',
-              },
-              customers: {
-                type: 'number',
-                description: 'Campo customers expuesto por el runtime actual.',
-              },
-            },
-            required: ['sales', 'purchases', 'validatedQr', 'customers'],
-            additionalProperties: false,
-            description: 'Campo metrics expuesto por el runtime actual.',
-          },
-          upcomingEvents: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                capacity: {
-                  type: 'number',
-                  description: 'Campo capacity expuesto por el runtime actual.',
-                },
-                sold: {
-                  type: 'number',
-                  description: 'Campo sold expuesto por el runtime actual.',
-                },
-                priceFrom: {
-                  type: 'number',
-                  description: 'Campo price from expuesto por el runtime actual.',
-                },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'DRAFT',
-                },
-              },
-              required: [
-                'id',
-                'name',
-                'imageUrl',
-                'startsAt',
-                'endsAt',
-                'capacity',
-                'sold',
-                'priceFrom',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo upcoming events expuesto por el runtime actual.',
-          },
-          quickActions: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                key: {
-                  type: 'string',
-                  description: 'Campo key expuesto por el runtime actual.',
-                },
-                label: {
-                  type: 'string',
-                  description: 'Campo label expuesto por el runtime actual.',
-                },
-                icon: {
-                  type: 'string',
-                  description: 'Campo icon expuesto por el runtime actual.',
-                },
-              },
-              required: ['key', 'label', 'icon'],
-              additionalProperties: false,
-            },
-            description: 'Campo quick actions expuesto por el runtime actual.',
-          },
-          alerts: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
-                },
-                severity: {
-                  type: 'string',
-                  description: 'Campo severity expuesto por el runtime actual.',
-                },
-                resourceId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo resource id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                title: {
-                  type: 'string',
-                  description: 'Campo title expuesto por el runtime actual.',
-                },
-                value: {
-                  type: 'number',
-                  description: 'Campo value expuesto por el runtime actual.',
-                },
-              },
-              required: ['type', 'severity', 'resourceId', 'title', 'value'],
-              additionalProperties: false,
-            },
-            description: 'Campo alerts expuesto por el runtime actual.',
-          },
-          latestSales: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                customerName: {
-                  type: 'string',
-                  description: 'Campo customer name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                amount: {
-                  type: 'number',
-                  description: 'Campo amount expuesto por el runtime actual.',
-                },
-                amountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe expresado en céntimos.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'PENDING',
-                    'FAILED',
-                    'CANCELLED',
-                    'PAID',
-                    'EXPIRED',
-                    'REFUND_PENDING',
-                    'REFUNDED',
-                    'PARTIALLY_REFUNDED',
-                    'CHARGEBACK',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'PENDING',
-                },
-                paymentStatus: {
-                  type: 'string',
-                  enum: [
-                    'PENDING',
-                    'CANCELLED',
-                    'EXPIRED',
-                    'REFUND_PENDING',
-                    'REFUNDED',
-                    'PARTIALLY_REFUNDED',
-                    'CHARGEBACK',
-                    'APPROVED',
-                    'REJECTED',
-                  ],
-                  description: 'Campo payment status expuesto por el runtime actual.',
-                  example: 'PENDING',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                paidAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo paid at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:05:00.000Z',
-                },
-                category: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo category expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                items: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: {
-                        type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                      },
-                      type: {
-                        type: 'string',
-                        enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                        description: 'Campo type expuesto por el runtime actual.',
-                        example: 'PROMOTION',
-                      },
-                      name: {
-                        type: 'string',
-                        description: 'Campo name expuesto por el runtime actual.',
-                        example: 'Nébula Club',
-                      },
-                      quantity: {
-                        type: 'integer',
-                        format: 'int32',
-                        description: 'Campo quantity expuesto por el runtime actual.',
-                      },
-                      totalCents: {
-                        type: 'integer',
-                        format: 'int64',
-                        description: 'Importe total expresado en céntimos.',
-                        example: 1500,
-                      },
-                    },
-                    required: ['id', 'type', 'name', 'quantity', 'totalCents'],
-                    additionalProperties: false,
-                  },
-                  description: 'Campo items expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'id',
-                'customerName',
-                'amount',
-                'amountCents',
-                'currency',
-                'status',
-                'paymentStatus',
-                'createdAt',
-                'paidAt',
-                'category',
-                'items',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo latest sales expuesto por el runtime actual.',
-          },
-          topProducts: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
-                stockQuantity: {
-                  type: 'number',
-                  description: 'Campo stock quantity expuesto por el runtime actual.',
-                  example: 1,
-                },
-                price: {
-                  type: 'number',
-                  description: 'Campo price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
-                },
-              },
-              required: ['id', 'name', 'stockQuantity', 'price', 'currency', 'status', 'imageUrl'],
-              additionalProperties: false,
-            },
-            description: 'Campo top products expuesto por el runtime actual.',
-          },
-          topPromotions: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Combo de bienvenida',
-                },
-                finalPrice: {
-                  type: 'number',
-                  description: 'Campo final price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                itemsCount: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo items count expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
-                },
-              },
-              required: [
-                'id',
-                'name',
-                'finalPrice',
-                'currency',
-                'status',
-                'itemsCount',
-                'imageUrl',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo top promotions expuesto por el runtime actual.',
-          },
-          recentActivity: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                actorName: {
-                  type: 'string',
-                  description: 'Campo actor name expuesto por el runtime actual.',
-                  example: 'Valeria Mendoza',
-                },
-                action: {
-                  type: 'string',
-                  description: 'Campo action expuesto por el runtime actual.',
-                },
-                resourceType: {
-                  type: 'string',
-                  description: 'Campo resource type expuesto por el runtime actual.',
-                },
-                resourceId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo resource id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-              },
-              required: ['id', 'actorName', 'action', 'resourceType', 'resourceId', 'createdAt'],
-              additionalProperties: false,
-            },
-            description: 'Campo recent activity expuesto por el runtime actual.',
-          },
-        },
-        required: [
-          'message',
-          'hasClub',
-          'club',
-          'workerContext',
-          'summary',
-          'metrics',
-          'upcomingEvents',
-          'quickActions',
-          'alerts',
-          'latestSales',
-          'topProducts',
-          'topPromotions',
-          'recentActivity',
-        ],
-        additionalProperties: false,
-      },
-    ],
-  },
-  ClubsController_getCustomerHomeResponse: {
-    oneOf: [
-      {
-        type: 'object',
-        properties: {
-          featuredItems: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                campaignId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo campaign id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                targetType: {
-                  type: 'string',
-                  enum: ['EVENT', 'BUSINESS'],
-                  description: 'Campo target type expuesto por el runtime actual.',
-                  example: 'EVENT',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                eventId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                isSponsored: {
-                  type: 'boolean',
-                  description: 'Campo is sponsored expuesto por el runtime actual.',
-                  example: false,
-                },
-              },
-              required: ['campaignId', 'targetType', 'clubId', 'eventId', 'isSponsored'],
-              additionalProperties: false,
-            },
-            description: 'Campo featured items expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          viewer: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-              },
-              role: {
-                type: 'string',
-                enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
-                description: 'Campo role expuesto por el runtime actual.',
-                example: 'WORKER',
-              },
-            },
-            required: ['id', 'role'],
-            additionalProperties: false,
-            description: 'Campo viewer expuesto por el runtime actual.',
-          },
-          message: {
-            type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          location: {
-            type: 'object',
-            properties: {
-              district: {
-                type: 'string',
-                description: 'Campo district expuesto por el runtime actual.',
-              },
-              province: {
-                type: 'string',
-                description: 'Campo province expuesto por el runtime actual.',
-              },
-              department: {
-                type: 'string',
-                description: 'Campo department expuesto por el runtime actual.',
-              },
-            },
-            required: ['district', 'province', 'department'],
-            additionalProperties: false,
-            description: 'Campo location expuesto por el runtime actual.',
-          },
-          hasResults: {
-            type: 'boolean',
-            description: 'Campo has results expuesto por el runtime actual.',
-            example: false,
-            enum: [false],
-          },
-          clubs: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
-                },
-                profileImage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo profile image expuesto por el runtime actual.',
-                },
-                coverImage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo cover image expuesto por el runtime actual.',
-                },
-                address: {
-                  type: 'object',
-                  properties: {
-                    direccion: {
-                      type: 'string',
-                      description: 'Campo direccion expuesto por el runtime actual.',
-                    },
-                    distrito: {
-                      type: 'string',
-                      description: 'Campo distrito expuesto por el runtime actual.',
-                    },
-                    provincia: {
-                      type: 'string',
-                      description: 'Campo provincia expuesto por el runtime actual.',
-                    },
-                    departamento: {
-                      type: 'string',
-                      description: 'Campo departamento expuesto por el runtime actual.',
-                    },
-                    pais: {
-                      type: 'string',
-                      description: 'Campo pais expuesto por el runtime actual.',
-                    },
-                  },
-                  required: ['direccion', 'distrito', 'provincia', 'departamento', 'pais'],
-                  additionalProperties: false,
-                  description: 'Campo address expuesto por el runtime actual.',
-                },
-                contact: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                },
-                schedule: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      day: {
-                        type: 'string',
-                        description: 'Campo day expuesto por el runtime actual.',
-                      },
-                      isOpen: {
-                        type: 'boolean',
-                        description: 'Campo is open expuesto por el runtime actual.',
-                        example: false,
-                      },
-                      openTime: {
-                        type: 'string',
-                        description: 'Campo open time expuesto por el runtime actual.',
-                      },
-                      closeTime: {
-                        type: 'string',
-                        description: 'Campo close time expuesto por el runtime actual.',
-                      },
-                    },
-                    required: ['day', 'isOpen', 'openTime', 'closeTime'],
-                    additionalProperties: false,
-                  },
-                  description: 'Campo schedule expuesto por el runtime actual.',
-                },
-                isOpenNow: {
-                  type: 'boolean',
-                  description: 'Campo is open now expuesto por el runtime actual.',
-                  example: false,
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-              },
-              required: [
-                'id',
-                'name',
-                'description',
-                'type',
-                'profileImage',
-                'coverImage',
-                'address',
-                'contact',
-                'schedule',
-                'isOpenNow',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo clubs expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          events: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'DRAFT',
-                },
-                capacity: {
-                  type: 'number',
-                  description: 'Campo capacity expuesto por el runtime actual.',
-                },
-                sold: {
-                  type: 'number',
-                  description: 'Campo sold expuesto por el runtime actual.',
-                },
-                priceFrom: {
-                  type: 'number',
-                  nullable: true,
-                  description: 'Campo price from expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'name',
-                'description',
-                'imageUrl',
-                'startsAt',
-                'endsAt',
-                'status',
-                'capacity',
-                'sold',
-                'priceFrom',
-                'currency',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo events expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          tickets: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                eventId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                eventName: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo event name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Entrada VIP',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                price: {
-                  type: 'number',
-                  description: 'Campo price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                quantityAvailable: {
-                  type: 'number',
-                  description: 'Campo quantity available expuesto por el runtime actual.',
-                  example: 1,
-                },
-                perUserLimit: {
-                  type: 'number',
-                  nullable: true,
-                  description: 'Campo per user limit expuesto por el runtime actual.',
-                },
-                saleStartAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo sale start at expuesto por el runtime actual.',
-                  example: '2026-09-01T12:00:00.000Z',
-                },
-                saleEndAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo sale end at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'eventId',
-                'eventName',
-                'imageUrl',
-                'name',
-                'description',
-                'price',
-                'currency',
-                'quantityAvailable',
-                'perUserLimit',
-                'saleStartAt',
-                'saleEndAt',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo tickets expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          promotions: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                eventId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                eventName: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo event name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Combo de bienvenida',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
-                },
-                finalPrice: {
-                  type: 'number',
-                  description: 'Campo final price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                itemsCount: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo items count expuesto por el runtime actual.',
-                },
-                scope: {
-                  type: 'string',
-                  description: 'Campo scope expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'eventId',
-                'eventName',
-                'name',
-                'description',
-                'imageUrl',
-                'finalPrice',
-                'currency',
-                'startsAt',
-                'endsAt',
-                'status',
-                'itemsCount',
-                'scope',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo promotions expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          products: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
-                },
-                price: {
-                  type: 'number',
-                  description: 'Campo price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                stockQuantity: {
-                  type: 'number',
-                  description: 'Campo stock quantity expuesto por el runtime actual.',
-                  example: 1,
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'name',
-                'description',
-                'imageUrl',
-                'price',
-                'currency',
-                'stockQuantity',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo products expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          emptyState: {
-            type: 'object',
-            properties: {
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              text: {
-                type: 'string',
-                description: 'Campo text expuesto por el runtime actual.',
-              },
-              sections: {
-                type: 'object',
-                properties: {
-                  clubs: {
-                    type: 'string',
-                    description: 'Campo clubs expuesto por el runtime actual.',
-                  },
-                  events: {
-                    type: 'string',
-                    description: 'Campo events expuesto por el runtime actual.',
-                  },
-                  promotions: {
-                    type: 'string',
-                    description: 'Campo promotions expuesto por el runtime actual.',
-                  },
-                  products: {
-                    type: 'string',
-                    description: 'Campo products expuesto por el runtime actual.',
-                  },
-                },
-                required: ['clubs', 'events', 'promotions', 'products'],
-                additionalProperties: false,
-                description: 'Campo sections expuesto por el runtime actual.',
-              },
-            },
-            required: ['title', 'text', 'sections'],
-            additionalProperties: false,
-            description: 'Campo empty state expuesto por el runtime actual.',
-          },
-        },
-        required: [
-          'featuredItems',
-          'viewer',
-          'message',
-          'location',
-          'hasResults',
-          'clubs',
-          'events',
-          'tickets',
-          'promotions',
-          'products',
-          'emptyState',
-        ],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          featuredItems: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                campaignId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo campaign id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                targetType: {
-                  type: 'string',
-                  enum: ['EVENT', 'BUSINESS'],
-                  description: 'Campo target type expuesto por el runtime actual.',
-                  example: 'EVENT',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                eventId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                isSponsored: {
-                  type: 'boolean',
-                  description: 'Campo is sponsored expuesto por el runtime actual.',
-                  example: false,
-                },
-              },
-              required: ['campaignId', 'targetType', 'clubId', 'eventId', 'isSponsored'],
-              additionalProperties: false,
-            },
-            description: 'Campo featured items expuesto por el runtime actual.',
-          },
-          viewer: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-              },
-              role: {
-                type: 'string',
-                enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
-                description: 'Campo role expuesto por el runtime actual.',
-                example: 'WORKER',
-              },
-            },
-            required: ['id', 'role'],
-            additionalProperties: false,
-            description: 'Campo viewer expuesto por el runtime actual.',
-          },
-          message: {
-            type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          location: {
-            type: 'object',
-            properties: {
-              district: {
-                type: 'string',
-                description: 'Campo district expuesto por el runtime actual.',
-              },
-              province: {
-                type: 'string',
-                description: 'Campo province expuesto por el runtime actual.',
-              },
-              department: {
-                type: 'string',
-                description: 'Campo department expuesto por el runtime actual.',
-              },
-            },
-            required: ['district', 'province', 'department'],
-            additionalProperties: false,
-            description: 'Campo location expuesto por el runtime actual.',
-          },
-          hasResults: {
-            type: 'boolean',
-            description: 'Campo has results expuesto por el runtime actual.',
-            example: true,
-            enum: [true],
-          },
-          clubs: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
-                },
-                profileImage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo profile image expuesto por el runtime actual.',
-                },
-                coverImage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo cover image expuesto por el runtime actual.',
-                },
-                address: {
-                  type: 'object',
-                  properties: {
-                    direccion: {
-                      type: 'string',
-                      description: 'Campo direccion expuesto por el runtime actual.',
-                    },
-                    distrito: {
-                      type: 'string',
-                      description: 'Campo distrito expuesto por el runtime actual.',
-                    },
-                    provincia: {
-                      type: 'string',
-                      description: 'Campo provincia expuesto por el runtime actual.',
-                    },
-                    departamento: {
-                      type: 'string',
-                      description: 'Campo departamento expuesto por el runtime actual.',
-                    },
-                    pais: {
-                      type: 'string',
-                      description: 'Campo pais expuesto por el runtime actual.',
-                    },
-                  },
-                  required: ['direccion', 'distrito', 'provincia', 'departamento', 'pais'],
-                  additionalProperties: false,
-                  description: 'Campo address expuesto por el runtime actual.',
-                },
-                contact: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                },
-                schedule: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      day: {
-                        type: 'string',
-                        description: 'Campo day expuesto por el runtime actual.',
-                      },
-                      isOpen: {
-                        type: 'boolean',
-                        description: 'Campo is open expuesto por el runtime actual.',
-                        example: false,
-                      },
-                      openTime: {
-                        type: 'string',
-                        description: 'Campo open time expuesto por el runtime actual.',
-                      },
-                      closeTime: {
-                        type: 'string',
-                        description: 'Campo close time expuesto por el runtime actual.',
-                      },
-                    },
-                    required: ['day', 'isOpen', 'openTime', 'closeTime'],
-                    additionalProperties: false,
-                  },
-                  description: 'Campo schedule expuesto por el runtime actual.',
-                },
-                isOpenNow: {
-                  type: 'boolean',
-                  description: 'Campo is open now expuesto por el runtime actual.',
-                  example: false,
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-              },
-              required: [
-                'id',
-                'name',
-                'description',
-                'type',
-                'profileImage',
-                'coverImage',
-                'address',
-                'contact',
-                'schedule',
-                'isOpenNow',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo clubs expuesto por el runtime actual.',
-          },
-          events: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'DRAFT',
-                },
-                capacity: {
-                  type: 'number',
-                  description: 'Campo capacity expuesto por el runtime actual.',
-                },
-                sold: {
-                  type: 'number',
-                  description: 'Campo sold expuesto por el runtime actual.',
-                },
-                priceFrom: {
-                  type: 'number',
-                  nullable: true,
-                  description: 'Campo price from expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'name',
-                'description',
-                'imageUrl',
-                'startsAt',
-                'endsAt',
-                'status',
-                'capacity',
-                'sold',
-                'priceFrom',
-                'currency',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo events expuesto por el runtime actual.',
-          },
-          tickets: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                eventId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                eventName: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo event name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Entrada VIP',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                price: {
-                  type: 'number',
-                  description: 'Campo price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                quantityAvailable: {
-                  type: 'number',
-                  description: 'Campo quantity available expuesto por el runtime actual.',
-                  example: 1,
-                },
-                perUserLimit: {
-                  type: 'number',
-                  nullable: true,
-                  description: 'Campo per user limit expuesto por el runtime actual.',
-                },
-                saleStartAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo sale start at expuesto por el runtime actual.',
-                  example: '2026-09-01T12:00:00.000Z',
-                },
-                saleEndAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo sale end at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'eventId',
-                'eventName',
-                'imageUrl',
-                'name',
-                'description',
-                'price',
-                'currency',
-                'quantityAvailable',
-                'perUserLimit',
-                'saleStartAt',
-                'saleEndAt',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo tickets expuesto por el runtime actual.',
-          },
-          promotions: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                eventId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                eventName: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo event name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Combo de bienvenida',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
-                },
-                finalPrice: {
-                  type: 'number',
-                  description: 'Campo final price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                itemsCount: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo items count expuesto por el runtime actual.',
-                },
-                scope: {
-                  type: 'string',
-                  description: 'Campo scope expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'eventId',
-                'eventName',
-                'name',
-                'description',
-                'imageUrl',
-                'finalPrice',
-                'currency',
-                'startsAt',
-                'endsAt',
-                'status',
-                'itemsCount',
-                'scope',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo promotions expuesto por el runtime actual.',
-          },
-          products: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
-                },
-                price: {
-                  type: 'number',
-                  description: 'Campo price expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                stockQuantity: {
-                  type: 'number',
-                  description: 'Campo stock quantity expuesto por el runtime actual.',
-                  example: 1,
-                },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-              },
-              required: [
-                'id',
-                'clubId',
-                'clubName',
-                'name',
-                'description',
-                'imageUrl',
-                'price',
-                'currency',
-                'stockQuantity',
-                'status',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo products expuesto por el runtime actual.',
-          },
-          emptyState: {
-            type: 'object',
-            properties: {
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              text: {
-                type: 'string',
-                description: 'Campo text expuesto por el runtime actual.',
-              },
-              sections: {
-                type: 'object',
-                properties: {
-                  clubs: {
-                    type: 'string',
-                    description: 'Campo clubs expuesto por el runtime actual.',
-                  },
-                  events: {
-                    type: 'string',
-                    description: 'Campo events expuesto por el runtime actual.',
-                  },
-                  promotions: {
-                    type: 'string',
-                    description: 'Campo promotions expuesto por el runtime actual.',
-                  },
-                  products: {
-                    type: 'string',
-                    description: 'Campo products expuesto por el runtime actual.',
-                  },
-                },
-                required: ['clubs', 'events', 'promotions', 'products'],
-                additionalProperties: false,
-                description: 'Campo sections expuesto por el runtime actual.',
-              },
-            },
-            required: ['title', 'text', 'sections'],
-            additionalProperties: false,
-            description: 'Campo empty state expuesto por el runtime actual.',
-            nullable: true,
-            enum: [null],
-          },
-        },
-        required: [
-          'featuredItems',
-          'viewer',
-          'message',
-          'location',
-          'hasResults',
-          'clubs',
-          'events',
-          'tickets',
-          'promotions',
-          'products',
-          'emptyState',
-        ],
-        additionalProperties: false,
-      },
-    ],
-  },
-  ClubsController_exploreCustomerContentResponse: {
     type: 'object',
     properties: {
       message: {
         type: 'string',
         description: 'Mensaje legible que resume el resultado.',
       },
-      query: {
-        type: 'string',
-        description: 'Campo query expuesto por el runtime actual.',
+      hasClub: {
+        type: 'boolean',
+        enum: [false, true],
+        description: 'Campo has club expuesto por el runtime actual.',
+        example: false,
       },
-      scope: {
+      club: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Identificador del recurso.',
+          },
+          name: {
+            type: 'string',
+            description: 'Campo name expuesto por el runtime actual.',
+            example: 'Nébula Club',
+          },
+          description: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo description expuesto por el runtime actual.',
+          },
+          type: {
+            type: 'string',
+            description: 'Campo type expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'ACTIVE',
+          },
+          profileImage: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo profile image expuesto por el runtime actual.',
+          },
+          coverImage: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo cover image expuesto por el runtime actual.',
+          },
+          address: {
+            description: 'Valor JSON dinámico expuesto por el runtime.',
+            allOf: [
+              {
+                $ref: '#/components/schemas/JsonValue',
+              },
+            ],
+          },
+          contact: {
+            description: 'Valor JSON dinámico expuesto por el runtime.',
+            allOf: [
+              {
+                $ref: '#/components/schemas/JsonValue',
+              },
+            ],
+          },
+          socialMedia: {
+            description: 'Valor JSON dinámico expuesto por el runtime.',
+            allOf: [
+              {
+                $ref: '#/components/schemas/JsonValue',
+              },
+            ],
+          },
+          schedule: {
+            description: 'Valor JSON dinámico expuesto por el runtime.',
+            allOf: [
+              {
+                $ref: '#/components/schemas/JsonValue',
+              },
+            ],
+          },
+        },
+        required: [
+          'id',
+          'name',
+          'description',
+          'type',
+          'status',
+          'profileImage',
+          'coverImage',
+          'address',
+          'contact',
+          'socialMedia',
+          'schedule',
+        ],
+        additionalProperties: false,
+        description: 'Campo club expuesto por el runtime actual.',
+        nullable: true,
+      },
+      emptyState: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
+          },
+          text: {
+            type: 'string',
+            description: 'Campo text expuesto por el runtime actual.',
+          },
+          actionLabel: {
+            type: 'string',
+            description: 'Campo action label expuesto por el runtime actual.',
+          },
+        },
+        required: ['title', 'text', 'actionLabel'],
+        additionalProperties: false,
+        description: 'Campo empty state expuesto por el runtime actual.',
+      },
+      features: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            icon: {
+              type: 'string',
+              description: 'Campo icon expuesto por el runtime actual.',
+            },
+            title: {
+              type: 'string',
+              description: 'Campo title expuesto por el runtime actual.',
+            },
+            text: {
+              type: 'string',
+              description: 'Campo text expuesto por el runtime actual.',
+            },
+          },
+          required: ['icon', 'title', 'text'],
+          additionalProperties: false,
+        },
+        description: 'Campo features expuesto por el runtime actual.',
+      },
+      workerContext: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Identificador del recurso.',
+          },
+          clubId: {
+            type: 'string',
+            description: 'Campo club id expuesto por el runtime actual.',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          roleLabel: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo role label expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['ACTIVE', 'INACTIVE'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'ACTIVE',
+          },
+          permissions: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: [
+                'VALIDATE_TICKETS',
+                'VALIDATE_PRODUCTS',
+                'VALIDATE_PROMOTIONS',
+                'VIEW_CAPACITY',
+                'MANAGE_CAPACITY',
+                'VIEW_DASHBOARD',
+                'VIEW_EVENT_ATTENDANCE',
+                'VIEW_SALES',
+                'REQUEST_REFUNDS',
+                'VIEW_OPERATIONS',
+                'MANAGE_BUSINESS_CONFIG',
+              ],
+            },
+            description: 'Campo permissions expuesto por el runtime actual.',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          user: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'string',
+                description: 'Identificador del recurso.',
+              },
+              fullName: {
+                type: 'string',
+                description: 'Campo full name expuesto por el runtime actual.',
+                example: 'Valeria Mendoza',
+              },
+              phoneCountryCode: {
+                type: 'string',
+                description: 'Campo phone country code expuesto por el runtime actual.',
+                example: '+51',
+              },
+              phoneNumber: {
+                type: 'string',
+                description: 'Campo phone number expuesto por el runtime actual.',
+                example: '987654321',
+              },
+              email: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo email expuesto por el runtime actual.',
+              },
+              role: {
+                type: 'string',
+                enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
+                description: 'Campo role expuesto por el runtime actual.',
+                example: 'WORKER',
+              },
+              status: {
+                type: 'string',
+                enum: ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'PENDING_PHONE_CONFIRMATION',
+              },
+            },
+            required: [
+              'id',
+              'fullName',
+              'phoneCountryCode',
+              'phoneNumber',
+              'email',
+              'role',
+              'status',
+            ],
+            additionalProperties: false,
+            description: 'Campo user expuesto por el runtime actual.',
+          },
+        },
+        required: [
+          'id',
+          'clubId',
+          'userId',
+          'roleLabel',
+          'status',
+          'permissions',
+          'createdAt',
+          'updatedAt',
+          'user',
+        ],
+        additionalProperties: false,
+        nullable: true,
+        description: 'Campo worker context expuesto por el runtime actual.',
+      },
+      summary: {
+        type: 'object',
+        properties: {
+          capacity: {
+            type: 'object',
+            properties: {
+              current: {
+                type: 'number',
+                description: 'Campo current expuesto por el runtime actual.',
+              },
+              total: {
+                type: 'number',
+                description: 'Campo total expuesto por el runtime actual.',
+                example: 1,
+              },
+            },
+            required: ['current', 'total'],
+            additionalProperties: false,
+            description: 'Campo capacity expuesto por el runtime actual.',
+          },
+          counts: {
+            type: 'object',
+            properties: {
+              events: {
+                type: 'number',
+                description: 'Campo events expuesto por el runtime actual.',
+              },
+              activeEvents: {
+                type: 'number',
+                description: 'Campo active events expuesto por el runtime actual.',
+              },
+              promotions: {
+                type: 'number',
+                description: 'Campo promotions expuesto por el runtime actual.',
+              },
+              products: {
+                type: 'number',
+                description: 'Campo products expuesto por el runtime actual.',
+              },
+            },
+            required: ['events', 'activeEvents', 'promotions', 'products'],
+            additionalProperties: false,
+            description: 'Campo counts expuesto por el runtime actual.',
+          },
+        },
+        required: ['capacity', 'counts'],
+        additionalProperties: false,
+        description: 'Campo summary expuesto por el runtime actual.',
+      },
+      metrics: {
+        type: 'object',
+        properties: {
+          sales: {
+            type: 'object',
+            properties: {
+              amount: {
+                type: 'number',
+                description: 'Campo amount expuesto por el runtime actual.',
+              },
+              currency: {
+                type: 'string',
+                description: 'Campo currency expuesto por el runtime actual.',
+              },
+              trendPercent: {
+                type: 'number',
+                description: 'Campo trend percent expuesto por el runtime actual.',
+              },
+            },
+            required: ['amount', 'currency', 'trendPercent'],
+            additionalProperties: false,
+            description: 'Campo sales expuesto por el runtime actual.',
+          },
+          purchases: {
+            type: 'number',
+            description: 'Campo purchases expuesto por el runtime actual.',
+          },
+          validatedQr: {
+            type: 'number',
+            description: 'Campo validated qr expuesto por el runtime actual.',
+          },
+          customers: {
+            type: 'integer',
+            description: 'Campo customers expuesto por el runtime actual.',
+          },
+        },
+        required: ['sales', 'purchases', 'validatedQr', 'customers'],
+        additionalProperties: false,
+        description: 'Campo metrics expuesto por el runtime actual.',
+      },
+      upcomingEvents: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Noche Latina',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            startsAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo starts at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            endsAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo ends at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
+            capacity: {
+              type: 'number',
+              description: 'Campo capacity expuesto por el runtime actual.',
+            },
+            sold: {
+              type: 'number',
+              description: 'Campo sold expuesto por el runtime actual.',
+            },
+            priceFrom: {
+              type: 'number',
+              description: 'Campo price from expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: [
+                'CANCELLED',
+                'DRAFT',
+                'PUBLISHED',
+                'SALE_ACTIVE',
+                'SOLD_OUT',
+                'IN_PROGRESS',
+                'FINISHED',
+                'POSTPONED',
+              ],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'CANCELLED',
+            },
+          },
+          required: [
+            'id',
+            'name',
+            'imageUrl',
+            'startsAt',
+            'endsAt',
+            'capacity',
+            'sold',
+            'priceFrom',
+            'status',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo upcoming events expuesto por el runtime actual.',
+      },
+      quickActions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            key: {
+              type: 'string',
+              description: 'Campo key expuesto por el runtime actual.',
+            },
+            label: {
+              type: 'string',
+              description: 'Campo label expuesto por el runtime actual.',
+            },
+            icon: {
+              type: 'string',
+              description: 'Campo icon expuesto por el runtime actual.',
+            },
+          },
+          required: ['key', 'label', 'icon'],
+          additionalProperties: false,
+        },
+        description: 'Campo quick actions expuesto por el runtime actual.',
+      },
+      alerts: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+              description: 'Campo type expuesto por el runtime actual.',
+            },
+            severity: {
+              type: 'string',
+              description: 'Campo severity expuesto por el runtime actual.',
+            },
+            resourceId: {
+              type: 'string',
+              description: 'Campo resource id expuesto por el runtime actual.',
+            },
+            title: {
+              type: 'string',
+              description: 'Campo title expuesto por el runtime actual.',
+            },
+            value: {
+              type: 'number',
+              description: 'Campo value expuesto por el runtime actual.',
+            },
+          },
+          required: ['type', 'severity', 'resourceId', 'title', 'value'],
+          additionalProperties: false,
+        },
+        description: 'Campo alerts expuesto por el runtime actual.',
+      },
+      latestSales: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            customerName: {
+              type: 'string',
+              description: 'Campo customer name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            amount: {
+              type: 'number',
+              description: 'Campo amount expuesto por el runtime actual.',
+            },
+            amountCents: {
+              type: 'number',
+              description: 'Importe expresado en céntimos.',
+              example: 1500,
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: [
+                'PENDING',
+                'FAILED',
+                'CHARGEBACK',
+                'PAID',
+                'EXPIRED',
+                'CANCELLED',
+                'REFUND_PENDING',
+                'REFUNDED',
+                'PARTIALLY_REFUNDED',
+              ],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'PENDING',
+            },
+            paymentStatus: {
+              type: 'string',
+              enum: [
+                'PENDING',
+                'CHARGEBACK',
+                'EXPIRED',
+                'CANCELLED',
+                'REFUND_PENDING',
+                'REFUNDED',
+                'PARTIALLY_REFUNDED',
+                'REJECTED',
+                'APPROVED',
+              ],
+              description: 'Campo payment status expuesto por el runtime actual.',
+              example: 'PENDING',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
+            },
+            paidAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo paid at expuesto por el runtime actual.',
+              example: '2026-09-19T22:05:00.000Z',
+            },
+            category: {
+              type: 'string',
+              enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+              description: 'Campo category expuesto por el runtime actual.',
+              example: 'PROMOTION',
+            },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    description: 'Identificador del recurso.',
+                  },
+                  type: {
+                    type: 'string',
+                    enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                    description: 'Campo type expuesto por el runtime actual.',
+                    example: 'PROMOTION',
+                  },
+                  name: {
+                    type: 'string',
+                    description: 'Campo name expuesto por el runtime actual.',
+                    example: 'Nébula Club',
+                  },
+                  quantity: {
+                    type: 'number',
+                    description: 'Campo quantity expuesto por el runtime actual.',
+                    example: 1,
+                  },
+                  totalCents: {
+                    type: 'number',
+                    description: 'Importe total expresado en céntimos.',
+                    example: 1500,
+                  },
+                },
+                required: ['id', 'type', 'name', 'quantity', 'totalCents'],
+                additionalProperties: false,
+              },
+              description: 'Campo items expuesto por el runtime actual.',
+            },
+          },
+          required: [
+            'id',
+            'customerName',
+            'amount',
+            'amountCents',
+            'currency',
+            'status',
+            'paymentStatus',
+            'createdAt',
+            'paidAt',
+            'category',
+            'items',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo latest sales expuesto por el runtime actual.',
+      },
+      topProducts: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Chilcano de maracuyá',
+            },
+            stockQuantity: {
+              type: 'number',
+              description: 'Campo stock quantity expuesto por el runtime actual.',
+              example: 1,
+            },
+            price: {
+              type: 'number',
+              description: 'Campo price expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+          },
+          required: ['id', 'name', 'stockQuantity', 'price', 'currency', 'status', 'imageUrl'],
+          additionalProperties: false,
+        },
+        description: 'Campo top products expuesto por el runtime actual.',
+      },
+      topPromotions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Combo de bienvenida',
+            },
+            finalPrice: {
+              type: 'number',
+              description: 'Campo final price expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+            itemsCount: {
+              type: 'integer',
+              description: 'Campo items count expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+          },
+          required: ['id', 'name', 'finalPrice', 'currency', 'status', 'itemsCount', 'imageUrl'],
+          additionalProperties: false,
+        },
+        description: 'Campo top promotions expuesto por el runtime actual.',
+      },
+      recentActivity: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            actorName: {
+              type: 'string',
+              description: 'Campo actor name expuesto por el runtime actual.',
+              example: 'Valeria Mendoza',
+            },
+            action: {
+              type: 'string',
+              description: 'Campo action expuesto por el runtime actual.',
+            },
+            resourceType: {
+              type: 'string',
+              description: 'Campo resource type expuesto por el runtime actual.',
+            },
+            resourceId: {
+              type: 'string',
+              description: 'Campo resource id expuesto por el runtime actual.',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
+            },
+          },
+          required: ['id', 'actorName', 'action', 'resourceType', 'resourceId', 'createdAt'],
+          additionalProperties: false,
+        },
+        description: 'Campo recent activity expuesto por el runtime actual.',
+      },
+    },
+    required: ['message', 'hasClub', 'club'],
+    additionalProperties: false,
+  },
+  ClubsController_getCustomerHomeResponse: {
+    type: 'object',
+    properties: {
+      featuredItems: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            campaignId: {
+              type: 'string',
+              description: 'Campo campaign id expuesto por el runtime actual.',
+            },
+            targetType: {
+              type: 'string',
+              enum: ['EVENT', 'BUSINESS'],
+              description: 'Campo target type expuesto por el runtime actual.',
+              example: 'EVENT',
+            },
+            clubId: {
+              type: 'string',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            eventId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
+            isSponsored: {
+              type: 'boolean',
+              description: 'Campo is sponsored expuesto por el runtime actual.',
+              example: false,
+            },
+          },
+          required: ['campaignId', 'targetType', 'clubId', 'eventId', 'isSponsored'],
+          additionalProperties: false,
+        },
+        description: 'Campo featured items expuesto por el runtime actual.',
+      },
+      viewer: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Identificador del recurso.',
+          },
+          role: {
+            type: 'string',
+            enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
+            description: 'Campo role expuesto por el runtime actual.',
+            example: 'WORKER',
+          },
+        },
+        required: ['id', 'role'],
+        additionalProperties: false,
+        description: 'Campo viewer expuesto por el runtime actual.',
+      },
+      message: {
         type: 'string',
-        description: 'Campo scope expuesto por el runtime actual.',
+        description: 'Mensaje legible que resume el resultado.',
       },
       location: {
         type: 'object',
@@ -4822,6 +3187,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       hasResults: {
         type: 'boolean',
+        enum: [false, true],
         description: 'Campo has results expuesto por el runtime actual.',
         example: false,
       },
@@ -4832,9 +3198,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -4960,15 +3324,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -4987,10 +3347,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
             },
             startsAt: {
               type: 'string',
@@ -5007,17 +3365,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             status: {
               type: 'string',
               enum: [
+                'CANCELLED',
                 'DRAFT',
                 'PUBLISHED',
                 'SALE_ACTIVE',
                 'SOLD_OUT',
                 'IN_PROGRESS',
                 'FINISHED',
-                'CANCELLED',
                 'POSTPONED',
               ],
               description: 'Estado actual expuesto por el runtime.',
-              example: 'DRAFT',
+              example: 'CANCELLED',
             },
             capacity: {
               type: 'number',
@@ -5063,15 +3421,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5080,10 +3434,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -5093,10 +3445,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
             },
             name: {
               type: 'string',
@@ -5167,7 +3517,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           additionalProperties: false,
         },
         description: 'Campo tickets expuesto por el runtime actual.',
-        maxItems: 0,
       },
       promotions: {
         type: 'array',
@@ -5176,15 +3525,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5193,10 +3538,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -5216,10 +3559,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
             },
             finalPrice: {
               type: 'number',
@@ -5229,6 +3570,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: 'string',
               description: 'Campo currency expuesto por el runtime actual.',
             },
+            startsAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo starts at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            endsAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo ends at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
             status: {
               type: 'string',
               enum: ['ACTIVE', 'INACTIVE'],
@@ -5237,7 +3592,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             itemsCount: {
               type: 'integer',
-              format: 'int32',
               description: 'Campo items count expuesto por el runtime actual.',
             },
             scope: {
@@ -5256,6 +3610,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'imageUrl',
             'finalPrice',
             'currency',
+            'startsAt',
+            'endsAt',
             'status',
             'itemsCount',
             'scope',
@@ -5271,15 +3627,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5298,10 +3650,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
             },
             price: {
               type: 'number',
@@ -5377,18 +3727,594 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         },
         required: ['title', 'text', 'sections'],
         additionalProperties: false,
-        description: 'Campo empty state expuesto por el runtime actual.',
         nullable: true,
-        enum: [null],
+        description: 'Campo empty state expuesto por el runtime actual.',
+      },
+    },
+    required: [
+      'featuredItems',
+      'viewer',
+      'message',
+      'location',
+      'hasResults',
+      'clubs',
+      'events',
+      'tickets',
+      'promotions',
+      'products',
+      'emptyState',
+    ],
+    additionalProperties: false,
+  },
+  ClubsController_exploreCustomerContentResponse: {
+    type: 'object',
+    properties: {
+      message: {
+        type: 'string',
+        description: 'Mensaje legible que resume el resultado.',
+      },
+      query: {
+        type: 'string',
+        description: 'Campo query expuesto por el runtime actual.',
+      },
+      scope: {
+        type: 'string',
+        description: 'Campo scope expuesto por el runtime actual.',
+      },
+      location: {
+        type: 'object',
+        properties: {
+          district: {
+            type: 'string',
+            description: 'Campo district expuesto por el runtime actual.',
+          },
+          province: {
+            type: 'string',
+            description: 'Campo province expuesto por el runtime actual.',
+          },
+          department: {
+            type: 'string',
+            description: 'Campo department expuesto por el runtime actual.',
+          },
+        },
+        required: ['district', 'province', 'department'],
+        additionalProperties: false,
+        description: 'Campo location expuesto por el runtime actual.',
+      },
+      hasResults: {
+        type: 'boolean',
+        description: 'Campo has results expuesto por el runtime actual.',
+        example: false,
+      },
+      clubs: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            type: {
+              type: 'string',
+              description: 'Campo type expuesto por el runtime actual.',
+            },
+            profileImage: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo profile image expuesto por el runtime actual.',
+            },
+            coverImage: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo cover image expuesto por el runtime actual.',
+            },
+            address: {
+              type: 'object',
+              properties: {
+                direccion: {
+                  type: 'string',
+                  description: 'Campo direccion expuesto por el runtime actual.',
+                },
+                distrito: {
+                  type: 'string',
+                  description: 'Campo distrito expuesto por el runtime actual.',
+                },
+                provincia: {
+                  type: 'string',
+                  description: 'Campo provincia expuesto por el runtime actual.',
+                },
+                departamento: {
+                  type: 'string',
+                  description: 'Campo departamento expuesto por el runtime actual.',
+                },
+                pais: {
+                  type: 'string',
+                  description: 'Campo pais expuesto por el runtime actual.',
+                },
+              },
+              required: ['direccion', 'distrito', 'provincia', 'departamento', 'pais'],
+              additionalProperties: false,
+              description: 'Campo address expuesto por el runtime actual.',
+            },
+            contact: {
+              description: 'Valor JSON dinámico expuesto por el runtime.',
+              allOf: [
+                {
+                  $ref: '#/components/schemas/JsonValue',
+                },
+              ],
+            },
+            schedule: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  day: {
+                    type: 'string',
+                    description: 'Campo day expuesto por el runtime actual.',
+                  },
+                  isOpen: {
+                    type: 'boolean',
+                    description: 'Campo is open expuesto por el runtime actual.',
+                    example: false,
+                  },
+                  openTime: {
+                    type: 'string',
+                    description: 'Campo open time expuesto por el runtime actual.',
+                  },
+                  closeTime: {
+                    type: 'string',
+                    description: 'Campo close time expuesto por el runtime actual.',
+                  },
+                },
+                required: ['day', 'isOpen', 'openTime', 'closeTime'],
+                additionalProperties: false,
+              },
+              description: 'Campo schedule expuesto por el runtime actual.',
+            },
+            isOpenNow: {
+              type: 'boolean',
+              description: 'Campo is open now expuesto por el runtime actual.',
+              example: false,
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+          },
+          required: [
+            'id',
+            'name',
+            'description',
+            'type',
+            'profileImage',
+            'coverImage',
+            'address',
+            'contact',
+            'schedule',
+            'isOpenNow',
+            'status',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo clubs expuesto por el runtime actual.',
+      },
+      events: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            clubId: {
+              type: 'string',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Noche Latina',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            startsAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo starts at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            endsAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo ends at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
+            status: {
+              type: 'string',
+              enum: [
+                'CANCELLED',
+                'DRAFT',
+                'PUBLISHED',
+                'SALE_ACTIVE',
+                'SOLD_OUT',
+                'IN_PROGRESS',
+                'FINISHED',
+                'POSTPONED',
+              ],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'CANCELLED',
+            },
+            capacity: {
+              type: 'number',
+              description: 'Campo capacity expuesto por el runtime actual.',
+            },
+            sold: {
+              type: 'number',
+              description: 'Campo sold expuesto por el runtime actual.',
+            },
+            priceFrom: {
+              type: 'number',
+              nullable: true,
+              description: 'Campo price from expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+          },
+          required: [
+            'id',
+            'clubId',
+            'clubName',
+            'name',
+            'description',
+            'imageUrl',
+            'startsAt',
+            'endsAt',
+            'status',
+            'capacity',
+            'sold',
+            'priceFrom',
+            'currency',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo events expuesto por el runtime actual.',
+      },
+      tickets: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            clubId: {
+              type: 'string',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            eventId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
+            eventName: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event name expuesto por el runtime actual.',
+              example: 'Noche Latina',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Entrada VIP',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            price: {
+              type: 'number',
+              description: 'Campo price expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            quantityAvailable: {
+              type: 'number',
+              description: 'Campo quantity available expuesto por el runtime actual.',
+              example: 1,
+            },
+            perUserLimit: {
+              type: 'number',
+              nullable: true,
+              description: 'Campo per user limit expuesto por el runtime actual.',
+            },
+            saleStartAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo sale start at expuesto por el runtime actual.',
+              example: '2026-09-01T12:00:00.000Z',
+            },
+            saleEndAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo sale end at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+          },
+          required: [
+            'id',
+            'clubId',
+            'clubName',
+            'eventId',
+            'eventName',
+            'imageUrl',
+            'name',
+            'description',
+            'price',
+            'currency',
+            'quantityAvailable',
+            'perUserLimit',
+            'saleStartAt',
+            'saleEndAt',
+            'status',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo tickets expuesto por el runtime actual.',
+      },
+      promotions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            clubId: {
+              type: 'string',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            eventId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
+            eventName: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo event name expuesto por el runtime actual.',
+              example: 'Noche Latina',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Combo de bienvenida',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            finalPrice: {
+              type: 'number',
+              description: 'Campo final price expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+            itemsCount: {
+              type: 'integer',
+              description: 'Campo items count expuesto por el runtime actual.',
+            },
+            scope: {
+              type: 'string',
+              description: 'Campo scope expuesto por el runtime actual.',
+            },
+          },
+          required: [
+            'id',
+            'clubId',
+            'clubName',
+            'eventId',
+            'eventName',
+            'name',
+            'description',
+            'imageUrl',
+            'finalPrice',
+            'currency',
+            'status',
+            'itemsCount',
+            'scope',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo promotions expuesto por el runtime actual.',
+      },
+      products: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            clubId: {
+              type: 'string',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Chilcano de maracuyá',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            price: {
+              type: 'number',
+              description: 'Campo price expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            stockQuantity: {
+              type: 'number',
+              description: 'Campo stock quantity expuesto por el runtime actual.',
+              example: 1,
+            },
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'ACTIVE',
+            },
+          },
+          required: [
+            'id',
+            'clubId',
+            'clubName',
+            'name',
+            'description',
+            'imageUrl',
+            'price',
+            'currency',
+            'stockQuantity',
+            'status',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo products expuesto por el runtime actual.',
+      },
+      emptyState: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
+          },
+          text: {
+            type: 'string',
+            description: 'Campo text expuesto por el runtime actual.',
+          },
+          sections: {
+            type: 'object',
+            properties: {
+              clubs: {
+                type: 'string',
+                description: 'Campo clubs expuesto por el runtime actual.',
+              },
+              events: {
+                type: 'string',
+                description: 'Campo events expuesto por el runtime actual.',
+              },
+              promotions: {
+                type: 'string',
+                description: 'Campo promotions expuesto por el runtime actual.',
+              },
+              products: {
+                type: 'string',
+                description: 'Campo products expuesto por el runtime actual.',
+              },
+            },
+            required: ['clubs', 'events', 'promotions', 'products'],
+            additionalProperties: false,
+            description: 'Campo sections expuesto por el runtime actual.',
+          },
+        },
+        required: ['title', 'text', 'sections'],
+        additionalProperties: false,
+        nullable: true,
+        description: 'Campo empty state expuesto por el runtime actual.',
       },
       viewer: {
         type: 'object',
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           role: {
             type: 'string',
@@ -5447,8 +4373,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       hasResults: {
         type: 'boolean',
+        enum: [true],
         description: 'Campo has results expuesto por el runtime actual.',
-        example: false,
+        example: true,
       },
       clubs: {
         type: 'array',
@@ -5457,9 +4384,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -5585,15 +4510,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5612,10 +4533,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
             },
             startsAt: {
               type: 'string',
@@ -5632,17 +4551,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             status: {
               type: 'string',
               enum: [
+                'CANCELLED',
                 'DRAFT',
                 'PUBLISHED',
                 'SALE_ACTIVE',
                 'SOLD_OUT',
                 'IN_PROGRESS',
                 'FINISHED',
-                'CANCELLED',
                 'POSTPONED',
               ],
               description: 'Estado actual expuesto por el runtime.',
-              example: 'DRAFT',
+              example: 'CANCELLED',
             },
             capacity: {
               type: 'number',
@@ -5688,15 +4607,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5705,10 +4620,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -5718,10 +4631,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
             },
             name: {
               type: 'string',
@@ -5800,15 +4711,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5817,10 +4724,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -5840,10 +4745,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
             },
             finalPrice: {
               type: 'number',
@@ -5875,7 +4778,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             itemsCount: {
               type: 'integer',
-              format: 'int32',
               description: 'Campo items count expuesto por el runtime actual.',
             },
             scope: {
@@ -5911,15 +4813,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -5938,10 +4836,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
             },
             price: {
               type: 'number',
@@ -6017,18 +4913,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         },
         required: ['title', 'text', 'sections'],
         additionalProperties: false,
-        description: 'Campo empty state expuesto por el runtime actual.',
         nullable: true,
-        enum: [null],
+        description: 'Campo empty state expuesto por el runtime actual.',
       },
       viewer: {
         type: 'object',
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           role: {
             type: 'string',
@@ -6068,9 +4961,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           role: {
             type: 'string',
@@ -6088,15 +4979,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           clubName: {
             type: 'string',
@@ -6115,10 +5002,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -6135,17 +5020,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           priceFrom: {
             type: 'number',
@@ -6178,9 +5063,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Identificador del recurso.',
           },
           name: {
             type: 'string',
@@ -6305,15 +5188,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -6322,9 +5201,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -6333,10 +5210,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
             },
             name: {
               type: 'string',
@@ -6421,15 +5296,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -6438,9 +5309,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -6459,10 +5328,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
             },
             finalPrice: {
               type: 'number',
@@ -6480,7 +5347,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             itemsCount: {
               type: 'integer',
-              format: 'int32',
               description: 'Campo items count expuesto por el runtime actual.',
             },
             scope: {
@@ -6539,9 +5405,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Identificador del recurso.',
           },
           name: {
             type: 'string',
@@ -6634,9 +5498,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -6655,10 +5517,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 email: {
                   type: 'string',
-                  format: 'email',
                   nullable: true,
                   description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
                 },
                 profileImage: {
                   type: 'string',
@@ -6716,9 +5576,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Identificador del recurso.',
           },
           name: {
             type: 'string',
@@ -6811,9 +5669,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -6832,10 +5688,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 email: {
                   type: 'string',
-                  format: 'email',
                   nullable: true,
                   description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
                 },
                 profileImage: {
                   type: 'string',
@@ -6887,11 +5741,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       profile: {
         type: 'object',
         properties: {
+          approvalDocumentUploadIds: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            description: 'Campo approval document upload ids expuesto por el runtime actual.',
+          },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -6907,9 +5766,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           refundPolicy: {
             type: 'string',
@@ -6924,27 +5781,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           responsibleEmail: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo responsible email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           responsiblePhone: {
             type: 'string',
             nullable: true,
             description: 'Campo responsible phone expuesto por el runtime actual.',
           },
-          approvalDocumentUploadIds: {
-            type: 'array',
-            items: {
-              type: 'string',
-              format: 'uuid',
-            },
-            nullable: true,
-            description: 'Campo approval document upload ids expuesto por el runtime actual.',
-          },
         },
         required: [
+          'approvalDocumentUploadIds',
           'id',
           'createdAt',
           'updatedAt',
@@ -6953,7 +5800,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           'responsibleName',
           'responsibleEmail',
           'responsiblePhone',
-          'approvalDocumentUploadIds',
         ],
         additionalProperties: false,
         nullable: true,
@@ -6973,11 +5819,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       profile: {
         type: 'object',
         properties: {
+          approvalDocumentUploadIds: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            description: 'Campo approval document upload ids expuesto por el runtime actual.',
+          },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -6993,9 +5844,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           refundPolicy: {
             type: 'string',
@@ -7010,27 +5859,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           responsibleEmail: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo responsible email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           responsiblePhone: {
             type: 'string',
             nullable: true,
             description: 'Campo responsible phone expuesto por el runtime actual.',
           },
-          approvalDocumentUploadIds: {
-            type: 'array',
-            items: {
-              type: 'string',
-              format: 'uuid',
-            },
-            nullable: true,
-            description: 'Campo approval document upload ids expuesto por el runtime actual.',
-          },
         },
         required: [
+          'approvalDocumentUploadIds',
           'id',
           'createdAt',
           'updatedAt',
@@ -7039,7 +5878,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           'responsibleName',
           'responsibleEmail',
           'responsiblePhone',
-          'approvalDocumentUploadIds',
         ],
         additionalProperties: false,
         description: 'Campo profile expuesto por el runtime actual.',
@@ -7060,9 +5898,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Identificador del recurso.',
           },
           name: {
             type: 'string',
@@ -7155,9 +5991,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -7176,10 +6010,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 email: {
                   type: 'string',
-                  format: 'email',
                   nullable: true,
                   description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
                 },
                 profileImage: {
                   type: 'string',
@@ -7237,9 +6069,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            description: 'Identificador del recurso.',
           },
           name: {
             type: 'string',
@@ -7332,9 +6162,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -7353,10 +6181,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 email: {
                   type: 'string',
-                  format: 'email',
                   nullable: true,
                   description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
                 },
                 profileImage: {
                   type: 'string',
@@ -7408,198 +6234,123 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       jobs: {
         type: 'array',
         items: {
-          oneOf: [
-            {
+          type: 'object',
+          properties: {
+            orderItem: {
               type: 'object',
               properties: {
-                orderItem: {
+                _count: {
                   type: 'object',
                   properties: {
-                    _count: {
-                      type: 'object',
-                      properties: {
-                        tickets: {
-                          type: 'number',
-                          description: 'Campo tickets expuesto por el runtime actual.',
-                        },
-                        consumableRights: {
-                          type: 'number',
-                          description: 'Campo consumable rights expuesto por el runtime actual.',
-                        },
-                      },
-                      required: ['tickets', 'consumableRights'],
-                      additionalProperties: false,
-                      description: 'Campo  count expuesto por el runtime actual.',
+                    tickets: {
+                      type: 'number',
+                      description: 'Campo tickets expuesto por el runtime actual.',
                     },
-                    totalCents: {
-                      type: 'integer',
-                      format: 'int64',
-                      description: 'Importe total expresado en céntimos.',
-                      example: 1500,
-                    },
-                    nameSnapshot: {
-                      type: 'string',
-                      description: 'Campo name snapshot expuesto por el runtime actual.',
-                      example: 'Chilcano de maracuyá',
-                    },
-                    quantity: {
-                      type: 'integer',
-                      format: 'int32',
-                      description: 'Campo quantity expuesto por el runtime actual.',
+                    consumableRights: {
+                      type: 'number',
+                      description: 'Campo consumable rights expuesto por el runtime actual.',
                     },
                   },
-                  required: ['_count', 'totalCents', 'nameSnapshot', 'quantity'],
+                  required: ['tickets', 'consumableRights'],
                   additionalProperties: false,
-                  description: 'Campo order item expuesto por el runtime actual.',
+                  description: 'Campo  count expuesto por el runtime actual.',
                 },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  description: 'Estado actual expuesto por el runtime.',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-                attempts: {
+                quantity: {
                   type: 'number',
-                  description: 'Campo attempts expuesto por el runtime actual.',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
-                amountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe expresado en céntimos.',
+                totalCents: {
+                  type: 'number',
+                  description: 'Importe total expresado en céntimos.',
                   example: 1500,
                 },
-                lastError: {
+                nameSnapshot: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo last error expuesto por el runtime actual.',
-                },
-                orderItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo order item id expuesto por el runtime actual.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                },
-                cancellationId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cancellation id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                refundRequestId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo refund request id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                authorizedBy: {
-                  type: 'string',
-                  description: 'Campo authorized by expuesto por el runtime actual.',
-                },
-                nextRunAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo next run at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                leaseToken: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo lease token expuesto por el runtime actual.',
-                  example: 'tok_8f3d1c7a6b2e4f90a5d8c1e7',
-                },
-                manualReviewNote: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo manual review note expuesto por el runtime actual.',
+                  description: 'Campo name snapshot expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
                 },
               },
-              required: [
-                'orderItem',
-                'id',
-                'createdAt',
-                'status',
-                'updatedAt',
-                'attempts',
-                'amountCents',
-                'lastError',
-                'orderItemId',
-                'cancellationId',
-                'refundRequestId',
-                'authorizedBy',
-                'nextRunAt',
-                'leaseToken',
-                'manualReviewNote',
-              ],
+              required: ['quantity', 'nameSnapshot'],
               additionalProperties: false,
+              description: 'Campo order item expuesto por el runtime actual.',
             },
-            {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                unallocated: {
-                  type: 'boolean',
-                  description: 'Campo unallocated expuesto por el runtime actual.',
-                  example: false,
-                },
-                status: {
-                  type: 'string',
-                  description: 'Estado actual expuesto por el runtime.',
-                },
-                amountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe expresado en céntimos.',
-                  example: 1500,
-                },
-                lastError: {
-                  type: 'string',
-                  description: 'Campo last error expuesto por el runtime actual.',
-                },
-                orderItem: {
-                  type: 'object',
-                  properties: {
-                    nameSnapshot: {
-                      type: 'string',
-                      description: 'Campo name snapshot expuesto por el runtime actual.',
-                      example: 'Chilcano de maracuyá',
-                    },
-                    quantity: {
-                      type: 'integer',
-                      format: 'int32',
-                      description: 'Campo quantity expuesto por el runtime actual.',
-                    },
-                  },
-                  required: ['nameSnapshot', 'quantity'],
-                  additionalProperties: false,
-                  description: 'Campo order item expuesto por el runtime actual.',
-                },
-              },
-              required: ['id', 'unallocated', 'status', 'amountCents', 'lastError', 'orderItem'],
-              additionalProperties: false,
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
             },
-          ],
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
+            },
+            status: {
+              type: 'string',
+              description: 'Estado actual expuesto por el runtime.',
+            },
+            attempts: {
+              type: 'integer',
+              description: 'Campo attempts expuesto por el runtime actual.',
+            },
+            lastError: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo last error expuesto por el runtime actual.',
+            },
+            amountCents: {
+              type: 'number',
+              description: 'Importe expresado en céntimos.',
+              example: 1500,
+            },
+            orderItemId: {
+              type: 'string',
+              description: 'Campo order item id expuesto por el runtime actual.',
+            },
+            cancellationId: {
+              type: 'string',
+              description: 'Campo cancellation id expuesto por el runtime actual.',
+            },
+            refundRequestId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo refund request id expuesto por el runtime actual.',
+            },
+            authorizedBy: {
+              type: 'string',
+              description: 'Campo authorized by expuesto por el runtime actual.',
+            },
+            nextRunAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo next run at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            leaseToken: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo lease token expuesto por el runtime actual.',
+              example: 'tok_8f3d1c7a6b2e4f90a5d8c1e7',
+            },
+            manualReviewNote: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo manual review note expuesto por el runtime actual.',
+            },
+            unallocated: {
+              type: 'boolean',
+              description: 'Campo unallocated expuesto por el runtime actual.',
+              example: false,
+            },
+          },
+          required: ['orderItem', 'id', 'status', 'lastError', 'amountCents'],
+          additionalProperties: false,
         },
         description: 'Campo jobs expuesto por el runtime actual.',
       },
@@ -7613,198 +6364,123 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       jobs: {
         type: 'array',
         items: {
-          oneOf: [
-            {
+          type: 'object',
+          properties: {
+            orderItem: {
               type: 'object',
               properties: {
-                orderItem: {
+                _count: {
                   type: 'object',
                   properties: {
-                    _count: {
-                      type: 'object',
-                      properties: {
-                        tickets: {
-                          type: 'number',
-                          description: 'Campo tickets expuesto por el runtime actual.',
-                        },
-                        consumableRights: {
-                          type: 'number',
-                          description: 'Campo consumable rights expuesto por el runtime actual.',
-                        },
-                      },
-                      required: ['tickets', 'consumableRights'],
-                      additionalProperties: false,
-                      description: 'Campo  count expuesto por el runtime actual.',
+                    tickets: {
+                      type: 'number',
+                      description: 'Campo tickets expuesto por el runtime actual.',
                     },
-                    totalCents: {
-                      type: 'integer',
-                      format: 'int64',
-                      description: 'Importe total expresado en céntimos.',
-                      example: 1500,
-                    },
-                    nameSnapshot: {
-                      type: 'string',
-                      description: 'Campo name snapshot expuesto por el runtime actual.',
-                      example: 'Chilcano de maracuyá',
-                    },
-                    quantity: {
-                      type: 'integer',
-                      format: 'int32',
-                      description: 'Campo quantity expuesto por el runtime actual.',
+                    consumableRights: {
+                      type: 'number',
+                      description: 'Campo consumable rights expuesto por el runtime actual.',
                     },
                   },
-                  required: ['_count', 'totalCents', 'nameSnapshot', 'quantity'],
+                  required: ['tickets', 'consumableRights'],
                   additionalProperties: false,
-                  description: 'Campo order item expuesto por el runtime actual.',
+                  description: 'Campo  count expuesto por el runtime actual.',
                 },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  description: 'Estado actual expuesto por el runtime.',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-                attempts: {
+                quantity: {
                   type: 'number',
-                  description: 'Campo attempts expuesto por el runtime actual.',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
-                amountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe expresado en céntimos.',
+                totalCents: {
+                  type: 'number',
+                  description: 'Importe total expresado en céntimos.',
                   example: 1500,
                 },
-                lastError: {
+                nameSnapshot: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo last error expuesto por el runtime actual.',
-                },
-                orderItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo order item id expuesto por el runtime actual.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                },
-                cancellationId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cancellation id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                refundRequestId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo refund request id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                authorizedBy: {
-                  type: 'string',
-                  description: 'Campo authorized by expuesto por el runtime actual.',
-                },
-                nextRunAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo next run at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                leaseToken: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo lease token expuesto por el runtime actual.',
-                  example: 'tok_8f3d1c7a6b2e4f90a5d8c1e7',
-                },
-                manualReviewNote: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo manual review note expuesto por el runtime actual.',
+                  description: 'Campo name snapshot expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
                 },
               },
-              required: [
-                'orderItem',
-                'id',
-                'createdAt',
-                'status',
-                'updatedAt',
-                'attempts',
-                'amountCents',
-                'lastError',
-                'orderItemId',
-                'cancellationId',
-                'refundRequestId',
-                'authorizedBy',
-                'nextRunAt',
-                'leaseToken',
-                'manualReviewNote',
-              ],
+              required: ['quantity', 'nameSnapshot'],
               additionalProperties: false,
+              description: 'Campo order item expuesto por el runtime actual.',
             },
-            {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                unallocated: {
-                  type: 'boolean',
-                  description: 'Campo unallocated expuesto por el runtime actual.',
-                  example: false,
-                },
-                status: {
-                  type: 'string',
-                  description: 'Estado actual expuesto por el runtime.',
-                },
-                amountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe expresado en céntimos.',
-                  example: 1500,
-                },
-                lastError: {
-                  type: 'string',
-                  description: 'Campo last error expuesto por el runtime actual.',
-                },
-                orderItem: {
-                  type: 'object',
-                  properties: {
-                    nameSnapshot: {
-                      type: 'string',
-                      description: 'Campo name snapshot expuesto por el runtime actual.',
-                      example: 'Chilcano de maracuyá',
-                    },
-                    quantity: {
-                      type: 'integer',
-                      format: 'int32',
-                      description: 'Campo quantity expuesto por el runtime actual.',
-                    },
-                  },
-                  required: ['nameSnapshot', 'quantity'],
-                  additionalProperties: false,
-                  description: 'Campo order item expuesto por el runtime actual.',
-                },
-              },
-              required: ['id', 'unallocated', 'status', 'amountCents', 'lastError', 'orderItem'],
-              additionalProperties: false,
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
             },
-          ],
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
+            },
+            status: {
+              type: 'string',
+              description: 'Estado actual expuesto por el runtime.',
+            },
+            attempts: {
+              type: 'integer',
+              description: 'Campo attempts expuesto por el runtime actual.',
+            },
+            lastError: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo last error expuesto por el runtime actual.',
+            },
+            amountCents: {
+              type: 'number',
+              description: 'Importe expresado en céntimos.',
+              example: 1500,
+            },
+            orderItemId: {
+              type: 'string',
+              description: 'Campo order item id expuesto por el runtime actual.',
+            },
+            cancellationId: {
+              type: 'string',
+              description: 'Campo cancellation id expuesto por el runtime actual.',
+            },
+            refundRequestId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo refund request id expuesto por el runtime actual.',
+            },
+            authorizedBy: {
+              type: 'string',
+              description: 'Campo authorized by expuesto por el runtime actual.',
+            },
+            nextRunAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo next run at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            leaseToken: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo lease token expuesto por el runtime actual.',
+              example: 'tok_8f3d1c7a6b2e4f90a5d8c1e7',
+            },
+            manualReviewNote: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo manual review note expuesto por el runtime actual.',
+            },
+            unallocated: {
+              type: 'boolean',
+              description: 'Campo unallocated expuesto por el runtime actual.',
+              example: false,
+            },
+          },
+          required: ['orderItem', 'id', 'status', 'lastError', 'amountCents'],
+          additionalProperties: false,
         },
         description: 'Campo jobs expuesto por el runtime actual.',
       },
@@ -7825,169 +6501,143 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   EventResolutionController_processUnallocatedResponse: {
-    oneOf: [
-      {
+    type: 'object',
+    properties: {
+      message: {
+        type: 'string',
+        description: 'Mensaje legible que resume el resultado.',
+      },
+      refundRequest: {
         type: 'object',
         properties: {
-          message: {
+          id: {
             type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
+            description: 'Identificador del recurso.',
           },
-          refundRequest: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-              },
-              createdAt: {
-                type: 'string',
-                format: 'date-time',
-                description: 'Fecha y hora de creación en formato ISO 8601.',
-                example: '2026-08-27T18:30:00.000Z',
-              },
-              status: {
-                type: 'string',
-                enum: [
-                  'FAILED',
-                  'COMPLETED',
-                  'APPROVED',
-                  'REJECTED',
-                  'REQUESTED',
-                  'UNDER_REVIEW',
-                  'PROCESSING',
-                ],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'FAILED',
-              },
-              updatedAt: {
-                type: 'string',
-                format: 'date-time',
-                description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                example: '2026-08-28T14:15:00.000Z',
-              },
-              clubId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo club id expuesto por el runtime actual.',
-                example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-              },
-              reason: {
-                type: 'string',
-                description: 'Campo reason expuesto por el runtime actual.',
-              },
-              orderId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo order id expuesto por el runtime actual.',
-                example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-              },
-              requestedAt: {
-                type: 'string',
-                format: 'date-time',
-                description: 'Campo requested at expuesto por el runtime actual.',
-                example: '2026-09-19T22:00:00.000Z',
-              },
-              reviewedAt: {
-                type: 'string',
-                format: 'date-time',
-                nullable: true,
-                description: 'Campo reviewed at expuesto por el runtime actual.',
-                example: '2026-09-19T22:00:00.000Z',
-              },
-              requestedByUserId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo requested by user id expuesto por el runtime actual.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-              },
-              requestedAmountCents: {
-                type: 'integer',
-                format: 'int64',
-                nullable: true,
-                description: 'Campo requested amount cents expuesto por el runtime actual.',
-                example: 1500,
-              },
-              approvedAmountCents: {
-                type: 'integer',
-                format: 'int64',
-                nullable: true,
-                description: 'Campo approved amount cents expuesto por el runtime actual.',
-                example: 1500,
-              },
-              processedAmountCents: {
-                type: 'integer',
-                format: 'int64',
-                description: 'Campo processed amount cents expuesto por el runtime actual.',
-                example: 1500,
-              },
-              marketplaceFeeRefundedCents: {
-                type: 'integer',
-                format: 'int64',
-                description: 'Campo marketplace fee refunded cents expuesto por el runtime actual.',
-                example: 1500,
-              },
-              externalRefundId: {
-                type: 'string',
-                format: 'uuid',
-                nullable: true,
-                description: 'Campo external refund id expuesto por el runtime actual.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-              },
-              resolutionNote: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo resolution note expuesto por el runtime actual.',
-              },
-              completedAt: {
-                type: 'string',
-                format: 'date-time',
-                nullable: true,
-                description: 'Campo completed at expuesto por el runtime actual.',
-                example: '2026-09-19T22:00:00.000Z',
-              },
-            },
-            required: [
-              'id',
-              'createdAt',
-              'status',
-              'updatedAt',
-              'clubId',
-              'reason',
-              'orderId',
-              'requestedAt',
-              'reviewedAt',
-              'requestedByUserId',
-              'requestedAmountCents',
-              'approvedAmountCents',
-              'processedAmountCents',
-              'marketplaceFeeRefundedCents',
-              'externalRefundId',
-              'resolutionNote',
-              'completedAt',
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          status: {
+            type: 'string',
+            enum: [
+              'FAILED',
+              'COMPLETED',
+              'REJECTED',
+              'APPROVED',
+              'REQUESTED',
+              'UNDER_REVIEW',
+              'PROCESSING',
             ],
-            additionalProperties: false,
-            description: 'Campo refund request expuesto por el runtime actual.',
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'FAILED',
+          },
+          reason: {
+            type: 'string',
+            description: 'Campo reason expuesto por el runtime actual.',
+          },
+          clubId: {
+            type: 'string',
+            description: 'Campo club id expuesto por el runtime actual.',
+          },
+          orderId: {
+            type: 'string',
+            description: 'Campo order id expuesto por el runtime actual.',
+          },
+          completedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Campo completed at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
+          },
+          requestedByUserId: {
+            type: 'string',
+            description: 'Campo requested by user id expuesto por el runtime actual.',
+          },
+          requestedAmountCents: {
+            type: 'integer',
+            nullable: true,
+            description: 'Campo requested amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          approvedAmountCents: {
+            type: 'integer',
+            nullable: true,
+            description: 'Campo approved amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          processedAmountCents: {
+            type: 'integer',
+            description: 'Campo processed amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          marketplaceFeeRefundedCents: {
+            type: 'integer',
+            description: 'Campo marketplace fee refunded cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          externalRefundId: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo external refund id expuesto por el runtime actual.',
+          },
+          resolutionNote: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo resolution note expuesto por el runtime actual.',
+          },
+          requestedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Campo requested at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
+          },
+          reviewedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Campo reviewed at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
           },
         },
-        required: ['message', 'refundRequest'],
+        required: [
+          'id',
+          'createdAt',
+          'updatedAt',
+          'status',
+          'reason',
+          'clubId',
+          'orderId',
+          'completedAt',
+          'requestedByUserId',
+          'requestedAmountCents',
+          'approvedAmountCents',
+          'processedAmountCents',
+          'marketplaceFeeRefundedCents',
+          'externalRefundId',
+          'resolutionNote',
+          'requestedAt',
+          'reviewedAt',
+        ],
         additionalProperties: false,
+        description: 'Campo refund request expuesto por el runtime actual.',
       },
-      {
-        type: 'object',
-        properties: {
-          confirmed: {
-            type: 'boolean',
-            description: 'Campo confirmed expuesto por el runtime actual.',
-            example: false,
-          },
-        },
-        required: ['confirmed'],
-        additionalProperties: false,
+      confirmed: {
+        type: 'boolean',
+        description: 'Campo confirmed expuesto por el runtime actual.',
+        example: false,
       },
-    ],
+    },
+    additionalProperties: false,
   },
   EventResolutionController_optionsResponse: {
     type: 'object',
@@ -8005,9 +6655,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             itemId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo item id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             nameSnapshot: {
               type: 'string',
@@ -8018,10 +6666,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: 'object',
               properties: {
                 quantity: {
-                  type: 'integer',
-                  format: 'int32',
+                  type: 'number',
                   nullable: true,
                   description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
               },
               required: ['quantity'],
@@ -8041,9 +6689,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -8063,9 +6709,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -8085,9 +6729,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -8103,21 +6745,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             cancellationId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo cancellation id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             sourceItemId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo source item id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             targetItemId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo target item id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             targetName: {
               type: 'string',
@@ -8125,9 +6761,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: 'Nébula Club',
             },
             reservedQuantity: {
-              type: 'number',
+              type: 'integer',
               description: 'Campo reserved quantity expuesto por el runtime actual.',
-              example: 1,
             },
           },
           required: [
@@ -8156,9 +6791,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -8174,21 +6807,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           cancellationId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo cancellation id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
           },
           sourceItemId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo source item id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
           },
           targetItemId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo target item id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
           },
           targetName: {
             type: 'string',
@@ -8196,9 +6823,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             example: 'Nébula Club',
           },
           reservedQuantity: {
-            type: 'number',
+            type: 'integer',
             description: 'Campo reserved quantity expuesto por el runtime actual.',
-            example: 1,
           },
         },
         required: [
@@ -8239,69 +6865,62 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       orderId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo order id expuesto por el runtime actual.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
       },
       orderStatus: {
         type: 'string',
-        description: 'Campo order status expuesto por el runtime actual.',
         enum: [
           'PENDING',
-          'PAID',
           'FAILED',
+          'CHARGEBACK',
+          'PAID',
           'EXPIRED',
           'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
         ],
+        description: 'Campo order status expuesto por el runtime actual.',
         example: 'PENDING',
       },
       paymentAttemptId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo payment attempt id expuesto por el runtime actual.',
-        example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
       },
       paymentStatus: {
         type: 'string',
-        nullable: true,
-        description: 'Campo payment status expuesto por el runtime actual.',
         enum: [
           'PENDING',
-          'APPROVED',
-          'REJECTED',
+          'CHARGEBACK',
           'EXPIRED',
           'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
+          'REJECTED',
+          'APPROVED',
+          null,
         ],
+        nullable: true,
+        description: 'Campo payment status expuesto por el runtime actual.',
         example: 'PENDING',
       },
       paymentProvider: {
         type: 'string',
         nullable: true,
         description: 'Campo payment provider expuesto por el runtime actual.',
-        enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-        example: 'mercado_pago',
       },
       paymentMethod: {
         type: 'string',
-        nullable: true,
+        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'FLOW', 'SIMULATED'],
         description: 'Campo payment method expuesto por el runtime actual.',
-        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
         example: 'MERCADO_PAGO',
       },
       checkoutUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo checkout url expuesto por el runtime actual.',
-        example:
-          'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
       },
       total: {
         type: 'number',
@@ -8313,9 +6932,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo currency expuesto por el runtime actual.',
       },
       generatedCount: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo generated count expuesto por el runtime actual.',
+        example: 1,
       },
     },
     required: [
@@ -8345,954 +6964,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_cartResponse: {
-    oneOf: [
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-        },
-        required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-          hasUnavailableItems: {
-            type: 'boolean',
-            description: 'Campo has unavailable items expuesto por el runtime actual.',
-            example: false,
-          },
-        },
-        required: [
-          'id',
-          'clubId',
-          'combineProducts',
-          'items',
-          'totalCents',
-          'currency',
-          'hasUnavailableItems',
-        ],
-        additionalProperties: false,
-      },
-    ],
-  },
-  CommerceController_addCartItemResponse: {
-    oneOf: [
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-        },
-        required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-          hasUnavailableItems: {
-            type: 'boolean',
-            description: 'Campo has unavailable items expuesto por el runtime actual.',
-            example: false,
-          },
-        },
-        required: [
-          'id',
-          'clubId',
-          'combineProducts',
-          'items',
-          'totalCents',
-          'currency',
-          'hasUnavailableItems',
-        ],
-        additionalProperties: false,
-      },
-    ],
-  },
-  CommerceController_updateCartItemResponse: {
-    oneOf: [
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-        },
-        required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-          hasUnavailableItems: {
-            type: 'boolean',
-            description: 'Campo has unavailable items expuesto por el runtime actual.',
-            example: false,
-          },
-        },
-        required: [
-          'id',
-          'clubId',
-          'combineProducts',
-          'items',
-          'totalCents',
-          'currency',
-          'hasUnavailableItems',
-        ],
-        additionalProperties: false,
-      },
-    ],
-  },
-  CommerceController_updateProductDeliveryResponse: {
     type: 'object',
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
+        description: 'Identificador del recurso.',
         nullable: true,
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
       },
       clubId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       combineProducts: {
         type: 'boolean',
@@ -9306,15 +6988,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             cartItemId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo cart item id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             type: {
               type: 'string',
@@ -9323,9 +7001,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: 'PROMOTION',
             },
             quantity: {
-              type: 'integer',
-              format: 'int32',
+              type: 'number',
               description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
             },
             productDeliveryMode: {
               type: 'string',
@@ -9345,10 +7023,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             clubName: {
               type: 'string',
@@ -9356,8 +7032,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: 'Nébula Club',
             },
             priceCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Campo price cents expuesto por el runtime actual.',
               example: 1500,
             },
@@ -9367,10 +7042,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
             },
             available: {
               type: 'boolean',
@@ -9383,8 +7056,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo availability message expuesto por el runtime actual.',
             },
             lineTotalCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Campo line total cents expuesto por el runtime actual.',
               example: 1500,
             },
@@ -9411,8 +7083,418 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo items expuesto por el runtime actual.',
       },
       totalCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
+        description: 'Importe total expresado en céntimos.',
+        example: 1500,
+      },
+      currency: {
+        type: 'string',
+        description: 'Campo currency expuesto por el runtime actual.',
+      },
+      hasUnavailableItems: {
+        type: 'boolean',
+        description: 'Campo has unavailable items expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
+    additionalProperties: false,
+  },
+  CommerceController_addCartItemResponse: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Identificador del recurso.',
+        nullable: true,
+      },
+      clubId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      combineProducts: {
+        type: 'boolean',
+        description: 'Campo combine products expuesto por el runtime actual.',
+        example: false,
+      },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            cartItemId: {
+              type: 'string',
+              description: 'Campo cart item id expuesto por el runtime actual.',
+            },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            type: {
+              type: 'string',
+              enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+              description: 'Campo type expuesto por el runtime actual.',
+              example: 'PROMOTION',
+            },
+            quantity: {
+              type: 'number',
+              description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
+            },
+            productDeliveryMode: {
+              type: 'string',
+              enum: ['GROUPED', 'SEPARATE'],
+              description: 'Campo product delivery mode expuesto por el runtime actual.',
+              example: 'GROUPED',
+            },
+            combineProducts: {
+              type: 'boolean',
+              description: 'Campo combine products expuesto por el runtime actual.',
+              example: false,
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            clubId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            priceCents: {
+              type: 'number',
+              description: 'Campo price cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            available: {
+              type: 'boolean',
+              description: 'Campo available expuesto por el runtime actual.',
+              example: false,
+            },
+            availabilityMessage: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo availability message expuesto por el runtime actual.',
+            },
+            lineTotalCents: {
+              type: 'number',
+              description: 'Campo line total cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+          },
+          required: [
+            'cartItemId',
+            'id',
+            'type',
+            'quantity',
+            'productDeliveryMode',
+            'combineProducts',
+            'name',
+            'clubId',
+            'clubName',
+            'priceCents',
+            'currency',
+            'imageUrl',
+            'available',
+            'availabilityMessage',
+            'lineTotalCents',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo items expuesto por el runtime actual.',
+      },
+      totalCents: {
+        type: 'number',
+        description: 'Importe total expresado en céntimos.',
+        example: 1500,
+      },
+      currency: {
+        type: 'string',
+        description: 'Campo currency expuesto por el runtime actual.',
+      },
+      hasUnavailableItems: {
+        type: 'boolean',
+        description: 'Campo has unavailable items expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
+    additionalProperties: false,
+  },
+  CommerceController_updateCartItemResponse: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Identificador del recurso.',
+        nullable: true,
+      },
+      clubId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      combineProducts: {
+        type: 'boolean',
+        description: 'Campo combine products expuesto por el runtime actual.',
+        example: false,
+      },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            cartItemId: {
+              type: 'string',
+              description: 'Campo cart item id expuesto por el runtime actual.',
+            },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            type: {
+              type: 'string',
+              enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+              description: 'Campo type expuesto por el runtime actual.',
+              example: 'PROMOTION',
+            },
+            quantity: {
+              type: 'number',
+              description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
+            },
+            productDeliveryMode: {
+              type: 'string',
+              enum: ['GROUPED', 'SEPARATE'],
+              description: 'Campo product delivery mode expuesto por el runtime actual.',
+              example: 'GROUPED',
+            },
+            combineProducts: {
+              type: 'boolean',
+              description: 'Campo combine products expuesto por el runtime actual.',
+              example: false,
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            clubId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            priceCents: {
+              type: 'number',
+              description: 'Campo price cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            available: {
+              type: 'boolean',
+              description: 'Campo available expuesto por el runtime actual.',
+              example: false,
+            },
+            availabilityMessage: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo availability message expuesto por el runtime actual.',
+            },
+            lineTotalCents: {
+              type: 'number',
+              description: 'Campo line total cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+          },
+          required: [
+            'cartItemId',
+            'id',
+            'type',
+            'quantity',
+            'productDeliveryMode',
+            'combineProducts',
+            'name',
+            'clubId',
+            'clubName',
+            'priceCents',
+            'currency',
+            'imageUrl',
+            'available',
+            'availabilityMessage',
+            'lineTotalCents',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo items expuesto por el runtime actual.',
+      },
+      totalCents: {
+        type: 'number',
+        description: 'Importe total expresado en céntimos.',
+        example: 1500,
+      },
+      currency: {
+        type: 'string',
+        description: 'Campo currency expuesto por el runtime actual.',
+      },
+      hasUnavailableItems: {
+        type: 'boolean',
+        description: 'Campo has unavailable items expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
+    additionalProperties: false,
+  },
+  CommerceController_updateProductDeliveryResponse: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Identificador del recurso.',
+        nullable: true,
+      },
+      clubId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      combineProducts: {
+        type: 'boolean',
+        description: 'Campo combine products expuesto por el runtime actual.',
+        example: false,
+      },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            cartItemId: {
+              type: 'string',
+              description: 'Campo cart item id expuesto por el runtime actual.',
+            },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            type: {
+              type: 'string',
+              enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+              description: 'Campo type expuesto por el runtime actual.',
+              example: 'PROMOTION',
+            },
+            quantity: {
+              type: 'number',
+              description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
+            },
+            productDeliveryMode: {
+              type: 'string',
+              enum: ['GROUPED', 'SEPARATE'],
+              description: 'Campo product delivery mode expuesto por el runtime actual.',
+              example: 'GROUPED',
+            },
+            combineProducts: {
+              type: 'boolean',
+              description: 'Campo combine products expuesto por el runtime actual.',
+              example: false,
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            clubId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            priceCents: {
+              type: 'number',
+              description: 'Campo price cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            available: {
+              type: 'boolean',
+              description: 'Campo available expuesto por el runtime actual.',
+              example: false,
+            },
+            availabilityMessage: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo availability message expuesto por el runtime actual.',
+            },
+            lineTotalCents: {
+              type: 'number',
+              description: 'Campo line total cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+          },
+          required: [
+            'cartItemId',
+            'id',
+            'type',
+            'quantity',
+            'productDeliveryMode',
+            'combineProducts',
+            'name',
+            'clubId',
+            'clubName',
+            'priceCents',
+            'currency',
+            'imageUrl',
+            'available',
+            'availabilityMessage',
+            'lineTotalCents',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo items expuesto por el runtime actual.',
+      },
+      totalCents: {
+        type: 'number',
         description: 'Importe total expresado en céntimos.',
         example: 1500,
       },
@@ -9430,324 +7512,148 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_deleteCartItemResponse: {
-    oneOf: [
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-        },
-        required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
-        additionalProperties: false,
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        description: 'Identificador del recurso.',
+        nullable: true,
       },
-      {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
-            example: false,
-          },
-          items: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                cartItemId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo cart item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                type: {
-                  type: 'string',
-                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'PROMOTION',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
-                combineProducts: {
-                  type: 'boolean',
-                  description: 'Campo combine products expuesto por el runtime actual.',
-                  example: false,
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                clubName: {
-                  type: 'string',
-                  description: 'Campo club name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                priceCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo price cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                available: {
-                  type: 'boolean',
-                  description: 'Campo available expuesto por el runtime actual.',
-                  example: false,
-                },
-                availabilityMessage: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo availability message expuesto por el runtime actual.',
-                },
-                lineTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo line total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-              },
-              required: [
-                'cartItemId',
-                'id',
-                'type',
-                'quantity',
-                'productDeliveryMode',
-                'combineProducts',
-                'name',
-                'clubId',
-                'clubName',
-                'priceCents',
-                'currency',
-                'imageUrl',
-                'available',
-                'availabilityMessage',
-                'lineTotalCents',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo items expuesto por el runtime actual.',
-          },
-          totalCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe total expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-          hasUnavailableItems: {
-            type: 'boolean',
-            description: 'Campo has unavailable items expuesto por el runtime actual.',
-            example: false,
-          },
-        },
-        required: [
-          'id',
-          'clubId',
-          'combineProducts',
-          'items',
-          'totalCents',
-          'currency',
-          'hasUnavailableItems',
-        ],
-        additionalProperties: false,
+      clubId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo club id expuesto por el runtime actual.',
       },
-    ],
+      combineProducts: {
+        type: 'boolean',
+        description: 'Campo combine products expuesto por el runtime actual.',
+        example: false,
+      },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            cartItemId: {
+              type: 'string',
+              description: 'Campo cart item id expuesto por el runtime actual.',
+            },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            type: {
+              type: 'string',
+              enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+              description: 'Campo type expuesto por el runtime actual.',
+              example: 'PROMOTION',
+            },
+            quantity: {
+              type: 'number',
+              description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
+            },
+            productDeliveryMode: {
+              type: 'string',
+              enum: ['GROUPED', 'SEPARATE'],
+              description: 'Campo product delivery mode expuesto por el runtime actual.',
+              example: 'GROUPED',
+            },
+            combineProducts: {
+              type: 'boolean',
+              description: 'Campo combine products expuesto por el runtime actual.',
+              example: false,
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            clubId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            clubName: {
+              type: 'string',
+              description: 'Campo club name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            priceCents: {
+              type: 'number',
+              description: 'Campo price cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            available: {
+              type: 'boolean',
+              description: 'Campo available expuesto por el runtime actual.',
+              example: false,
+            },
+            availabilityMessage: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo availability message expuesto por el runtime actual.',
+            },
+            lineTotalCents: {
+              type: 'number',
+              description: 'Campo line total cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+          },
+          required: [
+            'cartItemId',
+            'id',
+            'type',
+            'quantity',
+            'productDeliveryMode',
+            'combineProducts',
+            'name',
+            'clubId',
+            'clubName',
+            'priceCents',
+            'currency',
+            'imageUrl',
+            'available',
+            'availabilityMessage',
+            'lineTotalCents',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo items expuesto por el runtime actual.',
+      },
+      totalCents: {
+        type: 'number',
+        description: 'Importe total expresado en céntimos.',
+        example: 1500,
+      },
+      currency: {
+        type: 'string',
+        description: 'Campo currency expuesto por el runtime actual.',
+      },
+      hasUnavailableItems: {
+        type: 'boolean',
+        description: 'Campo has unavailable items expuesto por el runtime actual.',
+        example: false,
+      },
+    },
+    required: ['id', 'clubId', 'combineProducts', 'items', 'totalCents', 'currency'],
+    additionalProperties: false,
   },
   CommerceController_reservationMetricsResponse: {
     type: 'object',
     properties: {
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       statuses: {
         type: 'object',
@@ -9782,69 +7688,62 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       orderId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo order id expuesto por el runtime actual.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
       },
       orderStatus: {
         type: 'string',
-        description: 'Campo order status expuesto por el runtime actual.',
         enum: [
           'PENDING',
-          'PAID',
           'FAILED',
+          'CHARGEBACK',
+          'PAID',
           'EXPIRED',
           'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
         ],
+        description: 'Campo order status expuesto por el runtime actual.',
         example: 'PENDING',
       },
       paymentAttemptId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo payment attempt id expuesto por el runtime actual.',
-        example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
       },
       paymentStatus: {
         type: 'string',
-        nullable: true,
-        description: 'Campo payment status expuesto por el runtime actual.',
         enum: [
           'PENDING',
-          'APPROVED',
-          'REJECTED',
+          'CHARGEBACK',
           'EXPIRED',
           'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
+          'REJECTED',
+          'APPROVED',
+          null,
         ],
+        nullable: true,
+        description: 'Campo payment status expuesto por el runtime actual.',
         example: 'PENDING',
       },
       paymentProvider: {
         type: 'string',
         nullable: true,
         description: 'Campo payment provider expuesto por el runtime actual.',
-        enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-        example: 'mercado_pago',
       },
       paymentMethod: {
         type: 'string',
-        nullable: true,
+        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'FLOW', 'SIMULATED'],
         description: 'Campo payment method expuesto por el runtime actual.',
-        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
         example: 'MERCADO_PAGO',
       },
       checkoutUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo checkout url expuesto por el runtime actual.',
-        example:
-          'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
       },
       total: {
         type: 'number',
@@ -9856,9 +7755,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo currency expuesto por el runtime actual.',
       },
       generatedCount: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo generated count expuesto por el runtime actual.',
+        example: 1,
       },
     },
     required: [
@@ -9880,27 +7779,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       topUpId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo top up id expuesto por el runtime actual.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
       },
       status: {
         type: 'string',
-        description: 'Estado actual expuesto por el runtime.',
         enum: [
           'PENDING',
-          'APPROVED',
-          'REJECTED',
           'EXPIRED',
           'REFUND_PENDING',
           'REFUNDED',
+          'REJECTED',
+          'APPROVED',
           'CHARGEDBACK',
         ],
+        description: 'Estado actual expuesto por el runtime.',
         example: 'PENDING',
       },
       amountCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Importe expresado en céntimos.',
         example: 1500,
       },
@@ -9910,41 +7806,36 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       paymentAttemptId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo payment attempt id expuesto por el runtime actual.',
-        example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
       },
       paymentStatus: {
         type: 'string',
-        nullable: true,
-        description: 'Campo payment status expuesto por el runtime actual.',
         enum: [
           'PENDING',
-          'APPROVED',
-          'REJECTED',
+          'CHARGEBACK',
           'EXPIRED',
           'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
+          'REJECTED',
+          'APPROVED',
+          null,
         ],
+        nullable: true,
+        description: 'Campo payment status expuesto por el runtime actual.',
         example: 'PENDING',
       },
       paymentProvider: {
         type: 'string',
         nullable: true,
         description: 'Campo payment provider expuesto por el runtime actual.',
-        enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-        example: 'mercado_pago',
       },
       checkoutUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo checkout url expuesto por el runtime actual.',
-        example:
-          'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
       },
       createdAt: {
         type: 'string',
@@ -9984,27 +7875,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             topUpId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo top up id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             status: {
               type: 'string',
-              description: 'Estado actual expuesto por el runtime.',
               enum: [
                 'PENDING',
-                'APPROVED',
-                'REJECTED',
                 'EXPIRED',
                 'REFUND_PENDING',
                 'REFUNDED',
+                'REJECTED',
+                'APPROVED',
                 'CHARGEDBACK',
               ],
+              description: 'Estado actual expuesto por el runtime.',
               example: 'PENDING',
             },
             amountCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Importe expresado en céntimos.',
               example: 1500,
             },
@@ -10014,41 +7902,36 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             paymentAttemptId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo payment attempt id expuesto por el runtime actual.',
-              example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
             },
             paymentStatus: {
               type: 'string',
-              nullable: true,
-              description: 'Campo payment status expuesto por el runtime actual.',
               enum: [
                 'PENDING',
-                'APPROVED',
-                'REJECTED',
+                'CHARGEBACK',
                 'EXPIRED',
                 'CANCELLED',
                 'REFUND_PENDING',
                 'REFUNDED',
                 'PARTIALLY_REFUNDED',
+                'REJECTED',
+                'APPROVED',
+                null,
               ],
+              nullable: true,
+              description: 'Campo payment status expuesto por el runtime actual.',
               example: 'PENDING',
             },
             paymentProvider: {
               type: 'string',
               nullable: true,
               description: 'Campo payment provider expuesto por el runtime actual.',
-              enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-              example: 'mercado_pago',
             },
             checkoutUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo checkout url expuesto por el runtime actual.',
-              example:
-                'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
             },
             createdAt: {
               type: 'string',
@@ -10089,27 +7972,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       topUpId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo top up id expuesto por el runtime actual.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
       },
       status: {
         type: 'string',
-        description: 'Estado actual expuesto por el runtime.',
         enum: [
           'PENDING',
-          'APPROVED',
-          'REJECTED',
           'EXPIRED',
           'REFUND_PENDING',
           'REFUNDED',
+          'REJECTED',
+          'APPROVED',
           'CHARGEDBACK',
         ],
+        description: 'Estado actual expuesto por el runtime.',
         example: 'PENDING',
       },
       amountCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Importe expresado en céntimos.',
         example: 1500,
       },
@@ -10119,41 +7999,36 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       paymentAttemptId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo payment attempt id expuesto por el runtime actual.',
-        example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
       },
       paymentStatus: {
         type: 'string',
-        nullable: true,
-        description: 'Campo payment status expuesto por el runtime actual.',
         enum: [
           'PENDING',
-          'APPROVED',
-          'REJECTED',
+          'CHARGEBACK',
           'EXPIRED',
           'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
+          'REJECTED',
+          'APPROVED',
+          null,
         ],
+        nullable: true,
+        description: 'Campo payment status expuesto por el runtime actual.',
         example: 'PENDING',
       },
       paymentProvider: {
         type: 'string',
         nullable: true,
         description: 'Campo payment provider expuesto por el runtime actual.',
-        enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-        example: 'mercado_pago',
       },
       checkoutUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo checkout url expuesto por el runtime actual.',
-        example:
-          'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
       },
       createdAt: {
         type: 'string',
@@ -10190,8 +8065,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           salesCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo sales cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -10218,9 +8092,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                  description: 'Identificador del recurso.',
                 },
                 phoneCountryCode: {
                   type: 'string',
@@ -10232,164 +8104,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Campo phone number expuesto por el runtime actual.',
                   example: '987654321',
                 },
-                email: {
-                  type: 'string',
-                  format: 'email',
-                  nullable: true,
-                  description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
-                },
                 fullName: {
                   type: 'string',
                   description: 'Campo full name expuesto por el runtime actual.',
                   example: 'Valeria Mendoza',
                 },
+                email: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo email expuesto por el runtime actual.',
+                },
               },
-              required: ['id', 'phoneCountryCode', 'phoneNumber', 'email', 'fullName'],
+              required: ['id', 'phoneCountryCode', 'phoneNumber', 'fullName', 'email'],
               additionalProperties: false,
               description: 'Campo user expuesto por el runtime actual.',
-            },
-            refundRequests: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  id: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                  },
-                  createdAt: {
-                    type: 'string',
-                    format: 'date-time',
-                    description: 'Fecha y hora de creación en formato ISO 8601.',
-                    example: '2026-08-27T18:30:00.000Z',
-                  },
-                  status: {
-                    type: 'string',
-                    enum: [
-                      'FAILED',
-                      'COMPLETED',
-                      'APPROVED',
-                      'REJECTED',
-                      'REQUESTED',
-                      'UNDER_REVIEW',
-                      'PROCESSING',
-                    ],
-                    description: 'Estado actual expuesto por el runtime.',
-                    example: 'FAILED',
-                  },
-                  updatedAt: {
-                    type: 'string',
-                    format: 'date-time',
-                    description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                    example: '2026-08-28T14:15:00.000Z',
-                  },
-                  clubId: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Campo club id expuesto por el runtime actual.',
-                    example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                  },
-                  reason: {
-                    type: 'string',
-                    description: 'Campo reason expuesto por el runtime actual.',
-                  },
-                  orderId: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Campo order id expuesto por el runtime actual.',
-                    example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                  },
-                  requestedAt: {
-                    type: 'string',
-                    format: 'date-time',
-                    description: 'Campo requested at expuesto por el runtime actual.',
-                    example: '2026-09-19T22:00:00.000Z',
-                  },
-                  reviewedAt: {
-                    type: 'string',
-                    format: 'date-time',
-                    nullable: true,
-                    description: 'Campo reviewed at expuesto por el runtime actual.',
-                    example: '2026-09-19T22:00:00.000Z',
-                  },
-                  requestedByUserId: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Campo requested by user id expuesto por el runtime actual.',
-                    example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-                  },
-                  requestedAmountCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    nullable: true,
-                    description: 'Campo requested amount cents expuesto por el runtime actual.',
-                    example: 1500,
-                  },
-                  approvedAmountCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    nullable: true,
-                    description: 'Campo approved amount cents expuesto por el runtime actual.',
-                    example: 1500,
-                  },
-                  processedAmountCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    description: 'Campo processed amount cents expuesto por el runtime actual.',
-                    example: 1500,
-                  },
-                  marketplaceFeeRefundedCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    description:
-                      'Campo marketplace fee refunded cents expuesto por el runtime actual.',
-                    example: 1500,
-                  },
-                  externalRefundId: {
-                    type: 'string',
-                    format: 'uuid',
-                    nullable: true,
-                    description: 'Campo external refund id expuesto por el runtime actual.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                  },
-                  resolutionNote: {
-                    type: 'string',
-                    nullable: true,
-                    description: 'Campo resolution note expuesto por el runtime actual.',
-                  },
-                  completedAt: {
-                    type: 'string',
-                    format: 'date-time',
-                    nullable: true,
-                    description: 'Campo completed at expuesto por el runtime actual.',
-                    example: '2026-09-19T22:00:00.000Z',
-                  },
-                },
-                required: [
-                  'id',
-                  'createdAt',
-                  'status',
-                  'updatedAt',
-                  'clubId',
-                  'reason',
-                  'orderId',
-                  'requestedAt',
-                  'reviewedAt',
-                  'requestedByUserId',
-                  'requestedAmountCents',
-                  'approvedAmountCents',
-                  'processedAmountCents',
-                  'marketplaceFeeRefundedCents',
-                  'externalRefundId',
-                  'resolutionNote',
-                  'completedAt',
-                ],
-                additionalProperties: false,
-              },
-              description: 'Campo refund requests expuesto por el runtime actual.',
             },
             items: {
               type: 'array',
@@ -10398,9 +8126,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                    description: 'Identificador del recurso.',
                   },
                   createdAt: {
                     type: 'string',
@@ -10410,28 +8136,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   },
                   eventId: {
                     type: 'string',
-                    format: 'uuid',
                     nullable: true,
                     description: 'Campo event id expuesto por el runtime actual.',
-                    example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                   },
                   clubId: {
                     type: 'string',
-                    format: 'uuid',
                     description: 'Campo club id expuesto por el runtime actual.',
-                    example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                   },
-                  totalCents: {
+                  quantity: {
                     type: 'integer',
-                    format: 'int64',
-                    description: 'Importe total expresado en céntimos.',
-                    example: 1500,
+                    description: 'Campo quantity expuesto por el runtime actual.',
                   },
                   orderId: {
                     type: 'string',
-                    format: 'uuid',
                     description: 'Campo order id expuesto por el runtime actual.',
-                    example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                  },
+                  totalCents: {
+                    type: 'integer',
+                    description: 'Importe total expresado en céntimos.',
+                    example: 1500,
                   },
                   itemType: {
                     type: 'string',
@@ -10441,9 +8164,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   },
                   itemId: {
                     type: 'string',
-                    format: 'uuid',
                     description: 'Campo item id expuesto por el runtime actual.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  },
+                  productDeliveryMode: {
+                    type: 'string',
+                    enum: ['GROUPED', 'SEPARATE'],
+                    description: 'Campo product delivery mode expuesto por el runtime actual.',
+                    example: 'GROUPED',
                   },
                   nameSnapshot: {
                     type: 'string',
@@ -10459,20 +8186,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     ],
                     nullable: true,
                   },
-                  quantity: {
-                    type: 'integer',
-                    format: 'int32',
-                    description: 'Campo quantity expuesto por el runtime actual.',
-                  },
-                  productDeliveryMode: {
-                    type: 'string',
-                    enum: ['GROUPED', 'SEPARATE'],
-                    description: 'Campo product delivery mode expuesto por el runtime actual.',
-                    example: 'GROUPED',
-                  },
                   unitPriceCents: {
                     type: 'integer',
-                    format: 'int64',
                     description: 'Campo unit price cents expuesto por el runtime actual.',
                     example: 1500,
                   },
@@ -10482,19 +8197,147 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   'createdAt',
                   'eventId',
                   'clubId',
-                  'totalCents',
+                  'quantity',
                   'orderId',
+                  'totalCents',
                   'itemType',
                   'itemId',
+                  'productDeliveryMode',
                   'nameSnapshot',
                   'eventSnapshot',
-                  'quantity',
-                  'productDeliveryMode',
                   'unitPriceCents',
                 ],
                 additionalProperties: false,
               },
               description: 'Campo items expuesto por el runtime actual.',
+            },
+            refundRequests: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    description: 'Identificador del recurso.',
+                  },
+                  createdAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Fecha y hora de creación en formato ISO 8601.',
+                    example: '2026-08-27T18:30:00.000Z',
+                  },
+                  updatedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                    example: '2026-08-28T14:15:00.000Z',
+                  },
+                  status: {
+                    type: 'string',
+                    enum: [
+                      'FAILED',
+                      'COMPLETED',
+                      'REJECTED',
+                      'APPROVED',
+                      'REQUESTED',
+                      'UNDER_REVIEW',
+                      'PROCESSING',
+                    ],
+                    description: 'Estado actual expuesto por el runtime.',
+                    example: 'FAILED',
+                  },
+                  reason: {
+                    type: 'string',
+                    description: 'Campo reason expuesto por el runtime actual.',
+                  },
+                  clubId: {
+                    type: 'string',
+                    description: 'Campo club id expuesto por el runtime actual.',
+                  },
+                  orderId: {
+                    type: 'string',
+                    description: 'Campo order id expuesto por el runtime actual.',
+                  },
+                  completedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    nullable: true,
+                    description: 'Campo completed at expuesto por el runtime actual.',
+                    example: '2026-09-19T22:00:00.000Z',
+                  },
+                  requestedByUserId: {
+                    type: 'string',
+                    description: 'Campo requested by user id expuesto por el runtime actual.',
+                  },
+                  requestedAmountCents: {
+                    type: 'integer',
+                    nullable: true,
+                    description: 'Campo requested amount cents expuesto por el runtime actual.',
+                    example: 1500,
+                  },
+                  approvedAmountCents: {
+                    type: 'integer',
+                    nullable: true,
+                    description: 'Campo approved amount cents expuesto por el runtime actual.',
+                    example: 1500,
+                  },
+                  processedAmountCents: {
+                    type: 'integer',
+                    description: 'Campo processed amount cents expuesto por el runtime actual.',
+                    example: 1500,
+                  },
+                  marketplaceFeeRefundedCents: {
+                    type: 'integer',
+                    description:
+                      'Campo marketplace fee refunded cents expuesto por el runtime actual.',
+                    example: 1500,
+                  },
+                  externalRefundId: {
+                    type: 'string',
+                    nullable: true,
+                    description: 'Campo external refund id expuesto por el runtime actual.',
+                  },
+                  resolutionNote: {
+                    type: 'string',
+                    nullable: true,
+                    description: 'Campo resolution note expuesto por el runtime actual.',
+                  },
+                  requestedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Campo requested at expuesto por el runtime actual.',
+                    example: '2026-09-19T22:00:00.000Z',
+                  },
+                  reviewedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    nullable: true,
+                    description: 'Campo reviewed at expuesto por el runtime actual.',
+                    example: '2026-09-19T22:00:00.000Z',
+                  },
+                },
+                required: [
+                  'id',
+                  'createdAt',
+                  'updatedAt',
+                  'status',
+                  'reason',
+                  'clubId',
+                  'orderId',
+                  'completedAt',
+                  'requestedByUserId',
+                  'requestedAmountCents',
+                  'approvedAmountCents',
+                  'processedAmountCents',
+                  'marketplaceFeeRefundedCents',
+                  'externalRefundId',
+                  'resolutionNote',
+                  'requestedAt',
+                  'reviewedAt',
+                ],
+                additionalProperties: false,
+              },
+              description: 'Campo refund requests expuesto por el runtime actual.',
             },
             paymentAttempts: {
               type: 'array',
@@ -10503,9 +8346,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                    description: 'Identificador del recurso.',
                   },
                   createdAt: {
                     type: 'string',
@@ -10513,33 +8354,50 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     description: 'Fecha y hora de creación en formato ISO 8601.',
                     example: '2026-08-27T18:30:00.000Z',
                   },
-                  status: {
-                    type: 'string',
-                    enum: [
-                      'PENDING',
-                      'CANCELLED',
-                      'EXPIRED',
-                      'REFUND_PENDING',
-                      'REFUNDED',
-                      'PARTIALLY_REFUNDED',
-                      'CHARGEBACK',
-                      'APPROVED',
-                      'REJECTED',
-                    ],
-                    description: 'Estado actual expuesto por el runtime.',
-                    example: 'PENDING',
-                  },
                   updatedAt: {
                     type: 'string',
                     format: 'date-time',
                     description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                     example: '2026-08-28T14:15:00.000Z',
                   },
+                  status: {
+                    type: 'string',
+                    enum: [
+                      'PENDING',
+                      'CHARGEBACK',
+                      'EXPIRED',
+                      'CANCELLED',
+                      'REFUND_PENDING',
+                      'REFUNDED',
+                      'PARTIALLY_REFUNDED',
+                      'REJECTED',
+                      'APPROVED',
+                    ],
+                    description: 'Estado actual expuesto por el runtime.',
+                    example: 'PENDING',
+                  },
+                  provider: {
+                    type: 'string',
+                    description: 'Campo provider expuesto por el runtime actual.',
+                  },
+                  providerData: {
+                    description: 'Valor JSON dinámico expuesto por el runtime.',
+                    allOf: [
+                      {
+                        $ref: '#/components/schemas/JsonValue',
+                      },
+                    ],
+                    nullable: true,
+                  },
+                  currency: {
+                    type: 'string',
+                    description: 'Campo currency expuesto por el runtime actual.',
+                  },
                   purpose: {
                     type: 'string',
-                    enum: ['ORDER_PAYMENT', 'WALLET_TOP_UP', 'FEATURED_CAMPAIGN'],
+                    enum: ['WALLET_TOP_UP', 'FEATURED_CAMPAIGN', 'ORDER_PAYMENT'],
                     description: 'Campo purpose expuesto por el runtime actual.',
-                    example: 'ORDER_PAYMENT',
+                    example: 'WALLET_TOP_UP',
                   },
                   expiresAt: {
                     type: 'string',
@@ -10548,50 +8406,44 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     description: 'Campo expires at expuesto por el runtime actual.',
                     example: '2026-09-19T22:00:00.000Z',
                   },
-                  currency: {
-                    type: 'string',
-                    description: 'Campo currency expuesto por el runtime actual.',
-                  },
                   marketplaceFeeBps: {
-                    type: 'number',
+                    type: 'integer',
                     nullable: true,
                     description: 'Campo marketplace fee bps expuesto por el runtime actual.',
                   },
                   orderId: {
                     type: 'string',
-                    format: 'uuid',
                     nullable: true,
                     description: 'Campo order id expuesto por el runtime actual.',
-                    example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
                   },
-                  walletTopUpId: {
-                    type: 'string',
-                    format: 'uuid',
+                  amountCents: {
+                    type: 'integer',
+                    description: 'Importe expresado en céntimos.',
+                    example: 1500,
+                  },
+                  marketplaceFeeCents: {
+                    type: 'integer',
                     nullable: true,
-                    description: 'Campo wallet top up id expuesto por el runtime actual.',
-                    example: '5d7a1c84-3e69-4f20-8b15-6c2e97a4d038',
+                    description: 'Campo marketplace fee cents expuesto por el runtime actual.',
+                    example: 1500,
                   },
-                  featuredCampaignId: {
-                    type: 'string',
-                    format: 'uuid',
+                  sellerExpectedNetCents: {
+                    type: 'integer',
                     nullable: true,
-                    description: 'Campo featured campaign id expuesto por el runtime actual.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                    description: 'Campo seller expected net cents expuesto por el runtime actual.',
+                    example: 1500,
                   },
-                  provider: {
+                  feeSource: {
                     type: 'string',
-                    description: 'Campo provider expuesto por el runtime actual.',
+                    enum: ['GLOBAL', 'BUSINESS_OVERRIDE', null],
+                    nullable: true,
+                    description: 'Campo fee source expuesto por el runtime actual.',
+                    example: 'GLOBAL',
                   },
                   externalPaymentId: {
                     type: 'string',
                     nullable: true,
                     description: 'Campo external payment id expuesto por el runtime actual.',
-                  },
-                  amountCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    description: 'Importe expresado en céntimos.',
-                    example: 1500,
                   },
                   failureCode: {
                     type: 'string',
@@ -10604,68 +8456,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     nullable: true,
                     description: 'Campo failure message expuesto por el runtime actual.',
                   },
-                  providerData: {
-                    description: 'Valor JSON dinámico expuesto por el runtime.',
-                    allOf: [
-                      {
-                        $ref: '#/components/schemas/JsonValue',
-                      },
-                    ],
-                    nullable: true,
-                  },
                   externalCheckoutId: {
                     type: 'string',
-                    format: 'uuid',
                     nullable: true,
                     description: 'Campo external checkout id expuesto por el runtime actual.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
                   },
                   sellerExternalId: {
                     type: 'string',
-                    format: 'uuid',
                     nullable: true,
                     description: 'Campo seller external id expuesto por el runtime actual.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
                   },
                   grossAmountCents: {
                     type: 'integer',
-                    format: 'int64',
                     nullable: true,
                     description: 'Campo gross amount cents expuesto por el runtime actual.',
                     example: 1500,
                   },
                   customerFundedSnapshotCents: {
                     type: 'integer',
-                    format: 'int64',
                     nullable: true,
                     description:
                       'Campo customer funded snapshot cents expuesto por el runtime actual.',
                     example: 1500,
                   },
-                  marketplaceFeeCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    nullable: true,
-                    description: 'Campo marketplace fee cents expuesto por el runtime actual.',
-                    example: 1500,
-                  },
-                  sellerExpectedNetCents: {
-                    type: 'integer',
-                    format: 'int64',
-                    nullable: true,
-                    description: 'Campo seller expected net cents expuesto por el runtime actual.',
-                    example: 1500,
-                  },
-                  feeSource: {
-                    type: 'string',
-                    enum: ['GLOBAL', 'BUSINESS_OVERRIDE'],
-                    nullable: true,
-                    description: 'Campo fee source expuesto por el runtime actual.',
-                    example: 'GLOBAL',
-                  },
                   refundedAmountCents: {
                     type: 'integer',
-                    format: 'int64',
                     description: 'Campo refunded amount cents expuesto por el runtime actual.',
                     example: 1500,
                   },
@@ -10683,35 +8498,45 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     description: 'Campo failed at expuesto por el runtime actual.',
                     example: '2026-09-19T22:00:00.000Z',
                   },
+                  walletTopUpId: {
+                    type: 'string',
+                    nullable: true,
+                    description: 'Campo wallet top up id expuesto por el runtime actual.',
+                  },
+                  featuredCampaignId: {
+                    type: 'string',
+                    nullable: true,
+                    description: 'Campo featured campaign id expuesto por el runtime actual.',
+                  },
                 },
                 required: [
                   'id',
                   'createdAt',
-                  'status',
                   'updatedAt',
+                  'status',
+                  'provider',
+                  'providerData',
+                  'currency',
                   'purpose',
                   'expiresAt',
-                  'currency',
                   'marketplaceFeeBps',
                   'orderId',
-                  'walletTopUpId',
-                  'featuredCampaignId',
-                  'provider',
-                  'externalPaymentId',
                   'amountCents',
+                  'marketplaceFeeCents',
+                  'sellerExpectedNetCents',
+                  'feeSource',
+                  'externalPaymentId',
                   'failureCode',
                   'failureMessage',
-                  'providerData',
                   'externalCheckoutId',
                   'sellerExternalId',
                   'grossAmountCents',
                   'customerFundedSnapshotCents',
-                  'marketplaceFeeCents',
-                  'sellerExpectedNetCents',
-                  'feeSource',
                   'refundedAmountCents',
                   'approvedAt',
                   'failedAt',
+                  'walletTopUpId',
+                  'featuredCampaignId',
                 ],
                 additionalProperties: false,
               },
@@ -10719,15 +8544,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-            },
-            userId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -10735,27 +8552,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
             },
-            status: {
-              type: 'string',
-              enum: [
-                'PENDING',
-                'FAILED',
-                'CANCELLED',
-                'PAID',
-                'EXPIRED',
-                'REFUND_PENDING',
-                'REFUNDED',
-                'PARTIALLY_REFUNDED',
-                'CHARGEBACK',
-              ],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'PENDING',
-            },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de la última actualización en formato ISO 8601.',
               example: '2026-08-28T14:15:00.000Z',
+            },
+            userId: {
+              type: 'string',
+              description: 'Campo user id expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: [
+                'PENDING',
+                'FAILED',
+                'CHARGEBACK',
+                'PAID',
+                'EXPIRED',
+                'CANCELLED',
+                'REFUND_PENDING',
+                'REFUNDED',
+                'PARTIALLY_REFUNDED',
+              ],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'PENDING',
             },
             currency: {
               type: 'string',
@@ -10763,49 +8584,42 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+            },
+            paymentMethod: {
+              type: 'string',
+              enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'FLOW', 'SIMULATED'],
+              description: 'Campo payment method expuesto por el runtime actual.',
+              example: 'MERCADO_PAGO',
+            },
+            combineProducts: {
+              type: 'boolean',
+              description: 'Campo combine products expuesto por el runtime actual.',
+              example: false,
             },
             totalCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Importe total expresado en céntimos.',
               example: 1500,
             },
             promotionalCreditUsedCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Campo promotional credit used cents expuesto por el runtime actual.',
               example: 1500,
             },
             walletBalanceUsedCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Campo wallet balance used cents expuesto por el runtime actual.',
               example: 1500,
             },
             customerFundedCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Campo customer funded cents expuesto por el runtime actual.',
               example: 1500,
             },
             simulatedPayment: {
               type: 'boolean',
               description: 'Campo simulated payment expuesto por el runtime actual.',
-              example: false,
-            },
-            paymentMethod: {
-              type: 'string',
-              enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
-              description: 'Campo payment method expuesto por el runtime actual.',
-              example: 'MERCADO_PAGO',
-              nullable: true,
-            },
-            combineProducts: {
-              type: 'boolean',
-              description: 'Campo combine products expuesto por el runtime actual.',
               example: false,
             },
             paidAt: {
@@ -10818,23 +8632,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           required: [
             'user',
-            'refundRequests',
             'items',
+            'refundRequests',
             'paymentAttempts',
             'id',
-            'userId',
             'createdAt',
-            'status',
             'updatedAt',
+            'userId',
+            'status',
             'currency',
             'clubId',
+            'paymentMethod',
+            'combineProducts',
             'totalCents',
             'promotionalCreditUsedCents',
             'walletBalanceUsedCents',
             'customerFundedCents',
             'simulatedPayment',
-            'paymentMethod',
-            'combineProducts',
             'paidAt',
           ],
           additionalProperties: false,
@@ -10856,9 +8670,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+                description: 'Identificador del recurso.',
               },
               phoneCountryCode: {
                 type: 'string',
@@ -10870,164 +8682,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 description: 'Campo phone number expuesto por el runtime actual.',
                 example: '987654321',
               },
-              email: {
-                type: 'string',
-                format: 'email',
-                nullable: true,
-                description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
-              },
               fullName: {
                 type: 'string',
                 description: 'Campo full name expuesto por el runtime actual.',
                 example: 'Valeria Mendoza',
               },
+              email: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo email expuesto por el runtime actual.',
+              },
             },
-            required: ['id', 'phoneCountryCode', 'phoneNumber', 'email', 'fullName'],
+            required: ['id', 'phoneCountryCode', 'phoneNumber', 'fullName', 'email'],
             additionalProperties: false,
             description: 'Campo user expuesto por el runtime actual.',
-          },
-          refundRequests: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'FAILED',
-                    'COMPLETED',
-                    'APPROVED',
-                    'REJECTED',
-                    'REQUESTED',
-                    'UNDER_REVIEW',
-                    'PROCESSING',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'FAILED',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-                clubId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                },
-                reason: {
-                  type: 'string',
-                  description: 'Campo reason expuesto por el runtime actual.',
-                },
-                orderId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo order id expuesto por el runtime actual.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                },
-                requestedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo requested at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                reviewedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo reviewed at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                requestedByUserId: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Campo requested by user id expuesto por el runtime actual.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-                },
-                requestedAmountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  nullable: true,
-                  description: 'Campo requested amount cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                approvedAmountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  nullable: true,
-                  description: 'Campo approved amount cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                processedAmountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo processed amount cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                marketplaceFeeRefundedCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description:
-                    'Campo marketplace fee refunded cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                externalRefundId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo external refund id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                resolutionNote: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo resolution note expuesto por el runtime actual.',
-                },
-                completedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo completed at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-              },
-              required: [
-                'id',
-                'createdAt',
-                'status',
-                'updatedAt',
-                'clubId',
-                'reason',
-                'orderId',
-                'requestedAt',
-                'reviewedAt',
-                'requestedByUserId',
-                'requestedAmountCents',
-                'approvedAmountCents',
-                'processedAmountCents',
-                'marketplaceFeeRefundedCents',
-                'externalRefundId',
-                'resolutionNote',
-                'completedAt',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo refund requests expuesto por el runtime actual.',
           },
           items: {
             type: 'array',
@@ -11036,9 +8704,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                  description: 'Identificador del recurso.',
                 },
                 createdAt: {
                   type: 'string',
@@ -11048,28 +8714,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 eventId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
-                totalCents: {
+                quantity: {
                   type: 'integer',
-                  format: 'int64',
-                  description: 'Importe total expresado en céntimos.',
-                  example: 1500,
+                  description: 'Campo quantity expuesto por el runtime actual.',
                 },
                 orderId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo order id expuesto por el runtime actual.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                },
+                totalCents: {
+                  type: 'integer',
+                  description: 'Importe total expresado en céntimos.',
+                  example: 1500,
                 },
                 itemType: {
                   type: 'string',
@@ -11079,9 +8742,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 itemId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo item id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                },
+                productDeliveryMode: {
+                  type: 'string',
+                  enum: ['GROUPED', 'SEPARATE'],
+                  description: 'Campo product delivery mode expuesto por el runtime actual.',
+                  example: 'GROUPED',
                 },
                 nameSnapshot: {
                   type: 'string',
@@ -11097,20 +8764,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   ],
                   nullable: true,
                 },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-                productDeliveryMode: {
-                  type: 'string',
-                  enum: ['GROUPED', 'SEPARATE'],
-                  description: 'Campo product delivery mode expuesto por el runtime actual.',
-                  example: 'GROUPED',
-                },
                 unitPriceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo unit price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
@@ -11120,19 +8775,147 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 'createdAt',
                 'eventId',
                 'clubId',
-                'totalCents',
+                'quantity',
                 'orderId',
+                'totalCents',
                 'itemType',
                 'itemId',
+                'productDeliveryMode',
                 'nameSnapshot',
                 'eventSnapshot',
-                'quantity',
-                'productDeliveryMode',
                 'unitPriceCents',
               ],
               additionalProperties: false,
             },
             description: 'Campo items expuesto por el runtime actual.',
+          },
+          refundRequests: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  description: 'Identificador del recurso.',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                updatedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                  example: '2026-08-28T14:15:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'FAILED',
+                    'COMPLETED',
+                    'REJECTED',
+                    'APPROVED',
+                    'REQUESTED',
+                    'UNDER_REVIEW',
+                    'PROCESSING',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'FAILED',
+                },
+                reason: {
+                  type: 'string',
+                  description: 'Campo reason expuesto por el runtime actual.',
+                },
+                clubId: {
+                  type: 'string',
+                  description: 'Campo club id expuesto por el runtime actual.',
+                },
+                orderId: {
+                  type: 'string',
+                  description: 'Campo order id expuesto por el runtime actual.',
+                },
+                completedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo completed at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                requestedByUserId: {
+                  type: 'string',
+                  description: 'Campo requested by user id expuesto por el runtime actual.',
+                },
+                requestedAmountCents: {
+                  type: 'integer',
+                  nullable: true,
+                  description: 'Campo requested amount cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                approvedAmountCents: {
+                  type: 'integer',
+                  nullable: true,
+                  description: 'Campo approved amount cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                processedAmountCents: {
+                  type: 'integer',
+                  description: 'Campo processed amount cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                marketplaceFeeRefundedCents: {
+                  type: 'integer',
+                  description:
+                    'Campo marketplace fee refunded cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                externalRefundId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo external refund id expuesto por el runtime actual.',
+                },
+                resolutionNote: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo resolution note expuesto por el runtime actual.',
+                },
+                requestedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo requested at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                reviewedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo reviewed at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+              },
+              required: [
+                'id',
+                'createdAt',
+                'updatedAt',
+                'status',
+                'reason',
+                'clubId',
+                'orderId',
+                'completedAt',
+                'requestedByUserId',
+                'requestedAmountCents',
+                'approvedAmountCents',
+                'processedAmountCents',
+                'marketplaceFeeRefundedCents',
+                'externalRefundId',
+                'resolutionNote',
+                'requestedAt',
+                'reviewedAt',
+              ],
+              additionalProperties: false,
+            },
+            description: 'Campo refund requests expuesto por el runtime actual.',
           },
           paymentAttempts: {
             type: 'array',
@@ -11141,9 +8924,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 createdAt: {
                   type: 'string',
@@ -11151,33 +8932,50 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'PENDING',
-                    'CANCELLED',
-                    'EXPIRED',
-                    'REFUND_PENDING',
-                    'REFUNDED',
-                    'PARTIALLY_REFUNDED',
-                    'CHARGEBACK',
-                    'APPROVED',
-                    'REJECTED',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'PENDING',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'PENDING',
+                    'CHARGEBACK',
+                    'EXPIRED',
+                    'CANCELLED',
+                    'REFUND_PENDING',
+                    'REFUNDED',
+                    'PARTIALLY_REFUNDED',
+                    'REJECTED',
+                    'APPROVED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'PENDING',
+                },
+                provider: {
+                  type: 'string',
+                  description: 'Campo provider expuesto por el runtime actual.',
+                },
+                providerData: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                  nullable: true,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
                 purpose: {
                   type: 'string',
-                  enum: ['ORDER_PAYMENT', 'WALLET_TOP_UP', 'FEATURED_CAMPAIGN'],
+                  enum: ['WALLET_TOP_UP', 'FEATURED_CAMPAIGN', 'ORDER_PAYMENT'],
                   description: 'Campo purpose expuesto por el runtime actual.',
-                  example: 'ORDER_PAYMENT',
+                  example: 'WALLET_TOP_UP',
                 },
                 expiresAt: {
                   type: 'string',
@@ -11186,50 +8984,44 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Campo expires at expuesto por el runtime actual.',
                   example: '2026-09-19T22:00:00.000Z',
                 },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
                 marketplaceFeeBps: {
-                  type: 'number',
+                  type: 'integer',
                   nullable: true,
                   description: 'Campo marketplace fee bps expuesto por el runtime actual.',
                 },
                 orderId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo order id expuesto por el runtime actual.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
                 },
-                walletTopUpId: {
-                  type: 'string',
-                  format: 'uuid',
+                amountCents: {
+                  type: 'integer',
+                  description: 'Importe expresado en céntimos.',
+                  example: 1500,
+                },
+                marketplaceFeeCents: {
+                  type: 'integer',
                   nullable: true,
-                  description: 'Campo wallet top up id expuesto por el runtime actual.',
-                  example: '5d7a1c84-3e69-4f20-8b15-6c2e97a4d038',
+                  description: 'Campo marketplace fee cents expuesto por el runtime actual.',
+                  example: 1500,
                 },
-                featuredCampaignId: {
-                  type: 'string',
-                  format: 'uuid',
+                sellerExpectedNetCents: {
+                  type: 'integer',
                   nullable: true,
-                  description: 'Campo featured campaign id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Campo seller expected net cents expuesto por el runtime actual.',
+                  example: 1500,
                 },
-                provider: {
+                feeSource: {
                   type: 'string',
-                  description: 'Campo provider expuesto por el runtime actual.',
+                  enum: ['GLOBAL', 'BUSINESS_OVERRIDE', null],
+                  nullable: true,
+                  description: 'Campo fee source expuesto por el runtime actual.',
+                  example: 'GLOBAL',
                 },
                 externalPaymentId: {
                   type: 'string',
                   nullable: true,
                   description: 'Campo external payment id expuesto por el runtime actual.',
-                },
-                amountCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe expresado en céntimos.',
-                  example: 1500,
                 },
                 failureCode: {
                   type: 'string',
@@ -11242,68 +9034,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                   description: 'Campo failure message expuesto por el runtime actual.',
                 },
-                providerData: {
-                  description: 'Valor JSON dinámico expuesto por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                  nullable: true,
-                },
                 externalCheckoutId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo external checkout id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
                 },
                 sellerExternalId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo seller external id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
                 },
                 grossAmountCents: {
                   type: 'integer',
-                  format: 'int64',
                   nullable: true,
                   description: 'Campo gross amount cents expuesto por el runtime actual.',
                   example: 1500,
                 },
                 customerFundedSnapshotCents: {
                   type: 'integer',
-                  format: 'int64',
                   nullable: true,
                   description:
                     'Campo customer funded snapshot cents expuesto por el runtime actual.',
                   example: 1500,
                 },
-                marketplaceFeeCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  nullable: true,
-                  description: 'Campo marketplace fee cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                sellerExpectedNetCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  nullable: true,
-                  description: 'Campo seller expected net cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                feeSource: {
-                  type: 'string',
-                  enum: ['GLOBAL', 'BUSINESS_OVERRIDE'],
-                  nullable: true,
-                  description: 'Campo fee source expuesto por el runtime actual.',
-                  example: 'GLOBAL',
-                },
                 refundedAmountCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo refunded amount cents expuesto por el runtime actual.',
                   example: 1500,
                 },
@@ -11321,35 +9076,45 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Campo failed at expuesto por el runtime actual.',
                   example: '2026-09-19T22:00:00.000Z',
                 },
+                walletTopUpId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo wallet top up id expuesto por el runtime actual.',
+                },
+                featuredCampaignId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo featured campaign id expuesto por el runtime actual.',
+                },
               },
               required: [
                 'id',
                 'createdAt',
-                'status',
                 'updatedAt',
+                'status',
+                'provider',
+                'providerData',
+                'currency',
                 'purpose',
                 'expiresAt',
-                'currency',
                 'marketplaceFeeBps',
                 'orderId',
-                'walletTopUpId',
-                'featuredCampaignId',
-                'provider',
-                'externalPaymentId',
                 'amountCents',
+                'marketplaceFeeCents',
+                'sellerExpectedNetCents',
+                'feeSource',
+                'externalPaymentId',
                 'failureCode',
                 'failureMessage',
-                'providerData',
                 'externalCheckoutId',
                 'sellerExternalId',
                 'grossAmountCents',
                 'customerFundedSnapshotCents',
-                'marketplaceFeeCents',
-                'sellerExpectedNetCents',
-                'feeSource',
                 'refundedAmountCents',
                 'approvedAt',
                 'failedAt',
+                'walletTopUpId',
+                'featuredCampaignId',
               ],
               additionalProperties: false,
             },
@@ -11357,15 +9122,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -11373,27 +9130,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
-          status: {
-            type: 'string',
-            enum: [
-              'PENDING',
-              'FAILED',
-              'CANCELLED',
-              'PAID',
-              'EXPIRED',
-              'REFUND_PENDING',
-              'REFUNDED',
-              'PARTIALLY_REFUNDED',
-              'CHARGEBACK',
-            ],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
           updatedAt: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la última actualización en formato ISO 8601.',
             example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: [
+              'PENDING',
+              'FAILED',
+              'CHARGEBACK',
+              'PAID',
+              'EXPIRED',
+              'CANCELLED',
+              'REFUND_PENDING',
+              'REFUNDED',
+              'PARTIALLY_REFUNDED',
+            ],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           currency: {
             type: 'string',
@@ -11401,49 +9162,42 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+          },
+          paymentMethod: {
+            type: 'string',
+            enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'FLOW', 'SIMULATED'],
+            description: 'Campo payment method expuesto por el runtime actual.',
+            example: 'MERCADO_PAGO',
+          },
+          combineProducts: {
+            type: 'boolean',
+            description: 'Campo combine products expuesto por el runtime actual.',
+            example: false,
           },
           totalCents: {
             type: 'integer',
-            format: 'int64',
             description: 'Importe total expresado en céntimos.',
             example: 1500,
           },
           promotionalCreditUsedCents: {
             type: 'integer',
-            format: 'int64',
             description: 'Campo promotional credit used cents expuesto por el runtime actual.',
             example: 1500,
           },
           walletBalanceUsedCents: {
             type: 'integer',
-            format: 'int64',
             description: 'Campo wallet balance used cents expuesto por el runtime actual.',
             example: 1500,
           },
           customerFundedCents: {
             type: 'integer',
-            format: 'int64',
             description: 'Campo customer funded cents expuesto por el runtime actual.',
             example: 1500,
           },
           simulatedPayment: {
             type: 'boolean',
             description: 'Campo simulated payment expuesto por el runtime actual.',
-            example: false,
-          },
-          paymentMethod: {
-            type: 'string',
-            enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
-            description: 'Campo payment method expuesto por el runtime actual.',
-            example: 'MERCADO_PAGO',
-            nullable: true,
-          },
-          combineProducts: {
-            type: 'boolean',
-            description: 'Campo combine products expuesto por el runtime actual.',
             example: false,
           },
           paidAt: {
@@ -11456,23 +9210,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         },
         required: [
           'user',
-          'refundRequests',
           'items',
+          'refundRequests',
           'paymentAttempts',
           'id',
-          'userId',
           'createdAt',
-          'status',
           'updatedAt',
+          'userId',
+          'status',
           'currency',
           'clubId',
+          'paymentMethod',
+          'combineProducts',
           'totalCents',
           'promotionalCreditUsedCents',
           'walletBalanceUsedCents',
           'customerFundedCents',
           'simulatedPayment',
-          'paymentMethod',
-          'combineProducts',
           'paidAt',
         ],
         additionalProperties: false,
@@ -11494,9 +9248,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -11504,13 +9256,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
           status: {
             type: 'string',
             enum: [
               'FAILED',
               'COMPLETED',
-              'APPROVED',
               'REJECTED',
+              'APPROVED',
               'REQUESTED',
               'UNDER_REVIEW',
               'PROCESSING',
@@ -11518,27 +9276,60 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Estado actual expuesto por el runtime.',
             example: 'FAILED',
           },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
           reason: {
             type: 'string',
             description: 'Campo reason expuesto por el runtime actual.',
           },
+          clubId: {
+            type: 'string',
+            description: 'Campo club id expuesto por el runtime actual.',
+          },
           orderId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo order id expuesto por el runtime actual.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          completedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Campo completed at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
+          },
+          requestedByUserId: {
+            type: 'string',
+            description: 'Campo requested by user id expuesto por el runtime actual.',
+          },
+          requestedAmountCents: {
+            type: 'integer',
+            nullable: true,
+            description: 'Campo requested amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          approvedAmountCents: {
+            type: 'integer',
+            nullable: true,
+            description: 'Campo approved amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          processedAmountCents: {
+            type: 'integer',
+            description: 'Campo processed amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          marketplaceFeeRefundedCents: {
+            type: 'integer',
+            description: 'Campo marketplace fee refunded cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          externalRefundId: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo external refund id expuesto por el runtime actual.',
+          },
+          resolutionNote: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo resolution note expuesto por el runtime actual.',
           },
           requestedAt: {
             type: 'string',
@@ -11553,68 +9344,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo reviewed at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          requestedByUserId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo requested by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          requestedAmountCents: {
-            type: 'integer',
-            format: 'int64',
-            nullable: true,
-            description: 'Campo requested amount cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          approvedAmountCents: {
-            type: 'integer',
-            format: 'int64',
-            nullable: true,
-            description: 'Campo approved amount cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          processedAmountCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Campo processed amount cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          marketplaceFeeRefundedCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Campo marketplace fee refunded cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          externalRefundId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo external refund id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          resolutionNote: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo resolution note expuesto por el runtime actual.',
-          },
-          completedAt: {
-            type: 'string',
-            format: 'date-time',
-            nullable: true,
-            description: 'Campo completed at expuesto por el runtime actual.',
-            example: '2026-09-19T22:00:00.000Z',
-          },
         },
         required: [
           'id',
           'createdAt',
-          'status',
           'updatedAt',
-          'clubId',
+          'status',
           'reason',
+          'clubId',
           'orderId',
-          'requestedAt',
-          'reviewedAt',
+          'completedAt',
           'requestedByUserId',
           'requestedAmountCents',
           'approvedAmountCents',
@@ -11622,7 +9361,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           'marketplaceFeeRefundedCents',
           'externalRefundId',
           'resolutionNote',
-          'completedAt',
+          'requestedAt',
+          'reviewedAt',
         ],
         additionalProperties: false,
         description: 'Campo refund request expuesto por el runtime actual.',
@@ -11643,9 +9383,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -11653,13 +9391,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
           status: {
             type: 'string',
             enum: [
               'FAILED',
               'COMPLETED',
-              'APPROVED',
               'REJECTED',
+              'APPROVED',
               'REQUESTED',
               'UNDER_REVIEW',
               'PROCESSING',
@@ -11667,27 +9411,60 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Estado actual expuesto por el runtime.',
             example: 'FAILED',
           },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
-          },
-          clubId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-          },
           reason: {
             type: 'string',
             description: 'Campo reason expuesto por el runtime actual.',
           },
+          clubId: {
+            type: 'string',
+            description: 'Campo club id expuesto por el runtime actual.',
+          },
           orderId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo order id expuesto por el runtime actual.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+          },
+          completedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Campo completed at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
+          },
+          requestedByUserId: {
+            type: 'string',
+            description: 'Campo requested by user id expuesto por el runtime actual.',
+          },
+          requestedAmountCents: {
+            type: 'integer',
+            nullable: true,
+            description: 'Campo requested amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          approvedAmountCents: {
+            type: 'integer',
+            nullable: true,
+            description: 'Campo approved amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          processedAmountCents: {
+            type: 'integer',
+            description: 'Campo processed amount cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          marketplaceFeeRefundedCents: {
+            type: 'integer',
+            description: 'Campo marketplace fee refunded cents expuesto por el runtime actual.',
+            example: 1500,
+          },
+          externalRefundId: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo external refund id expuesto por el runtime actual.',
+          },
+          resolutionNote: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo resolution note expuesto por el runtime actual.',
           },
           requestedAt: {
             type: 'string',
@@ -11702,68 +9479,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo reviewed at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          requestedByUserId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo requested by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          requestedAmountCents: {
-            type: 'integer',
-            format: 'int64',
-            nullable: true,
-            description: 'Campo requested amount cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          approvedAmountCents: {
-            type: 'integer',
-            format: 'int64',
-            nullable: true,
-            description: 'Campo approved amount cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          processedAmountCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Campo processed amount cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          marketplaceFeeRefundedCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Campo marketplace fee refunded cents expuesto por el runtime actual.',
-            example: 1500,
-          },
-          externalRefundId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo external refund id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          resolutionNote: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo resolution note expuesto por el runtime actual.',
-          },
-          completedAt: {
-            type: 'string',
-            format: 'date-time',
-            nullable: true,
-            description: 'Campo completed at expuesto por el runtime actual.',
-            example: '2026-09-19T22:00:00.000Z',
-          },
         },
         required: [
           'id',
           'createdAt',
-          'status',
           'updatedAt',
-          'clubId',
+          'status',
           'reason',
+          'clubId',
           'orderId',
-          'requestedAt',
-          'reviewedAt',
+          'completedAt',
           'requestedByUserId',
           'requestedAmountCents',
           'approvedAmountCents',
@@ -11771,7 +9496,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           'marketplaceFeeRefundedCents',
           'externalRefundId',
           'resolutionNote',
-          'completedAt',
+          'requestedAt',
+          'reviewedAt',
         ],
         additionalProperties: false,
         description: 'Campo refund request expuesto por el runtime actual.',
@@ -11793,8 +9519,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           amountCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Importe expresado en céntimos.',
             example: 1500,
           },
@@ -11821,9 +9546,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -11831,27 +9559,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
                 },
                 currency: {
                   type: 'string',
@@ -11859,36 +9582,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 imageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
                 },
                 priceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
                 stockQuantity: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo stock quantity expuesto por el runtime actual.',
-                  example: 1,
                 },
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'currency',
                 'clubId',
                 'imageUrl',
@@ -11906,9 +9623,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -11916,27 +9636,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
                 },
                 currency: {
                   type: 'string',
@@ -11944,36 +9659,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 imageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
                 },
                 priceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
                 stockQuantity: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo stock quantity expuesto por el runtime actual.',
-                  example: 1,
                 },
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'currency',
                 'clubId',
                 'imageUrl',
@@ -11996,9 +9705,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -12024,17 +9731,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             status: {
               type: 'string',
               enum: [
+                'CANCELLED',
                 'DRAFT',
                 'PUBLISHED',
                 'SALE_ACTIVE',
                 'SOLD_OUT',
                 'IN_PROGRESS',
                 'FINISHED',
-                'CANCELLED',
                 'POSTPONED',
               ],
               description: 'Estado actual expuesto por el runtime.',
-              example: 'DRAFT',
+              example: 'CANCELLED',
             },
           },
           required: [
@@ -12065,9 +9772,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -12124,19 +9829,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'b3f7c216-8a59-4d40-9e15-2c6a74f893bd',
-            },
-            userId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              description: 'Identificador del recurso.',
             },
             platform: {
               type: 'string',
               description: 'Campo platform expuesto por el runtime actual.',
+            },
+            userId: {
+              type: 'string',
+              description: 'Campo user id expuesto por el runtime actual.',
             },
             enabled: {
               type: 'boolean',
@@ -12150,7 +9851,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: '2026-09-19T22:00:00.000Z',
             },
           },
-          required: ['online', 'id', 'userId', 'platform', 'enabled', 'lastSeenAt'],
+          required: ['online', 'id', 'platform', 'userId', 'enabled', 'lastSeenAt'],
           additionalProperties: false,
         },
         description: 'Campo devices expuesto por el runtime actual.',
@@ -12168,461 +9869,215 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_simulatePaymentResponse: {
-    oneOf: [
-      {
+    type: 'object',
+    properties: {
+      message: {
+        type: 'string',
+        description: 'Mensaje legible que resume el resultado.',
+      },
+      orderId: {
+        type: 'string',
+        description: 'Campo order id expuesto por el runtime actual.',
+      },
+      orderStatus: {
+        type: 'string',
+        enum: [
+          'PENDING',
+          'FAILED',
+          'CHARGEBACK',
+          'PAID',
+          'EXPIRED',
+          'CANCELLED',
+          'REFUND_PENDING',
+          'REFUNDED',
+          'PARTIALLY_REFUNDED',
+        ],
+        description: 'Campo order status expuesto por el runtime actual.',
+        example: 'PENDING',
+      },
+      paymentAttemptId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo payment attempt id expuesto por el runtime actual.',
+      },
+      paymentStatus: {
+        type: 'string',
+        enum: [
+          'PENDING',
+          'CHARGEBACK',
+          'EXPIRED',
+          'CANCELLED',
+          'REFUND_PENDING',
+          'REFUNDED',
+          'PARTIALLY_REFUNDED',
+          'REJECTED',
+          'APPROVED',
+          null,
+        ],
+        nullable: true,
+        description: 'Campo payment status expuesto por el runtime actual.',
+        example: 'PENDING',
+      },
+      paymentProvider: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo payment provider expuesto por el runtime actual.',
+      },
+      paymentMethod: {
+        type: 'string',
+        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'FLOW', 'SIMULATED'],
+        description: 'Campo payment method expuesto por el runtime actual.',
+        example: 'MERCADO_PAGO',
+      },
+      checkoutUrl: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo checkout url expuesto por el runtime actual.',
+      },
+      total: {
+        type: 'number',
+        description: 'Campo total expuesto por el runtime actual.',
+        example: 1,
+      },
+      currency: {
+        type: 'string',
+        description: 'Campo currency expuesto por el runtime actual.',
+      },
+      generatedCount: {
+        type: 'number',
+        description: 'Campo generated count expuesto por el runtime actual.',
+        example: 1,
+      },
+      topUpId: {
+        type: 'string',
+        description: 'Campo top up id expuesto por el runtime actual.',
+      },
+      status: {
+        type: 'string',
+        enum: [
+          'PENDING',
+          'EXPIRED',
+          'REFUND_PENDING',
+          'REFUNDED',
+          'REJECTED',
+          'APPROVED',
+          'CHARGEDBACK',
+        ],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'PENDING',
+      },
+      amountCents: {
+        type: 'number',
+        description: 'Importe expresado en céntimos.',
+        example: 1500,
+      },
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
+      },
+      approvedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo approved at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+    },
+    required: ['paymentAttemptId', 'paymentStatus', 'paymentProvider', 'checkoutUrl', 'currency'],
+    additionalProperties: false,
+  },
+  CommerceController_validateTicketResponse: {
+    type: 'object',
+    properties: {
+      validation: {
         type: 'object',
         properties: {
+          isValid: {
+            type: 'boolean',
+            description: 'Campo is valid expuesto por el runtime actual.',
+            example: false,
+          },
+          statusLabel: {
+            type: 'string',
+            description: 'Campo status label expuesto por el runtime actual.',
+          },
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
+          },
           message: {
             type: 'string',
             description: 'Mensaje legible que resume el resultado.',
           },
-          orderId: {
+          attendeeName: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo order id expuesto por el runtime actual.',
-            example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+            description: 'Campo attendee name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
           },
-          orderStatus: {
+          attendeeReference: {
             type: 'string',
-            description: 'Campo order status expuesto por el runtime actual.',
-            enum: [
-              'PENDING',
-              'PAID',
-              'FAILED',
-              'EXPIRED',
-              'CANCELLED',
-              'REFUND_PENDING',
-              'REFUNDED',
-              'PARTIALLY_REFUNDED',
-            ],
-            example: 'PENDING',
+            description: 'Campo attendee reference expuesto por el runtime actual.',
           },
-          paymentAttemptId: {
+          accessTypeLabel: {
             type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo payment attempt id expuesto por el runtime actual.',
-            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
+            description: 'Campo access type label expuesto por el runtime actual.',
           },
-          paymentStatus: {
+          accessName: {
             type: 'string',
-            nullable: true,
-            description: 'Campo payment status expuesto por el runtime actual.',
-            enum: [
-              'PENDING',
-              'APPROVED',
-              'REJECTED',
-              'EXPIRED',
-              'CANCELLED',
-              'REFUND_PENDING',
-              'REFUNDED',
-              'PARTIALLY_REFUNDED',
-            ],
-            example: 'PENDING',
+            description: 'Campo access name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
           },
-          paymentProvider: {
+          eventDateLabel: {
+            type: 'string',
+            description: 'Campo event date label expuesto por el runtime actual.',
+          },
+          scanTimeLabel: {
+            type: 'string',
+            description: 'Campo scan time label expuesto por el runtime actual.',
+          },
+          transactionId: {
+            type: 'string',
+            description: 'Campo transaction id expuesto por el runtime actual.',
+          },
+          attendeeImageUrl: {
             type: 'string',
             nullable: true,
-            description: 'Campo payment provider expuesto por el runtime actual.',
-            enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-            example: 'mercado_pago',
+            description: 'Campo attendee image url expuesto por el runtime actual.',
           },
-          paymentMethod: {
+          validatedByName: {
+            type: 'string',
+            description: 'Campo validated by name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          validatedAt: {
             type: 'string',
             nullable: true,
-            description: 'Campo payment method expuesto por el runtime actual.',
-            enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
-            example: 'MERCADO_PAGO',
-          },
-          checkoutUrl: {
-            type: 'string',
-            format: 'uri',
-            nullable: true,
-            description: 'Campo checkout url expuesto por el runtime actual.',
-            example:
-              'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
-          },
-          total: {
-            type: 'number',
-            description: 'Campo total expuesto por el runtime actual.',
-            example: 1,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-          generatedCount: {
-            type: 'integer',
-            format: 'int32',
-            description: 'Campo generated count expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Campo validated at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
           },
         },
         required: [
+          'isValid',
+          'statusLabel',
+          'title',
           'message',
-          'orderId',
-          'orderStatus',
-          'paymentAttemptId',
-          'paymentStatus',
-          'paymentProvider',
-          'paymentMethod',
-          'checkoutUrl',
-          'total',
-          'currency',
+          'attendeeName',
+          'attendeeReference',
+          'accessTypeLabel',
+          'accessName',
+          'eventDateLabel',
+          'scanTimeLabel',
+          'transactionId',
         ],
         additionalProperties: false,
+        description: 'Campo validation expuesto por el runtime actual.',
       },
-      {
-        type: 'object',
-        properties: {
-          topUpId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo top up id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          status: {
-            type: 'string',
-            description: 'Estado actual expuesto por el runtime.',
-          },
-          amountCents: {
-            type: 'integer',
-            format: 'int64',
-            description: 'Importe expresado en céntimos.',
-            example: 1500,
-          },
-          currency: {
-            type: 'string',
-            description: 'Campo currency expuesto por el runtime actual.',
-          },
-          paymentAttemptId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo payment attempt id expuesto por el runtime actual.',
-            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
-          },
-          paymentStatus: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo payment status expuesto por el runtime actual.',
-            enum: [
-              'PENDING',
-              'APPROVED',
-              'REJECTED',
-              'EXPIRED',
-              'CANCELLED',
-              'REFUND_PENDING',
-              'REFUNDED',
-              'PARTIALLY_REFUNDED',
-            ],
-            example: 'PENDING',
-          },
-          paymentProvider: {
-            type: 'string',
-            nullable: true,
-            description: 'Campo payment provider expuesto por el runtime actual.',
-            enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
-            example: 'mercado_pago',
-          },
-          checkoutUrl: {
-            type: 'string',
-            format: 'uri',
-            nullable: true,
-            description: 'Campo checkout url expuesto por el runtime actual.',
-            example:
-              'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          approvedAt: {
-            type: 'string',
-            format: 'date-time',
-            nullable: true,
-            description: 'Campo approved at expuesto por el runtime actual.',
-            example: '2026-09-19T22:05:00.000Z',
-          },
-        },
-        required: [
-          'topUpId',
-          'status',
-          'amountCents',
-          'currency',
-          'paymentAttemptId',
-          'paymentStatus',
-          'paymentProvider',
-          'checkoutUrl',
-          'createdAt',
-          'approvedAt',
-        ],
-        additionalProperties: false,
-      },
-    ],
-  },
-  CommerceController_validateTicketResponse: {
-    anyOf: [
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              attendeeImageUrl: {
-                type: 'string',
-                format: 'uri',
-                nullable: true,
-                description: 'Campo attendee image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-              validatedByName: {
-                type: 'string',
-                description: 'Campo validated by name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              validatedAt: {
-                type: 'string',
-                format: 'date-time',
-                nullable: true,
-                description: 'Campo validated at expuesto por el runtime actual.',
-                example: '2026-09-19T22:00:00.000Z',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'attendeeImageUrl',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-              'validatedByName',
-              'validatedAt',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              attendeeImageUrl: {
-                type: 'string',
-                format: 'uri',
-                nullable: true,
-                description: 'Campo attendee image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'attendeeImageUrl',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-    ],
+    },
+    required: ['validation'],
+    additionalProperties: false,
   },
   CommerceController_validateDetectedCodeResponse: {
     type: 'object',
@@ -12675,9 +10130,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           transactionId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo transaction id expuesto por el runtime actual.',
-            example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
           },
         },
         required: [
@@ -12701,528 +10154,186 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   CommerceController_validateProductResponse: {
-    anyOf: [
-      {
+    type: 'object',
+    properties: {
+      validation: {
         type: 'object',
         properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
+          isValid: {
+            type: 'boolean',
+            description: 'Campo is valid expuesto por el runtime actual.',
+            example: false,
+          },
+          statusLabel: {
+            type: 'string',
+            description: 'Campo status label expuesto por el runtime actual.',
+          },
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
+          },
+          message: {
+            type: 'string',
+            description: 'Mensaje legible que resume el resultado.',
+          },
+          attendeeName: {
+            type: 'string',
+            description: 'Campo attendee name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          attendeeReference: {
+            type: 'string',
+            description: 'Campo attendee reference expuesto por el runtime actual.',
+          },
+          accessTypeLabel: {
+            type: 'string',
+            description: 'Campo access type label expuesto por el runtime actual.',
+          },
+          accessName: {
+            type: 'string',
+            description: 'Campo access name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          eventDateLabel: {
+            type: 'string',
+            description: 'Campo event date label expuesto por el runtime actual.',
+          },
+          scanTimeLabel: {
+            type: 'string',
+            description: 'Campo scan time label expuesto por el runtime actual.',
+          },
+          transactionId: {
+            type: 'string',
+            description: 'Campo transaction id expuesto por el runtime actual.',
+          },
+          attendeeImageUrl: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo attendee image url expuesto por el runtime actual.',
+          },
+          validatedByName: {
+            type: 'string',
+            description: 'Campo validated by name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          validatedAt: {
+            type: 'string',
+            nullable: true,
+            format: 'date-time',
+            description: 'Campo validated at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
           },
         },
-        required: ['validation'],
+        required: [
+          'isValid',
+          'statusLabel',
+          'title',
+          'message',
+          'attendeeName',
+          'attendeeReference',
+          'accessTypeLabel',
+          'accessName',
+          'eventDateLabel',
+          'scanTimeLabel',
+          'transactionId',
+        ],
         additionalProperties: false,
+        description: 'Campo validation expuesto por el runtime actual.',
       },
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              attendeeImageUrl: {
-                type: 'string',
-                format: 'uri',
-                nullable: true,
-                description: 'Campo attendee image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-              validatedByName: {
-                type: 'string',
-                description: 'Campo validated by name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              validatedAt: {
-                type: 'string',
-                format: 'date-time',
-                nullable: true,
-                description: 'Campo validated at expuesto por el runtime actual.',
-                example: '2026-09-19T22:00:00.000Z',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'attendeeImageUrl',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-              'validatedByName',
-              'validatedAt',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              attendeeImageUrl: {
-                type: 'string',
-                format: 'uri',
-                nullable: true,
-                description: 'Campo attendee image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'attendeeImageUrl',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-    ],
+    },
+    required: ['validation'],
+    additionalProperties: false,
   },
   CommerceController_validatePromotionResponse: {
-    anyOf: [
-      {
+    type: 'object',
+    properties: {
+      validation: {
         type: 'object',
         properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
+          isValid: {
+            type: 'boolean',
+            description: 'Campo is valid expuesto por el runtime actual.',
+            example: false,
+          },
+          statusLabel: {
+            type: 'string',
+            description: 'Campo status label expuesto por el runtime actual.',
+          },
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
+          },
+          message: {
+            type: 'string',
+            description: 'Mensaje legible que resume el resultado.',
+          },
+          attendeeName: {
+            type: 'string',
+            description: 'Campo attendee name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          attendeeReference: {
+            type: 'string',
+            description: 'Campo attendee reference expuesto por el runtime actual.',
+          },
+          accessTypeLabel: {
+            type: 'string',
+            description: 'Campo access type label expuesto por el runtime actual.',
+          },
+          accessName: {
+            type: 'string',
+            description: 'Campo access name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          eventDateLabel: {
+            type: 'string',
+            description: 'Campo event date label expuesto por el runtime actual.',
+          },
+          scanTimeLabel: {
+            type: 'string',
+            description: 'Campo scan time label expuesto por el runtime actual.',
+          },
+          transactionId: {
+            type: 'string',
+            description: 'Campo transaction id expuesto por el runtime actual.',
+          },
+          attendeeImageUrl: {
+            type: 'string',
+            nullable: true,
+            description: 'Campo attendee image url expuesto por el runtime actual.',
+          },
+          validatedByName: {
+            type: 'string',
+            description: 'Campo validated by name expuesto por el runtime actual.',
+            example: 'Valeria Mendoza',
+          },
+          validatedAt: {
+            type: 'string',
+            nullable: true,
+            format: 'date-time',
+            description: 'Campo validated at expuesto por el runtime actual.',
+            example: '2026-09-19T22:00:00.000Z',
           },
         },
-        required: ['validation'],
+        required: [
+          'isValid',
+          'statusLabel',
+          'title',
+          'message',
+          'attendeeName',
+          'attendeeReference',
+          'accessTypeLabel',
+          'accessName',
+          'eventDateLabel',
+          'scanTimeLabel',
+          'transactionId',
+        ],
         additionalProperties: false,
+        description: 'Campo validation expuesto por el runtime actual.',
       },
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              attendeeImageUrl: {
-                type: 'string',
-                format: 'uri',
-                nullable: true,
-                description: 'Campo attendee image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-              validatedByName: {
-                type: 'string',
-                description: 'Campo validated by name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              validatedAt: {
-                type: 'string',
-                format: 'date-time',
-                nullable: true,
-                description: 'Campo validated at expuesto por el runtime actual.',
-                example: '2026-09-19T22:00:00.000Z',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'attendeeImageUrl',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-              'validatedByName',
-              'validatedAt',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-      {
-        type: 'object',
-        properties: {
-          validation: {
-            type: 'object',
-            properties: {
-              isValid: {
-                type: 'boolean',
-                description: 'Campo is valid expuesto por el runtime actual.',
-                example: false,
-              },
-              statusLabel: {
-                type: 'string',
-                description: 'Campo status label expuesto por el runtime actual.',
-              },
-              title: {
-                type: 'string',
-                description: 'Campo title expuesto por el runtime actual.',
-              },
-              message: {
-                type: 'string',
-                description: 'Mensaje legible que resume el resultado.',
-              },
-              attendeeName: {
-                type: 'string',
-                description: 'Campo attendee name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              attendeeReference: {
-                type: 'string',
-                description: 'Campo attendee reference expuesto por el runtime actual.',
-              },
-              attendeeImageUrl: {
-                type: 'string',
-                format: 'uri',
-                nullable: true,
-                description: 'Campo attendee image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              accessTypeLabel: {
-                type: 'string',
-                description: 'Campo access type label expuesto por el runtime actual.',
-              },
-              accessName: {
-                type: 'string',
-                description: 'Campo access name expuesto por el runtime actual.',
-                example: 'Valeria Mendoza',
-              },
-              eventDateLabel: {
-                type: 'string',
-                description: 'Campo event date label expuesto por el runtime actual.',
-              },
-              scanTimeLabel: {
-                type: 'string',
-                description: 'Campo scan time label expuesto por el runtime actual.',
-              },
-              transactionId: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Campo transaction id expuesto por el runtime actual.',
-                example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
-              },
-            },
-            required: [
-              'isValid',
-              'statusLabel',
-              'title',
-              'message',
-              'attendeeName',
-              'attendeeReference',
-              'attendeeImageUrl',
-              'accessTypeLabel',
-              'accessName',
-              'eventDateLabel',
-              'scanTimeLabel',
-              'transactionId',
-            ],
-            additionalProperties: false,
-            description: 'Campo validation expuesto por el runtime actual.',
-          },
-        },
-        required: ['validation'],
-        additionalProperties: false,
-      },
-    ],
+    },
+    required: ['validation'],
+    additionalProperties: false,
   },
   CommerceController_ticketsResponse: {
     type: 'object',
@@ -13237,9 +10348,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
+                },
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -13247,38 +10365,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
                 profileImageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo profile image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
                 },
                 addressJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -13300,10 +10407,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 coverImageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo cover image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                 },
                 socialMediaJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -13324,7 +10429,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                 },
                 marketplaceFeeBps: {
-                  type: 'number',
+                  type: 'integer',
                   nullable: true,
                   description: 'Campo marketplace fee bps expuesto por el runtime actual.',
                 },
@@ -13336,13 +10441,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
-                'profileImageUrl',
-                'description',
                 'type',
+                'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
+                'profileImageUrl',
                 'addressJson',
                 'contactJson',
                 'coverImageUrl',
@@ -13359,9 +10464,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -13369,49 +10477,40 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'DRAFT',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'CANCELLED',
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'POSTPONED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'CANCELLED',
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 imageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
                 },
                 startsAt: {
                   type: 'string',
@@ -13426,17 +10525,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   example: '2026-09-20T05:00:00.000Z',
                 },
                 capacity: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo capacity expuesto por el runtime actual.',
                 },
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'clubId',
                 'imageUrl',
                 'startsAt',
@@ -13452,9 +10551,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -13462,27 +10564,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Entrada VIP',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Entrada VIP',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'SOLD_OUT'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
                 },
                 currency: {
                   type: 'string',
@@ -13490,39 +10587,32 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 eventId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 priceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
                 quantityTotal: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo quantity total expuesto por el runtime actual.',
-                  example: 1,
                 },
                 quantitySold: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo quantity sold expuesto por el runtime actual.',
-                  example: 1,
                 },
                 replacementReserved: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo replacement reserved expuesto por el runtime actual.',
                 },
                 perUserLimit: {
-                  type: 'number',
+                  type: 'integer',
                   nullable: true,
                   description: 'Campo per user limit expuesto por el runtime actual.',
                 },
@@ -13543,11 +10633,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'currency',
                 'eventId',
                 'clubId',
@@ -13564,9 +10654,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -13576,9 +10664,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             status: {
               type: 'string',
-              enum: ['USED', 'CANCELLED', 'EXPIRED', 'AVAILABLE'],
+              enum: ['USED', 'AVAILABLE', 'EXPIRED', 'CANCELLED'],
               description: 'Estado actual expuesto por el runtime.',
               example: 'USED',
+            },
+            code: {
+              type: 'string',
+              description: 'Campo code expuesto por el runtime actual.',
+              example: 'BRY-8K4M2P',
             },
             revokedAt: {
               type: 'string',
@@ -13589,39 +10682,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             orderId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo order id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-            },
-            ticketTypeId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo ticket type id expuesto por el runtime actual.',
-              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
-            },
-            ownerUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo owner user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            code: {
-              type: 'string',
-              description: 'Campo code expuesto por el runtime actual.',
-              example: 'BRY-8K4M2P',
             },
             qrPayload: {
               type: 'string',
@@ -13633,11 +10703,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             redemptionCount: {
               type: 'integer',
-              format: 'int32',
               description: 'Campo redemption count expuesto por el runtime actual.',
             },
             maxRedemptions: {
-              type: 'number',
+              type: 'integer',
               description: 'Campo max redemptions expuesto por el runtime actual.',
             },
             validFrom: {
@@ -13668,9 +10737,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             orderItemId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo order item id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+            },
+            ticketTypeId: {
+              type: 'string',
+              description: 'Campo ticket type id expuesto por el runtime actual.',
+            },
+            ownerUserId: {
+              type: 'string',
+              description: 'Campo owner user id expuesto por el runtime actual.',
             },
           },
           required: [
@@ -13680,13 +10755,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'id',
             'createdAt',
             'status',
+            'code',
             'revokedAt',
             'eventId',
             'clubId',
             'orderId',
-            'ticketTypeId',
-            'ownerUserId',
-            'code',
             'qrPayload',
             'signatureVersion',
             'redemptionCount',
@@ -13696,6 +10769,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'usedAt',
             'revokedReason',
             'orderItemId',
+            'ticketTypeId',
+            'ownerUserId',
           ],
           additionalProperties: false,
         },
@@ -13710,9 +10785,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       resourceId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo resource id expuesto por el runtime actual.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
       },
       kind: {
         type: 'string',
@@ -13725,9 +10798,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Estado actual expuesto por el runtime.',
       },
       redemptionCount: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo redemption count expuesto por el runtime actual.',
+        example: 1,
       },
       reversed: {
         type: 'boolean',
@@ -13751,9 +10824,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
+                },
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -13761,38 +10841,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
                 profileImageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo profile image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
                 },
                 addressJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -13814,10 +10883,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 coverImageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo cover image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                 },
                 socialMediaJson: {
                   description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -13838,7 +10905,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   nullable: true,
                 },
                 marketplaceFeeBps: {
-                  type: 'number',
+                  type: 'integer',
                   nullable: true,
                   description: 'Campo marketplace fee bps expuesto por el runtime actual.',
                 },
@@ -13850,13 +10917,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
-                'profileImageUrl',
-                'description',
                 'type',
+                'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
+                'profileImageUrl',
                 'addressJson',
                 'contactJson',
                 'coverImageUrl',
@@ -13873,9 +10940,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -13883,49 +10953,40 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'DRAFT',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                status: {
+                  type: 'string',
+                  enum: [
+                    'CANCELLED',
+                    'DRAFT',
+                    'PUBLISHED',
+                    'SALE_ACTIVE',
+                    'SOLD_OUT',
+                    'IN_PROGRESS',
+                    'FINISHED',
+                    'POSTPONED',
+                  ],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'CANCELLED',
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 imageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
                 },
                 startsAt: {
                   type: 'string',
@@ -13940,17 +11001,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   example: '2026-09-20T05:00:00.000Z',
                 },
                 capacity: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo capacity expuesto por el runtime actual.',
                 },
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'clubId',
                 'imageUrl',
                 'startsAt',
@@ -13966,9 +11027,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -13976,27 +11040,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
                 },
                 currency: {
                   type: 'string',
@@ -14004,36 +11063,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 imageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
                 },
                 priceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
                 stockQuantity: {
-                  type: 'number',
+                  type: 'integer',
                   description: 'Campo stock quantity expuesto por el runtime actual.',
-                  example: 1,
                 },
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'currency',
                 'clubId',
                 'imageUrl',
@@ -14049,9 +11102,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+                  description: 'Identificador del recurso.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
                 },
                 createdAt: {
                   type: 'string',
@@ -14059,27 +11115,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Fecha y hora de creación en formato ISO 8601.',
                   example: '2026-08-27T18:30:00.000Z',
                 },
-                status: {
-                  type: 'string',
-                  enum: ['ACTIVE', 'INACTIVE'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'ACTIVE',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Combo de bienvenida',
-                },
                 updatedAt: {
                   type: 'string',
                   format: 'date-time',
                   description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                   example: '2026-08-28T14:15:00.000Z',
                 },
-                description: {
+                name: {
                   type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Combo de bienvenida',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
                 },
                 currency: {
                   type: 'string',
@@ -14087,23 +11138,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 eventId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo event id expuesto por el runtime actual.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
                 imageUrl: {
                   type: 'string',
-                  format: 'uri',
                   nullable: true,
                   description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
                 },
                 startsAt: {
                   type: 'string',
@@ -14127,24 +11172,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 basePriceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo base price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
                 finalPriceCents: {
                   type: 'integer',
-                  format: 'int64',
                   description: 'Campo final price cents expuesto por el runtime actual.',
                   example: 1500,
                 },
               },
               required: [
                 'id',
-                'createdAt',
-                'status',
-                'name',
-                'updatedAt',
                 'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
                 'currency',
                 'eventId',
                 'clubId',
@@ -14161,9 +11204,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -14173,9 +11214,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             status: {
               type: 'string',
-              enum: ['USED', 'CANCELLED', 'EXPIRED', 'AVAILABLE'],
+              enum: ['USED', 'AVAILABLE', 'EXPIRED', 'CANCELLED'],
               description: 'Estado actual expuesto por el runtime.',
               example: 'USED',
+            },
+            code: {
+              type: 'string',
+              description: 'Campo code expuesto por el runtime actual.',
+              example: 'BRY-8K4M2P',
             },
             revokedAt: {
               type: 'string',
@@ -14186,47 +11232,21 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             orderId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo order id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-            },
-            promotionId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo promotion id expuesto por el runtime actual.',
-              example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
             },
             productId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo product id expuesto por el runtime actual.',
-              example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
-            },
-            ownerUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo owner user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            code: {
-              type: 'string',
-              description: 'Campo code expuesto por el runtime actual.',
-              example: 'BRY-8K4M2P',
             },
             qrPayload: {
               type: 'string',
@@ -14238,11 +11258,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             redemptionCount: {
               type: 'integer',
-              format: 'int32',
               description: 'Campo redemption count expuesto por el runtime actual.',
             },
             maxRedemptions: {
-              type: 'number',
+              type: 'integer',
               description: 'Campo max redemptions expuesto por el runtime actual.',
             },
             validFrom: {
@@ -14273,9 +11292,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             orderItemId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo order item id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+            },
+            ownerUserId: {
+              type: 'string',
+              description: 'Campo owner user id expuesto por el runtime actual.',
             },
             sourceType: {
               type: 'string',
@@ -14285,9 +11306,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             sourceId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo source id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            },
+            promotionId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo promotion id expuesto por el runtime actual.',
             },
             title: {
               type: 'string',
@@ -14300,9 +11324,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   productId: {
                     type: 'string',
-                    format: 'uuid',
                     description: 'Campo product id expuesto por el runtime actual.',
-                    example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                   },
                   name: {
                     type: 'string',
@@ -14310,16 +11332,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     example: 'Nébula Club',
                   },
                   quantity: {
-                    type: 'integer',
-                    format: 'int32',
+                    type: 'number',
                     description: 'Campo quantity expuesto por el runtime actual.',
+                    example: 1,
                   },
                   imageUrl: {
                     type: 'string',
-                    format: 'uri',
                     nullable: true,
                     description: 'Campo image url expuesto por el runtime actual.',
-                    example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                   },
                 },
                 required: ['productId', 'name', 'quantity', 'imageUrl'],
@@ -14337,9 +11357,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     properties: {
                       id: {
                         type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+                        description: 'Identificador del recurso.',
+                      },
+                      description: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Campo description expuesto por el runtime actual.',
                       },
                       createdAt: {
                         type: 'string',
@@ -14347,27 +11370,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                         description: 'Fecha y hora de creación en formato ISO 8601.',
                         example: '2026-08-27T18:30:00.000Z',
                       },
-                      status: {
-                        type: 'string',
-                        enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
-                        description: 'Estado actual expuesto por el runtime.',
-                        example: 'ACTIVE',
-                      },
-                      name: {
-                        type: 'string',
-                        description: 'Campo name expuesto por el runtime actual.',
-                        example: 'Chilcano de maracuyá',
-                      },
                       updatedAt: {
                         type: 'string',
                         format: 'date-time',
                         description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                         example: '2026-08-28T14:15:00.000Z',
                       },
-                      description: {
+                      name: {
                         type: 'string',
-                        nullable: true,
-                        description: 'Campo description expuesto por el runtime actual.',
+                        description: 'Campo name expuesto por el runtime actual.',
+                        example: 'Chilcano de maracuyá',
+                      },
+                      status: {
+                        type: 'string',
+                        enum: ['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK'],
+                        description: 'Estado actual expuesto por el runtime.',
+                        example: 'ACTIVE',
                       },
                       currency: {
                         type: 'string',
@@ -14375,36 +11393,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       },
                       clubId: {
                         type: 'string',
-                        format: 'uuid',
                         description: 'Campo club id expuesto por el runtime actual.',
-                        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                       },
                       imageUrl: {
                         type: 'string',
-                        format: 'uri',
                         nullable: true,
                         description: 'Campo image url expuesto por el runtime actual.',
-                        example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
                       },
                       priceCents: {
                         type: 'integer',
-                        format: 'int64',
                         description: 'Campo price cents expuesto por el runtime actual.',
                         example: 1500,
                       },
                       stockQuantity: {
-                        type: 'number',
+                        type: 'integer',
                         description: 'Campo stock quantity expuesto por el runtime actual.',
-                        example: 1,
                       },
                     },
                     required: [
                       'id',
-                      'createdAt',
-                      'status',
-                      'name',
-                      'updatedAt',
                       'description',
+                      'createdAt',
+                      'updatedAt',
+                      'name',
+                      'status',
                       'currency',
                       'clubId',
                       'imageUrl',
@@ -14416,46 +11428,37 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   },
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                    description: 'Identificador del recurso.',
+                  },
+                  quantity: {
+                    type: 'integer',
+                    description: 'Campo quantity expuesto por el runtime actual.',
+                  },
+                  productId: {
+                    type: 'string',
+                    description: 'Campo product id expuesto por el runtime actual.',
+                  },
+                  orderItemId: {
+                    type: 'string',
+                    description: 'Campo order item id expuesto por el runtime actual.',
                   },
                   nameSnapshot: {
                     type: 'string',
                     description: 'Campo name snapshot expuesto por el runtime actual.',
                     example: 'Chilcano de maracuyá',
                   },
-                  quantity: {
-                    type: 'integer',
-                    format: 'int32',
-                    description: 'Campo quantity expuesto por el runtime actual.',
-                  },
-                  productId: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Campo product id expuesto por el runtime actual.',
-                    example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
-                  },
-                  orderItemId: {
-                    type: 'string',
-                    format: 'uuid',
-                    description: 'Campo order item id expuesto por el runtime actual.',
-                    example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                  },
                   productDeliveryId: {
                     type: 'string',
-                    format: 'uuid',
                     description: 'Campo product delivery id expuesto por el runtime actual.',
-                    example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                   },
                 },
                 required: [
                   'product',
                   'id',
-                  'nameSnapshot',
                   'quantity',
                   'productId',
                   'orderItemId',
+                  'nameSnapshot',
                   'productDeliveryId',
                 ],
                 additionalProperties: false,
@@ -14471,15 +11474,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'id',
             'createdAt',
             'status',
+            'code',
             'revokedAt',
             'clubId',
             'orderId',
-            'ownerUserId',
-            'code',
             'qrPayload',
             'signatureVersion',
             'usedAt',
             'revokedReason',
+            'ownerUserId',
             'sourceType',
           ],
           additionalProperties: false,
@@ -14500,15 +11503,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             actorUserId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo actor user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
             },
             actorName: {
               type: 'string',
@@ -14531,9 +11530,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             resourceId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo resource id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             accessName: {
               type: 'string',
@@ -14578,9 +11575,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
       currency: {
         type: 'string',
@@ -14659,18 +11654,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             type: {
               type: 'string',
               enum: [
                 'TOP_UP',
                 'REFUND',
+                'ADJUSTMENT',
                 'REFERRAL_REWARD',
                 'PURCHASE',
-                'ADJUSTMENT',
                 'REFERRAL_REVERSAL',
                 'CREDIT_EXPIRATION',
                 'TRANSFER_IN',
@@ -14695,10 +11688,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             referenceId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo reference id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
             createdAt: {
               type: 'string',
@@ -14732,7 +11723,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           purchases: {
-            type: 'number',
+            type: 'integer',
             description: 'Campo purchases expuesto por el runtime actual.',
           },
           activeQr: {
@@ -14763,9 +11754,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
       title: {
         type: 'string',
@@ -14782,9 +11771,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         enum: [
           'TOP_UP',
           'REFUND',
+          'ADJUSTMENT',
           'REFERRAL_REWARD',
           'PURCHASE',
-          'ADJUSTMENT',
           'REFERRAL_REVERSAL',
           'CREDIT_EXPIRATION',
           'TRANSFER_IN',
@@ -14794,8 +11783,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: 'TOP_UP',
       },
       amountCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Importe expresado en céntimos.',
         example: 1500,
       },
@@ -14821,12 +11809,203 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo currency expuesto por el runtime actual.',
       },
       related: {
-        description: 'Valor JSON dinámico expuesto por el runtime.',
-        allOf: [
-          {
-            $ref: '#/components/schemas/JsonValue',
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            description: 'Identificador del recurso.',
           },
+          title: {
+            type: 'string',
+            description: 'Campo title expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: [
+              'PENDING',
+              'FAILED',
+              'CHARGEBACK',
+              'PAID',
+              'EXPIRED',
+              'CANCELLED',
+              'REFUND_PENDING',
+              'REFUNDED',
+              'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              'CHARGEDBACK',
+            ],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
+          },
+          currency: {
+            type: 'string',
+            description: 'Campo currency expuesto por el runtime actual.',
+          },
+          amountCents: {
+            type: 'number',
+            description: 'Importe expresado en céntimos.',
+            example: 1500,
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
+          },
+          paymentMethod: {
+            type: 'string',
+            description: 'Campo payment method expuesto por el runtime actual.',
+            example: 'MERCADO_PAGO',
+          },
+          business: {
+            type: 'string',
+            description: 'Campo business expuesto por el runtime actual.',
+          },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                replacementRefundStatus: {
+                  type: 'string',
+                  description: 'Campo replacement refund status expuesto por el runtime actual.',
+                },
+                refundExecution: {
+                  type: 'object',
+                  properties: {
+                    status: {
+                      type: 'string',
+                      description: 'Estado actual expuesto por el runtime.',
+                    },
+                    amountCents: {
+                      type: 'number',
+                      description: 'Importe expresado en céntimos.',
+                      example: 1500,
+                    },
+                  },
+                  required: ['status', 'amountCents'],
+                  additionalProperties: false,
+                  description: 'Campo refund execution expuesto por el runtime actual.',
+                },
+                replacementOffer: {
+                  type: 'object',
+                  properties: {
+                    cancellationId: {
+                      type: 'string',
+                      description: 'Campo cancellation id expuesto por el runtime actual.',
+                    },
+                    targetName: {
+                      type: 'string',
+                      description: 'Campo target name expuesto por el runtime actual.',
+                      example: 'Noche Latina',
+                    },
+                    eventName: {
+                      type: 'string',
+                      description: 'Campo event name expuesto por el runtime actual.',
+                      example: 'Noche Latina',
+                    },
+                    startsAt: {
+                      type: 'string',
+                      format: 'date-time',
+                      description: 'Campo starts at expuesto por el runtime actual.',
+                      example: '2026-09-19T22:00:00.000Z',
+                    },
+                    endsAt: {
+                      type: 'string',
+                      format: 'date-time',
+                      description: 'Campo ends at expuesto por el runtime actual.',
+                      example: '2026-09-20T05:00:00.000Z',
+                    },
+                  },
+                  required: ['cancellationId', 'targetName', 'eventName', 'startsAt', 'endsAt'],
+                  additionalProperties: false,
+                  nullable: true,
+                  description: 'Campo replacement offer expuesto por el runtime actual.',
+                },
+                canRequestReplacementRefund: {
+                  type: 'boolean',
+                  description:
+                    'Campo can request replacement refund expuesto por el runtime actual.',
+                  example: false,
+                },
+                id: {
+                  type: 'string',
+                  description: 'Identificador del recurso.',
+                },
+                quantity: {
+                  type: 'number',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
+                },
+                totalCents: {
+                  type: 'number',
+                  description: 'Importe total expresado en céntimos.',
+                  example: 1500,
+                },
+                itemType: {
+                  type: 'string',
+                  enum: ['PROMOTION', 'TICKET', 'PRODUCT'],
+                  description: 'Campo item type expuesto por el runtime actual.',
+                  example: 'PROMOTION',
+                },
+                nameSnapshot: {
+                  type: 'string',
+                  description: 'Campo name snapshot expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+                unitPriceCents: {
+                  type: 'number',
+                  description: 'Campo unit price cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+              },
+              required: ['quantity', 'totalCents', 'nameSnapshot'],
+              additionalProperties: false,
+            },
+            description: 'Campo items expuesto por el runtime actual.',
+          },
+          eventNotices: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                eventName: {
+                  type: 'string',
+                  description: 'Campo event name expuesto por el runtime actual.',
+                  example: 'Noche Latina',
+                },
+                message: {
+                  type: 'string',
+                  description: 'Mensaje legible que resume el resultado.',
+                },
+              },
+              required: ['eventName', 'message'],
+              additionalProperties: false,
+            },
+            description: 'Campo event notices expuesto por el runtime actual.',
+          },
+          approvedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            description: 'Campo approved at expuesto por el runtime actual.',
+            example: '2026-09-19T22:05:00.000Z',
+          },
+        },
+        required: [
+          'id',
+          'title',
+          'status',
+          'currency',
+          'amountCents',
+          'createdAt',
+          'paymentMethod',
+          'items',
         ],
+        additionalProperties: false,
+        nullable: true,
+        description: 'Campo related expuesto por el runtime actual.',
       },
     },
     required: [
@@ -14848,9 +12027,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+        description: 'Identificador del recurso.',
       },
       title: {
         type: 'string',
@@ -14861,13 +12038,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         enum: [
           'PENDING',
           'FAILED',
-          'CANCELLED',
+          'CHARGEBACK',
           'PAID',
           'EXPIRED',
+          'CANCELLED',
           'REFUND_PENDING',
           'REFUNDED',
           'PARTIALLY_REFUNDED',
-          'CHARGEBACK',
         ],
         description: 'Estado actual expuesto por el runtime.',
         example: 'PENDING',
@@ -14877,8 +12054,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo currency expuesto por el runtime actual.',
       },
       amountCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Importe expresado en céntimos.',
         example: 1500,
       },
@@ -14890,10 +12066,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       paymentMethod: {
         type: 'string',
-        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
+        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'FLOW', 'SIMULATED'],
         description: 'Campo payment method expuesto por el runtime actual.',
         example: 'MERCADO_PAGO',
-        nullable: true,
       },
       business: {
         type: 'string',
@@ -14916,8 +12091,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Estado actual expuesto por el runtime.',
                 },
                 amountCents: {
-                  type: 'integer',
-                  format: 'int64',
+                  type: 'number',
                   description: 'Importe expresado en céntimos.',
                   example: 1500,
                 },
@@ -14931,9 +12105,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 cancellationId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo cancellation id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
                 },
                 targetName: {
                   type: 'string',
@@ -14970,13 +12142,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+              description: 'Identificador del recurso.',
+            },
+            quantity: {
+              type: 'number',
+              description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
             },
             totalCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Importe total expresado en céntimos.',
               example: 1500,
             },
@@ -14991,14 +12165,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo name snapshot expuesto por el runtime actual.',
               example: 'Chilcano de maracuyá',
             },
-            quantity: {
-              type: 'integer',
-              format: 'int32',
-              description: 'Campo quantity expuesto por el runtime actual.',
-            },
             unitPriceCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Campo unit price cents expuesto por el runtime actual.',
               example: 1500,
             },
@@ -15009,10 +12177,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'replacementOffer',
             'canRequestReplacementRefund',
             'id',
+            'quantity',
             'totalCents',
             'itemType',
             'nameSnapshot',
-            'quantity',
             'unitPriceCents',
           ],
           additionalProperties: false,
@@ -15064,9 +12232,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       paymentMethod: {
         type: 'string',
         description: 'Campo payment method expuesto por el runtime actual.',
-        enum: ['MERCADO_PAGO', 'BEERRY_WALLET', 'SIMULATED'],
-        nullable: true,
-        example: 'MERCADO_PAGO',
       },
       items: {
         type: 'array',
@@ -15079,13 +12244,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               example: 'Chilcano de maracuyá',
             },
             quantity: {
-              type: 'integer',
-              format: 'int32',
+              type: 'number',
               description: 'Campo quantity expuesto por el runtime actual.',
+              example: 1,
             },
             totalCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Importe total expresado en céntimos.',
               example: 1500,
             },
@@ -15097,9 +12261,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+        description: 'Identificador del recurso.',
       },
       createdAt: {
         type: 'string',
@@ -15114,8 +12276,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           'EXPIRED',
           'REFUND_PENDING',
           'REFUNDED',
-          'APPROVED',
           'REJECTED',
+          'APPROVED',
           'CHARGEDBACK',
         ],
         description: 'Estado actual expuesto por el runtime.',
@@ -15126,8 +12288,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo currency expuesto por el runtime actual.',
       },
       amountCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Importe expresado en céntimos.',
         example: 1500,
       },
@@ -15157,9 +12318,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       currency: {
         type: 'string',
@@ -15169,26 +12328,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           pendingCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo pending cents expuesto por el runtime actual.',
             example: 1500,
           },
           availableCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo available cents expuesto por el runtime actual.',
             example: 1500,
           },
           heldCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo held cents expuesto por el runtime actual.',
             example: 1500,
           },
           withdrawnCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo withdrawn cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -15202,23 +12357,129 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         items: {
           type: 'object',
           properties: {
+            transaction: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  description: 'Identificador del recurso.',
+                },
+                type: {
+                  type: 'string',
+                  enum: [
+                    'WITHDRAWAL',
+                    'SALE',
+                    'TOP_UP',
+                    'REFUND',
+                    'CHARGEBACK',
+                    'SETTLEMENT',
+                    'ADJUSTMENT',
+                  ],
+                  description: 'Campo type expuesto por el runtime actual.',
+                  example: 'WITHDRAWAL',
+                },
+                description: {
+                  type: 'string',
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                metadata: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                  nullable: true,
+                },
+                currency: {
+                  type: 'string',
+                  description: 'Campo currency expuesto por el runtime actual.',
+                },
+                reference: {
+                  type: 'string',
+                  description: 'Campo reference expuesto por el runtime actual.',
+                },
+                orderId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo order id expuesto por el runtime actual.',
+                },
+                paymentAttemptId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo payment attempt id expuesto por el runtime actual.',
+                },
+                providerEventId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo provider event id expuesto por el runtime actual.',
+                },
+                reversalOfId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo reversal of id expuesto por el runtime actual.',
+                },
+                withdrawalRequestId: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo withdrawal request id expuesto por el runtime actual.',
+                },
+                debitTotalCents: {
+                  type: 'integer',
+                  description: 'Campo debit total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                creditTotalCents: {
+                  type: 'integer',
+                  description: 'Campo credit total cents expuesto por el runtime actual.',
+                  example: 1500,
+                },
+                postedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Campo posted at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+              },
+              required: [
+                'id',
+                'type',
+                'description',
+                'createdAt',
+                'metadata',
+                'currency',
+                'reference',
+                'orderId',
+                'paymentAttemptId',
+                'providerEventId',
+                'reversalOfId',
+                'withdrawalRequestId',
+                'debitTotalCents',
+                'creditTotalCents',
+                'postedAt',
+              ],
+              additionalProperties: false,
+              description: 'Campo transaction expuesto por el runtime actual.',
+            },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
-            transactionId: {
+            description: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo transaction id expuesto por el runtime actual.',
-              example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+              description: 'Campo description expuesto por el runtime actual.',
             },
-            accountId: {
+            createdAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo account id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
             direction: {
               type: 'string',
@@ -15234,153 +12495,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             amountCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Importe expresado en céntimos.',
               example: 1500,
             },
-            description: {
+            accountId: {
               type: 'string',
-              description: 'Campo description expuesto por el runtime actual.',
+              description: 'Campo account id expuesto por el runtime actual.',
             },
-            createdAt: {
+            transactionId: {
               type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-            transaction: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                reference: {
-                  type: 'string',
-                  description: 'Campo reference expuesto por el runtime actual.',
-                },
-                type: {
-                  type: 'string',
-                  enum: [
-                    'SALE',
-                    'TOP_UP',
-                    'REFUND',
-                    'CHARGEBACK',
-                    'SETTLEMENT',
-                    'WITHDRAWAL',
-                    'ADJUSTMENT',
-                  ],
-                  description: 'Campo type expuesto por el runtime actual.',
-                  example: 'SALE',
-                },
-                orderId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo order id expuesto por el runtime actual.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-                },
-                paymentAttemptId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo payment attempt id expuesto por el runtime actual.',
-                  example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
-                },
-                providerEventId: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo provider event id expuesto por el runtime actual.',
-                },
-                reversalOfId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo reversal of id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                withdrawalRequestId: {
-                  type: 'string',
-                  format: 'uuid',
-                  nullable: true,
-                  description: 'Campo withdrawal request id expuesto por el runtime actual.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                debitTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo debit total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                creditTotalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Campo credit total cents expuesto por el runtime actual.',
-                  example: 1500,
-                },
-                description: {
-                  type: 'string',
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                metadata: {
-                  description: 'Metadata contable JSON expuesta por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                  nullable: true,
-                },
-                postedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo posted at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-              },
-              required: [
-                'id',
-                'reference',
-                'type',
-                'orderId',
-                'paymentAttemptId',
-                'providerEventId',
-                'reversalOfId',
-                'withdrawalRequestId',
-                'currency',
-                'debitTotalCents',
-                'creditTotalCents',
-                'description',
-                'metadata',
-                'postedAt',
-                'createdAt',
-              ],
-              additionalProperties: false,
-              description: 'Campo transaction expuesto por el runtime actual.',
+              description: 'Campo transaction id expuesto por el runtime actual.',
             },
           },
           required: [
+            'transaction',
             'id',
-            'transactionId',
-            'accountId',
+            'description',
+            'createdAt',
             'direction',
             'bucket',
             'amountCents',
-            'description',
-            'createdAt',
-            'transaction',
+            'accountId',
+            'transactionId',
           ],
           additionalProperties: false,
         },
@@ -15395,9 +12531,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       orderId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo order id expuesto por el runtime actual.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
       },
       balanced: {
         type: 'boolean',
@@ -15405,20 +12539,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: false,
       },
       debitTotalCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Campo debit total cents expuesto por el runtime actual.',
         example: 1500,
       },
       creditTotalCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Campo credit total cents expuesto por el runtime actual.',
         example: 1500,
       },
       differenceCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Campo difference cents expuesto por el runtime actual.',
         example: 1500,
       },
@@ -15427,126 +12558,112 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         items: {
           type: 'object',
           properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            reference: {
-              type: 'string',
-              description: 'Campo reference expuesto por el runtime actual.',
-            },
-            type: {
-              type: 'string',
-              enum: [
-                'SALE',
-                'TOP_UP',
-                'REFUND',
-                'CHARGEBACK',
-                'SETTLEMENT',
-                'WITHDRAWAL',
-                'ADJUSTMENT',
-              ],
-              description: 'Campo type expuesto por el runtime actual.',
-              example: 'SALE',
-            },
-            orderId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo order id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
-            },
-            paymentAttemptId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo payment attempt id expuesto por el runtime actual.',
-              example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
-            },
-            providerEventId: {
-              type: 'string',
-              nullable: true,
-              description: 'Campo provider event id expuesto por el runtime actual.',
-            },
-            reversalOfId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo reversal of id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            withdrawalRequestId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo withdrawal request id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            currency: {
-              type: 'string',
-              description: 'Campo currency expuesto por el runtime actual.',
-            },
-            debitTotalCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Campo debit total cents expuesto por el runtime actual.',
-              example: 1500,
-            },
-            creditTotalCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Campo credit total cents expuesto por el runtime actual.',
-              example: 1500,
-            },
-            description: {
-              type: 'string',
-              description: 'Campo description expuesto por el runtime actual.',
-            },
-            metadata: {
-              description: 'Metadata contable JSON expuesta por el runtime.',
-              allOf: [
-                {
-                  $ref: '#/components/schemas/JsonValue',
-                },
-              ],
-              nullable: true,
-            },
-            postedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Campo posted at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
             entries: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
+                  account: {
+                    type: 'object',
+                    properties: {
+                      id: {
+                        type: 'string',
+                        description: 'Identificador del recurso.',
+                      },
+                      createdAt: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de creación en formato ISO 8601.',
+                        example: '2026-08-27T18:30:00.000Z',
+                      },
+                      updatedAt: {
+                        type: 'string',
+                        format: 'date-time',
+                        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                        example: '2026-08-28T14:15:00.000Z',
+                      },
+                      userId: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Campo user id expuesto por el runtime actual.',
+                      },
+                      provider: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Campo provider expuesto por el runtime actual.',
+                      },
+                      code: {
+                        type: 'string',
+                        description: 'Campo code expuesto por el runtime actual.',
+                        example: 'BRY-8K4M2P',
+                      },
+                      currency: {
+                        type: 'string',
+                        description: 'Campo currency expuesto por el runtime actual.',
+                      },
+                      clubId: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Campo club id expuesto por el runtime actual.',
+                      },
+                      ownerType: {
+                        type: 'string',
+                        enum: ['CUSTOMER', 'CLUB', 'PLATFORM', 'PROVIDER'],
+                        description: 'Campo owner type expuesto por el runtime actual.',
+                        example: 'CUSTOMER',
+                      },
+                      pendingCents: {
+                        type: 'integer',
+                        description: 'Campo pending cents expuesto por el runtime actual.',
+                        example: 1500,
+                      },
+                      availableCents: {
+                        type: 'integer',
+                        description: 'Campo available cents expuesto por el runtime actual.',
+                        example: 1500,
+                      },
+                      heldCents: {
+                        type: 'integer',
+                        description: 'Campo held cents expuesto por el runtime actual.',
+                        example: 1500,
+                      },
+                      withdrawnCents: {
+                        type: 'integer',
+                        description: 'Campo withdrawn cents expuesto por el runtime actual.',
+                        example: 1500,
+                      },
+                    },
+                    required: [
+                      'id',
+                      'createdAt',
+                      'updatedAt',
+                      'userId',
+                      'provider',
+                      'code',
+                      'currency',
+                      'clubId',
+                      'ownerType',
+                      'pendingCents',
+                      'availableCents',
+                      'heldCents',
+                      'withdrawnCents',
+                    ],
+                    additionalProperties: false,
+                    description: 'Campo account expuesto por el runtime actual.',
+                  },
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                    description: 'Identificador del recurso.',
                   },
-                  transactionId: {
+                  description: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Campo transaction id expuesto por el runtime actual.',
-                    example: '0f8c2a75-6d41-4b93-a527-9e3d16c8f204',
+                    description: 'Campo description expuesto por el runtime actual.',
                   },
-                  accountId: {
+                  createdAt: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Campo account id expuesto por el runtime actual.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                    format: 'date-time',
+                    description: 'Fecha y hora de creación en formato ISO 8601.',
+                    example: '2026-08-27T18:30:00.000Z',
                   },
                   direction: {
                     type: 'string',
@@ -15562,152 +12679,137 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   },
                   amountCents: {
                     type: 'integer',
-                    format: 'int64',
                     description: 'Importe expresado en céntimos.',
                     example: 1500,
                   },
-                  description: {
+                  accountId: {
                     type: 'string',
-                    description: 'Campo description expuesto por el runtime actual.',
+                    description: 'Campo account id expuesto por el runtime actual.',
                   },
-                  createdAt: {
+                  transactionId: {
                     type: 'string',
-                    format: 'date-time',
-                    description: 'Fecha y hora de creación en formato ISO 8601.',
-                    example: '2026-08-27T18:30:00.000Z',
-                  },
-                  account: {
-                    type: 'object',
-                    properties: {
-                      id: {
-                        type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                      },
-                      code: {
-                        type: 'string',
-                        description: 'Campo code expuesto por el runtime actual.',
-                        example: 'BRY-8K4M2P',
-                      },
-                      ownerType: {
-                        type: 'string',
-                        enum: ['CUSTOMER', 'CLUB', 'PLATFORM', 'PROVIDER'],
-                        description: 'Campo owner type expuesto por el runtime actual.',
-                        example: 'CUSTOMER',
-                      },
-                      userId: {
-                        type: 'string',
-                        format: 'uuid',
-                        nullable: true,
-                        description: 'Campo user id expuesto por el runtime actual.',
-                        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-                      },
-                      clubId: {
-                        type: 'string',
-                        format: 'uuid',
-                        nullable: true,
-                        description: 'Campo club id expuesto por el runtime actual.',
-                        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
-                      },
-                      provider: {
-                        type: 'string',
-                        nullable: true,
-                        description: 'Campo provider expuesto por el runtime actual.',
-                      },
-                      currency: {
-                        type: 'string',
-                        description: 'Campo currency expuesto por el runtime actual.',
-                      },
-                      pendingCents: {
-                        type: 'integer',
-                        format: 'int64',
-                        description: 'Campo pending cents expuesto por el runtime actual.',
-                        example: 1500,
-                      },
-                      availableCents: {
-                        type: 'integer',
-                        format: 'int64',
-                        description: 'Campo available cents expuesto por el runtime actual.',
-                        example: 1500,
-                      },
-                      heldCents: {
-                        type: 'integer',
-                        format: 'int64',
-                        description: 'Campo held cents expuesto por el runtime actual.',
-                        example: 1500,
-                      },
-                      withdrawnCents: {
-                        type: 'integer',
-                        format: 'int64',
-                        description: 'Campo withdrawn cents expuesto por el runtime actual.',
-                        example: 1500,
-                      },
-                      createdAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha y hora de creación en formato ISO 8601.',
-                        example: '2026-08-27T18:30:00.000Z',
-                      },
-                      updatedAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                        example: '2026-08-28T14:15:00.000Z',
-                      },
-                    },
-                    required: [
-                      'id',
-                      'code',
-                      'ownerType',
-                      'userId',
-                      'clubId',
-                      'provider',
-                      'currency',
-                      'pendingCents',
-                      'availableCents',
-                      'heldCents',
-                      'withdrawnCents',
-                      'createdAt',
-                      'updatedAt',
-                    ],
-                    additionalProperties: false,
-                    description: 'Campo account expuesto por el runtime actual.',
+                    description: 'Campo transaction id expuesto por el runtime actual.',
                   },
                 },
                 required: [
+                  'account',
                   'id',
-                  'transactionId',
-                  'accountId',
+                  'description',
+                  'createdAt',
                   'direction',
                   'bucket',
                   'amountCents',
-                  'description',
-                  'createdAt',
-                  'account',
+                  'accountId',
+                  'transactionId',
                 ],
                 additionalProperties: false,
               },
               description: 'Campo entries expuesto por el runtime actual.',
             },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            type: {
+              type: 'string',
+              enum: [
+                'WITHDRAWAL',
+                'SALE',
+                'TOP_UP',
+                'REFUND',
+                'CHARGEBACK',
+                'SETTLEMENT',
+                'ADJUSTMENT',
+              ],
+              description: 'Campo type expuesto por el runtime actual.',
+              example: 'WITHDRAWAL',
+            },
+            description: {
+              type: 'string',
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
+            },
+            metadata: {
+              description: 'Valor JSON dinámico expuesto por el runtime.',
+              allOf: [
+                {
+                  $ref: '#/components/schemas/JsonValue',
+                },
+              ],
+              nullable: true,
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            reference: {
+              type: 'string',
+              description: 'Campo reference expuesto por el runtime actual.',
+            },
+            orderId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo order id expuesto por el runtime actual.',
+            },
+            paymentAttemptId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo payment attempt id expuesto por el runtime actual.',
+            },
+            providerEventId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo provider event id expuesto por el runtime actual.',
+            },
+            reversalOfId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo reversal of id expuesto por el runtime actual.',
+            },
+            withdrawalRequestId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo withdrawal request id expuesto por el runtime actual.',
+            },
+            debitTotalCents: {
+              type: 'integer',
+              description: 'Campo debit total cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            creditTotalCents: {
+              type: 'integer',
+              description: 'Campo credit total cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            postedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo posted at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
           },
           required: [
+            'entries',
             'id',
-            'reference',
             'type',
+            'description',
+            'createdAt',
+            'metadata',
+            'currency',
+            'reference',
             'orderId',
             'paymentAttemptId',
             'providerEventId',
             'reversalOfId',
             'withdrawalRequestId',
-            'currency',
             'debitTotalCents',
             'creditTotalCents',
-            'description',
-            'metadata',
             'postedAt',
-            'createdAt',
-            'entries',
           ],
           additionalProperties: false,
         },
@@ -15729,9 +12831,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       date: {
         type: 'string',
-        format: 'date',
         description: 'Campo date expuesto por el runtime actual.',
-        example: '2026-09-19',
       },
       balanced: {
         type: 'boolean',
@@ -15739,26 +12839,22 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: false,
       },
       debitTotalCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Campo debit total cents expuesto por el runtime actual.',
         example: 1500,
       },
       creditTotalCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Campo credit total cents expuesto por el runtime actual.',
         example: 1500,
       },
       differenceCents: {
-        type: 'integer',
-        format: 'int64',
+        type: 'number',
         description: 'Campo difference cents expuesto por el runtime actual.',
         example: 1500,
       },
       transactionCount: {
         type: 'integer',
-        format: 'int32',
         description: 'Campo transaction count expuesto por el runtime actual.',
       },
     },
@@ -15775,17 +12871,29 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
   WalletsController_financialProfileResponse: {
     type: 'object',
     properties: {
+      maskedBankAccount: {
+        type: 'string',
+        description: 'Campo masked bank account expuesto por el runtime actual.',
+      },
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
+      },
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
+      },
+      updatedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       legalName: {
         type: 'string',
@@ -15811,7 +12919,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       bankAccountHolder: {
@@ -15825,26 +12932,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo verified at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
-      maskedBankAccount: {
-        type: 'string',
-        example: '•••• 9012',
-        description: 'Campo masked bank account expuesto por el runtime actual.',
-      },
     },
     required: [
+      'maskedBankAccount',
       'id',
+      'createdAt',
+      'updatedAt',
       'clubId',
       'legalName',
       'taxDocumentType',
@@ -15854,9 +12947,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       'bankAccountLast4',
       'bankAccountHolder',
       'verifiedAt',
-      'createdAt',
-      'updatedAt',
-      'maskedBankAccount',
     ],
     additionalProperties: false,
     nullable: true,
@@ -15864,17 +12954,29 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
   WalletsController_upsertFinancialProfileResponse: {
     type: 'object',
     properties: {
+      maskedBankAccount: {
+        type: 'string',
+        description: 'Campo masked bank account expuesto por el runtime actual.',
+      },
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
+      },
+      createdAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
+      },
+      updatedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       legalName: {
         type: 'string',
@@ -15900,7 +13002,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       bankAccountHolder: {
@@ -15914,26 +13015,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo verified at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
-      maskedBankAccount: {
-        type: 'string',
-        example: '•••• 9012',
-        description: 'Campo masked bank account expuesto por el runtime actual.',
-      },
     },
     required: [
+      'maskedBankAccount',
       'id',
+      'createdAt',
+      'updatedAt',
       'clubId',
       'legalName',
       'taxDocumentType',
@@ -15943,9 +13030,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       'bankAccountLast4',
       'bankAccountHolder',
       'verifiedAt',
-      'createdAt',
-      'updatedAt',
-      'maskedBankAccount',
     ],
     additionalProperties: false,
   },
@@ -15954,48 +13038,84 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
-      clubId: {
+      createdAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
       },
-      requestedByUserId: {
+      updatedAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo requested by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
-      reviewedByUserId: {
+      status: {
         type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo reviewed by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
-      amountCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe expresado en céntimos.',
-        example: 1500,
+        enum: ['FAILED', 'PAID', 'REJECTED', 'APPROVED', 'REQUESTED', 'UNDER_REVIEW', 'PROCESSING'],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'FAILED',
       },
       currency: {
         type: 'string',
         description: 'Campo currency expuesto por el runtime actual.',
       },
-      status: {
+      clubId: {
         type: 'string',
-        enum: ['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'PROCESSING', 'PAID', 'FAILED'],
-        description: 'Estado actual expuesto por el runtime.',
-        example: 'REQUESTED',
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      amountCents: {
+        type: 'integer',
+        description: 'Importe expresado en céntimos.',
+        example: 1500,
+      },
+      paidAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo paid at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      approvedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo approved at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      failedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo failed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      requestedByUserId: {
+        type: 'string',
+        description: 'Campo requested by user id expuesto por el runtime actual.',
+      },
+      requestedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Campo requested at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo reviewed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo reviewed by user id expuesto por el runtime actual.',
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -16015,30 +13135,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       proofUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo proof url expuesto por el runtime actual.',
-        example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-      },
-      requestedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Campo requested at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      reviewedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo reviewed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      approvedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo approved at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
       },
       processingAt: {
         type: 'string',
@@ -16047,54 +13145,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo processing at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      paidAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo paid at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
-      },
-      failedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo failed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
     },
     required: [
       'id',
-      'clubId',
-      'requestedByUserId',
-      'reviewedByUserId',
-      'amountCents',
-      'currency',
+      'createdAt',
+      'updatedAt',
       'status',
+      'currency',
+      'clubId',
+      'amountCents',
+      'paidAt',
+      'approvedAt',
+      'failedAt',
+      'requestedByUserId',
+      'requestedAt',
+      'reviewedAt',
+      'reviewedByUserId',
       'bankAccountLast4',
       'requestNote',
       'rejectionReason',
       'paymentReference',
       'proofUrl',
-      'requestedAt',
-      'reviewedAt',
-      'approvedAt',
       'processingAt',
-      'paidAt',
-      'failedAt',
-      'createdAt',
-      'updatedAt',
     ],
     additionalProperties: false,
   },
@@ -16108,56 +13180,92 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
-            clubId: {
+            createdAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
-            requestedByUserId: {
+            updatedAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo requested by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
             },
-            reviewedByUserId: {
+            status: {
               type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo reviewed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            amountCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Importe expresado en céntimos.',
-              example: 1500,
+              enum: [
+                'FAILED',
+                'PAID',
+                'REJECTED',
+                'APPROVED',
+                'REQUESTED',
+                'UNDER_REVIEW',
+                'PROCESSING',
+              ],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'FAILED',
             },
             currency: {
               type: 'string',
               description: 'Campo currency expuesto por el runtime actual.',
             },
-            status: {
+            clubId: {
               type: 'string',
-              enum: [
-                'REQUESTED',
-                'UNDER_REVIEW',
-                'APPROVED',
-                'REJECTED',
-                'PROCESSING',
-                'PAID',
-                'FAILED',
-              ],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'REQUESTED',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            amountCents: {
+              type: 'integer',
+              description: 'Importe expresado en céntimos.',
+              example: 1500,
+            },
+            paidAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo paid at expuesto por el runtime actual.',
+              example: '2026-09-19T22:05:00.000Z',
+            },
+            approvedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo approved at expuesto por el runtime actual.',
+              example: '2026-09-19T22:05:00.000Z',
+            },
+            failedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo failed at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            requestedByUserId: {
+              type: 'string',
+              description: 'Campo requested by user id expuesto por el runtime actual.',
+            },
+            requestedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo requested at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            reviewedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo reviewed at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            reviewedByUserId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo reviewed by user id expuesto por el runtime actual.',
             },
             bankAccountLast4: {
               type: 'string',
-              example: '9012',
               description: 'Campo bank account last4 expuesto por el runtime actual.',
             },
             requestNote: {
@@ -16177,30 +13285,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             proofUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo proof url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-            },
-            requestedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Campo requested at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            reviewedAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo reviewed at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            approvedAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo approved at expuesto por el runtime actual.',
-              example: '2026-09-19T22:05:00.000Z',
             },
             processingAt: {
               type: 'string',
@@ -16209,54 +13295,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo processing at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            paidAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo paid at expuesto por el runtime actual.',
-              example: '2026-09-19T22:05:00.000Z',
-            },
-            failedAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo failed at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-              example: '2026-08-28T14:15:00.000Z',
-            },
           },
           required: [
             'id',
-            'clubId',
-            'requestedByUserId',
-            'reviewedByUserId',
-            'amountCents',
-            'currency',
+            'createdAt',
+            'updatedAt',
             'status',
+            'currency',
+            'clubId',
+            'amountCents',
+            'paidAt',
+            'approvedAt',
+            'failedAt',
+            'requestedByUserId',
+            'requestedAt',
+            'reviewedAt',
+            'reviewedByUserId',
             'bankAccountLast4',
             'requestNote',
             'rejectionReason',
             'paymentReference',
             'proofUrl',
-            'requestedAt',
-            'reviewedAt',
-            'approvedAt',
             'processingAt',
-            'paidAt',
-            'failedAt',
-            'createdAt',
-            'updatedAt',
           ],
           additionalProperties: false,
         },
@@ -16274,58 +13334,305 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         items: {
           type: 'object',
           properties: {
+            club: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  description: 'Identificador del recurso.',
+                },
+                type: {
+                  type: 'string',
+                  description: 'Campo type expuesto por el runtime actual.',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo description expuesto por el runtime actual.',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                updatedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                  example: '2026-08-28T14:15:00.000Z',
+                },
+                name: {
+                  type: 'string',
+                  description: 'Campo name expuesto por el runtime actual.',
+                  example: 'Nébula Club',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'ACTIVE',
+                },
+                profileImageUrl: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo profile image url expuesto por el runtime actual.',
+                },
+                addressJson: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                  nullable: true,
+                },
+                contactJson: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                  nullable: true,
+                },
+                coverImageUrl: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo cover image url expuesto por el runtime actual.',
+                },
+                socialMediaJson: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                  nullable: true,
+                },
+                scheduleJson: {
+                  description: 'Valor JSON dinámico expuesto por el runtime.',
+                  allOf: [
+                    {
+                      $ref: '#/components/schemas/JsonValue',
+                    },
+                  ],
+                  nullable: true,
+                },
+                marketplaceFeeBps: {
+                  type: 'integer',
+                  nullable: true,
+                  description: 'Campo marketplace fee bps expuesto por el runtime actual.',
+                },
+                acceptsWalletPayments: {
+                  type: 'boolean',
+                  description: 'Campo accepts wallet payments expuesto por el runtime actual.',
+                  example: false,
+                },
+              },
+              required: [
+                'id',
+                'type',
+                'description',
+                'createdAt',
+                'updatedAt',
+                'name',
+                'status',
+                'profileImageUrl',
+                'addressJson',
+                'contactJson',
+                'coverImageUrl',
+                'socialMediaJson',
+                'scheduleJson',
+                'marketplaceFeeBps',
+                'acceptsWalletPayments',
+              ],
+              additionalProperties: false,
+              description: 'Campo club expuesto por el runtime actual.',
+            },
+            requestedBy: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  description: 'Identificador del recurso.',
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de creación en formato ISO 8601.',
+                  example: '2026-08-27T18:30:00.000Z',
+                },
+                updatedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                  example: '2026-08-28T14:15:00.000Z',
+                },
+                status: {
+                  type: 'string',
+                  enum: ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'],
+                  description: 'Estado actual expuesto por el runtime.',
+                  example: 'PENDING_PHONE_CONFIRMATION',
+                },
+                role: {
+                  type: 'string',
+                  enum: ['WORKER', 'SUPER_ADMIN', 'ADMIN', 'CUSTOMER'],
+                  description: 'Campo role expuesto por el runtime actual.',
+                  example: 'WORKER',
+                },
+                phoneCountryCode: {
+                  type: 'string',
+                  description: 'Campo phone country code expuesto por el runtime actual.',
+                  example: '+51',
+                },
+                phoneNumber: {
+                  type: 'string',
+                  description: 'Campo phone number expuesto por el runtime actual.',
+                  example: '987654321',
+                },
+                fullName: {
+                  type: 'string',
+                  description: 'Campo full name expuesto por el runtime actual.',
+                  example: 'Valeria Mendoza',
+                },
+                email: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo email expuesto por el runtime actual.',
+                },
+                referralCode: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo referral code expuesto por el runtime actual.',
+                  example: 'VALERIA25',
+                },
+                phoneVerifiedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo phone verified at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                emailVerifiedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  description: 'Campo email verified at expuesto por el runtime actual.',
+                  example: '2026-09-19T22:00:00.000Z',
+                },
+                profileImageUrl: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo profile image url expuesto por el runtime actual.',
+                },
+              },
+              required: [
+                'id',
+                'createdAt',
+                'updatedAt',
+                'status',
+                'role',
+                'phoneCountryCode',
+                'phoneNumber',
+                'fullName',
+                'email',
+                'referralCode',
+                'phoneVerifiedAt',
+                'emailVerifiedAt',
+                'profileImageUrl',
+              ],
+              additionalProperties: false,
+              description: 'Campo requested by expuesto por el runtime actual.',
+            },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
-            clubId: {
+            createdAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
-            requestedByUserId: {
+            updatedAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo requested by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
             },
-            reviewedByUserId: {
+            status: {
               type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo reviewed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            amountCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Importe expresado en céntimos.',
-              example: 1500,
+              enum: [
+                'FAILED',
+                'PAID',
+                'REJECTED',
+                'APPROVED',
+                'REQUESTED',
+                'UNDER_REVIEW',
+                'PROCESSING',
+              ],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'FAILED',
             },
             currency: {
               type: 'string',
               description: 'Campo currency expuesto por el runtime actual.',
             },
-            status: {
+            clubId: {
               type: 'string',
-              enum: [
-                'REQUESTED',
-                'UNDER_REVIEW',
-                'APPROVED',
-                'REJECTED',
-                'PROCESSING',
-                'PAID',
-                'FAILED',
-              ],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'REQUESTED',
+              description: 'Campo club id expuesto por el runtime actual.',
+            },
+            amountCents: {
+              type: 'integer',
+              description: 'Importe expresado en céntimos.',
+              example: 1500,
+            },
+            paidAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo paid at expuesto por el runtime actual.',
+              example: '2026-09-19T22:05:00.000Z',
+            },
+            approvedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo approved at expuesto por el runtime actual.',
+              example: '2026-09-19T22:05:00.000Z',
+            },
+            failedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo failed at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            requestedByUserId: {
+              type: 'string',
+              description: 'Campo requested by user id expuesto por el runtime actual.',
+            },
+            requestedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo requested at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            reviewedAt: {
+              type: 'string',
+              format: 'date-time',
+              nullable: true,
+              description: 'Campo reviewed at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            reviewedByUserId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo reviewed by user id expuesto por el runtime actual.',
             },
             bankAccountLast4: {
               type: 'string',
-              example: '9012',
               description: 'Campo bank account last4 expuesto por el runtime actual.',
             },
             requestNote: {
@@ -16345,30 +13652,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             proofUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo proof url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-            },
-            requestedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Campo requested at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            reviewedAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo reviewed at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            approvedAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo approved at expuesto por el runtime actual.',
-              example: '2026-09-19T22:05:00.000Z',
             },
             processingAt: {
               type: 'string',
@@ -16377,266 +13662,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo processing at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            paidAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo paid at expuesto por el runtime actual.',
-              example: '2026-09-19T22:05:00.000Z',
-            },
-            failedAt: {
-              type: 'string',
-              format: 'date-time',
-              nullable: true,
-              description: 'Campo failed at expuesto por el runtime actual.',
-              example: '2026-09-19T22:00:00.000Z',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-              example: '2026-08-28T14:15:00.000Z',
-            },
-            club: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
-                },
-                addressJson: {
-                  description: 'Dirección JSON almacenada por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                  nullable: true,
-                },
-                contactJson: {
-                  description: 'Contacto JSON almacenado por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                  nullable: true,
-                },
-                coverImageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo cover image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-                profileImageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo profile image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-                },
-                socialMediaJson: {
-                  description: 'Redes sociales JSON almacenadas por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                  nullable: true,
-                },
-                scheduleJson: {
-                  description: 'Horario JSON almacenado por el runtime.',
-                  allOf: [
-                    {
-                      $ref: '#/components/schemas/JsonValue',
-                    },
-                  ],
-                  nullable: true,
-                },
-                status: {
-                  type: 'string',
-                  enum: ['PENDING_APPROVAL', 'ACTIVE', 'INACTIVE'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'PENDING_APPROVAL',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-              },
-              required: [
-                'id',
-                'name',
-                'description',
-                'type',
-                'addressJson',
-                'contactJson',
-                'coverImageUrl',
-                'profileImageUrl',
-                'socialMediaJson',
-                'scheduleJson',
-                'status',
-                'createdAt',
-                'updatedAt',
-              ],
-              additionalProperties: false,
-              description: 'Campo club expuesto por el runtime actual.',
-            },
-            requestedBy: {
-              type: 'object',
-              properties: {
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-                },
-                phoneCountryCode: {
-                  type: 'string',
-                  description: 'Campo phone country code expuesto por el runtime actual.',
-                  example: '+51',
-                },
-                phoneNumber: {
-                  type: 'string',
-                  description: 'Campo phone number expuesto por el runtime actual.',
-                  example: '987654321',
-                },
-                phoneVerifiedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo phone verified at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                email: {
-                  type: 'string',
-                  format: 'email',
-                  nullable: true,
-                  description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
-                },
-                emailVerifiedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  nullable: true,
-                  description: 'Campo email verified at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                passwordHash: {
-                  type: 'string',
-                  description: 'Hash de contraseña que el runtime actual incluye en esta relación.',
-                  example: '$2b$12$hash.bcrypt.sanitizado',
-                },
-                fullName: {
-                  type: 'string',
-                  description: 'Campo full name expuesto por el runtime actual.',
-                  example: 'Valeria Mendoza',
-                },
-                profileImageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo profile image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-                },
-                role: {
-                  type: 'string',
-                  enum: ['SUPER_ADMIN', 'ADMIN', 'WORKER', 'CUSTOMER'],
-                  description: 'Campo role expuesto por el runtime actual.',
-                  example: 'SUPER_ADMIN',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['PENDING_PHONE_CONFIRMATION', 'ACTIVE', 'INACTIVE', 'BLOCKED'],
-                  description: 'Estado actual expuesto por el runtime.',
-                  example: 'PENDING_PHONE_CONFIRMATION',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-              },
-              required: [
-                'id',
-                'phoneCountryCode',
-                'phoneNumber',
-                'phoneVerifiedAt',
-                'email',
-                'emailVerifiedAt',
-                'passwordHash',
-                'fullName',
-                'profileImageUrl',
-                'role',
-                'status',
-                'createdAt',
-                'updatedAt',
-              ],
-              additionalProperties: false,
-              description: 'Campo requested by expuesto por el runtime actual.',
-            },
           },
           required: [
+            'club',
+            'requestedBy',
             'id',
-            'clubId',
-            'requestedByUserId',
-            'reviewedByUserId',
-            'amountCents',
-            'currency',
+            'createdAt',
+            'updatedAt',
             'status',
+            'currency',
+            'clubId',
+            'amountCents',
+            'paidAt',
+            'approvedAt',
+            'failedAt',
+            'requestedByUserId',
+            'requestedAt',
+            'reviewedAt',
+            'reviewedByUserId',
             'bankAccountLast4',
             'requestNote',
             'rejectionReason',
             'paymentReference',
             'proofUrl',
-            'requestedAt',
-            'reviewedAt',
-            'approvedAt',
             'processingAt',
-            'paidAt',
-            'failedAt',
-            'createdAt',
-            'updatedAt',
-            'club',
-            'requestedBy',
           ],
           additionalProperties: false,
         },
@@ -16651,48 +13700,84 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
-      clubId: {
+      createdAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
       },
-      requestedByUserId: {
+      updatedAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo requested by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
-      reviewedByUserId: {
+      status: {
         type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo reviewed by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
-      amountCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe expresado en céntimos.',
-        example: 1500,
+        enum: ['FAILED', 'PAID', 'REJECTED', 'APPROVED', 'REQUESTED', 'UNDER_REVIEW', 'PROCESSING'],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'FAILED',
       },
       currency: {
         type: 'string',
         description: 'Campo currency expuesto por el runtime actual.',
       },
-      status: {
+      clubId: {
         type: 'string',
-        enum: ['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'PROCESSING', 'PAID', 'FAILED'],
-        description: 'Estado actual expuesto por el runtime.',
-        example: 'REQUESTED',
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      amountCents: {
+        type: 'integer',
+        description: 'Importe expresado en céntimos.',
+        example: 1500,
+      },
+      paidAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo paid at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      approvedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo approved at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      failedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo failed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      requestedByUserId: {
+        type: 'string',
+        description: 'Campo requested by user id expuesto por el runtime actual.',
+      },
+      requestedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Campo requested at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo reviewed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo reviewed by user id expuesto por el runtime actual.',
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -16712,30 +13797,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       proofUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo proof url expuesto por el runtime actual.',
-        example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-      },
-      requestedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Campo requested at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      reviewedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo reviewed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      approvedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo approved at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
       },
       processingAt: {
         type: 'string',
@@ -16744,54 +13807,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo processing at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      paidAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo paid at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
-      },
-      failedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo failed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
     },
     required: [
       'id',
-      'clubId',
-      'requestedByUserId',
-      'reviewedByUserId',
-      'amountCents',
-      'currency',
+      'createdAt',
+      'updatedAt',
       'status',
+      'currency',
+      'clubId',
+      'amountCents',
+      'paidAt',
+      'approvedAt',
+      'failedAt',
+      'requestedByUserId',
+      'requestedAt',
+      'reviewedAt',
+      'reviewedByUserId',
       'bankAccountLast4',
       'requestNote',
       'rejectionReason',
       'paymentReference',
       'proofUrl',
-      'requestedAt',
-      'reviewedAt',
-      'approvedAt',
       'processingAt',
-      'paidAt',
-      'failedAt',
-      'createdAt',
-      'updatedAt',
     ],
     additionalProperties: false,
   },
@@ -16800,48 +13837,84 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
-      clubId: {
+      createdAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
       },
-      requestedByUserId: {
+      updatedAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo requested by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
-      reviewedByUserId: {
+      status: {
         type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo reviewed by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
-      amountCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe expresado en céntimos.',
-        example: 1500,
+        enum: ['FAILED', 'PAID', 'REJECTED', 'APPROVED', 'REQUESTED', 'UNDER_REVIEW', 'PROCESSING'],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'FAILED',
       },
       currency: {
         type: 'string',
         description: 'Campo currency expuesto por el runtime actual.',
       },
-      status: {
+      clubId: {
         type: 'string',
-        enum: ['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'PROCESSING', 'PAID', 'FAILED'],
-        description: 'Estado actual expuesto por el runtime.',
-        example: 'REQUESTED',
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      amountCents: {
+        type: 'integer',
+        description: 'Importe expresado en céntimos.',
+        example: 1500,
+      },
+      paidAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo paid at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      approvedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo approved at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      failedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo failed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      requestedByUserId: {
+        type: 'string',
+        description: 'Campo requested by user id expuesto por el runtime actual.',
+      },
+      requestedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Campo requested at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo reviewed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo reviewed by user id expuesto por el runtime actual.',
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -16861,30 +13934,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       proofUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo proof url expuesto por el runtime actual.',
-        example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-      },
-      requestedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Campo requested at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      reviewedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo reviewed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      approvedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo approved at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
       },
       processingAt: {
         type: 'string',
@@ -16893,54 +13944,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo processing at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      paidAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo paid at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
-      },
-      failedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo failed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
     },
     required: [
       'id',
-      'clubId',
-      'requestedByUserId',
-      'reviewedByUserId',
-      'amountCents',
-      'currency',
+      'createdAt',
+      'updatedAt',
       'status',
+      'currency',
+      'clubId',
+      'amountCents',
+      'paidAt',
+      'approvedAt',
+      'failedAt',
+      'requestedByUserId',
+      'requestedAt',
+      'reviewedAt',
+      'reviewedByUserId',
       'bankAccountLast4',
       'requestNote',
       'rejectionReason',
       'paymentReference',
       'proofUrl',
-      'requestedAt',
-      'reviewedAt',
-      'approvedAt',
       'processingAt',
-      'paidAt',
-      'failedAt',
-      'createdAt',
-      'updatedAt',
     ],
     additionalProperties: false,
   },
@@ -16949,48 +13974,84 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
-      clubId: {
+      createdAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
       },
-      requestedByUserId: {
+      updatedAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo requested by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
-      reviewedByUserId: {
+      status: {
         type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo reviewed by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
-      amountCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe expresado en céntimos.',
-        example: 1500,
+        enum: ['FAILED', 'PAID', 'REJECTED', 'APPROVED', 'REQUESTED', 'UNDER_REVIEW', 'PROCESSING'],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'FAILED',
       },
       currency: {
         type: 'string',
         description: 'Campo currency expuesto por el runtime actual.',
       },
-      status: {
+      clubId: {
         type: 'string',
-        enum: ['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'PROCESSING', 'PAID', 'FAILED'],
-        description: 'Estado actual expuesto por el runtime.',
-        example: 'REQUESTED',
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      amountCents: {
+        type: 'integer',
+        description: 'Importe expresado en céntimos.',
+        example: 1500,
+      },
+      paidAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo paid at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      approvedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo approved at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      failedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo failed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      requestedByUserId: {
+        type: 'string',
+        description: 'Campo requested by user id expuesto por el runtime actual.',
+      },
+      requestedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Campo requested at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo reviewed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo reviewed by user id expuesto por el runtime actual.',
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -17010,30 +14071,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       proofUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo proof url expuesto por el runtime actual.',
-        example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-      },
-      requestedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Campo requested at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      reviewedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo reviewed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      approvedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo approved at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
       },
       processingAt: {
         type: 'string',
@@ -17042,54 +14081,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo processing at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      paidAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo paid at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
-      },
-      failedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo failed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
     },
     required: [
       'id',
-      'clubId',
-      'requestedByUserId',
-      'reviewedByUserId',
-      'amountCents',
-      'currency',
+      'createdAt',
+      'updatedAt',
       'status',
+      'currency',
+      'clubId',
+      'amountCents',
+      'paidAt',
+      'approvedAt',
+      'failedAt',
+      'requestedByUserId',
+      'requestedAt',
+      'reviewedAt',
+      'reviewedByUserId',
       'bankAccountLast4',
       'requestNote',
       'rejectionReason',
       'paymentReference',
       'proofUrl',
-      'requestedAt',
-      'reviewedAt',
-      'approvedAt',
       'processingAt',
-      'paidAt',
-      'failedAt',
-      'createdAt',
-      'updatedAt',
     ],
     additionalProperties: false,
   },
@@ -17098,48 +14111,84 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
-      clubId: {
+      createdAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
+        format: 'date-time',
+        description: 'Fecha y hora de creación en formato ISO 8601.',
+        example: '2026-08-27T18:30:00.000Z',
       },
-      requestedByUserId: {
+      updatedAt: {
         type: 'string',
-        format: 'uuid',
-        description: 'Campo requested by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+        format: 'date-time',
+        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+        example: '2026-08-28T14:15:00.000Z',
       },
-      reviewedByUserId: {
+      status: {
         type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo reviewed by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
-      amountCents: {
-        type: 'integer',
-        format: 'int64',
-        description: 'Importe expresado en céntimos.',
-        example: 1500,
+        enum: ['FAILED', 'PAID', 'REJECTED', 'APPROVED', 'REQUESTED', 'UNDER_REVIEW', 'PROCESSING'],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'FAILED',
       },
       currency: {
         type: 'string',
         description: 'Campo currency expuesto por el runtime actual.',
       },
-      status: {
+      clubId: {
         type: 'string',
-        enum: ['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'PROCESSING', 'PAID', 'FAILED'],
-        description: 'Estado actual expuesto por el runtime.',
-        example: 'REQUESTED',
+        description: 'Campo club id expuesto por el runtime actual.',
+      },
+      amountCents: {
+        type: 'integer',
+        description: 'Importe expresado en céntimos.',
+        example: 1500,
+      },
+      paidAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo paid at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      approvedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo approved at expuesto por el runtime actual.',
+        example: '2026-09-19T22:05:00.000Z',
+      },
+      failedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo failed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      requestedByUserId: {
+        type: 'string',
+        description: 'Campo requested by user id expuesto por el runtime actual.',
+      },
+      requestedAt: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Campo requested at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedAt: {
+        type: 'string',
+        format: 'date-time',
+        nullable: true,
+        description: 'Campo reviewed at expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
+      },
+      reviewedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo reviewed by user id expuesto por el runtime actual.',
       },
       bankAccountLast4: {
         type: 'string',
-        example: '9012',
         description: 'Campo bank account last4 expuesto por el runtime actual.',
       },
       requestNote: {
@@ -17159,30 +14208,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       proofUrl: {
         type: 'string',
-        format: 'uri',
         nullable: true,
         description: 'Campo proof url expuesto por el runtime actual.',
-        example: 'https://cdn.beerry.app/withdrawals/comprobante-2026-0042.pdf',
-      },
-      requestedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Campo requested at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      reviewedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo reviewed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      approvedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo approved at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
       },
       processingAt: {
         type: 'string',
@@ -17191,54 +14218,28 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo processing at expuesto por el runtime actual.',
         example: '2026-09-19T22:00:00.000Z',
       },
-      paidAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo paid at expuesto por el runtime actual.',
-        example: '2026-09-19T22:05:00.000Z',
-      },
-      failedAt: {
-        type: 'string',
-        format: 'date-time',
-        nullable: true,
-        description: 'Campo failed at expuesto por el runtime actual.',
-        example: '2026-09-19T22:00:00.000Z',
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de creación en formato ISO 8601.',
-        example: '2026-08-27T18:30:00.000Z',
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-        example: '2026-08-28T14:15:00.000Z',
-      },
     },
     required: [
       'id',
-      'clubId',
-      'requestedByUserId',
-      'reviewedByUserId',
-      'amountCents',
-      'currency',
+      'createdAt',
+      'updatedAt',
       'status',
+      'currency',
+      'clubId',
+      'amountCents',
+      'paidAt',
+      'approvedAt',
+      'failedAt',
+      'requestedByUserId',
+      'requestedAt',
+      'reviewedAt',
+      'reviewedByUserId',
       'bankAccountLast4',
       'requestNote',
       'rejectionReason',
       'paymentReference',
       'proofUrl',
-      'requestedAt',
-      'reviewedAt',
-      'approvedAt',
       'processingAt',
-      'paidAt',
-      'failedAt',
-      'createdAt',
-      'updatedAt',
     ],
     additionalProperties: false,
   },
@@ -17250,9 +14251,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           status: {
             type: 'string',
@@ -17277,9 +14276,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
+            },
+            orderItem: {
+              type: 'object',
+              properties: {
+                quantity: {
+                  type: 'number',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
+                },
+                totalCents: {
+                  type: 'number',
+                  description: 'Importe total expresado en céntimos.',
+                  example: 1500,
+                },
+                nameSnapshot: {
+                  type: 'string',
+                  description: 'Campo name snapshot expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+              },
+              required: ['quantity', 'totalCents', 'nameSnapshot'],
+              additionalProperties: false,
+              description: 'Campo order item expuesto por el runtime actual.',
             },
             createdAt: {
               type: 'string',
@@ -17291,29 +14311,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: 'string',
               description: 'Estado actual expuesto por el runtime.',
             },
-            orderItem: {
-              type: 'object',
-              properties: {
-                totalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe total expresado en céntimos.',
-                  example: 1500,
-                },
-                nameSnapshot: {
-                  type: 'string',
-                  description: 'Campo name snapshot expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-              },
-              required: ['totalCents', 'nameSnapshot', 'quantity'],
-              additionalProperties: false,
-              description: 'Campo order item expuesto por el runtime actual.',
+            reason: {
+              type: 'string',
+              description: 'Campo reason expuesto por el runtime actual.',
             },
             cancellation: {
               type: 'object',
@@ -17336,10 +14336,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               additionalProperties: false,
               description: 'Campo cancellation expuesto por el runtime actual.',
             },
-            reason: {
-              type: 'string',
-              description: 'Campo reason expuesto por el runtime actual.',
-            },
             businessReason: {
               type: 'string',
               nullable: true,
@@ -17353,11 +14349,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           required: [
             'id',
+            'orderItem',
             'createdAt',
             'status',
-            'orderItem',
-            'cancellation',
             'reason',
+            'cancellation',
             'businessReason',
             'beerryReason',
           ],
@@ -17377,9 +14373,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           status: {
             type: 'string',
@@ -17402,9 +14396,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -17412,29 +14404,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
-          status: {
-            type: 'string',
-            description: 'Estado actual expuesto por el runtime.',
-          },
           updatedAt: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la última actualización en formato ISO 8601.',
             example: '2026-08-28T14:15:00.000Z',
           },
-          eventId: {
+          status: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Estado actual expuesto por el runtime.',
           },
           reason: {
             type: 'string',
             description: 'Campo reason expuesto por el runtime actual.',
           },
+          eventId: {
+            type: 'string',
+            description: 'Campo event id expuesto por el runtime actual.',
+          },
           mode: {
             type: 'string',
             description: 'Campo mode expuesto por el runtime actual.',
+          },
+          requestedByUserId: {
+            type: 'string',
+            description: 'Campo requested by user id expuesto por el runtime actual.',
           },
           reviewedAt: {
             type: 'string',
@@ -17443,25 +14437,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo reviewed at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          requestedByUserId: {
+          replacementEventId: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo requested by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            nullable: true,
+            description: 'Campo replacement event id expuesto por el runtime actual.',
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          replacementEventId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo replacement event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           reviewReason: {
             type: 'string',
@@ -17472,15 +14456,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         required: [
           'id',
           'createdAt',
-          'status',
           'updatedAt',
-          'eventId',
+          'status',
           'reason',
+          'eventId',
           'mode',
-          'reviewedAt',
           'requestedByUserId',
-          'reviewedByUserId',
+          'reviewedAt',
           'replacementEventId',
+          'reviewedByUserId',
           'reviewReason',
         ],
         additionalProperties: false,
@@ -17504,9 +14488,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -17514,29 +14496,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
-          status: {
-            type: 'string',
-            description: 'Estado actual expuesto por el runtime.',
-          },
           updatedAt: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la última actualización en formato ISO 8601.',
             example: '2026-08-28T14:15:00.000Z',
           },
-          eventId: {
+          status: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Estado actual expuesto por el runtime.',
           },
           reason: {
             type: 'string',
             description: 'Campo reason expuesto por el runtime actual.',
           },
+          eventId: {
+            type: 'string',
+            description: 'Campo event id expuesto por el runtime actual.',
+          },
           mode: {
             type: 'string',
             description: 'Campo mode expuesto por el runtime actual.',
+          },
+          requestedByUserId: {
+            type: 'string',
+            description: 'Campo requested by user id expuesto por el runtime actual.',
           },
           reviewedAt: {
             type: 'string',
@@ -17545,25 +14529,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo reviewed at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          requestedByUserId: {
+          replacementEventId: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo requested by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            nullable: true,
+            description: 'Campo replacement event id expuesto por el runtime actual.',
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          replacementEventId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo replacement event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           reviewReason: {
             type: 'string',
@@ -17574,15 +14548,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         required: [
           'id',
           'createdAt',
-          'status',
           'updatedAt',
-          'eventId',
+          'status',
           'reason',
+          'eventId',
           'mode',
-          'reviewedAt',
           'requestedByUserId',
-          'reviewedByUserId',
+          'reviewedAt',
           'replacementEventId',
+          'reviewedByUserId',
           'reviewReason',
         ],
         additionalProperties: false,
@@ -17626,15 +14600,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -17648,10 +14618,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -17660,10 +14628,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -17684,17 +14650,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -17713,9 +14679,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -17740,9 +14704,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -17844,15 +14806,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             name: {
               type: 'string',
@@ -17866,10 +14824,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
             },
             imageObjectKey: {
               type: 'string',
@@ -17878,10 +14834,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imagePublicUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image public url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
             },
             startsAt: {
               type: 'string',
@@ -17902,17 +14856,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             status: {
               type: 'string',
               enum: [
+                'CANCELLED',
                 'DRAFT',
                 'PUBLISHED',
                 'SALE_ACTIVE',
                 'SOLD_OUT',
                 'IN_PROGRESS',
                 'FINISHED',
-                'CANCELLED',
                 'POSTPONED',
               ],
               description: 'Estado actual expuesto por el runtime.',
-              example: 'DRAFT',
+              example: 'CANCELLED',
             },
             createdAt: {
               type: 'string',
@@ -17931,9 +14885,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -17958,9 +14910,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                    description: 'Identificador del recurso.',
                   },
                   name: {
                     type: 'string',
@@ -18061,15 +15011,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -18083,10 +15029,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -18095,10 +15039,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -18119,17 +15061,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -18148,9 +15090,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -18175,9 +15115,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -18277,15 +15215,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -18299,10 +15233,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -18311,10 +15243,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -18335,17 +15265,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -18364,9 +15294,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -18391,9 +15319,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -18493,15 +15419,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -18515,10 +15437,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -18527,10 +15447,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -18551,17 +15469,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -18580,9 +15498,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -18607,9 +15523,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -18709,15 +15623,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -18731,10 +15641,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -18743,10 +15651,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -18767,17 +15673,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -18796,9 +15702,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -18823,9 +15727,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -18925,15 +15827,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -18947,10 +15845,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -18959,10 +15855,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -18983,17 +15877,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -19012,9 +15906,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -19039,9 +15931,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -19141,15 +16031,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -19163,10 +16049,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -19175,10 +16059,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -19199,17 +16081,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -19228,9 +16110,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -19255,9 +16135,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -19355,9 +16233,30 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
+            },
+            orderItem: {
+              type: 'object',
+              properties: {
+                quantity: {
+                  type: 'number',
+                  description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
+                },
+                totalCents: {
+                  type: 'number',
+                  description: 'Importe total expresado en céntimos.',
+                  example: 1500,
+                },
+                nameSnapshot: {
+                  type: 'string',
+                  description: 'Campo name snapshot expuesto por el runtime actual.',
+                  example: 'Chilcano de maracuyá',
+                },
+              },
+              required: ['quantity', 'totalCents', 'nameSnapshot'],
+              additionalProperties: false,
+              description: 'Campo order item expuesto por el runtime actual.',
             },
             createdAt: {
               type: 'string',
@@ -19369,29 +16268,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: 'string',
               description: 'Estado actual expuesto por el runtime.',
             },
-            orderItem: {
-              type: 'object',
-              properties: {
-                totalCents: {
-                  type: 'integer',
-                  format: 'int64',
-                  description: 'Importe total expresado en céntimos.',
-                  example: 1500,
-                },
-                nameSnapshot: {
-                  type: 'string',
-                  description: 'Campo name snapshot expuesto por el runtime actual.',
-                  example: 'Chilcano de maracuyá',
-                },
-                quantity: {
-                  type: 'integer',
-                  format: 'int32',
-                  description: 'Campo quantity expuesto por el runtime actual.',
-                },
-              },
-              required: ['totalCents', 'nameSnapshot', 'quantity'],
-              additionalProperties: false,
-              description: 'Campo order item expuesto por el runtime actual.',
+            reason: {
+              type: 'string',
+              description: 'Campo reason expuesto por el runtime actual.',
             },
             cancellation: {
               type: 'object',
@@ -19414,10 +16293,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               additionalProperties: false,
               description: 'Campo cancellation expuesto por el runtime actual.',
             },
-            reason: {
-              type: 'string',
-              description: 'Campo reason expuesto por el runtime actual.',
-            },
             businessReason: {
               type: 'string',
               nullable: true,
@@ -19431,11 +16306,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           required: [
             'id',
+            'orderItem',
             'createdAt',
             'status',
-            'orderItem',
-            'cancellation',
             'reason',
+            'cancellation',
             'businessReason',
             'beerryReason',
           ],
@@ -19455,9 +16330,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           status: {
             type: 'string',
@@ -19490,9 +16363,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 clubId: {
                   type: 'string',
-                  format: 'uuid',
                   description: 'Campo club id expuesto por el runtime actual.',
-                  example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
                 },
               },
               required: ['name', 'clubId'],
@@ -19501,9 +16372,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
@@ -19511,29 +16380,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
             },
-            status: {
-              type: 'string',
-              description: 'Estado actual expuesto por el runtime.',
-            },
             updatedAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de la última actualización en formato ISO 8601.',
               example: '2026-08-28T14:15:00.000Z',
             },
-            eventId: {
+            status: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Estado actual expuesto por el runtime.',
             },
             reason: {
               type: 'string',
               description: 'Campo reason expuesto por el runtime actual.',
             },
+            eventId: {
+              type: 'string',
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
             mode: {
               type: 'string',
               description: 'Campo mode expuesto por el runtime actual.',
+            },
+            requestedByUserId: {
+              type: 'string',
+              description: 'Campo requested by user id expuesto por el runtime actual.',
             },
             reviewedAt: {
               type: 'string',
@@ -19542,25 +16413,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo reviewed at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
             },
-            requestedByUserId: {
+            replacementEventId: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo requested by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              nullable: true,
+              description: 'Campo replacement event id expuesto por el runtime actual.',
             },
             reviewedByUserId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo reviewed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            replacementEventId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo replacement event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             reviewReason: {
               type: 'string',
@@ -19572,15 +16433,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'event',
             'id',
             'createdAt',
-            'status',
             'updatedAt',
-            'eventId',
+            'status',
             'reason',
+            'eventId',
             'mode',
-            'reviewedAt',
             'requestedByUserId',
-            'reviewedByUserId',
+            'reviewedAt',
             'replacementEventId',
+            'reviewedByUserId',
             'reviewReason',
           ],
           additionalProperties: false,
@@ -19599,9 +16460,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            description: 'Identificador del recurso.',
           },
           createdAt: {
             type: 'string',
@@ -19609,29 +16468,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Fecha y hora de creación en formato ISO 8601.',
             example: '2026-08-27T18:30:00.000Z',
           },
-          status: {
-            type: 'string',
-            description: 'Estado actual expuesto por el runtime.',
-          },
           updatedAt: {
             type: 'string',
             format: 'date-time',
             description: 'Fecha y hora de la última actualización en formato ISO 8601.',
             example: '2026-08-28T14:15:00.000Z',
           },
-          eventId: {
+          status: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Estado actual expuesto por el runtime.',
           },
           reason: {
             type: 'string',
             description: 'Campo reason expuesto por el runtime actual.',
           },
+          eventId: {
+            type: 'string',
+            description: 'Campo event id expuesto por el runtime actual.',
+          },
           mode: {
             type: 'string',
             description: 'Campo mode expuesto por el runtime actual.',
+          },
+          requestedByUserId: {
+            type: 'string',
+            description: 'Campo requested by user id expuesto por el runtime actual.',
           },
           reviewedAt: {
             type: 'string',
@@ -19640,25 +16501,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo reviewed at expuesto por el runtime actual.',
             example: '2026-09-19T22:00:00.000Z',
           },
-          requestedByUserId: {
+          replacementEventId: {
             type: 'string',
-            format: 'uuid',
-            description: 'Campo requested by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            nullable: true,
+            description: 'Campo replacement event id expuesto por el runtime actual.',
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          replacementEventId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo replacement event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           reviewReason: {
             type: 'string',
@@ -19669,15 +16520,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         required: [
           'id',
           'createdAt',
-          'status',
           'updatedAt',
-          'eventId',
+          'status',
           'reason',
+          'eventId',
           'mode',
-          'reviewedAt',
           'requestedByUserId',
-          'reviewedByUserId',
+          'reviewedAt',
           'replacementEventId',
+          'reviewedByUserId',
           'reviewReason',
         ],
         additionalProperties: false,
@@ -19688,630 +16539,316 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     additionalProperties: false,
   },
   AdminEventsController_getAdminEventsDashboardResponse: {
-    oneOf: [
-      {
+    type: 'object',
+    properties: {
+      message: {
+        type: 'string',
+        description: 'Mensaje legible que resume el resultado.',
+      },
+      hasClub: {
+        type: 'boolean',
+        enum: [false, true],
+        description: 'Campo has club expuesto por el runtime actual.',
+        example: false,
+      },
+      summary: {
         type: 'object',
         properties: {
-          message: {
+          activeEvents: {
+            type: 'number',
+            description: 'Campo active events expuesto por el runtime actual.',
+          },
+          publishedEvents: {
+            type: 'number',
+            description: 'Campo published events expuesto por el runtime actual.',
+          },
+          ticketsSold: {
+            type: 'number',
+            description: 'Campo tickets sold expuesto por el runtime actual.',
+          },
+          salesAmount: {
+            type: 'number',
+            description: 'Campo sales amount expuesto por el runtime actual.',
+          },
+          currency: {
             type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
-          },
-          hasClub: {
-            type: 'boolean',
-            description: 'Campo has club expuesto por el runtime actual.',
-            example: false,
-            enum: [false],
-          },
-          summary: {
-            type: 'object',
-            properties: {
-              activeEvents: {
-                type: 'number',
-                description: 'Campo active events expuesto por el runtime actual.',
-              },
-              publishedEvents: {
-                type: 'number',
-                description: 'Campo published events expuesto por el runtime actual.',
-              },
-              ticketsSold: {
-                type: 'number',
-                description: 'Campo tickets sold expuesto por el runtime actual.',
-              },
-              salesAmount: {
-                type: 'number',
-                description: 'Campo sales amount expuesto por el runtime actual.',
-              },
-              currency: {
-                type: 'string',
-                description: 'Campo currency expuesto por el runtime actual.',
-              },
-            },
-            required: ['activeEvents', 'publishedEvents', 'ticketsSold', 'salesAmount', 'currency'],
-            additionalProperties: false,
-            description: 'Campo summary expuesto por el runtime actual.',
-          },
-          alerts: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
-                },
-                title: {
-                  type: 'string',
-                  description: 'Campo title expuesto por el runtime actual.',
-                },
-                text: {
-                  type: 'string',
-                  description: 'Campo text expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-              },
-              required: ['type', 'title', 'text', 'imageUrl'],
-              additionalProperties: false,
-            },
-            description: 'Campo alerts expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          events: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-                capacity: {
-                  type: 'number',
-                  description: 'Campo capacity expuesto por el runtime actual.',
-                },
-                sold: {
-                  type: 'number',
-                  description: 'Campo sold expuesto por el runtime actual.',
-                },
-                salesAmount: {
-                  type: 'number',
-                  description: 'Campo sales amount expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                status: {
-                  type: 'string',
-                  description: 'Estado actual expuesto por el runtime.',
-                },
-                rawStatus: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Campo raw status expuesto por el runtime actual.',
-                  example: 'DRAFT',
-                },
-                progress: {
-                  type: 'number',
-                  description: 'Campo progress expuesto por el runtime actual.',
-                },
-                ticketTypes: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: {
-                        type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
-                      },
-                      name: {
-                        type: 'string',
-                        description: 'Campo name expuesto por el runtime actual.',
-                        example: 'Entrada VIP',
-                      },
-                      description: {
-                        type: 'string',
-                        nullable: true,
-                        description: 'Campo description expuesto por el runtime actual.',
-                      },
-                      price: {
-                        type: 'number',
-                        description: 'Campo price expuesto por el runtime actual.',
-                      },
-                      currency: {
-                        type: 'string',
-                        description: 'Campo currency expuesto por el runtime actual.',
-                      },
-                      quantityTotal: {
-                        type: 'number',
-                        description: 'Campo quantity total expuesto por el runtime actual.',
-                        example: 1,
-                      },
-                      quantitySold: {
-                        type: 'number',
-                        description: 'Campo quantity sold expuesto por el runtime actual.',
-                        example: 1,
-                      },
-                      status: {
-                        type: 'string',
-                        description: 'Estado actual expuesto por el runtime.',
-                      },
-                      createdAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha y hora de creación en formato ISO 8601.',
-                        example: '2026-08-27T18:30:00.000Z',
-                      },
-                      updatedAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                        example: '2026-08-28T14:15:00.000Z',
-                      },
-                    },
-                    required: [
-                      'id',
-                      'name',
-                      'description',
-                      'price',
-                      'currency',
-                      'quantityTotal',
-                      'quantitySold',
-                      'status',
-                      'createdAt',
-                      'updatedAt',
-                    ],
-                    additionalProperties: false,
-                  },
-                  description: 'Campo ticket types expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'imageUrl',
-                'id',
-                'name',
-                'description',
-                'startsAt',
-                'endsAt',
-                'createdAt',
-                'updatedAt',
-                'capacity',
-                'sold',
-                'salesAmount',
-                'currency',
-                'status',
-                'rawStatus',
-                'progress',
-                'ticketTypes',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo events expuesto por el runtime actual.',
-            maxItems: 0,
-          },
-          topEvents: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                rank: {
-                  type: 'number',
-                  description: 'Campo rank expuesto por el runtime actual.',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                amount: {
-                  type: 'number',
-                  description: 'Campo amount expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-              },
-              required: ['rank', 'id', 'name', 'amount', 'currency'],
-              additionalProperties: false,
-            },
-            description: 'Campo top events expuesto por el runtime actual.',
-            maxItems: 0,
+            description: 'Campo currency expuesto por el runtime actual.',
           },
         },
-        required: ['message', 'hasClub', 'summary', 'alerts', 'events', 'topEvents'],
+        required: ['activeEvents', 'publishedEvents', 'ticketsSold', 'salesAmount', 'currency'],
         additionalProperties: false,
+        description: 'Campo summary expuesto por el runtime actual.',
       },
-      {
+      alerts: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+              description: 'Campo type expuesto por el runtime actual.',
+            },
+            title: {
+              type: 'string',
+              description: 'Campo title expuesto por el runtime actual.',
+            },
+            text: {
+              type: 'string',
+              description: 'Campo text expuesto por el runtime actual.',
+            },
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+          },
+          required: ['type', 'title', 'text', 'imageUrl'],
+          additionalProperties: false,
+        },
+        description: 'Campo alerts expuesto por el runtime actual.',
+      },
+      events: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            imageUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo image url expuesto por el runtime actual.',
+            },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Noche Latina',
+            },
+            description: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo description expuesto por el runtime actual.',
+            },
+            startsAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo starts at expuesto por el runtime actual.',
+              example: '2026-09-19T22:00:00.000Z',
+            },
+            endsAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Campo ends at expuesto por el runtime actual.',
+              example: '2026-09-20T05:00:00.000Z',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
+            },
+            capacity: {
+              type: 'number',
+              description: 'Campo capacity expuesto por el runtime actual.',
+            },
+            sold: {
+              type: 'number',
+              description: 'Campo sold expuesto por el runtime actual.',
+            },
+            salesAmount: {
+              type: 'number',
+              description: 'Campo sales amount expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              description: 'Estado actual expuesto por el runtime.',
+            },
+            rawStatus: {
+              type: 'string',
+              enum: [
+                'CANCELLED',
+                'DRAFT',
+                'PUBLISHED',
+                'SALE_ACTIVE',
+                'SOLD_OUT',
+                'IN_PROGRESS',
+                'FINISHED',
+                'POSTPONED',
+              ],
+              description: 'Campo raw status expuesto por el runtime actual.',
+              example: 'CANCELLED',
+            },
+            progress: {
+              type: 'number',
+              description: 'Campo progress expuesto por el runtime actual.',
+            },
+            ticketTypes: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: {
+                    type: 'string',
+                    description: 'Identificador del recurso.',
+                  },
+                  name: {
+                    type: 'string',
+                    description: 'Campo name expuesto por el runtime actual.',
+                    example: 'Entrada VIP',
+                  },
+                  description: {
+                    type: 'string',
+                    nullable: true,
+                    description: 'Campo description expuesto por el runtime actual.',
+                  },
+                  price: {
+                    type: 'number',
+                    description: 'Campo price expuesto por el runtime actual.',
+                  },
+                  currency: {
+                    type: 'string',
+                    description: 'Campo currency expuesto por el runtime actual.',
+                  },
+                  quantityTotal: {
+                    type: 'number',
+                    description: 'Campo quantity total expuesto por el runtime actual.',
+                    example: 1,
+                  },
+                  quantitySold: {
+                    type: 'number',
+                    description: 'Campo quantity sold expuesto por el runtime actual.',
+                    example: 1,
+                  },
+                  status: {
+                    type: 'string',
+                    description: 'Estado actual expuesto por el runtime.',
+                  },
+                  createdAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Fecha y hora de creación en formato ISO 8601.',
+                    example: '2026-08-27T18:30:00.000Z',
+                  },
+                  updatedAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+                    example: '2026-08-28T14:15:00.000Z',
+                  },
+                },
+                required: [
+                  'id',
+                  'name',
+                  'description',
+                  'price',
+                  'currency',
+                  'quantityTotal',
+                  'quantitySold',
+                  'status',
+                  'createdAt',
+                  'updatedAt',
+                ],
+                additionalProperties: false,
+              },
+              description: 'Campo ticket types expuesto por el runtime actual.',
+            },
+          },
+          required: [
+            'imageUrl',
+            'id',
+            'name',
+            'description',
+            'startsAt',
+            'endsAt',
+            'createdAt',
+            'updatedAt',
+            'capacity',
+            'sold',
+            'salesAmount',
+            'currency',
+            'status',
+            'rawStatus',
+            'progress',
+            'ticketTypes',
+          ],
+          additionalProperties: false,
+        },
+        description: 'Campo events expuesto por el runtime actual.',
+      },
+      topEvents: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            rank: {
+              type: 'number',
+              description: 'Campo rank expuesto por el runtime actual.',
+            },
+            id: {
+              type: 'string',
+              description: 'Identificador del recurso.',
+            },
+            name: {
+              type: 'string',
+              description: 'Campo name expuesto por el runtime actual.',
+              example: 'Nébula Club',
+            },
+            amount: {
+              type: 'number',
+              description: 'Campo amount expuesto por el runtime actual.',
+            },
+            currency: {
+              type: 'string',
+              description: 'Campo currency expuesto por el runtime actual.',
+            },
+          },
+          required: ['rank', 'id', 'name', 'amount', 'currency'],
+          additionalProperties: false,
+        },
+        description: 'Campo top events expuesto por el runtime actual.',
+      },
+      club: {
         type: 'object',
         properties: {
-          message: {
+          id: {
             type: 'string',
-            description: 'Mensaje legible que resume el resultado.',
+            description: 'Identificador del recurso.',
           },
-          hasClub: {
-            type: 'boolean',
-            description: 'Campo has club expuesto por el runtime actual.',
-            example: true,
-            enum: [true],
+          name: {
+            type: 'string',
+            description: 'Campo name expuesto por el runtime actual.',
+            example: 'Nébula Club',
           },
-          club: {
-            type: 'object',
-            properties: {
-              id: {
-                type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-              },
-              name: {
-                type: 'string',
-                description: 'Campo name expuesto por el runtime actual.',
-                example: 'Nébula Club',
-              },
-              type: {
-                type: 'string',
-                description: 'Campo type expuesto por el runtime actual.',
-              },
-              status: {
-                type: 'string',
-                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'ACTIVE',
-              },
-            },
-            required: ['id', 'name', 'type', 'status'],
-            additionalProperties: false,
-            description: 'Campo club expuesto por el runtime actual.',
+          type: {
+            type: 'string',
+            description: 'Campo type expuesto por el runtime actual.',
           },
-          summary: {
-            type: 'object',
-            properties: {
-              activeEvents: {
-                type: 'number',
-                description: 'Campo active events expuesto por el runtime actual.',
-              },
-              publishedEvents: {
-                type: 'number',
-                description: 'Campo published events expuesto por el runtime actual.',
-              },
-              ticketsSold: {
-                type: 'number',
-                description: 'Campo tickets sold expuesto por el runtime actual.',
-              },
-              salesAmount: {
-                type: 'number',
-                description: 'Campo sales amount expuesto por el runtime actual.',
-              },
-              currency: {
-                type: 'string',
-                description: 'Campo currency expuesto por el runtime actual.',
-              },
-            },
-            required: ['activeEvents', 'publishedEvents', 'ticketsSold', 'salesAmount', 'currency'],
-            additionalProperties: false,
-            description: 'Campo summary expuesto por el runtime actual.',
-          },
-          alerts: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                type: {
-                  type: 'string',
-                  description: 'Campo type expuesto por el runtime actual.',
-                },
-                title: {
-                  type: 'string',
-                  description: 'Campo title expuesto por el runtime actual.',
-                },
-                text: {
-                  type: 'string',
-                  description: 'Campo text expuesto por el runtime actual.',
-                },
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
-                },
-              },
-              required: ['type', 'title', 'text', 'imageUrl'],
-              additionalProperties: false,
-            },
-            description: 'Campo alerts expuesto por el runtime actual.',
-          },
-          events: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                imageUrl: {
-                  type: 'string',
-                  format: 'uri',
-                  nullable: true,
-                  description: 'Campo image url expuesto por el runtime actual.',
-                  example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Noche Latina',
-                },
-                description: {
-                  type: 'string',
-                  nullable: true,
-                  description: 'Campo description expuesto por el runtime actual.',
-                },
-                startsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo starts at expuesto por el runtime actual.',
-                  example: '2026-09-19T22:00:00.000Z',
-                },
-                endsAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Campo ends at expuesto por el runtime actual.',
-                  example: '2026-09-20T05:00:00.000Z',
-                },
-                createdAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de creación en formato ISO 8601.',
-                  example: '2026-08-27T18:30:00.000Z',
-                },
-                updatedAt: {
-                  type: 'string',
-                  format: 'date-time',
-                  description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                  example: '2026-08-28T14:15:00.000Z',
-                },
-                capacity: {
-                  type: 'number',
-                  description: 'Campo capacity expuesto por el runtime actual.',
-                },
-                sold: {
-                  type: 'number',
-                  description: 'Campo sold expuesto por el runtime actual.',
-                },
-                salesAmount: {
-                  type: 'number',
-                  description: 'Campo sales amount expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-                status: {
-                  type: 'string',
-                  description: 'Estado actual expuesto por el runtime.',
-                },
-                rawStatus: {
-                  type: 'string',
-                  enum: [
-                    'DRAFT',
-                    'PUBLISHED',
-                    'SALE_ACTIVE',
-                    'SOLD_OUT',
-                    'IN_PROGRESS',
-                    'FINISHED',
-                    'CANCELLED',
-                    'POSTPONED',
-                  ],
-                  description: 'Campo raw status expuesto por el runtime actual.',
-                  example: 'DRAFT',
-                },
-                progress: {
-                  type: 'number',
-                  description: 'Campo progress expuesto por el runtime actual.',
-                },
-                ticketTypes: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: {
-                        type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
-                      },
-                      name: {
-                        type: 'string',
-                        description: 'Campo name expuesto por el runtime actual.',
-                        example: 'Entrada VIP',
-                      },
-                      description: {
-                        type: 'string',
-                        nullable: true,
-                        description: 'Campo description expuesto por el runtime actual.',
-                      },
-                      price: {
-                        type: 'number',
-                        description: 'Campo price expuesto por el runtime actual.',
-                      },
-                      currency: {
-                        type: 'string',
-                        description: 'Campo currency expuesto por el runtime actual.',
-                      },
-                      quantityTotal: {
-                        type: 'number',
-                        description: 'Campo quantity total expuesto por el runtime actual.',
-                        example: 1,
-                      },
-                      quantitySold: {
-                        type: 'number',
-                        description: 'Campo quantity sold expuesto por el runtime actual.',
-                        example: 1,
-                      },
-                      status: {
-                        type: 'string',
-                        description: 'Estado actual expuesto por el runtime.',
-                      },
-                      createdAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha y hora de creación en formato ISO 8601.',
-                        example: '2026-08-27T18:30:00.000Z',
-                      },
-                      updatedAt: {
-                        type: 'string',
-                        format: 'date-time',
-                        description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-                        example: '2026-08-28T14:15:00.000Z',
-                      },
-                    },
-                    required: [
-                      'id',
-                      'name',
-                      'description',
-                      'price',
-                      'currency',
-                      'quantityTotal',
-                      'quantitySold',
-                      'status',
-                      'createdAt',
-                      'updatedAt',
-                    ],
-                    additionalProperties: false,
-                  },
-                  description: 'Campo ticket types expuesto por el runtime actual.',
-                },
-              },
-              required: [
-                'imageUrl',
-                'id',
-                'name',
-                'description',
-                'startsAt',
-                'endsAt',
-                'createdAt',
-                'updatedAt',
-                'capacity',
-                'sold',
-                'salesAmount',
-                'currency',
-                'status',
-                'rawStatus',
-                'progress',
-                'ticketTypes',
-              ],
-              additionalProperties: false,
-            },
-            description: 'Campo events expuesto por el runtime actual.',
-          },
-          topEvents: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                rank: {
-                  type: 'number',
-                  description: 'Campo rank expuesto por el runtime actual.',
-                },
-                id: {
-                  type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                name: {
-                  type: 'string',
-                  description: 'Campo name expuesto por el runtime actual.',
-                  example: 'Nébula Club',
-                },
-                amount: {
-                  type: 'number',
-                  description: 'Campo amount expuesto por el runtime actual.',
-                },
-                currency: {
-                  type: 'string',
-                  description: 'Campo currency expuesto por el runtime actual.',
-                },
-              },
-              required: ['rank', 'id', 'name', 'amount', 'currency'],
-              additionalProperties: false,
-            },
-            description: 'Campo top events expuesto por el runtime actual.',
+          status: {
+            type: 'string',
+            enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'ACTIVE',
           },
         },
-        required: ['message', 'hasClub', 'club', 'summary', 'alerts', 'events', 'topEvents'],
+        required: ['id', 'name', 'type', 'status'],
         additionalProperties: false,
+        description: 'Campo club expuesto por el runtime actual.',
       },
-    ],
+    },
+    required: ['message', 'hasClub', 'summary', 'alerts', 'events', 'topEvents'],
+    additionalProperties: false,
   },
   PublicEventsController_listPublicEventsResponse: {
     type: 'object',
@@ -20327,15 +16864,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             name: {
               type: 'string',
@@ -20349,10 +16882,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
             },
             imageObjectKey: {
               type: 'string',
@@ -20361,10 +16892,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imagePublicUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image public url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
             },
             startsAt: {
               type: 'string',
@@ -20385,17 +16914,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             status: {
               type: 'string',
               enum: [
+                'CANCELLED',
                 'DRAFT',
                 'PUBLISHED',
                 'SALE_ACTIVE',
                 'SOLD_OUT',
                 'IN_PROGRESS',
                 'FINISHED',
-                'CANCELLED',
                 'POSTPONED',
               ],
               description: 'Estado actual expuesto por el runtime.',
-              example: 'DRAFT',
+              example: 'CANCELLED',
             },
             createdAt: {
               type: 'string',
@@ -20414,9 +16943,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -20441,9 +16968,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                    description: 'Identificador del recurso.',
                   },
                   name: {
                     type: 'string',
@@ -20544,15 +17069,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -20566,10 +17087,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -20578,10 +17097,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imagePublicUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image public url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/events/noche-latina/cover.webp',
           },
           startsAt: {
             type: 'string',
@@ -20602,17 +17119,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           status: {
             type: 'string',
             enum: [
+              'CANCELLED',
               'DRAFT',
               'PUBLISHED',
               'SALE_ACTIVE',
               'SOLD_OUT',
               'IN_PROGRESS',
               'FINISHED',
-              'CANCELLED',
               'POSTPONED',
             ],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'DRAFT',
+            example: 'CANCELLED',
           },
           createdAt: {
             type: 'string',
@@ -20631,9 +17148,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -20658,9 +17173,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -20774,8 +17287,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: false,
       },
       revision: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo revision expuesto por el runtime actual.',
       },
       updatedAt: {
@@ -20807,15 +17319,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
+              description: 'Identificador del recurso.',
             },
             type: {
               type: 'string',
@@ -20823,70 +17327,66 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo type expuesto por el runtime actual.',
               example: 'ENTRY',
             },
-            eventId: {
+            createdAt: {
               type: 'string',
-              format: 'uuid',
-              description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
-            },
-            actorUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo actor user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
             reason: {
               type: 'string',
               nullable: true,
               description: 'Campo reason expuesto por el runtime actual.',
             },
+            eventId: {
+              type: 'string',
+              description: 'Campo event id expuesto por el runtime actual.',
+            },
+            actorUserId: {
+              type: 'string',
+              description: 'Campo actor user id expuesto por el runtime actual.',
+            },
+            ticketId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo ticket id expuesto por el runtime actual.',
+            },
+            workerShiftId: {
+              type: 'string',
+              nullable: true,
+              description: 'Campo worker shift id expuesto por el runtime actual.',
+            },
+            delta: {
+              type: 'integer',
+              description: 'Campo delta expuesto por el runtime actual.',
+            },
+            previousCount: {
+              type: 'integer',
+              description: 'Campo previous count expuesto por el runtime actual.',
+            },
+            newCount: {
+              type: 'integer',
+              description: 'Campo new count expuesto por el runtime actual.',
+            },
             idempotencyKey: {
               type: 'string',
               nullable: true,
               description: 'Campo idempotency key expuesto por el runtime actual.',
             },
-            ticketId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo ticket id expuesto por el runtime actual.',
-              example: '4a9e7c32-6b15-4d80-8f24-1c5e93a7b642',
-            },
-            workerShiftId: {
-              type: 'string',
-              format: 'uuid',
-              nullable: true,
-              description: 'Campo worker shift id expuesto por el runtime actual.',
-              example: '2e8c5a71-9b34-4d60-a192-6f7e3c48b025',
-            },
-            delta: {
-              type: 'number',
-              description: 'Campo delta expuesto por el runtime actual.',
-            },
-            previousCount: {
-              type: 'integer',
-              format: 'int32',
-              description: 'Campo previous count expuesto por el runtime actual.',
-            },
-            newCount: {
-              type: 'integer',
-              format: 'int32',
-              description: 'Campo new count expuesto por el runtime actual.',
-            },
           },
           required: [
             'id',
-            'createdAt',
             'type',
+            'createdAt',
+            'reason',
             'eventId',
             'actorUserId',
-            'reason',
-            'idempotencyKey',
             'ticketId',
             'workerShiftId',
             'delta',
             'previousCount',
             'newCount',
+            'idempotencyKey',
           ],
           additionalProperties: false,
         },
@@ -20922,8 +17422,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: false,
       },
       revision: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo revision expuesto por el runtime actual.',
       },
       updatedAt: {
@@ -20971,8 +17470,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: false,
       },
       revision: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo revision expuesto por el runtime actual.',
       },
       updatedAt: {
@@ -21020,8 +17518,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         example: false,
       },
       revision: {
-        type: 'integer',
-        format: 'int32',
+        type: 'number',
         description: 'Campo revision expuesto por el runtime actual.',
       },
       updatedAt: {
@@ -21056,9 +17553,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -21076,14 +17571,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-                },
-                fullName: {
-                  type: 'string',
-                  description: 'Campo full name expuesto por el runtime actual.',
-                  example: 'Valeria Mendoza',
+                  description: 'Identificador del recurso.',
                 },
                 role: {
                   type: 'string',
@@ -21091,22 +17579,34 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   description: 'Campo role expuesto por el runtime actual.',
                   example: 'WORKER',
                 },
+                fullName: {
+                  type: 'string',
+                  description: 'Campo full name expuesto por el runtime actual.',
+                  example: 'Valeria Mendoza',
+                },
               },
-              required: ['id', 'fullName', 'role'],
+              required: ['id', 'role', 'fullName'],
               additionalProperties: false,
               description: 'Campo actor expuesto por el runtime actual.',
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
+            },
+            metadata: {
+              description: 'Valor JSON dinámico expuesto por el runtime.',
+              allOf: [
+                {
+                  $ref: '#/components/schemas/JsonValue',
+                },
+              ],
+              nullable: true,
             },
             expiresAt: {
               type: 'string',
@@ -21122,14 +17622,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
-            action: {
+            actorUserId: {
               type: 'string',
-              description: 'Campo action expuesto por el runtime actual.',
+              description: 'Campo actor user id expuesto por el runtime actual.',
             },
             resourceType: {
               type: 'string',
@@ -21137,18 +17635,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             resourceId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo resource id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
             },
-            metadata: {
-              description: 'Valor JSON dinámico expuesto por el runtime.',
-              allOf: [
-                {
-                  $ref: '#/components/schemas/JsonValue',
-                },
-              ],
-              nullable: true,
+            action: {
+              type: 'string',
+              description: 'Campo action expuesto por el runtime actual.',
             },
             ipAddress: {
               type: 'string',
@@ -21181,32 +17672,26 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               nullable: true,
               description: 'Campo integrity hash expuesto por el runtime actual.',
             },
-            actorUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo actor user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
           },
           required: [
             'club',
             'actor',
             'id',
             'createdAt',
+            'metadata',
             'expiresAt',
             'deviceFingerprint',
             'clubId',
-            'action',
+            'actorUserId',
             'resourceType',
             'resourceId',
-            'metadata',
+            'action',
             'ipAddress',
             'correlationId',
             'actorRoleSnapshot',
             'severity',
             'previousHash',
             'integrityHash',
-            'actorUserId',
           ],
           additionalProperties: false,
         },
@@ -21216,14 +17701,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           page: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page expuesto por el runtime actual.',
+            example: 1,
           },
           pageSize: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page size expuesto por el runtime actual.',
+            example: 1,
           },
           total: {
             type: 'number',
@@ -21231,9 +17716,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             example: 1,
           },
           totalPages: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo total pages expuesto por el runtime actual.',
+            example: 1,
           },
         },
         required: ['page', 'pageSize', 'total', 'totalPages'],
@@ -21249,9 +17734,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
       createdAt: {
         type: 'string',
@@ -21265,19 +17748,17 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Fecha y hora de la última actualización en formato ISO 8601.',
         example: '2026-08-28T14:15:00.000Z',
       },
-      updatedByUserId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo updated by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
       retentionDays: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo retention days expuesto por el runtime actual.',
       },
+      updatedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo updated by user id expuesto por el runtime actual.',
+      },
     },
-    required: ['id', 'createdAt', 'updatedAt', 'updatedByUserId', 'retentionDays'],
+    required: ['id', 'createdAt', 'updatedAt', 'retentionDays', 'updatedByUserId'],
     additionalProperties: false,
   },
   AuditController_updatePolicyResponse: {
@@ -21285,9 +17766,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
       createdAt: {
         type: 'string',
@@ -21301,77 +17780,43 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Fecha y hora de la última actualización en formato ISO 8601.',
         example: '2026-08-28T14:15:00.000Z',
       },
-      updatedByUserId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo updated by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
       retentionDays: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo retention days expuesto por el runtime actual.',
       },
+      updatedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo updated by user id expuesto por el runtime actual.',
+      },
     },
-    required: ['id', 'createdAt', 'updatedAt', 'updatedByUserId', 'retentionDays'],
+    required: ['id', 'createdAt', 'updatedAt', 'retentionDays', 'updatedByUserId'],
     additionalProperties: false,
   },
   AuditController_verifyResponse: {
-    anyOf: [
-      {
-        type: 'object',
-        properties: {
-          valid: {
-            type: 'boolean',
-            description: 'Campo valid expuesto por el runtime actual.',
-            example: false,
-          },
-          checked: {
-            type: 'number',
-            description: 'Campo checked expuesto por el runtime actual.',
-          },
-          legacyUnchecked: {
-            type: 'number',
-            description: 'Campo legacy unchecked expuesto por el runtime actual.',
-          },
-          brokenEntryId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo broken entry id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-        },
-        required: ['valid', 'checked', 'legacyUnchecked', 'brokenEntryId'],
-        additionalProperties: false,
+    type: 'object',
+    properties: {
+      valid: {
+        type: 'boolean',
+        description: 'Campo valid expuesto por el runtime actual.',
+        example: false,
       },
-      {
-        type: 'object',
-        properties: {
-          valid: {
-            type: 'boolean',
-            description: 'Campo valid expuesto por el runtime actual.',
-            example: false,
-          },
-          checked: {
-            type: 'number',
-            description: 'Campo checked expuesto por el runtime actual.',
-          },
-          legacyUnchecked: {
-            type: 'number',
-            description: 'Campo legacy unchecked expuesto por el runtime actual.',
-          },
-          brokenEntryId: {
-            type: 'string',
-            format: 'uuid',
-            nullable: true,
-            description: 'Campo broken entry id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-        },
-        required: ['valid', 'checked', 'legacyUnchecked', 'brokenEntryId'],
-        additionalProperties: false,
+      checked: {
+        type: 'number',
+        description: 'Campo checked expuesto por el runtime actual.',
       },
-    ],
+      legacyUnchecked: {
+        type: 'number',
+        description: 'Campo legacy unchecked expuesto por el runtime actual.',
+      },
+      brokenEntryId: {
+        type: 'string',
+        description: 'Campo broken entry id expuesto por el runtime actual.',
+        nullable: true,
+      },
+    },
+    required: ['valid', 'checked', 'legacyUnchecked', 'brokenEntryId'],
+    additionalProperties: false,
   },
   ReferralsController_mineResponse: {
     type: 'object',
@@ -21383,9 +17828,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       shareUrl: {
         type: 'string',
-        format: 'uri',
         description: 'Campo share url expuesto por el runtime actual.',
-        example: 'https://beerry.app/eventos/noche-latina',
       },
       program: {
         type: 'object',
@@ -21440,9 +17883,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -21473,15 +17914,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
             },
             status: {
               type: 'string',
@@ -21490,18 +17935,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 'BLOCKED',
                 'USED',
                 'REVERSED',
-                'EXPIRED',
                 'AVAILABLE',
+                'EXPIRED',
                 'PARTIALLY_USED',
               ],
               description: 'Estado actual expuesto por el runtime.',
               example: 'PENDING',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-              example: '2026-08-28T14:15:00.000Z',
             },
             expiresAt: {
               type: 'string',
@@ -21512,58 +17951,47 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             orderId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo order id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
             },
             amountCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Importe expresado en céntimos.',
               example: 1500,
+            },
+            platformCommissionBps: {
+              type: 'integer',
+              description: 'Campo platform commission bps expuesto por el runtime actual.',
+            },
+            rewardBps: {
+              type: 'integer',
+              description: 'Campo reward bps expuesto por el runtime actual.',
+            },
+            referralId: {
+              type: 'string',
+              description: 'Campo referral id expuesto por el runtime actual.',
+            },
+            beneficiaryUserId: {
+              type: 'string',
+              description: 'Campo beneficiary user id expuesto por el runtime actual.',
+            },
+            buyerUserId: {
+              type: 'string',
+              description: 'Campo buyer user id expuesto por el runtime actual.',
+            },
+            eligibleBaseCents: {
+              type: 'integer',
+              description: 'Campo eligible base cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            settingsVersion: {
+              type: 'integer',
+              description: 'Campo settings version expuesto por el runtime actual.',
             },
             availableAt: {
               type: 'string',
               format: 'date-time',
               description: 'Campo available at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
-            },
-            referralId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo referral id expuesto por el runtime actual.',
-              example: '7b2d5e91-4a68-4c30-9f15-2e8a63d7b049',
-            },
-            beneficiaryUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo beneficiary user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            buyerUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo buyer user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            eligibleBaseCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Campo eligible base cents expuesto por el runtime actual.',
-              example: 1500,
-            },
-            platformCommissionBps: {
-              type: 'number',
-              description: 'Campo platform commission bps expuesto por el runtime actual.',
-            },
-            rewardBps: {
-              type: 'number',
-              description: 'Campo reward bps expuesto por el runtime actual.',
-            },
-            settingsVersion: {
-              type: 'number',
-              description: 'Campo settings version expuesto por el runtime actual.',
-              example: 1,
             },
             availableSince: {
               type: 'string',
@@ -21588,19 +18016,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           required: [
             'id',
             'createdAt',
-            'status',
             'updatedAt',
+            'status',
             'expiresAt',
             'orderId',
             'amountCents',
-            'availableAt',
+            'platformCommissionBps',
+            'rewardBps',
             'referralId',
             'beneficiaryUserId',
             'buyerUserId',
             'eligibleBaseCents',
-            'platformCommissionBps',
-            'rewardBps',
             'settingsVersion',
+            'availableAt',
             'availableSince',
             'reversedAt',
             'reversalReason',
@@ -21613,24 +18041,21 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           referredUsers: {
-            type: 'number',
+            type: 'integer',
             description: 'Campo referred users expuesto por el runtime actual.',
           },
           pendingCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo pending cents expuesto por el runtime actual.',
             example: 1500,
           },
           earnedCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo earned cents expuesto por el runtime actual.',
             example: 1500,
           },
           availableCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo available cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -21678,9 +18103,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
       createdAt: {
         type: 'string',
@@ -21688,23 +18111,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Fecha y hora de creación en formato ISO 8601.',
         example: '2026-08-27T18:30:00.000Z',
       },
-      referrerUserId: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Campo referrer user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
-      referredUserId: {
-        type: 'string',
-        format: 'uuid',
-        description: 'Campo referred user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
       captureMethod: {
         type: 'string',
         enum: ['QR', 'LINK', 'CODE'],
         description: 'Campo capture method expuesto por el runtime actual.',
         example: 'QR',
+      },
+      referredUserId: {
+        type: 'string',
+        description: 'Campo referred user id expuesto por el runtime actual.',
+      },
+      referrerUserId: {
+        type: 'string',
+        description: 'Campo referrer user id expuesto por el runtime actual.',
       },
       codeSnapshot: {
         type: 'string',
@@ -21726,18 +18145,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       firstPaidOrderId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo first paid order id expuesto por el runtime actual.',
-        example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
       },
     },
     required: [
       'id',
       'createdAt',
-      'referrerUserId',
-      'referredUserId',
       'captureMethod',
+      'referredUserId',
+      'referrerUserId',
       'codeSnapshot',
       'associatedAt',
       'lockedAt',
@@ -21750,9 +18167,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+        description: 'Identificador del recurso.',
       },
       createdAt: {
         type: 'string',
@@ -21760,27 +18175,31 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Fecha y hora de creación en formato ISO 8601.',
         example: '2026-08-27T18:30:00.000Z',
       },
-      status: {
-        type: 'string',
-        enum: ['PENDING', 'COMPLETED', 'REVERSED', 'REJECTED'],
-        description: 'Estado actual expuesto por el runtime.',
-        example: 'PENDING',
-      },
       updatedAt: {
         type: 'string',
         format: 'date-time',
         description: 'Fecha y hora de la última actualización en formato ISO 8601.',
         example: '2026-08-28T14:15:00.000Z',
       },
+      status: {
+        type: 'string',
+        enum: ['PENDING', 'COMPLETED', 'REVERSED', 'REJECTED'],
+        description: 'Estado actual expuesto por el runtime.',
+        example: 'PENDING',
+      },
       amountCents: {
         type: 'integer',
-        format: 'int64',
         description: 'Importe expresado en céntimos.',
         example: 1500,
       },
       idempotencyKey: {
         type: 'string',
         description: 'Campo idempotency key expuesto por el runtime actual.',
+      },
+      note: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo note expuesto por el runtime actual.',
       },
       completedAt: {
         type: 'string',
@@ -21791,20 +18210,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       fromWalletId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo from wallet id expuesto por el runtime actual.',
-        example: '5d7a1c84-3e69-4f20-8b15-6c2e97a4d038',
       },
       toWalletId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo to wallet id expuesto por el runtime actual.',
-        example: '5d7a1c84-3e69-4f20-8b15-6c2e97a4d038',
-      },
-      note: {
-        type: 'string',
-        nullable: true,
-        description: 'Campo note expuesto por el runtime actual.',
       },
       rejectedReason: {
         type: 'string',
@@ -21815,14 +18225,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     required: [
       'id',
       'createdAt',
-      'status',
       'updatedAt',
+      'status',
       'amountCents',
       'idempotencyKey',
+      'note',
       'completedAt',
       'fromWalletId',
       'toWalletId',
-      'note',
       'rejectedReason',
     ],
     additionalProperties: false,
@@ -21832,9 +18242,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+        description: 'Identificador del recurso.',
+      },
+      version: {
+        type: 'integer',
+        description: 'Campo version expuesto por el runtime actual.',
       },
       createdAt: {
         type: 'string',
@@ -21867,64 +18279,61 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo ends at expuesto por el runtime actual.',
         example: '2026-09-20T05:00:00.000Z',
       },
-      version: {
-        type: 'number',
-        description: 'Campo version expuesto por el runtime actual.',
-        example: 1,
+      updatedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo updated by user id expuesto por el runtime actual.',
       },
       platformCommissionBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo platform commission bps expuesto por el runtime actual.',
       },
       rewardBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo reward bps expuesto por el runtime actual.',
       },
       minimumPlatformMarginBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo minimum platform margin bps expuesto por el runtime actual.',
       },
       minimumPurchaseCents: {
         type: 'integer',
-        format: 'int64',
         description: 'Campo minimum purchase cents expuesto por el runtime actual.',
         example: 1500,
       },
       maximumRewardPerOrderCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo maximum reward per order cents expuesto por el runtime actual.',
         example: 1500,
       },
       maximumMonthlyRewardCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo maximum monthly reward cents expuesto por el runtime actual.',
         example: 1500,
       },
       holdHours: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo hold hours expuesto por el runtime actual.',
       },
       expirationMode: {
         type: 'string',
-        enum: ['NONE', 'SAME_MONTH_END', 'NEXT_MONTH_END', 'FIXED_DAYS'],
+        enum: ['SAME_MONTH_END', 'NEXT_MONTH_END', 'FIXED_DAYS', 'NONE'],
         description: 'Campo expiration mode expuesto por el runtime actual.',
-        example: 'NONE',
+        example: 'SAME_MONTH_END',
       },
       expirationDays: {
-        type: 'number',
+        type: 'integer',
         nullable: true,
         description: 'Campo expiration days expuesto por el runtime actual.',
       },
       associationWindowDays: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo association window days expuesto por el runtime actual.',
       },
       maxCreditUsageBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo max credit usage bps expuesto por el runtime actual.',
       },
       transfersEnabled: {
@@ -21934,34 +18343,26 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       maxDailyTransferCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo max daily transfer cents expuesto por el runtime actual.',
         example: 1500,
       },
       maxMonthlyTransferCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo max monthly transfer cents expuesto por el runtime actual.',
         example: 1500,
       },
-      updatedByUserId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo updated by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
     },
     required: [
       'id',
+      'version',
       'createdAt',
       'updatedAt',
       'enabled',
       'startsAt',
       'endsAt',
-      'version',
+      'updatedByUserId',
       'platformCommissionBps',
       'rewardBps',
       'minimumPlatformMarginBps',
@@ -21976,7 +18377,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       'transfersEnabled',
       'maxDailyTransferCents',
       'maxMonthlyTransferCents',
-      'updatedByUserId',
     ],
     additionalProperties: false,
   },
@@ -21985,9 +18385,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       id: {
         type: 'string',
-        format: 'uuid',
-        description: 'Identificador UUID del recurso.',
-        example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+        description: 'Identificador del recurso.',
+      },
+      version: {
+        type: 'integer',
+        description: 'Campo version expuesto por el runtime actual.',
       },
       createdAt: {
         type: 'string',
@@ -22020,64 +18422,61 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         description: 'Campo ends at expuesto por el runtime actual.',
         example: '2026-09-20T05:00:00.000Z',
       },
-      version: {
-        type: 'number',
-        description: 'Campo version expuesto por el runtime actual.',
-        example: 1,
+      updatedByUserId: {
+        type: 'string',
+        nullable: true,
+        description: 'Campo updated by user id expuesto por el runtime actual.',
       },
       platformCommissionBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo platform commission bps expuesto por el runtime actual.',
       },
       rewardBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo reward bps expuesto por el runtime actual.',
       },
       minimumPlatformMarginBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo minimum platform margin bps expuesto por el runtime actual.',
       },
       minimumPurchaseCents: {
         type: 'integer',
-        format: 'int64',
         description: 'Campo minimum purchase cents expuesto por el runtime actual.',
         example: 1500,
       },
       maximumRewardPerOrderCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo maximum reward per order cents expuesto por el runtime actual.',
         example: 1500,
       },
       maximumMonthlyRewardCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo maximum monthly reward cents expuesto por el runtime actual.',
         example: 1500,
       },
       holdHours: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo hold hours expuesto por el runtime actual.',
       },
       expirationMode: {
         type: 'string',
-        enum: ['NONE', 'SAME_MONTH_END', 'NEXT_MONTH_END', 'FIXED_DAYS'],
+        enum: ['SAME_MONTH_END', 'NEXT_MONTH_END', 'FIXED_DAYS', 'NONE'],
         description: 'Campo expiration mode expuesto por el runtime actual.',
-        example: 'NONE',
+        example: 'SAME_MONTH_END',
       },
       expirationDays: {
-        type: 'number',
+        type: 'integer',
         nullable: true,
         description: 'Campo expiration days expuesto por el runtime actual.',
       },
       associationWindowDays: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo association window days expuesto por el runtime actual.',
       },
       maxCreditUsageBps: {
-        type: 'number',
+        type: 'integer',
         description: 'Campo max credit usage bps expuesto por el runtime actual.',
       },
       transfersEnabled: {
@@ -22087,34 +18486,26 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       maxDailyTransferCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo max daily transfer cents expuesto por el runtime actual.',
         example: 1500,
       },
       maxMonthlyTransferCents: {
         type: 'integer',
-        format: 'int64',
         nullable: true,
         description: 'Campo max monthly transfer cents expuesto por el runtime actual.',
         example: 1500,
       },
-      updatedByUserId: {
-        type: 'string',
-        format: 'uuid',
-        nullable: true,
-        description: 'Campo updated by user id expuesto por el runtime actual.',
-        example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-      },
     },
     required: [
       'id',
+      'version',
       'createdAt',
       'updatedAt',
       'enabled',
       'startsAt',
       'endsAt',
-      'version',
+      'updatedByUserId',
       'platformCommissionBps',
       'rewardBps',
       'minimumPlatformMarginBps',
@@ -22129,7 +18520,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       'transfersEnabled',
       'maxDailyTransferCents',
       'maxMonthlyTransferCents',
-      'updatedByUserId',
     ],
     additionalProperties: false,
   },
@@ -22146,13 +18536,10 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
+                  description: 'Identificador del recurso.',
                 },
                 totalCents: {
-                  type: 'integer',
-                  format: 'int64',
+                  type: 'number',
                   description: 'Importe total expresado en céntimos.',
                   example: 1500,
                 },
@@ -22173,9 +18560,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -22192,9 +18577,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
@@ -22208,15 +18591,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+              description: 'Identificador del recurso.',
             },
             createdAt: {
               type: 'string',
               format: 'date-time',
               description: 'Fecha y hora de creación en formato ISO 8601.',
               example: '2026-08-27T18:30:00.000Z',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
             },
             status: {
               type: 'string',
@@ -22225,18 +18612,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 'BLOCKED',
                 'USED',
                 'REVERSED',
-                'EXPIRED',
                 'AVAILABLE',
+                'EXPIRED',
                 'PARTIALLY_USED',
               ],
               description: 'Estado actual expuesto por el runtime.',
               example: 'PENDING',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-              example: '2026-08-28T14:15:00.000Z',
             },
             expiresAt: {
               type: 'string',
@@ -22247,58 +18628,47 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             orderId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo order id expuesto por el runtime actual.',
-              example: 'c4e91a67-3b58-4fd2-8a06-7d25e9c1b340',
             },
             amountCents: {
               type: 'integer',
-              format: 'int64',
               description: 'Importe expresado en céntimos.',
               example: 1500,
+            },
+            platformCommissionBps: {
+              type: 'integer',
+              description: 'Campo platform commission bps expuesto por el runtime actual.',
+            },
+            rewardBps: {
+              type: 'integer',
+              description: 'Campo reward bps expuesto por el runtime actual.',
+            },
+            referralId: {
+              type: 'string',
+              description: 'Campo referral id expuesto por el runtime actual.',
+            },
+            beneficiaryUserId: {
+              type: 'string',
+              description: 'Campo beneficiary user id expuesto por el runtime actual.',
+            },
+            buyerUserId: {
+              type: 'string',
+              description: 'Campo buyer user id expuesto por el runtime actual.',
+            },
+            eligibleBaseCents: {
+              type: 'integer',
+              description: 'Campo eligible base cents expuesto por el runtime actual.',
+              example: 1500,
+            },
+            settingsVersion: {
+              type: 'integer',
+              description: 'Campo settings version expuesto por el runtime actual.',
             },
             availableAt: {
               type: 'string',
               format: 'date-time',
               description: 'Campo available at expuesto por el runtime actual.',
               example: '2026-09-19T22:00:00.000Z',
-            },
-            referralId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo referral id expuesto por el runtime actual.',
-              example: '7b2d5e91-4a68-4c30-9f15-2e8a63d7b049',
-            },
-            beneficiaryUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo beneficiary user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            buyerUserId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo buyer user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            eligibleBaseCents: {
-              type: 'integer',
-              format: 'int64',
-              description: 'Campo eligible base cents expuesto por el runtime actual.',
-              example: 1500,
-            },
-            platformCommissionBps: {
-              type: 'number',
-              description: 'Campo platform commission bps expuesto por el runtime actual.',
-            },
-            rewardBps: {
-              type: 'number',
-              description: 'Campo reward bps expuesto por el runtime actual.',
-            },
-            settingsVersion: {
-              type: 'number',
-              description: 'Campo settings version expuesto por el runtime actual.',
-              example: 1,
             },
             availableSince: {
               type: 'string',
@@ -22326,19 +18696,19 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             'buyer',
             'id',
             'createdAt',
-            'status',
             'updatedAt',
+            'status',
             'expiresAt',
             'orderId',
             'amountCents',
-            'availableAt',
+            'platformCommissionBps',
+            'rewardBps',
             'referralId',
             'beneficiaryUserId',
             'buyerUserId',
             'eligibleBaseCents',
-            'platformCommissionBps',
-            'rewardBps',
             'settingsVersion',
+            'availableAt',
             'availableSince',
             'reversedAt',
             'reversalReason',
@@ -22351,14 +18721,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           rewardsCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo rewards cents expuesto por el runtime actual.',
             example: 1500,
           },
           eligibleSalesCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo eligible sales cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -22371,14 +18739,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           page: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page expuesto por el runtime actual.',
+            example: 1,
           },
           pageSize: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page size expuesto por el runtime actual.',
+            example: 1,
           },
           total: {
             type: 'number',
@@ -22386,9 +18754,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             example: 1,
           },
           totalPages: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo total pages expuesto por el runtime actual.',
+            example: 1,
           },
         },
         required: ['page', 'pageSize', 'total', 'totalPages'],
@@ -22435,8 +18803,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         enum: [
           'PENDING',
           'BLOCKED',
-          'NOT_CONNECTED',
           'CONNECTED',
+          'NOT_CONNECTED',
           'REAUTHORIZATION_REQUIRED',
           'DISCONNECTED',
         ],
@@ -22504,8 +18872,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         enum: [
           'PENDING',
           'BLOCKED',
-          'NOT_CONNECTED',
           'CONNECTED',
+          'NOT_CONNECTED',
           'REAUTHORIZATION_REQUIRED',
           'DISCONNECTED',
         ],
@@ -22588,9 +18956,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       businessName: {
         type: 'string',
@@ -22615,14 +18981,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           grossAmountCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo gross amount cents expuesto por el runtime actual.',
             example: 1500,
           },
           marketplaceFeeCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo marketplace fee cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -22654,9 +19018,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       businessName: {
         type: 'string',
@@ -22681,14 +19043,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           grossAmountCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo gross amount cents expuesto por el runtime actual.',
             example: 1500,
           },
           marketplaceFeeCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo marketplace fee cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -22788,7 +19148,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           settings: {
             type: 'object',
-            properties: {},
             additionalProperties: {
               description: 'Valor JSON dinámico expuesto por el runtime.',
               allOf: [
@@ -22817,7 +19176,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       settings: {
         type: 'object',
-        properties: {},
         additionalProperties: {
           description: 'Valor JSON dinámico expuesto por el runtime.',
           allOf: [
@@ -22846,9 +19204,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              description: 'Identificador del recurso.',
             },
             phoneCountryCode: {
               type: 'string',
@@ -22862,10 +19218,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             email: {
               type: 'string',
-              format: 'email',
               nullable: true,
               description: 'Campo email expuesto por el runtime actual.',
-              example: 'valeria.mendoza@correo.pe',
             },
             fullName: {
               type: 'string',
@@ -22930,14 +19284,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           page: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page expuesto por el runtime actual.',
+            example: 1,
           },
           pageSize: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page size expuesto por el runtime actual.',
+            example: 1,
           },
           total: {
             type: 'number',
@@ -22945,9 +19299,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             example: 1,
           },
           totalPages: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo total pages expuesto por el runtime actual.',
+            example: 1,
           },
         },
         required: ['page', 'pageSize', 'total', 'totalPages'],
@@ -22967,7 +19321,6 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       settings: {
         type: 'object',
-        properties: {},
         additionalProperties: {
           description: 'Valor JSON dinámico expuesto por el runtime.',
           allOf: [
@@ -22994,9 +19347,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -23010,10 +19361,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -23089,9 +19438,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -23105,10 +19452,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -23184,9 +19529,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -23200,10 +19543,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -23279,9 +19620,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -23295,10 +19634,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -23374,9 +19711,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -23390,10 +19725,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -23462,9 +19795,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
     properties: {
       clubId: {
         type: 'string',
-        format: 'uuid',
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       businessName: {
         type: 'string',
@@ -23489,14 +19820,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           grossAmountCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo gross amount cents expuesto por el runtime actual.',
             example: 1500,
           },
           marketplaceFeeCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo marketplace fee cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -23545,17 +19874,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             targetType: {
               type: 'string',
-              enum: ['BUSINESS', 'EVENT'],
+              enum: ['EVENT', 'BUSINESS'],
               description: 'Campo target type expuesto por el runtime actual.',
-              example: 'BUSINESS',
+              example: 'EVENT',
             },
             title: {
               type: 'string',
               description: 'Campo title expuesto por el runtime actual.',
             },
             dailyPriceCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               nullable: true,
               description: 'Campo daily price cents expuesto por el runtime actual.',
               example: 1500,
@@ -23582,9 +19910,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Identificador del recurso.',
             },
             name: {
               type: 'string',
@@ -23616,22 +19942,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+              description: 'Identificador del recurso.',
             },
             targetType: {
               type: 'string',
-              enum: ['BUSINESS', 'EVENT'],
+              enum: ['EVENT', 'BUSINESS'],
               description: 'Campo target type expuesto por el runtime actual.',
-              example: 'BUSINESS',
+              example: 'EVENT',
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             eventName: {
               type: 'string',
@@ -23641,18 +19963,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             status: {
               type: 'string',
-              enum: ['PENDING_PAYMENT', 'ACTIVE', 'REJECTED', 'EXPIRED', 'CANCELLED'],
+              enum: ['ACTIVE', 'EXPIRED', 'CANCELLED', 'REJECTED', 'PENDING_PAYMENT'],
               description: 'Estado actual expuesto por el runtime.',
-              example: 'PENDING_PAYMENT',
+              example: 'ACTIVE',
             },
             durationDays: {
-              type: 'integer',
-              format: 'int32',
+              type: 'number',
               description: 'Campo duration days expuesto por el runtime actual.',
             },
             priceCents: {
-              type: 'integer',
-              format: 'int64',
+              type: 'number',
               description: 'Campo price cents expuesto por el runtime actual.',
               example: 1500,
             },
@@ -23684,13 +20004,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               type: 'string',
               enum: [
                 'PENDING',
-                'APPROVED',
-                'REJECTED',
+                'CHARGEBACK',
                 'EXPIRED',
                 'CANCELLED',
                 'REFUND_PENDING',
                 'REFUNDED',
                 'PARTIALLY_REFUNDED',
+                'REJECTED',
+                'APPROVED',
+                null,
               ],
               nullable: true,
               description: 'Campo payment status expuesto por el runtime actual.',
@@ -23727,22 +20049,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           targetType: {
             type: 'string',
-            enum: ['BUSINESS', 'EVENT'],
+            enum: ['EVENT', 'BUSINESS'],
             description: 'Campo target type expuesto por el runtime actual.',
-            example: 'BUSINESS',
+            example: 'EVENT',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           eventName: {
             type: 'string',
@@ -23752,18 +20070,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           status: {
             type: 'string',
-            enum: ['PENDING_PAYMENT', 'ACTIVE', 'REJECTED', 'EXPIRED', 'CANCELLED'],
+            enum: ['ACTIVE', 'EXPIRED', 'CANCELLED', 'REJECTED', 'PENDING_PAYMENT'],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING_PAYMENT',
+            example: 'ACTIVE',
           },
           durationDays: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo duration days expuesto por el runtime actual.',
           },
           priceCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo price cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -23795,13 +20111,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: 'string',
             enum: [
               'PENDING',
-              'APPROVED',
-              'REJECTED',
+              'CHARGEBACK',
               'EXPIRED',
               'CANCELLED',
               'REFUND_PENDING',
               'REFUNDED',
               'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              null,
             ],
             nullable: true,
             description: 'Campo payment status expuesto por el runtime actual.',
@@ -23830,29 +20148,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           provider: {
             type: 'string',
-            enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
             nullable: true,
             description: 'Campo provider expuesto por el runtime actual.',
-            example: 'mercado_pago',
           },
           paymentAttemptId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo payment attempt id expuesto por el runtime actual.',
-            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
           },
           status: {
             type: 'string',
             enum: [
               'PENDING',
-              'APPROVED',
-              'REJECTED',
+              'CHARGEBACK',
               'EXPIRED',
               'CANCELLED',
               'REFUND_PENDING',
               'REFUNDED',
               'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              null,
             ],
             nullable: true,
             description: 'Estado actual expuesto por el runtime.',
@@ -23860,11 +20176,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           checkoutUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo checkout url expuesto por el runtime actual.',
-            example:
-              'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
           },
           expiresAt: {
             type: 'string',
@@ -23909,22 +20222,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           targetType: {
             type: 'string',
-            enum: ['BUSINESS', 'EVENT'],
+            enum: ['EVENT', 'BUSINESS'],
             description: 'Campo target type expuesto por el runtime actual.',
-            example: 'BUSINESS',
+            example: 'EVENT',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           eventName: {
             type: 'string',
@@ -23934,18 +20243,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           status: {
             type: 'string',
-            enum: ['PENDING_PAYMENT', 'ACTIVE', 'REJECTED', 'EXPIRED', 'CANCELLED'],
+            enum: ['ACTIVE', 'EXPIRED', 'CANCELLED', 'REJECTED', 'PENDING_PAYMENT'],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING_PAYMENT',
+            example: 'ACTIVE',
           },
           durationDays: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo duration days expuesto por el runtime actual.',
           },
           priceCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo price cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -23977,13 +20284,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: 'string',
             enum: [
               'PENDING',
-              'APPROVED',
-              'REJECTED',
+              'CHARGEBACK',
               'EXPIRED',
               'CANCELLED',
               'REFUND_PENDING',
               'REFUNDED',
               'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              null,
             ],
             nullable: true,
             description: 'Campo payment status expuesto por el runtime actual.',
@@ -24012,29 +20321,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           provider: {
             type: 'string',
-            enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
             nullable: true,
             description: 'Campo provider expuesto por el runtime actual.',
-            example: 'mercado_pago',
           },
           paymentAttemptId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo payment attempt id expuesto por el runtime actual.',
-            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
           },
           status: {
             type: 'string',
             enum: [
               'PENDING',
-              'APPROVED',
-              'REJECTED',
+              'CHARGEBACK',
               'EXPIRED',
               'CANCELLED',
               'REFUND_PENDING',
               'REFUNDED',
               'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              null,
             ],
             nullable: true,
             description: 'Estado actual expuesto por el runtime.',
@@ -24042,11 +20349,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           checkoutUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo checkout url expuesto por el runtime actual.',
-            example:
-              'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
           },
           expiresAt: {
             type: 'string',
@@ -24091,22 +20395,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+            description: 'Identificador del recurso.',
           },
           targetType: {
             type: 'string',
-            enum: ['BUSINESS', 'EVENT'],
+            enum: ['EVENT', 'BUSINESS'],
             description: 'Campo target type expuesto por el runtime actual.',
-            example: 'BUSINESS',
+            example: 'EVENT',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           eventName: {
             type: 'string',
@@ -24116,18 +20416,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           status: {
             type: 'string',
-            enum: ['PENDING_PAYMENT', 'ACTIVE', 'REJECTED', 'EXPIRED', 'CANCELLED'],
+            enum: ['ACTIVE', 'EXPIRED', 'CANCELLED', 'REJECTED', 'PENDING_PAYMENT'],
             description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING_PAYMENT',
+            example: 'ACTIVE',
           },
           durationDays: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo duration days expuesto por el runtime actual.',
           },
           priceCents: {
-            type: 'integer',
-            format: 'int64',
+            type: 'number',
             description: 'Campo price cents expuesto por el runtime actual.',
             example: 1500,
           },
@@ -24159,13 +20457,15 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             type: 'string',
             enum: [
               'PENDING',
-              'APPROVED',
-              'REJECTED',
+              'CHARGEBACK',
               'EXPIRED',
               'CANCELLED',
               'REFUND_PENDING',
               'REFUNDED',
               'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              null,
             ],
             nullable: true,
             description: 'Campo payment status expuesto por el runtime actual.',
@@ -24194,29 +20494,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           provider: {
             type: 'string',
-            enum: ['mercado_pago', 'simulated', 'beerry_wallet'],
             nullable: true,
             description: 'Campo provider expuesto por el runtime actual.',
-            example: 'mercado_pago',
           },
           paymentAttemptId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo payment attempt id expuesto por el runtime actual.',
-            example: '9d3b7e15-6a42-4c98-b571-2f8e0a63d4c9',
           },
           status: {
             type: 'string',
             enum: [
               'PENDING',
-              'APPROVED',
-              'REJECTED',
+              'CHARGEBACK',
               'EXPIRED',
               'CANCELLED',
               'REFUND_PENDING',
               'REFUNDED',
               'PARTIALLY_REFUNDED',
+              'REJECTED',
+              'APPROVED',
+              null,
             ],
             nullable: true,
             description: 'Estado actual expuesto por el runtime.',
@@ -24224,11 +20522,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           checkoutUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo checkout url expuesto por el runtime actual.',
-            example:
-              'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=123456789-abcd1234-5678-90ab-cdef-1234567890ab',
           },
           expiresAt: {
             type: 'string',
@@ -24278,7 +20573,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       timestamp: {
         type: 'string',
+        format: 'date-time',
         description: 'Campo timestamp expuesto por el runtime actual.',
+        example: '2026-09-19T22:00:00.000Z',
       },
     },
     required: ['status', 'service', 'timestamp'],
@@ -24296,15 +20593,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -24318,10 +20611,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -24395,15 +20686,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             name: {
               type: 'string',
@@ -24417,10 +20704,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
             },
             imageObjectKey: {
               type: 'string',
@@ -24493,15 +20778,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -24515,10 +20796,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -24590,15 +20869,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -24612,10 +20887,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -24687,15 +20960,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -24709,10 +20978,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -24784,15 +21051,11 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           name: {
             type: 'string',
@@ -24806,10 +21069,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/products/chilcano-maracuya.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -24892,22 +21153,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -24925,10 +21180,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -24990,9 +21243,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -25009,9 +21260,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -25043,9 +21292,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 itemType: {
                   type: 'string',
@@ -25055,22 +21302,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 productId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo product id expuesto por el runtime actual.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                 },
                 ticketTypeId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo ticket type id expuesto por el runtime actual.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
                 },
                 quantity: {
-                  type: 'integer',
-                  format: 'int32',
+                  type: 'number',
                   description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
                 baseUnitPrice: {
                   type: 'number',
@@ -25119,9 +21362,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -25130,10 +21371,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     imageUrl: {
                       type: 'string',
-                      format: 'uri',
                       nullable: true,
                       description: 'Campo image url expuesto por el runtime actual.',
-                      example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                     },
                     price: {
                       type: 'number',
@@ -25154,9 +21393,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -25173,10 +21410,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     eventId: {
                       type: 'string',
-                      format: 'uuid',
                       nullable: true,
                       description: 'Campo event id expuesto por el runtime actual.',
-                      example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                     },
                   },
                   required: ['id', 'name', 'price', 'currency', 'eventId'],
@@ -25250,22 +21485,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             scope: {
               type: 'string',
@@ -25283,10 +21512,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             imageUrl: {
               type: 'string',
-              format: 'uri',
               nullable: true,
               description: 'Campo image url expuesto por el runtime actual.',
-              example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
             },
             imageObjectKey: {
               type: 'string',
@@ -25348,9 +21575,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -25367,9 +21592,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -25401,9 +21624,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 properties: {
                   id: {
                     type: 'string',
-                    format: 'uuid',
-                    description: 'Identificador UUID del recurso.',
-                    example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                    description: 'Identificador del recurso.',
                   },
                   itemType: {
                     type: 'string',
@@ -25413,22 +21634,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   },
                   productId: {
                     type: 'string',
-                    format: 'uuid',
                     nullable: true,
                     description: 'Campo product id expuesto por el runtime actual.',
-                    example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                   },
                   ticketTypeId: {
                     type: 'string',
-                    format: 'uuid',
                     nullable: true,
                     description: 'Campo ticket type id expuesto por el runtime actual.',
-                    example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
                   },
                   quantity: {
-                    type: 'integer',
-                    format: 'int32',
+                    type: 'number',
                     description: 'Campo quantity expuesto por el runtime actual.',
+                    example: 1,
                   },
                   baseUnitPrice: {
                     type: 'number',
@@ -25477,9 +21694,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     properties: {
                       id: {
                         type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                        description: 'Identificador del recurso.',
                       },
                       name: {
                         type: 'string',
@@ -25488,10 +21703,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       },
                       imageUrl: {
                         type: 'string',
-                        format: 'uri',
                         nullable: true,
                         description: 'Campo image url expuesto por el runtime actual.',
-                        example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                       },
                       price: {
                         type: 'number',
@@ -25512,9 +21725,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     properties: {
                       id: {
                         type: 'string',
-                        format: 'uuid',
-                        description: 'Identificador UUID del recurso.',
-                        example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                        description: 'Identificador del recurso.',
                       },
                       name: {
                         type: 'string',
@@ -25531,10 +21742,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                       },
                       eventId: {
                         type: 'string',
-                        format: 'uuid',
                         nullable: true,
                         description: 'Campo event id expuesto por el runtime actual.',
-                        example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                       },
                     },
                     required: ['id', 'name', 'price', 'currency', 'eventId'],
@@ -25607,22 +21816,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -25640,10 +21843,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -25705,9 +21906,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -25724,9 +21923,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -25758,9 +21955,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 itemType: {
                   type: 'string',
@@ -25770,22 +21965,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 productId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo product id expuesto por el runtime actual.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                 },
                 ticketTypeId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo ticket type id expuesto por el runtime actual.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
                 },
                 quantity: {
-                  type: 'integer',
-                  format: 'int32',
+                  type: 'number',
                   description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
                 baseUnitPrice: {
                   type: 'number',
@@ -25834,9 +22025,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -25845,10 +22034,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     imageUrl: {
                       type: 'string',
-                      format: 'uri',
                       nullable: true,
                       description: 'Campo image url expuesto por el runtime actual.',
-                      example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                     },
                     price: {
                       type: 'number',
@@ -25869,9 +22056,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -25888,10 +22073,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     eventId: {
                       type: 'string',
-                      format: 'uuid',
                       nullable: true,
                       description: 'Campo event id expuesto por el runtime actual.',
-                      example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                     },
                   },
                   required: ['id', 'name', 'price', 'currency', 'eventId'],
@@ -25963,22 +22146,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -25996,10 +22173,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -26061,9 +22236,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -26080,9 +22253,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -26114,9 +22285,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 itemType: {
                   type: 'string',
@@ -26126,22 +22295,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 productId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo product id expuesto por el runtime actual.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                 },
                 ticketTypeId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo ticket type id expuesto por el runtime actual.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
                 },
                 quantity: {
-                  type: 'integer',
-                  format: 'int32',
+                  type: 'number',
                   description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
                 baseUnitPrice: {
                   type: 'number',
@@ -26190,9 +22355,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -26201,10 +22364,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     imageUrl: {
                       type: 'string',
-                      format: 'uri',
                       nullable: true,
                       description: 'Campo image url expuesto por el runtime actual.',
-                      example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                     },
                     price: {
                       type: 'number',
@@ -26225,9 +22386,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -26244,10 +22403,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     eventId: {
                       type: 'string',
-                      format: 'uuid',
                       nullable: true,
                       description: 'Campo event id expuesto por el runtime actual.',
-                      example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                     },
                   },
                   required: ['id', 'name', 'price', 'currency', 'eventId'],
@@ -26319,22 +22476,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -26352,10 +22503,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -26417,9 +22566,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -26436,9 +22583,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -26470,9 +22615,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 itemType: {
                   type: 'string',
@@ -26482,22 +22625,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 productId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo product id expuesto por el runtime actual.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                 },
                 ticketTypeId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo ticket type id expuesto por el runtime actual.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
                 },
                 quantity: {
-                  type: 'integer',
-                  format: 'int32',
+                  type: 'number',
                   description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
                 baseUnitPrice: {
                   type: 'number',
@@ -26546,9 +22685,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -26557,10 +22694,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     imageUrl: {
                       type: 'string',
-                      format: 'uri',
                       nullable: true,
                       description: 'Campo image url expuesto por el runtime actual.',
-                      example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                     },
                     price: {
                       type: 'number',
@@ -26581,9 +22716,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -26600,10 +22733,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     eventId: {
                       type: 'string',
-                      format: 'uuid',
                       nullable: true,
                       description: 'Campo event id expuesto por el runtime actual.',
-                      example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                     },
                   },
                   required: ['id', 'name', 'price', 'currency', 'eventId'],
@@ -26675,22 +22806,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'd2a7f951-8c43-4e60-b195-6f3d28a7c014',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -26708,10 +22833,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           imageUrl: {
             type: 'string',
-            format: 'uri',
             nullable: true,
             description: 'Campo image url expuesto por el runtime actual.',
-            example: 'https://cdn.beerry.app/promotions/combo-bienvenida.webp',
           },
           imageObjectKey: {
             type: 'string',
@@ -26773,9 +22896,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -26792,9 +22913,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -26826,9 +22945,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 itemType: {
                   type: 'string',
@@ -26838,22 +22955,18 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 },
                 productId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo product id expuesto por el runtime actual.',
-                  example: '5b8e1c93-2d64-4fa7-a318-9c6e42d075bf',
                 },
                 ticketTypeId: {
                   type: 'string',
-                  format: 'uuid',
                   nullable: true,
                   description: 'Campo ticket type id expuesto por el runtime actual.',
-                  example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
                 },
                 quantity: {
-                  type: 'integer',
-                  format: 'int32',
+                  type: 'number',
                   description: 'Campo quantity expuesto por el runtime actual.',
+                  example: 1,
                 },
                 baseUnitPrice: {
                   type: 'number',
@@ -26902,9 +23015,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -26913,10 +23024,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     imageUrl: {
                       type: 'string',
-                      format: 'uri',
                       nullable: true,
                       description: 'Campo image url expuesto por el runtime actual.',
-                      example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
                     },
                     price: {
                       type: 'number',
@@ -26937,9 +23046,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                   properties: {
                     id: {
                       type: 'string',
-                      format: 'uuid',
-                      description: 'Identificador UUID del recurso.',
-                      example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                      description: 'Identificador del recurso.',
                     },
                     name: {
                       type: 'string',
@@ -26956,10 +23063,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                     },
                     eventId: {
                       type: 'string',
-                      format: 'uuid',
                       nullable: true,
                       description: 'Campo event id expuesto por el runtime actual.',
-                      example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
                     },
                   },
                   required: ['id', 'name', 'price', 'currency', 'eventId'],
@@ -27042,22 +23147,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -27138,9 +23237,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27157,9 +23254,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27221,22 +23316,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             scope: {
               type: 'string',
@@ -27317,9 +23406,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -27336,9 +23423,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -27399,22 +23484,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -27495,9 +23574,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27514,9 +23591,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27576,22 +23651,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -27672,9 +23741,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27691,9 +23758,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27753,22 +23818,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -27849,9 +23908,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27868,9 +23925,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -27941,22 +23996,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -28037,9 +24086,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28056,9 +24103,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28120,22 +24165,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+              description: 'Identificador del recurso.',
             },
             clubId: {
               type: 'string',
-              format: 'uuid',
               description: 'Campo club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
             eventId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo event id expuesto por el runtime actual.',
-              example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
             },
             scope: {
               type: 'string',
@@ -28216,9 +24255,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -28235,9 +24272,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -28298,22 +24333,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -28394,9 +24423,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28413,9 +24440,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28475,22 +24500,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -28571,9 +24590,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28590,9 +24607,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28652,22 +24667,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: 'e5c2a831-7d49-4b60-a918-3f6e25d7c104',
+            description: 'Identificador del recurso.',
           },
           clubId: {
             type: 'string',
-            format: 'uuid',
             description: 'Campo club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
           eventId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo event id expuesto por el runtime actual.',
-            example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
           },
           scope: {
             type: 'string',
@@ -28748,9 +24757,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28767,9 +24774,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: 'a6d9e2f4-7c31-4b58-8f20-5e1a9d63c742',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -28842,9 +24847,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           properties: {
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+              description: 'Identificador del recurso.',
             },
             phoneCountryCode: {
               type: 'string',
@@ -28858,10 +24861,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             email: {
               type: 'string',
-              format: 'email',
               nullable: true,
               description: 'Campo email expuesto por el runtime actual.',
-              example: 'valeria.mendoza@correo.pe',
             },
             fullName: {
               type: 'string',
@@ -28910,9 +24911,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            description: 'Identificador del recurso.',
           },
           phoneCountryCode: {
             type: 'string',
@@ -28926,10 +24925,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           email: {
             type: 'string',
-            format: 'email',
             nullable: true,
             description: 'Campo email expuesto por el runtime actual.',
-            example: 'valeria.mendoza@correo.pe',
           },
           fullName: {
             type: 'string',
@@ -28990,24 +24987,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-                },
-                email: {
-                  type: 'string',
-                  format: 'email',
-                  nullable: true,
-                  description: 'Campo email expuesto por el runtime actual.',
-                  example: 'valeria.mendoza@correo.pe',
+                  description: 'Identificador del recurso.',
                 },
                 fullName: {
                   type: 'string',
                   description: 'Campo full name expuesto por el runtime actual.',
                   example: 'Valeria Mendoza',
                 },
+                email: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Campo email expuesto por el runtime actual.',
+                },
               },
-              required: ['id', 'email', 'fullName'],
+              required: ['id', 'fullName', 'email'],
               additionalProperties: false,
               description: 'Campo user expuesto por el runtime actual.',
             },
@@ -29016,9 +25009,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -29033,33 +25024,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            userId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-            status: {
-              type: 'string',
-              enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'PENDING',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-              example: '2026-08-28T14:15:00.000Z',
+              description: 'Identificador del recurso.',
             },
             type: {
               type: 'string',
@@ -29067,13 +25032,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo type expuesto por el runtime actual.',
               example: 'REGISTER_NEW_BUSINESS',
             },
-            phone: {
+            createdAt: {
               type: 'string',
-              description: 'Campo phone expuesto por el runtime actual.',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
-            location: {
+            updatedAt: {
               type: 'string',
-              description: 'Campo location expuesto por el runtime actual.',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
+            },
+            userId: {
+              type: 'string',
+              description: 'Campo user id expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'PENDING',
             },
             reviewedAt: {
               type: 'string',
@@ -29084,10 +25063,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             reviewedByUserId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo reviewed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            },
+            phone: {
+              type: 'string',
+              description: 'Campo phone expuesto por el runtime actual.',
             },
             businessName: {
               type: 'string',
@@ -29096,10 +25077,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             taxId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo tax id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            },
+            location: {
+              type: 'string',
+              description: 'Campo location expuesto por el runtime actual.',
             },
             socialUrl: {
               type: 'string',
@@ -29118,27 +25101,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             requestedClubId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo requested club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
           },
           required: [
             'user',
             'requestedClub',
             'id',
-            'userId',
-            'createdAt',
-            'status',
-            'updatedAt',
             'type',
-            'phone',
-            'location',
+            'createdAt',
+            'updatedAt',
+            'userId',
+            'status',
             'reviewedAt',
             'reviewedByUserId',
+            'phone',
             'businessName',
             'taxId',
+            'location',
             'socialUrl',
             'comment',
             'reviewComment',
@@ -29152,14 +25133,14 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         type: 'object',
         properties: {
           page: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page expuesto por el runtime actual.',
+            example: 1,
           },
           pageSize: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo page size expuesto por el runtime actual.',
+            example: 1,
           },
           total: {
             type: 'number',
@@ -29167,9 +25148,9 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             example: 1,
           },
           totalPages: {
-            type: 'integer',
-            format: 'int32',
+            type: 'number',
             description: 'Campo total pages expuesto por el runtime actual.',
+            example: 1,
           },
         },
         required: ['page', 'pageSize', 'total', 'totalPages'],
@@ -29191,24 +25172,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-              },
-              email: {
-                type: 'string',
-                format: 'email',
-                nullable: true,
-                description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
+                description: 'Identificador del recurso.',
               },
               fullName: {
                 type: 'string',
                 description: 'Campo full name expuesto por el runtime actual.',
                 example: 'Valeria Mendoza',
               },
+              email: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo email expuesto por el runtime actual.',
+              },
             },
-            required: ['id', 'email', 'fullName'],
+            required: ['id', 'fullName', 'email'],
             additionalProperties: false,
             description: 'Campo user expuesto por el runtime actual.',
           },
@@ -29217,9 +25194,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
+              },
+              type: {
+                type: 'string',
+                description: 'Campo type expuesto por el runtime actual.',
+              },
+              description: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo description expuesto por el runtime actual.',
               },
               createdAt: {
                 type: 'string',
@@ -29227,38 +25211,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 description: 'Fecha y hora de creación en formato ISO 8601.',
                 example: '2026-08-27T18:30:00.000Z',
               },
-              status: {
-                type: 'string',
-                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'ACTIVE',
-              },
-              name: {
-                type: 'string',
-                description: 'Campo name expuesto por el runtime actual.',
-                example: 'Nébula Club',
-              },
               updatedAt: {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                 example: '2026-08-28T14:15:00.000Z',
               },
+              name: {
+                type: 'string',
+                description: 'Campo name expuesto por el runtime actual.',
+                example: 'Nébula Club',
+              },
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'ACTIVE',
+              },
               profileImageUrl: {
                 type: 'string',
-                format: 'uri',
                 nullable: true,
                 description: 'Campo profile image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              description: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo description expuesto por el runtime actual.',
-              },
-              type: {
-                type: 'string',
-                description: 'Campo type expuesto por el runtime actual.',
               },
               addressJson: {
                 description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -29280,10 +25253,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               coverImageUrl: {
                 type: 'string',
-                format: 'uri',
                 nullable: true,
                 description: 'Campo cover image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
               },
               socialMediaJson: {
                 description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -29304,7 +25275,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
               },
               marketplaceFeeBps: {
-                type: 'number',
+                type: 'integer',
                 nullable: true,
                 description: 'Campo marketplace fee bps expuesto por el runtime actual.',
               },
@@ -29316,13 +25287,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             required: [
               'id',
-              'createdAt',
-              'status',
-              'name',
-              'updatedAt',
-              'profileImageUrl',
-              'description',
               'type',
+              'description',
+              'createdAt',
+              'updatedAt',
+              'name',
+              'status',
+              'profileImageUrl',
               'addressJson',
               'contactJson',
               'coverImageUrl',
@@ -29337,33 +25308,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -29371,13 +25316,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -29388,10 +25347,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -29400,10 +25361,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -29422,27 +25385,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'user',
           'requestedClub',
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',
@@ -29466,24 +25427,20 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-              },
-              email: {
-                type: 'string',
-                format: 'email',
-                nullable: true,
-                description: 'Campo email expuesto por el runtime actual.',
-                example: 'valeria.mendoza@correo.pe',
+                description: 'Identificador del recurso.',
               },
               fullName: {
                 type: 'string',
                 description: 'Campo full name expuesto por el runtime actual.',
                 example: 'Valeria Mendoza',
               },
+              email: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo email expuesto por el runtime actual.',
+              },
             },
-            required: ['id', 'email', 'fullName'],
+            required: ['id', 'fullName', 'email'],
             additionalProperties: false,
             description: 'Campo user expuesto por el runtime actual.',
           },
@@ -29492,9 +25449,16 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
+              },
+              type: {
+                type: 'string',
+                description: 'Campo type expuesto por el runtime actual.',
+              },
+              description: {
+                type: 'string',
+                nullable: true,
+                description: 'Campo description expuesto por el runtime actual.',
               },
               createdAt: {
                 type: 'string',
@@ -29502,38 +25466,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 description: 'Fecha y hora de creación en formato ISO 8601.',
                 example: '2026-08-27T18:30:00.000Z',
               },
-              status: {
-                type: 'string',
-                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
-                description: 'Estado actual expuesto por el runtime.',
-                example: 'ACTIVE',
-              },
-              name: {
-                type: 'string',
-                description: 'Campo name expuesto por el runtime actual.',
-                example: 'Nébula Club',
-              },
               updatedAt: {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha y hora de la última actualización en formato ISO 8601.',
                 example: '2026-08-28T14:15:00.000Z',
               },
+              name: {
+                type: 'string',
+                description: 'Campo name expuesto por el runtime actual.',
+                example: 'Nébula Club',
+              },
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE', 'PENDING_APPROVAL'],
+                description: 'Estado actual expuesto por el runtime.',
+                example: 'ACTIVE',
+              },
               profileImageUrl: {
                 type: 'string',
-                format: 'uri',
                 nullable: true,
                 description: 'Campo profile image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/users/valeria/profile.webp',
-              },
-              description: {
-                type: 'string',
-                nullable: true,
-                description: 'Campo description expuesto por el runtime actual.',
-              },
-              type: {
-                type: 'string',
-                description: 'Campo type expuesto por el runtime actual.',
               },
               addressJson: {
                 description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -29555,10 +25508,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               },
               coverImageUrl: {
                 type: 'string',
-                format: 'uri',
                 nullable: true,
                 description: 'Campo cover image url expuesto por el runtime actual.',
-                example: 'https://cdn.beerry.app/clubs/nebula/cover.webp',
               },
               socialMediaJson: {
                 description: 'Valor JSON dinámico expuesto por el runtime.',
@@ -29579,7 +25530,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
                 nullable: true,
               },
               marketplaceFeeBps: {
-                type: 'number',
+                type: 'integer',
                 nullable: true,
                 description: 'Campo marketplace fee bps expuesto por el runtime actual.',
               },
@@ -29591,13 +25542,13 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             required: [
               'id',
-              'createdAt',
-              'status',
-              'name',
-              'updatedAt',
-              'profileImageUrl',
-              'description',
               'type',
+              'description',
+              'createdAt',
+              'updatedAt',
+              'name',
+              'status',
+              'profileImageUrl',
               'addressJson',
               'contactJson',
               'coverImageUrl',
@@ -29612,33 +25563,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -29646,13 +25571,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -29663,10 +25602,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -29675,10 +25616,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -29697,27 +25640,25 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'user',
           'requestedClub',
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',
@@ -29738,33 +25679,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -29772,13 +25687,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -29789,10 +25718,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -29801,10 +25732,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -29823,25 +25756,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',
@@ -29852,10 +25783,8 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
       },
       clubId: {
         type: 'string',
-        format: 'uuid',
         nullable: true,
         description: 'Campo club id expuesto por el runtime actual.',
-        example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
       },
       message: {
         type: 'string',
@@ -29877,33 +25806,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -29911,13 +25814,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -29928,10 +25845,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -29940,10 +25859,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -29962,25 +25883,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',
@@ -30005,33 +25924,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
         properties: {
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -30039,13 +25932,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -30056,10 +25963,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -30068,10 +25977,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -30090,25 +26001,23 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',
@@ -30134,9 +26043,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               properties: {
                 id: {
                   type: 'string',
-                  format: 'uuid',
-                  description: 'Identificador UUID del recurso.',
-                  example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                  description: 'Identificador del recurso.',
                 },
                 name: {
                   type: 'string',
@@ -30151,33 +26058,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             id: {
               type: 'string',
-              format: 'uuid',
-              description: 'Identificador UUID del recurso.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-            },
-            userId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'Campo user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de creación en formato ISO 8601.',
-              example: '2026-08-27T18:30:00.000Z',
-            },
-            status: {
-              type: 'string',
-              enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-              description: 'Estado actual expuesto por el runtime.',
-              example: 'PENDING',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-              example: '2026-08-28T14:15:00.000Z',
+              description: 'Identificador del recurso.',
             },
             type: {
               type: 'string',
@@ -30185,13 +26066,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
               description: 'Campo type expuesto por el runtime actual.',
               example: 'REGISTER_NEW_BUSINESS',
             },
-            phone: {
+            createdAt: {
               type: 'string',
-              description: 'Campo phone expuesto por el runtime actual.',
+              format: 'date-time',
+              description: 'Fecha y hora de creación en formato ISO 8601.',
+              example: '2026-08-27T18:30:00.000Z',
             },
-            location: {
+            updatedAt: {
               type: 'string',
-              description: 'Campo location expuesto por el runtime actual.',
+              format: 'date-time',
+              description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+              example: '2026-08-28T14:15:00.000Z',
+            },
+            userId: {
+              type: 'string',
+              description: 'Campo user id expuesto por el runtime actual.',
+            },
+            status: {
+              type: 'string',
+              enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+              description: 'Estado actual expuesto por el runtime.',
+              example: 'PENDING',
             },
             reviewedAt: {
               type: 'string',
@@ -30202,10 +26097,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             reviewedByUserId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo reviewed by user id expuesto por el runtime actual.',
-              example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+            },
+            phone: {
+              type: 'string',
+              description: 'Campo phone expuesto por el runtime actual.',
             },
             businessName: {
               type: 'string',
@@ -30214,10 +26111,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             taxId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo tax id expuesto por el runtime actual.',
-              example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+            },
+            location: {
+              type: 'string',
+              description: 'Campo location expuesto por el runtime actual.',
             },
             socialUrl: {
               type: 'string',
@@ -30236,26 +26135,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             },
             requestedClubId: {
               type: 'string',
-              format: 'uuid',
               nullable: true,
               description: 'Campo requested club id expuesto por el runtime actual.',
-              example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
             },
           },
           required: [
             'requestedClub',
             'id',
-            'userId',
-            'createdAt',
-            'status',
-            'updatedAt',
             'type',
-            'phone',
-            'location',
+            'createdAt',
+            'updatedAt',
+            'userId',
+            'status',
             'reviewedAt',
             'reviewedByUserId',
+            'phone',
             'businessName',
             'taxId',
+            'location',
             'socialUrl',
             'comment',
             'reviewComment',
@@ -30280,9 +26177,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -30297,33 +26192,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -30331,13 +26200,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -30348,10 +26231,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -30360,10 +26245,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -30382,26 +26269,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'requestedClub',
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',
@@ -30425,9 +26310,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             properties: {
               id: {
                 type: 'string',
-                format: 'uuid',
-                description: 'Identificador UUID del recurso.',
-                example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+                description: 'Identificador del recurso.',
               },
               name: {
                 type: 'string',
@@ -30442,33 +26325,7 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           id: {
             type: 'string',
-            format: 'uuid',
-            description: 'Identificador UUID del recurso.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
-          },
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Campo user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de creación en formato ISO 8601.',
-            example: '2026-08-27T18:30:00.000Z',
-          },
-          status: {
-            type: 'string',
-            enum: ['PENDING', 'CANCELLED', 'APPROVED', 'REJECTED', 'UNDER_REVIEW'],
-            description: 'Estado actual expuesto por el runtime.',
-            example: 'PENDING',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
-            example: '2026-08-28T14:15:00.000Z',
+            description: 'Identificador del recurso.',
           },
           type: {
             type: 'string',
@@ -30476,13 +26333,27 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
             description: 'Campo type expuesto por el runtime actual.',
             example: 'REGISTER_NEW_BUSINESS',
           },
-          phone: {
+          createdAt: {
             type: 'string',
-            description: 'Campo phone expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de creación en formato ISO 8601.',
+            example: '2026-08-27T18:30:00.000Z',
           },
-          location: {
+          updatedAt: {
             type: 'string',
-            description: 'Campo location expuesto por el runtime actual.',
+            format: 'date-time',
+            description: 'Fecha y hora de la última actualización en formato ISO 8601.',
+            example: '2026-08-28T14:15:00.000Z',
+          },
+          userId: {
+            type: 'string',
+            description: 'Campo user id expuesto por el runtime actual.',
+          },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CANCELLED', 'REJECTED', 'APPROVED', 'UNDER_REVIEW'],
+            description: 'Estado actual expuesto por el runtime.',
+            example: 'PENDING',
           },
           reviewedAt: {
             type: 'string',
@@ -30493,10 +26364,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           reviewedByUserId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo reviewed by user id expuesto por el runtime actual.',
-            example: '3c79f4a2-6e51-4b8a-9d27-1f5a0c83e642',
+          },
+          phone: {
+            type: 'string',
+            description: 'Campo phone expuesto por el runtime actual.',
           },
           businessName: {
             type: 'string',
@@ -30505,10 +26378,12 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           taxId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo tax id expuesto por el runtime actual.',
-            example: '7e6b8c1f-1a42-4d95-9f63-8c2b7a4e5d10',
+          },
+          location: {
+            type: 'string',
+            description: 'Campo location expuesto por el runtime actual.',
           },
           socialUrl: {
             type: 'string',
@@ -30527,26 +26402,24 @@ export const OPENAPI_RESPONSE_SCHEMAS: Record<string, SchemaObject> = {
           },
           requestedClubId: {
             type: 'string',
-            format: 'uuid',
             nullable: true,
             description: 'Campo requested club id expuesto por el runtime actual.',
-            example: '8f24c1d7-5b39-4a6e-92d8-7c3f1a5b604e',
           },
         },
         required: [
           'requestedClub',
           'id',
-          'userId',
-          'createdAt',
-          'status',
-          'updatedAt',
           'type',
-          'phone',
-          'location',
+          'createdAt',
+          'updatedAt',
+          'userId',
+          'status',
           'reviewedAt',
           'reviewedByUserId',
+          'phone',
           'businessName',
           'taxId',
+          'location',
           'socialUrl',
           'comment',
           'reviewComment',

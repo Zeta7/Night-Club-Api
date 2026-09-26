@@ -19,6 +19,10 @@ import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { PlatformService } from '../../platform/application/platform.service';
 import { CreateFeaturedCheckoutDto } from '../presentation/create-featured-checkout.dto';
 
+type CampaignWithPayment = Prisma.FeaturedCampaignGetPayload<{
+  include: { paymentAttempt: true; event: { select: { name: true } } };
+}>;
+
 const ELIGIBLE_EVENT_STATUSES = [
   EventStatus.PUBLISHED,
   EventStatus.SALE_ACTIVE,
@@ -336,7 +340,7 @@ export class FeaturedCampaignsService {
     return { ...offer, dailyPriceCents: offer.dailyPriceCents };
   }
 
-  private campaignResponse(campaign: any) {
+  private campaignResponse(campaign: CampaignWithPayment) {
     return {
       id: campaign.id,
       targetType: campaign.targetType,
@@ -353,7 +357,7 @@ export class FeaturedCampaignsService {
     };
   }
 
-  private checkoutResponse(campaign: any) {
+  private checkoutResponse(campaign: CampaignWithPayment) {
     const providerData =
       campaign.paymentAttempt?.providerData &&
       typeof campaign.paymentAttempt.providerData === 'object'
@@ -365,7 +369,7 @@ export class FeaturedCampaignsService {
         provider: campaign.paymentAttempt?.provider ?? null,
         paymentAttemptId: campaign.paymentAttempt?.id ?? null,
         status: campaign.paymentAttempt?.status ?? null,
-        checkoutUrl: providerData?.checkoutUrl ?? null,
+        checkoutUrl: typeof providerData?.checkoutUrl === 'string' ? providerData.checkoutUrl : null,
         expiresAt: campaign.paymentAttempt?.expiresAt ?? null,
         failureCode: campaign.paymentAttempt?.failureCode ?? null,
         failureMessage: campaign.paymentAttempt?.failureMessage ?? null,

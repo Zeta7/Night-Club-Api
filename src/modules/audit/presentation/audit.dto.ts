@@ -11,8 +11,8 @@ export class AuditQueryDto {
   @OptionalField() @IsString() resourceId?: string;
   @OptionalField() @IsEnum(AuditSeverity) severity?: AuditSeverity;
   @OptionalField() @IsString() correlationId?: string;
-  @OptionalField() @IsDateString() from?: string;
-  @OptionalField() @IsDateString() to?: string;
+  @OptionalField({ format: 'date-time' }) @IsDateString() from?: string;
+  @OptionalField({ format: 'date-time' }) @IsDateString() to?: string;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(1) page = 1;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(1) @Max(100) pageSize = 25;
 }

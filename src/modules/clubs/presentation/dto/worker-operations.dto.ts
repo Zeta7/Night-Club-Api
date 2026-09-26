@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { IsDateString, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
@@ -17,5 +18,6 @@ export class CloseWorkerShiftDto {
 }
 
 export class SyncWorkerShiftDto {
+  @ApiProperty({ type: String, format: 'date-time' })
   @IsDateString() lastClientActivityAt!: string;
 }

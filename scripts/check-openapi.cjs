@@ -108,11 +108,6 @@ const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
     nullable: true,
   },
   {
-    pattern: /^WalletsController_movementResponse::properties\.related$/,
-    reason: 'Movement detail may embed an order, a top-up, or no related operation.',
-    nullable: false,
-  },
-  {
     pattern:
       /^CommerceController_(?:clubOrders|clubOrderDetail)Response::properties\.(?:items\.items|order)\.properties\.items\.items\.properties\.eventSnapshot$/,
     reason: 'Order lines preserve the nullable event snapshot stored as historical JSON.',
@@ -348,6 +343,25 @@ function checkRequestSchemas(models, schemas) {
       if (rules.some((item) => item.name === 'isInt') && field.type !== 'integer') {
         failures.push(`${label}: @IsInt requires OpenAPI type integer; use @IsInteger().`);
       }
+      for (const rule of rules.filter((item) => item.name === 'isEnum' || item.name === 'isIn')) {
+        const expected = rule.name === 'isEnum' ? rule.constraints[1] : rule.constraints[0];
+        const actual = (rule.each ? field.items : field)?.enum?.filter((value) => value !== null);
+        if (
+          !actual ||
+          actual.length !== expected.length ||
+          expected.some((value) => !actual.includes(value))
+        ) {
+          failures.push(label + ': Swagger enum must match the values accepted by validation.');
+        }
+      }
+      if (
+        rules.some((item) => item.name === 'isDateString') &&
+        !['date', 'date-time'].includes(field.format)
+      ) {
+        failures.push(
+          label + ': ISO dates must explicitly document format date or date-time in the DTO.',
+        );
+      }
       const errors = validateSync(plainToInstance(model, { [property]: null }));
       const acceptsNull = !errors.some((error) => error.property === property);
       if (acceptsNull !== (field.nullable === true)) {
@@ -378,7 +392,9 @@ async function checkRequestDocument(document) {
 }
 
 async function main() {
+  const SwaggerParser = require('@apidevtools/swagger-parser');
   const document = JSON.parse(fs.readFileSync(DOCUMENT_PATH, 'utf8'));
+  await SwaggerParser.validate(structuredClone(document), { resolve: { external: false } });
   const operations = [];
 
   for (const [route, pathItem] of Object.entries(document.paths ?? {})) {
@@ -418,6 +434,21 @@ async function main() {
           `${label}: protected operations must use the canonical bearer scheme.`,
         );
       }
+    }
+
+    for (const [status, response] of Object.entries(operation.responses ?? {})) {
+      if (!/^2\d\d$/.test(status)) continue;
+      const resolved = response.$ref ? resolvePointer(document, response.$ref) : response;
+      const schema = resolved?.content?.['application/json']?.schema;
+      if (!schema) continue;
+      const target = dereferenceSchema(document, schema);
+      check(
+        isDeclaredSchema(target) &&
+          isClosedObjectOrTypedMap(target) &&
+          !isClosedEmptyObject(document, target),
+        label +
+          ': successful JSON response must use a concrete schema, not an empty Object placeholder.',
+      );
     }
 
     if (operation.requestBody && !operation.requestBody.$ref) {
@@ -468,6 +499,10 @@ async function main() {
       check(
         nested['x-generated-never'] !== true && nested['x-generated-null'] !== true,
         `${label}: an internal inference marker leaked into the public document.`,
+      );
+      check(
+        !nested.nullable || !nested.enum || nested.enum.includes(null),
+        label + ': nullable enums must include null.',
       );
       check(isClosedObjectOrTypedMap(nested), `${label}: object must be closed or a typed map.`);
       for (const keyword of ['oneOf', 'anyOf']) {

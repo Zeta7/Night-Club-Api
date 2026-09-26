@@ -25,10 +25,9 @@ import {
   serviceUnavailable,
 } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
-import { CreatePresignedUploadUrlDto } from '../presentation/dto/create-presigned-upload-url.dto';
+import { ALLOWED_IMAGE_CONTENT_TYPES, CreatePresignedUploadUrlDto } from '../presentation/dto/create-presigned-upload-url.dto';
 import { UploadTransaction } from './uploads.types';
 
-const ALLOWED_IMAGE_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 const SIGNED_URL_EXPIRES_IN_SECONDS = 5 * 60;
 const TEMPORARY_UPLOAD_LIFETIME_MS = 6 * 60 * 60 * 1000;
@@ -376,7 +375,7 @@ export class UploadsService {
   }
 
   private assertAllowedImageContentType(contentType: string) {
-    if (!ALLOWED_IMAGE_CONTENT_TYPES.includes(contentType)) {
+    if (!(ALLOWED_IMAGE_CONTENT_TYPES as readonly string[]).includes(contentType)) {
       throw badRequest(
         'UPLOAD_CONTENT_TYPE_NOT_ALLOWED',
         'Solo se permiten imagenes JPG, PNG o WEBP.',

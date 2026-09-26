@@ -1,12 +1,13 @@
 import { OptionalField } from '../../../shared/presentation/dto-fields';
-import { IsDateString, IsIn, IsString, IsUUID } from 'class-validator';
+import { OrderStatus } from '@prisma/client';
+import { IsDateString, IsEnum, IsString, IsUUID } from 'class-validator';
 
 export class ClubOrdersQueryDto {
-  @OptionalField()
+  @OptionalField({ format: 'date-time' })
   @IsDateString()
   from?: string;
 
-  @OptionalField()
+  @OptionalField({ format: 'date-time' })
   @IsDateString()
   to?: string;
 
@@ -19,17 +20,8 @@ export class ClubOrdersQueryDto {
   productId?: string;
 
   @OptionalField()
-  @IsIn([
-    'PENDING',
-    'PAID',
-    'FAILED',
-    'EXPIRED',
-    'CANCELLED',
-    'REFUND_PENDING',
-    'REFUNDED',
-    'PARTIALLY_REFUNDED',
-  ])
-  status?: string;
+  @IsEnum(OrderStatus)
+  status?: OrderStatus;
 
   @OptionalField()
   @IsString()

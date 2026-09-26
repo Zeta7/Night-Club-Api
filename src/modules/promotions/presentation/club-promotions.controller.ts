@@ -10,11 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PromotionStatus } from '@prisma/client';
 import { CurrentUser, AuthenticatedUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { PromotionsService } from '../application/promotions.service';
-import { CreatePromotionDto } from './dto/create-promotion.dto';
+import { CreatePromotionDto, ListPromotionsQueryDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 
 @ApiTags('Club Promotions')
@@ -39,10 +38,9 @@ export class ClubPromotionsController {
   listPromotions(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
-    @Query('eventId') eventId?: string,
-    @Query('status') status?: PromotionStatus,
+    @Query() query: ListPromotionsQueryDto,
   ) {
-    return this.promotionsService.listPromotions(currentUser, clubId, { eventId, status });
+    return this.promotionsService.listPromotions(currentUser, clubId, query);
   }
 
   @Get(':promotionId')

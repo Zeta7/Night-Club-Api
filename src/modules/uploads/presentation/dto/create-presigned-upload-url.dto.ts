@@ -1,6 +1,8 @@
 import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString, Max, MaxLength, Min } from 'class-validator';
+
+export const ALLOWED_IMAGE_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 export class CreatePresignedUploadUrlDto {
   @ApiProperty({ example: 'cover.png', maxLength: 180 })
@@ -9,10 +11,11 @@ export class CreatePresignedUploadUrlDto {
   @MaxLength(180, { message: 'El nombre del archivo no debe superar 180 caracteres.' })
   fileName!: string;
 
-  @ApiProperty({ example: 'image/png' })
+  @ApiProperty({ example: 'image/png', enum: ALLOWED_IMAGE_CONTENT_TYPES })
+  @IsIn(ALLOWED_IMAGE_CONTENT_TYPES)
   @IsString({ message: 'El tipo de contenido debe ser texto.' })
   @IsNotEmpty({ message: 'El tipo de contenido es obligatorio.' })
-  contentType!: string;
+  contentType!: (typeof ALLOWED_IMAGE_CONTENT_TYPES)[number];
 
   @ApiProperty({ example: 1048576, minimum: 1, maximum: 10485760 })
   @IsInteger({ message: 'El tamano del archivo debe ser un numero entero.' })

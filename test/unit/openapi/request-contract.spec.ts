@@ -1,4 +1,16 @@
 /// <reference types="jest" />
+import { enhanceOpenApiDocument } from '../../../src/shared/presentation/openapi/openapi.enhancer';
+import { ListNotificationsQueryDto } from '../../../src/modules/notification/presentation/notification.dto';
+import {
+  ListWithdrawalsDto,
+  DailyReconciliationQueryDto,
+} from '../../../src/modules/wallets/presentation/withdrawal.dto';
+import { ListPromotionsQueryDto } from '../../../src/modules/promotions/presentation/dto/create-promotion.dto';
+import {
+  CreatePresignedUploadUrlDto,
+  ALLOWED_IMAGE_CONTENT_TYPES,
+} from '../../../src/modules/uploads/presentation/dto/create-presigned-upload-url.dto';
+
 import 'reflect-metadata';
 import { INestApplication, Module, Type, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -41,6 +53,9 @@ describe('Request contract: integers and PATCH presence', () => {
     document = SwaggerModule.createDocument(app, new DocumentBuilder().build(), {
       extraModels: [
         CreateEventDto,
+        CreatePresignedUploadUrlDto,
+        ListWithdrawalsDto,
+        ListPromotionsQueryDto,
         UpdateEventDto,
         UpdateTicketTypeDto,
         UpdateMyProfileDto,
@@ -252,19 +267,183 @@ describe('Request contract: integers and PATCH presence', () => {
     ).rejects.toMatchObject({ status: 400 });
   });
 
+  it.each([
+    ['false', false],
+    ['true', true],
+  ])(
+    'parses the notification query %s without truthiness coercion',
+    async (unreadOnly, expected) => {
+      expect(await input(ListNotificationsQueryDto, { unreadOnly })).toMatchObject({
+        unreadOnly: expected,
+      });
+    },
+  );
+
+  it.each(['yes', '0', '', null])(
+    'rejects invalid notification booleans: %s',
+    async (unreadOnly) => {
+      await expect(input(ListNotificationsQueryDto, { unreadOnly })).rejects.toMatchObject({
+        status: 400,
+      });
+    },
+  );
+
+  it.each([ListWithdrawalsDto, ListPromotionsQueryDto])(
+    'validates optional status values for %p',
+    async (dto) => {
+      await expect(input(dto, {})).resolves.toBeDefined();
+      await expect(input(dto, { status: 'NOT_A_STATUS' })).rejects.toMatchObject({ status: 400 });
+      await expect(input(dto, { status: null })).rejects.toMatchObject({ status: 400 });
+      expect(document.components?.schemas?.[dto.name]).toMatchObject({
+        properties: { status: { type: 'string', enum: expect.any(Array) } },
+      });
+    },
+  );
+
+  it.each(['invalid', '2026-02-30', '2026-13-01', '2026-01-01T12:00:00Z', null])(
+    'rejects invalid reconciliation dates: %s',
+    async (date) => {
+      await expect(input(DailyReconciliationQueryDto, { date })).rejects.toMatchObject({
+        status: 400,
+      });
+    },
+  );
+
+  it('accepts a calendar date and an omitted reconciliation date', async () => {
+    await expect(input(DailyReconciliationQueryDto, { date: '2026-02-28' })).resolves.toMatchObject(
+      { date: '2026-02-28' },
+    );
+    await expect(input(DailyReconciliationQueryDto, {})).resolves.toBeDefined();
+  });
+
+  it('documents and validates upload MIME types from the DTO without an enhancer override', async () => {
+    expect(document.components?.schemas?.CreatePresignedUploadUrlDto).toMatchObject({
+      properties: { contentType: { enum: [...ALLOWED_IMAGE_CONTENT_TYPES] } },
+    });
+    for (const contentType of ALLOWED_IMAGE_CONTENT_TYPES) {
+      await expect(
+        input(CreatePresignedUploadUrlDto, { fileName: 'cover', sizeBytes: 128, contentType }),
+      ).resolves.toBeDefined();
+    }
+    await expect(
+      input(CreatePresignedUploadUrlDto, {
+        fileName: 'cover',
+        sizeBytes: 128,
+        contentType: 'application/pdf',
+      }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+
+  it('preserves declared Swagger types and success schemas without guessing from names', () => {
+    const contract: OpenAPIObject = {
+      openapi: '3.0.0',
+      info: { title: 'Contract', version: '1' },
+      paths: {
+        '/contract': {
+          post: {
+            operationId: 'ContractController_create',
+            parameters: [
+              { in: 'query', name: 'kind', schema: { type: 'string', enum: ['A', 'B'] } },
+            ],
+            requestBody: {
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ContractInput' } },
+              },
+            },
+            responses: {
+              '201': {
+                description: 'Created',
+                content: { 'application/json': { schema: { type: 'string', enum: ['created'] } } },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          ContractInput: {
+            type: 'object',
+            properties: {
+              externalId: { type: 'integer' },
+              emailLabel: { type: 'string' },
+              callbackUrl: { type: 'string' },
+            },
+          },
+        },
+      },
+    };
+    const enhanced = enhanceOpenApiDocument(contract);
+    expect(enhanced.components?.schemas?.ContractInput).toMatchObject({
+      properties: { externalId: { type: 'integer' } },
+    });
+    expect(enhanced.components?.schemas?.ContractInput).not.toMatchObject({
+      properties: { emailLabel: { format: 'email' } },
+    });
+    expect(enhanced.components?.schemas?.ContractInput).not.toMatchObject({
+      properties: { callbackUrl: { format: 'uri' } },
+    });
+    expect(enhanced.paths['/contract'].post?.parameters?.[0]).toMatchObject({
+      schema: { enum: ['A', 'B'] },
+    });
+    expect(enhanced.paths['/contract'].post?.responses['201']).toMatchObject({
+      content: { 'application/json': { schema: { type: 'string', enum: ['created'] } } },
+    });
+  });
+
+  it('uses the generated response when the Nest plugin supplies an empty Object placeholder', () => {
+    const enhanced = enhanceOpenApiDocument({
+      openapi: '3.0.0',
+      info: { title: 'Contract', version: '1' },
+      paths: {
+        '/cart': {
+          get: {
+            operationId: 'CommerceController_cart',
+            responses: {
+              '200': {
+                description: '',
+                content: { 'application/json': { schema: { type: 'object' } } },
+              },
+            },
+          },
+        },
+      },
+    });
+    expect(enhanced.paths['/cart'].get?.responses['200']).toMatchObject({
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/CommerceController_cartResponse' },
+        },
+      },
+    });
+  });
+
+  it('publishes date-time from the DTO before enhancement, including nullable PATCH dates', () => {
+    expect(document.components?.schemas?.CreateEventDto).toMatchObject({
+      properties: {
+        startsAt: { type: 'string', format: 'date-time' },
+        endsAt: { type: 'string', format: 'date-time' },
+      },
+    });
+    expect(document.components?.schemas?.UpdateTicketTypeDto).toMatchObject({
+      properties: { saleStartAt: { type: 'string', nullable: true, format: 'date-time' } },
+    });
+  });
+
   it('blocks regressions in the generation gate instead of repairing the published schema', () => {
     const { checkRequestSchemas } = require('../../../scripts/check-openapi.cjs') as {
       checkRequestSchemas: (models: Type<unknown>[], schemas: object) => { failures: string[] };
     };
     const schemas = structuredClone(document.components!.schemas!) as Record<
       string,
-      { properties: Record<string, { type?: string; nullable?: boolean }> }
+      { properties: Record<string, { type?: string; nullable?: boolean; enum?: unknown[] }> }
     >;
     schemas.UpdateEventDto.properties.capacity.type = 'number';
     schemas.UpdateEventDto.properties.description.nullable = false;
-    const result = checkRequestSchemas([UpdateEventDto], schemas);
+    schemas.ListWithdrawalsDto.properties.status.enum = ['INVALID'];
+    const result = checkRequestSchemas([UpdateEventDto, ListWithdrawalsDto], schemas);
     expect(result.failures).toEqual(
       expect.arrayContaining([
+        expect.stringContaining('ListWithdrawalsDto.status'),
         expect.stringContaining('UpdateEventDto.capacity'),
         expect.stringContaining('UpdateEventDto.description'),
       ]),

@@ -35,12 +35,12 @@ export class CreateTicketTypeDto {
   @OptionalField({ nullable: true, type: 'integer' })
   perUserLimit?: number | null;
 
-  @ApiPropertyOptional({ example: '2026-08-01T18:00:00.000Z' })
+  @ApiPropertyOptional({ format: 'date-time', example: '2026-08-01T18:00:00.000Z' })
   @IsDateString({}, { message: 'La fecha de inicio de venta debe ser ISO valida.' })
   @OptionalField({ nullable: true, type: String })
   saleStartAt?: string | null;
 
-  @ApiPropertyOptional({ example: '2026-08-02T04:00:00.000Z' })
+  @ApiPropertyOptional({ format: 'date-time', example: '2026-08-02T04:00:00.000Z' })
   @IsDateString({}, { message: 'La fecha de fin de venta debe ser ISO valida.' })
   @OptionalField({ nullable: true, type: String })
   saleEndAt?: string | null;

@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { ok } from 'node:assert';
 import 'dotenv/config';
 import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
@@ -96,6 +97,7 @@ describe('Module 5 - double-entry ledger', () => {
       quantity: 1,
     });
     const checkout = await commerce.checkout(customer(), { expectedTotalCents: 10_000 });
+    ok(checkout.paymentAttemptId, 'This payment scenario must create a payment attempt');
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
       where: { id: checkout.paymentAttemptId },
     });

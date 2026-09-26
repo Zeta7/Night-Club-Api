@@ -511,7 +511,7 @@ export function enhanceOpenApiDocument(document: OpenAPIObject): OpenAPIObject {
       operation.description = descriptionFor(operation, path, isPublic);
       operation.security = isPublic ? [] : [{ bearer: [] }];
       normalizeParameters(operation);
-      normalizeRequestBody(operation, operationId, document);
+      normalizeRequestBody(operation, document);
       normalizeResponses(operation, operationId, method, isPublic, document);
     }
   }
@@ -785,24 +785,6 @@ function normalizeParameters(operation: OperationObject): void {
       `Valor de ${translateWords(parameter.name)} aceptado por la operación.`;
     parameter.required = parameter.in === 'path' ? true : Boolean(parameter.required);
     const schema = (parameter.schema ??= { type: 'string' }) as SchemaObject;
-    if (schema.allOf?.some((item) => isReference(item) && item.$ref.endsWith('/Object'))) {
-      delete schema.allOf;
-      schema.type = 'integer';
-      schema.format = 'int32';
-    }
-    if (
-      /(^id$|Id$)/.test(parameter.name) &&
-      !['correlationId', 'externalPaymentId'].includes(parameter.name)
-    ) {
-      schema.type = 'string';
-      schema.format = 'uuid';
-    }
-    if (parameter.name === 'kind') {
-      schema.type = 'string';
-      schema.enum = ['TICKET', 'PRODUCT', 'PROMOTION'];
-    }
-    if (['from', 'to'].includes(parameter.name)) schema.format = 'date-time';
-    if (parameter.name === 'date') schema.format = 'date';
     if (parameter.in === 'query' && schema.default !== undefined) parameter.required = false;
     parameter.example ??= parameterExample(parameter.name, schema);
   }
@@ -820,11 +802,7 @@ function parameterExample(name: string, schema: SchemaObject): unknown {
   return stringExample(name);
 }
 
-function normalizeRequestBody(
-  operation: OperationObject,
-  operationId: string,
-  document: OpenAPIObject,
-): void {
+function normalizeRequestBody(operation: OperationObject, document: OpenAPIObject): void {
   if (!operation.requestBody || isReference(operation.requestBody)) return;
   const requestBody = operation.requestBody as RequestBodyObject;
   requestBody.description ??= 'Solo acepta las propiedades documentadas; rechaza cualquier otra.';
@@ -834,18 +812,6 @@ function normalizeRequestBody(
     if (!media.schema || !isReference(media.schema)) continue;
     const name = media.schema.$ref.split('/').pop()!;
     closeRequestSchema(name, document, new Set());
-  }
-
-  if (operationId === 'UploadsController_createPresignedUploadUrl') {
-    const schema = document.components?.schemas?.CreatePresignedUploadUrlDto as SchemaObject;
-    const contentType = schema?.properties?.contentType as SchemaObject | undefined;
-    if (contentType) {
-      contentType.enum = ['image/jpeg', 'image/png', 'image/webp'];
-      contentType.description = 'MIME real del archivo: JPEG, PNG o WebP.';
-    }
-    const sizeBytes = schema?.properties?.sizeBytes as SchemaObject | undefined;
-    if (sizeBytes)
-      sizeBytes.description = 'Tamaño del archivo en bytes. El máximo es 10 MB (10 485 760 bytes).';
   }
 }
 
@@ -868,7 +834,6 @@ function closeRequestSchema(name: string, document: OpenAPIObject, visited: Set<
     }
     const property = raw as SchemaObject;
     property.description ??= requestPropertyDescription(propertyName);
-    normalizeRequestPropertyMetadata(propertyName, property, Object.keys(schema.properties ?? {}));
     property.example ??= requestPropertyExample(
       propertyName,
       property,
@@ -880,38 +845,6 @@ function closeRequestSchema(name: string, document: OpenAPIObject, visited: Set<
     if (property.items && isReference(property.items)) {
       closeRequestSchema(property.items.$ref.split('/').pop()!, document, visited);
     }
-  }
-}
-
-function normalizeRequestPropertyMetadata(
-  name: string,
-  schema: SchemaObject,
-  context: string[] = [],
-): void {
-  if (/(^id$|Id$)/.test(name) && !['correlationId', 'externalPaymentId'].includes(name)) {
-    schema.type = 'string';
-    schema.format = 'uuid';
-    schema.example = uuidExample(name);
-    delete schema.allOf;
-    return;
-  }
-  if (/At$/.test(name) && schema.type === 'string') {
-    schema.format = 'date-time';
-    schema.example = dateTimeExample(name);
-    return;
-  }
-  if (/email/i.test(name) && schema.type === 'string') {
-    schema.format = 'email';
-    schema.example = 'valeria.mendoza@correo.pe';
-    return;
-  }
-  if (/(^url$|Url$)/.test(name) && schema.type === 'string') {
-    schema.format = 'uri';
-    schema.example = uriExample(name, context);
-    return;
-  }
-  if (/phoneNumber/i.test(name) && schema.type === 'string') {
-    schema.example = '987654321';
   }
 }
 
@@ -962,7 +895,29 @@ function normalizeResponses(
     Object.keys(operation.responses ?? {}).find((status) => /^2\d\d$/.test(status)) ??
     (method === 'post' ? '201' : '200');
   operation.responses ??= {};
-  operation.responses[successStatus] = successResponse(operationId);
+  const declared = operation.responses[successStatus];
+  const hasDeclaredSchema =
+    declared &&
+    (isReference(declared) ||
+      Object.values(declared.content ?? {}).some((media) => {
+        const schema = media.schema;
+        if (!schema || Object.keys(schema).length === 0) return false;
+        if (isReference(schema) || schema.type !== 'object') return true;
+        return Boolean(
+          Object.keys(schema.properties ?? {}).length ||
+          schema.allOf?.length ||
+          schema.oneOf?.length ||
+          schema.anyOf?.length ||
+          typeof schema.additionalProperties === 'object',
+        );
+      }));
+  if (!hasDeclaredSchema)
+    operation.responses[successStatus] = {
+      ...successResponse(operationId),
+      ...(declared && !isReference(declared) && declared.description
+        ? { description: declared.description }
+        : {}),
+    };
 
   if (operationId === 'CommerceController_exportClubOrders') {
     operation.responses[successStatus] = {
@@ -1000,9 +955,9 @@ function normalizeResponses(
   }
   if (
     operation.requestBody ||
-      (operation.parameters ?? []).some(
-        (raw: ParameterObject | ReferenceObject) => !isReference(raw) && raw.in === 'query',
-      )
+    (operation.parameters ?? []).some(
+      (raw: ParameterObject | ReferenceObject) => !isReference(raw) && raw.in === 'query',
+    )
   ) {
     addError(
       operation,

@@ -37,9 +37,7 @@ describe('Settlement ownership', () => {
       expect(accounts.find((a) => a.ownerType === 'CLUB').code).toBe(
         external ? 'CLUB_EXTERNAL:seller' : 'CLUB:seller',
       );
-      expect(sale.metadata.settlementMode).toBe(external ? 'EXTERNAL_SPLIT' : 'MANUAL');
-      expect(sale.metadata.providerCostCents).toBe(0);
-      expect(sale.metadata.clubNetCents).toBe(9400);
+      expect(sale.metadata).toMatchObject({ settlementMode: external ? 'EXTERNAL_SPLIT' : 'MANUAL', providerCostCents: 0, clubNetCents: 9400 });
       expect(sale.debitTotalCents).toBe(sale.creditTotalCents);
     },
   );

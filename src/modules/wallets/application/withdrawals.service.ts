@@ -1,6 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UserRole } from '@prisma/client';
+import { ClubFinancialProfile, Prisma, UserRole, WithdrawalRequest, WithdrawalStatus } from '@prisma/client';
 import { createCipheriv, createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import {
@@ -28,7 +28,7 @@ export class WithdrawalsService {
     const digits = input.bankAccountNumber.replace(/\D/g, '');
     if (digits.length < 8)
       throw badRequest('INVALID_BANK_ACCOUNT', 'La cuenta bancaria no es válida.');
-    const profile = await (this.prisma as any).clubFinancialProfile.upsert({
+    const profile = await this.prisma.clubFinancialProfile.upsert({
       where: { clubId },
       create: {
         clubId,
@@ -65,7 +65,7 @@ export class WithdrawalsService {
 
   async getProfile(user: AuthenticatedUser, clubId: string) {
     await this.assertClubAdmin(user, clubId);
-    const profile = await (this.prisma as any).clubFinancialProfile.findUnique({
+    const profile = await this.prisma.clubFinancialProfile.findUnique({
       where: { clubId },
     });
     return profile ? this.publicProfile(profile) : null;
@@ -92,7 +92,7 @@ export class WithdrawalsService {
         `El retiro mínimo es S/ ${(minimum / 100).toFixed(2)}.`,
       );
     }
-    const profile = await (this.prisma as any).clubFinancialProfile.findUnique({
+    const profile = await this.prisma.clubFinancialProfile.findUnique({
       where: { clubId },
     });
     if (!profile)
@@ -101,7 +101,7 @@ export class WithdrawalsService {
         'Configura la cuenta bancaria antes de retirar.',
       );
     const request = await this.prisma.$transaction(async (tx) => {
-      const created = await (tx as any).withdrawalRequest.create({
+      const created = await tx.withdrawalRequest.create({
         data: {
           clubId,
           requestedByUserId: user.id,
@@ -130,7 +130,7 @@ export class WithdrawalsService {
         }
         throw error;
       }
-      await (tx as any).auditLogEntry.create({
+      await tx.auditLogEntry.create({
         data: {
           actorUserId: user.id,
           clubId,
@@ -149,19 +149,19 @@ export class WithdrawalsService {
   async listClub(user: AuthenticatedUser, clubId: string) {
     await this.assertClubAdmin(user, clubId);
     return {
-      items: await (this.prisma as any).withdrawalRequest.findMany({
+      items: await this.prisma.withdrawalRequest.findMany({
         where: { clubId },
         orderBy: { createdAt: 'desc' },
       }),
     };
   }
 
-  async listPlatform(user: AuthenticatedUser, status?: string) {
+  async listPlatform(user: AuthenticatedUser, status?: WithdrawalStatus) {
     this.assertSuperAdmin(user);
     return {
-      items: await (this.prisma as any).withdrawalRequest.findMany({
+      items: await this.prisma.withdrawalRequest.findMany({
         where: status ? { status } : {},
-        include: { club: true, requestedBy: true },
+        include: { club: true, requestedBy: { omit: { passwordHash: true } } },
         orderBy: { createdAt: 'desc' },
         take: 200,
       }),
@@ -171,7 +171,7 @@ export class WithdrawalsService {
   async review(user: AuthenticatedUser, id: string, action: 'APPROVE' | 'REJECT', reason?: string) {
     this.assertSuperAdmin(user);
     const result = await this.prisma.$transaction(async (tx) => {
-      const current = await (tx as any).withdrawalRequest.findUnique({ where: { id } });
+      const current = await tx.withdrawalRequest.findUnique({ where: { id } });
       if (!current)
         throw notFound('WITHDRAWAL_NOT_FOUND', 'No encontramos la solicitud de retiro.');
       if (!['REQUESTED', 'UNDER_REVIEW'].includes(current.status))
@@ -190,7 +190,7 @@ export class WithdrawalsService {
           type: 'ADJUSTMENT',
         });
       }
-      const updated = await (tx as any).withdrawalRequest.update({
+      const updated = await tx.withdrawalRequest.update({
         where: { id },
         data:
           action === 'APPROVE'
@@ -207,7 +207,7 @@ export class WithdrawalsService {
                 rejectionReason: reason!.trim(),
               },
       });
-      await (tx as any).auditLogEntry.create({
+      await tx.auditLogEntry.create({
         data: {
           actorUserId: user.id,
           clubId: current.clubId,
@@ -235,7 +235,7 @@ export class WithdrawalsService {
   async markPaid(user: AuthenticatedUser, id: string, paymentReference: string, proofUrl?: string) {
     this.assertSuperAdmin(user);
     const result = await this.prisma.$transaction(async (tx) => {
-      const current = await (tx as any).withdrawalRequest.findUnique({ where: { id } });
+      const current = await tx.withdrawalRequest.findUnique({ where: { id } });
       if (!current)
         throw notFound('WITHDRAWAL_NOT_FOUND', 'No encontramos la solicitud de retiro.');
       if (!['APPROVED', 'PROCESSING'].includes(current.status))
@@ -250,7 +250,7 @@ export class WithdrawalsService {
         withdrawalRequestId: id,
         type: 'WITHDRAWAL',
       });
-      const updated = await (tx as any).withdrawalRequest.update({
+      const updated = await tx.withdrawalRequest.update({
         where: { id },
         data: {
           status: 'PAID',
@@ -259,7 +259,7 @@ export class WithdrawalsService {
           paidAt: new Date(),
         },
       });
-      await (tx as any).auditLogEntry.create({
+      await tx.auditLogEntry.create({
         data: {
           actorUserId: user.id,
           clubId: current.clubId,
@@ -278,7 +278,7 @@ export class WithdrawalsService {
   async markFailed(user: AuthenticatedUser, id: string, reason: string) {
     this.assertSuperAdmin(user);
     const result = await this.prisma.$transaction(async (tx) => {
-      const current = await (tx as any).withdrawalRequest.findUnique({ where: { id } });
+      const current = await tx.withdrawalRequest.findUnique({ where: { id } });
       if (!current)
         throw notFound('WITHDRAWAL_NOT_FOUND', 'No encontramos la solicitud de retiro.');
       if (!['APPROVED', 'PROCESSING'].includes(current.status))
@@ -293,7 +293,7 @@ export class WithdrawalsService {
         withdrawalRequestId: id,
         type: 'ADJUSTMENT',
       });
-      return (tx as any).withdrawalRequest.update({
+      return tx.withdrawalRequest.update({
         where: { id },
         data: { status: 'FAILED', rejectionReason: reason.trim(), failedAt: new Date() },
       });
@@ -302,12 +302,12 @@ export class WithdrawalsService {
     return result;
   }
 
-  private async transition(id: string, allowed: string[], data: Record<string, unknown>) {
-    const current = await (this.prisma as any).withdrawalRequest.findUnique({ where: { id } });
+  private async transition(id: string, allowed: WithdrawalStatus[], data: Prisma.WithdrawalRequestUpdateInput) {
+    const current = await this.prisma.withdrawalRequest.findUnique({ where: { id } });
     if (!current) throw notFound('WITHDRAWAL_NOT_FOUND', 'No encontramos la solicitud de retiro.');
     if (!allowed.includes(current.status))
       throw conflict('WITHDRAWAL_INVALID_TRANSITION', 'La transición del retiro no es válida.');
-    return (this.prisma as any).withdrawalRequest.update({ where: { id }, data });
+    return this.prisma.withdrawalRequest.update({ where: { id }, data });
   }
 
   private async assertClubAdmin(user: AuthenticatedUser, clubId: string) {
@@ -338,9 +338,8 @@ export class WithdrawalsService {
     return `${iv.toString('base64url')}.${cipher.getAuthTag().toString('base64url')}.${encrypted.toString('base64url')}`;
   }
 
-  private publicProfile(profile: any) {
-    const safeProfile = { ...profile };
-    delete safeProfile.bankAccountEncrypted;
+  private publicProfile(profile: ClubFinancialProfile) {
+    const { bankAccountEncrypted: _encrypted, ...safeProfile } = profile;
     return { ...safeProfile, maskedBankAccount: `•••• ${profile.bankAccountLast4}` };
   }
 
@@ -356,7 +355,7 @@ export class WithdrawalsService {
     });
   }
 
-  private notify(userId: string, template: string, withdrawal: any) {
+  private notify(userId: string, template: string, withdrawal: Pick<WithdrawalRequest, 'id' | 'amountCents'>) {
     return this.notifications?.notifyFromTemplate(
       userId,
       template,

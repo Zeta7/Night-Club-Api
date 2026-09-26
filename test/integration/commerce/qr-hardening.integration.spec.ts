@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { ok } from 'node:assert';
 import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
@@ -103,6 +104,7 @@ describe('Module 4 - hardened QR redemption', () => {
       quantity: 1,
     });
     const checkout = await service.checkout(customer(), { expectedTotalCents: 2500 });
+    ok(checkout.paymentAttemptId, 'This payment scenario must create a payment attempt');
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
       where: { id: checkout.paymentAttemptId },
     });

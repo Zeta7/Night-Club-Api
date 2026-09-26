@@ -10,7 +10,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { ReferralCaptureMethod, ReferralExpirationMode } from '@prisma/client';
+import { ReferralCaptureMethod, ReferralExpirationMode, ReferralRewardStatus } from '@prisma/client';
 
 export class AssociateReferralDto {
   @IsString()
@@ -74,8 +74,8 @@ export class UpdateReferralSettingsDto {
   @IsInteger()
   @Min(1)
   maxMonthlyTransferCents?: number | null;
-  @OptionalField({ nullable: true, type: String }) @IsDateString() startsAt?: string | null;
-  @OptionalField({ nullable: true, type: String }) @IsDateString() endsAt?: string | null;
+  @OptionalField({ nullable: true, type: String, format: 'date-time' }) @IsDateString() startsAt?: string | null;
+  @OptionalField({ nullable: true, type: String, format: 'date-time' }) @IsDateString() endsAt?: string | null;
 }
 
 export class TransferCreditDto {
@@ -101,7 +101,7 @@ export class TransferCreditDto {
 }
 
 export class ReferralAdminQueryDto {
-  @OptionalField() @IsString() status?: string;
+  @OptionalField({ enum: ReferralRewardStatus }) @IsEnum(ReferralRewardStatus) status?: ReferralRewardStatus;
   @OptionalField() @IsString() search?: string;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(1) page = 1;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(1) @Max(100) pageSize = 20;

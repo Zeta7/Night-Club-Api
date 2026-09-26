@@ -1,5 +1,15 @@
 import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
-import { IsIn, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import { WithdrawalStatus } from '@prisma/client';
+import {
+  IsDateString,
+  Matches,
+  IsEnum,
+  IsIn,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class UpsertFinancialProfileDto {
   @IsString() @MinLength(2) @MaxLength(150) legalName!: string;
@@ -28,4 +38,17 @@ export class PayWithdrawalDto {
 
 export class FailWithdrawalDto {
   @IsString() @MinLength(5) @MaxLength(300) reason!: string;
+}
+
+export class ListWithdrawalsDto {
+  @OptionalField({ enum: WithdrawalStatus })
+  @IsEnum(WithdrawalStatus)
+  status?: WithdrawalStatus;
+}
+
+export class DailyReconciliationQueryDto {
+  @OptionalField({ format: 'date' })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @IsDateString({ strict: true })
+  date?: string;
 }

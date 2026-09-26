@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { ok } from 'node:assert';
 import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
 import { CommerceItemType } from '@prisma/client';
@@ -140,6 +141,7 @@ describe('Inventory reservations integration', () => {
     expect(activeReservations._sum.quantity).toBe(1);
 
     const winner = winners[0].value;
+    ok(winner.paymentAttemptId, 'This payment scenario must create a payment attempt');
     const [saleAdmin] = await createUsers(1);
     await prisma.clubAdmin.create({ data: { clubId: product.clubId, userId: saleAdmin.id } });
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
@@ -190,6 +192,7 @@ describe('Inventory reservations integration', () => {
       quantity: 2,
     });
     const checkout = await service.checkout(user, { expectedTotalCents: 2000 });
+    ok(checkout.paymentAttemptId, 'This payment scenario must create a payment attempt');
     const past = new Date(Date.now() - 1000);
     await Promise.all([
       prisma.paymentAttempt.update({

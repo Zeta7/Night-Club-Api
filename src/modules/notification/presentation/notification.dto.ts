@@ -1,5 +1,5 @@
 import { OptionalField } from '../../../shared/presentation/dto-fields';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsIn, IsString, MaxLength } from 'class-validator';
 import { NotificationCategory } from '@prisma/client';
 
@@ -20,7 +20,7 @@ export class RegisterDeviceDto {
 
 export class ListNotificationsQueryDto {
   @OptionalField()
-  @Type(() => Boolean)
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
   @IsBoolean()
   unreadOnly?: boolean;
 

@@ -1,5 +1,5 @@
 import { OptionalField } from '../../../../shared/presentation/dto-fields';
-import { PromotionPricingMode } from '@prisma/client';
+import { PromotionPricingMode, PromotionStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -57,12 +57,12 @@ export class CreatePromotionDto {
   currency?: string;
 
   @ApiProperty({ required: false })
-  @OptionalField({ nullable: true, type: String })
+  @OptionalField({ nullable: true, type: String, format: 'date-time' })
   @IsDateString()
   startsAt?: string | null;
 
   @ApiProperty({ required: false })
-  @OptionalField({ nullable: true, type: String })
+  @OptionalField({ nullable: true, type: String, format: 'date-time' })
   @IsDateString()
   endsAt?: string | null;
 
@@ -77,4 +77,14 @@ export class CreatePromotionDto {
   @OptionalField()
   @IsBoolean()
   removeImage?: boolean;
+}
+
+export class ListPromotionsQueryDto {
+  @OptionalField({ format: 'uuid' })
+  @IsUUID()
+  eventId?: string;
+
+  @OptionalField({ enum: PromotionStatus })
+  @IsEnum(PromotionStatus)
+  status?: PromotionStatus;
 }

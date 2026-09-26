@@ -111,7 +111,7 @@ export class ClubWorkersService {
       if (input.status === ClubWorkerStatus.INACTIVE) {
         await tx.workerShift.updateMany({ where: { workerId, status: 'ACTIVE' }, data: { status: 'REVOKED', endedAt: new Date(), closedByUserId: currentUser.id, closeReason: 'WORKER_INACTIVE' } });
       }
-      await tx.auditLogEntry.create({ data: { actorUserId: currentUser.id, clubId, action: 'UPDATE_WORKER', resourceType: 'CLUB_WORKER', resourceId: workerId, metadata: input as any } });
+      await tx.auditLogEntry.create({ data: { actorUserId: currentUser.id, clubId, action: 'UPDATE_WORKER', resourceType: 'CLUB_WORKER', resourceId: workerId, metadata: { ...input } } });
       return updated;
     });
 

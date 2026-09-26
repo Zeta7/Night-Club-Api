@@ -866,7 +866,7 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
   async adminList(actor: AuthenticatedUser, query: ReferralAdminQueryDto) {
     this.assertSuperAdmin(actor);
     const where: Prisma.ReferralRewardWhereInput = {
-      ...(query.status ? { status: query.status as any } : {}),
+      ...(query.status ? { status: query.status } : {}),
       ...(query.search
         ? {
             OR: [

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  ClubOperationalProfile,
   ClubStatus,
   EventStatus,
   Prisma,
@@ -41,15 +42,7 @@ const CUSTOMER_DETAIL_EVENT_STATUSES = [
   EventStatus.CANCELLED,
   EventStatus.POSTPONED,
 ] as const;
-// Customer discovery must reflect newly activated clubs and published events.
-// Keep the cache effectively disabled until mutation-driven invalidation exists.
-const CUSTOMER_HOME_CACHE_TTL_MS = 0;
 const MERCADO_PAGO_PROVIDER = 'mercado_pago';
-
-const customerHomeCache = new Map<
-  string,
-  { expiresAt: number; payload: Record<string, unknown> }
->();
 
 @Injectable()
 export class ClubsService {
@@ -133,7 +126,7 @@ export class ClubsService {
     if (!club) {
       return {
         message: 'Dashboard admin obtenido correctamente.',
-        hasClub: false,
+        hasClub: false as const,
         club: null,
         emptyState: {
           title: 'Aun no tienes una discoteca',
@@ -302,7 +295,7 @@ export class ClubsService {
 
     return {
       message: 'Dashboard admin obtenido correctamente.',
-      hasClub: true,
+      hasClub: true as const,
       club: {
         id: club.id,
         name: club.name,
@@ -420,20 +413,6 @@ export class ClubsService {
   async getCustomerHome(currentUser: AuthenticatedUser, query: CustomerHomeQueryDto) {
     const location = normalizeCustomerLocationQuery(query);
     const now = new Date();
-    const cacheKey = customerHomeCacheKey(location);
-    const cached = customerHomeCache.get(cacheKey);
-
-    if (cached && cached.expiresAt > Date.now()) {
-      return {
-        ...cached.payload,
-        featuredItems: [],
-        viewer: {
-          id: currentUser.id,
-          role: currentUser.role,
-        },
-      };
-    }
-
     const clubs = await this.findCustomerVisibleClubs(location);
     const clubIds = clubs.map((club) => club.id);
 
@@ -441,7 +420,7 @@ export class ClubsService {
       const payload = {
         message: 'Home del cliente obtenido correctamente.',
         location,
-        hasResults: false,
+        hasResults: false as const,
         clubs: [],
         events: [],
         tickets: [],
@@ -449,10 +428,6 @@ export class ClubsService {
         products: [],
         emptyState: buildCustomerHomeEmptyState(location),
       };
-      customerHomeCache.set(cacheKey, {
-        expiresAt: Date.now() + CUSTOMER_HOME_CACHE_TTL_MS,
-        payload,
-      });
       return {
         ...payload,
         featuredItems: [],
@@ -553,7 +528,7 @@ export class ClubsService {
     const payload = {
       message: 'Home del cliente obtenido correctamente.',
       location,
-      hasResults: true,
+      hasResults: true as const,
       clubs: await Promise.all(
         clubs.slice(0, 8).map(async (club) => ({
           id: club.id,
@@ -641,12 +616,8 @@ export class ClubsService {
           status: product.status,
         })),
       ),
-      emptyState: null,
+      emptyState: null as ReturnType<typeof buildCustomerHomeEmptyState> | null,
     };
-    customerHomeCache.set(cacheKey, {
-      expiresAt: Date.now() + CUSTOMER_HOME_CACHE_TTL_MS,
-      payload,
-    });
     return {
       ...payload,
       featuredItems: await this.featuredCampaigns.selectForHome({
@@ -801,7 +772,7 @@ export class ClubsService {
           currency: event.ticketTypes[0]?.currency ?? 'PEN',
         })),
       ),
-      tickets: [],
+      tickets: [] as Awaited<ReturnType<ClubsService['getCustomerHome']>>['tickets'],
       promotions: await Promise.all(
         promotions.map(async (promotion) => ({
           id: promotion.id,
@@ -833,7 +804,7 @@ export class ClubsService {
           status: product.status,
         })),
       ),
-      emptyState: null,
+      emptyState: null as ReturnType<typeof buildCustomerHomeEmptyState> | null,
       viewer: { id: currentUser.id, role: currentUser.role },
     };
   }
@@ -938,7 +909,7 @@ export class ClubsService {
         province: toLocationAddress(club.addressJson).provincia,
         department: toLocationAddress(club.addressJson).departamento,
       },
-      hasResults: true,
+      hasResults: true as const,
       clubs: [
         {
           id: club.id,
@@ -1026,7 +997,7 @@ export class ClubsService {
           status: product.status,
         })),
       ),
-      emptyState: null,
+      emptyState: null as ReturnType<typeof buildCustomerHomeEmptyState> | null,
       viewer: { id: currentUser.id, role: currentUser.role },
     };
   }
@@ -1269,7 +1240,7 @@ export class ClubsService {
   async getOperationalProfile(currentUser: AuthenticatedUser, clubId: string) {
     await this.assertCanManageClub(currentUser, clubId);
     const profile = await this.prisma.clubOperationalProfile.findUnique({ where: { clubId } });
-    return { profile };
+    return { profile: profile ? toOperationalProfileResponse(profile) : null };
   }
 
   async updateOperationalProfile(
@@ -1314,7 +1285,7 @@ export class ClubsService {
         resourceId: clubId,
       },
     });
-    return { message: 'Configuración operativa actualizada.', profile };
+    return { message: 'Configuración operativa actualizada.', profile: toOperationalProfileResponse(profile) };
   }
 
   async deactivateClub(currentUser: AuthenticatedUser, clubId: string) {
@@ -1538,17 +1509,6 @@ const normalizeCustomerLocationQuery = (query: CustomerHomeQueryDto) => ({
   province: query.province?.trim() ?? '',
   department: query.department?.trim() ?? '',
 });
-
-const customerHomeCacheKey = (location: {
-  district: string;
-  province: string;
-  department: string;
-}) =>
-  [
-    normalizeComparable(location.district),
-    normalizeComparable(location.province),
-    normalizeComparable(location.department),
-  ].join('|');
 
 const normalizeContact = (contact?: CreateClubDto['contact']): Record<string, string> => ({
   phone: contact?.phone?.trim() ?? '',
@@ -1890,3 +1850,12 @@ const toClubResponse = (
     profileImage: buildMediaUrl(admin.user.profileImageUrl, config),
   })),
 });
+
+function toOperationalProfileResponse(profile: ClubOperationalProfile) {
+  return {
+    ...profile,
+    approvalDocumentUploadIds: Array.isArray(profile.approvalDocumentUploadIds)
+      ? profile.approvalDocumentUploadIds.filter((value): value is string => typeof value === 'string')
+      : [],
+  };
+}
