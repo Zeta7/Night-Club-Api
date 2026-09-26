@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import {
   ClubOperationalProfile,
   ClubStatus,
+  CommerceItemType,
   EventStatus,
+  InventoryReservationStatus,
   Prisma,
   ProductStatus,
   PromotionStatus,
@@ -21,6 +23,7 @@ import { forbidden, notFound } from '../../../shared/presentation/api-exception'
 import {
   currentEventsWhere,
   effectiveEventStatus,
+  eventAllowsSales,
 } from '../../events/application/event-availability';
 import { FeaturedCampaignsService } from '../../featured-campaigns/application/featured-campaigns.service';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
@@ -438,9 +441,12 @@ export class ClubsService {
     };
   }
 
-  async getCustomerHome(currentUser: AuthenticatedUser, query: CustomerHomeQueryDto) {
+  async getCustomerHome(
+    currentUser: AuthenticatedUser,
+    query: CustomerHomeQueryDto,
+    now = new Date(),
+  ) {
     const location = normalizeCustomerLocationQuery(query);
-    const now = new Date();
     const clubs = await this.findCustomerVisibleClubs(location);
     const clubIds = clubs.map((club) => club.id);
 
@@ -535,25 +541,13 @@ export class ClubsService {
     ] = await Promise.all([
       this.prisma.event.findMany({
         where: visibleEventWhere,
-        orderBy: [{ startsAt: 'asc' }],
-        take: 12,
         include: {
           club: true,
-          ticketTypes: {
-            where: {
-              status: {
-                in: [TicketTypeStatus.ACTIVE, TicketTypeStatus.SOLD_OUT],
-              },
-            },
-            orderBy: [{ priceCents: 'asc' }],
-            take: 1,
-          },
+          ticketTypes: true,
         },
       }),
       this.prisma.promotion.findMany({
         where: visiblePromotionWhere,
-        orderBy: [{ updatedAt: 'desc' }],
-        take: 12,
         include: {
           club: true,
           event: true,
@@ -601,13 +595,69 @@ export class ClubsService {
       ...productCounts.map((row) => row.clubId),
       ...ticketCounts.map((row) => row.clubId),
     ]);
+    const ticketTypeIds = events.flatMap((event) => event.ticketTypes.map((ticket) => ticket.id));
+    const reservedTickets =
+      ticketTypeIds.length > 0
+        ? await this.prisma.inventoryReservation.groupBy({
+            by: ['resourceId'],
+            where: {
+              resourceType: CommerceItemType.TICKET,
+              resourceId: { in: ticketTypeIds },
+              status: InventoryReservationStatus.ACTIVE,
+              expiresAt: { gt: now },
+            },
+            _sum: { quantity: true },
+          })
+        : [];
+    const reservedByTicketId = new Map(
+      reservedTickets.map((row) => [row.resourceId, row._sum.quantity ?? 0]),
+    );
+    const availabilityByEventId = new Map(
+      events.map((event) => [event.id, homeEventAvailability(event, now, reservedByTicketId)]),
+    );
+    const night = homeNightWindow(now);
+    const rankedEvents = events.sort(
+      (left, right) =>
+        eventHomeGroup(left, now, night) - eventHomeGroup(right, now, night) ||
+        homeAccessRank(availabilityByEventId.get(left.id)!.accessStatus) -
+          homeAccessRank(availabilityByEventId.get(right.id)!.accessStatus) ||
+        left.startsAt.getTime() - right.startsAt.getTime() ||
+        left.id.localeCompare(right.id),
+    );
+    const immediateEventClubIds = new Set(
+      rankedEvents
+        .filter((event) => eventHomeGroup(event, now, night) < 2)
+        .map((event) => event.clubId),
+    );
+    const rankedPromotions = promotions.sort(
+      (left, right) =>
+        Number(!left.event || eventHomeGroup(left.event, now, night) >= 2) -
+          Number(!right.event || eventHomeGroup(right.event, now, night) >= 2) ||
+        (left.endsAt?.getTime() ?? Number.POSITIVE_INFINITY) -
+          (right.endsAt?.getTime() ?? Number.POSITIVE_INFINITY) ||
+        left.id.localeCompare(right.id),
+    );
+    const clubsWithOffers = new Set(rankedPromotions.map((promotion) => promotion.clubId));
+    const rankedClubs = clubs.sort((left, right) => {
+      const group = (club: typeof left) => {
+        if (!paymentReadyClubIdSet.has(club.id)) return 4;
+        if (immediateEventClubIds.has(club.id)) return 0;
+        if (isClubOpenNow(club.scheduleJson, now) && clubsWithOffers.has(club.id)) return 1;
+        return clubsWithContent.has(club.id) ? 2 : 3;
+      };
+      return (
+        group(left) - group(right) ||
+        left.name.localeCompare(right.name, 'es') ||
+        left.id.localeCompare(right.id)
+      );
+    });
 
     const payload = {
       message: 'Home del cliente obtenido correctamente.',
       location,
       hasResults: true as const,
       clubs: await Promise.all(
-        clubs.map(async (club) => ({
+        rankedClubs.slice(0, 3).map(async (club) => ({
           id: club.id,
           name: club.name,
           description: club.description,
@@ -630,21 +680,34 @@ export class ClubsService {
         })),
       ),
       events: await Promise.all(
-        events.map(async (event) => ({
-          id: event.id,
-          clubId: event.clubId,
-          clubName: event.club.name,
-          name: event.name,
-          description: event.description,
-          imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
-          startsAt: event.startsAt,
-          endsAt: event.endsAt,
-          status: effectiveEventStatus(event, now),
-          capacity: event.capacity,
-          sold: event.ticketTypes[0]?.quantitySold ?? 0,
-          priceFrom: event.ticketTypes[0] ? event.ticketTypes[0].priceCents / 100 : null,
-          currency: event.ticketTypes[0]?.currency ?? 'PEN',
-        })),
+        rankedEvents.slice(0, 3).map(async (event) => {
+          const availability = availabilityByEventId.get(event.id)!;
+          return {
+            id: event.id,
+            clubId: event.clubId,
+            clubName: event.club.name,
+            name: event.name,
+            description: event.description,
+            imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+            startsAt: event.startsAt,
+            endsAt: event.endsAt,
+            status: effectiveEventStatus(event, now),
+            capacity: event.capacity,
+            sold: event.ticketTypes.reduce((sum, ticket) => sum + ticket.quantitySold, 0),
+            available: availability.available,
+            accessStatus: availability.accessStatus,
+            timing:
+              eventHomeGroup(event, now, night) === 0
+                ? ('ONGOING' as const)
+                : eventHomeGroup(event, now, night) === 1
+                  ? ('TONIGHT' as const)
+                  : ('FUTURE' as const),
+            priceFrom: availability.cheapestTicket
+              ? availability.cheapestTicket.priceCents / 100
+              : null,
+            currency: availability.cheapestTicket?.currency ?? 'PEN',
+          };
+        }),
       ),
       tickets: await Promise.all(
         tickets.map(async (ticket) => ({
@@ -669,7 +732,7 @@ export class ClubsService {
         })),
       ),
       promotions: await Promise.all(
-        promotions.map(async (promotion) => ({
+        rankedPromotions.slice(0, 6).map(async (promotion) => ({
           id: promotion.id,
           clubId: promotion.clubId,
           clubName: promotion.club.name,
@@ -706,8 +769,8 @@ export class ClubsService {
         clubs: clubs.length,
         paymentReadyClubs: paymentReadyClubIds.length,
         paymentsUnavailableClubs: clubs.length - paymentReadyClubIds.length,
-        events: events.length,
-        promotions: promotions.length,
+        events: rankedEvents.length,
+        promotions: rankedPromotions.length,
       },
       emptyReasons: buildCustomerHomeEmptyReasons(
         clubs.length,
@@ -721,7 +784,7 @@ export class ClubsService {
       featuredItems: await this.featuredCampaigns.selectForHome({
         viewerUserId: currentUser.id,
         clubIds,
-        eventIds: events.map((event) => event.id),
+        now,
       }),
       viewer: {
         id: currentUser.id,
@@ -1553,15 +1616,15 @@ export class ClubsService {
   }) {
     const clubs = await this.prisma.club.findMany({
       where: { status: ClubStatus.ACTIVE },
-      orderBy: [{ updatedAt: 'desc' }],
+      orderBy: [{ name: 'asc' }, { id: 'asc' }],
       select: customerHomeClubSelect,
     });
 
-    if (!location.district && !location.province && !location.department) {
-      return clubs.slice(0, 8);
-    }
-
-    return clubs.filter((club) => matchesLocationQuery(club.addressJson, location)).slice(0, 8);
+    return clubs.filter(
+      (club) =>
+        equalsNormalized(readClubAddress(club.addressJson).pais, 'Peru') &&
+        matchesLocationQuery(club.addressJson, location),
+    );
   }
 
   private async findClubOrFail(clubId: string) {
@@ -1580,18 +1643,24 @@ export class ClubsService {
 type CustomerHomeResponse = Awaited<ReturnType<ClubsService['getCustomerHome']>>;
 type CustomerExploreResponse = Omit<
   CustomerHomeResponse,
-  'featuredItems' | 'promotions' | 'counts' | 'emptyReasons' | 'clubs'
+  'featuredItems' | 'promotions' | 'counts' | 'emptyReasons' | 'clubs' | 'events'
 > & {
   query: string;
   scope: 'PERU';
   clubs: Array<Omit<CustomerHomeResponse['clubs'][number], 'commerceStatus' | 'emptyReason'>>;
+  events: Array<
+    Omit<CustomerHomeResponse['events'][number], 'available' | 'accessStatus' | 'timing'>
+  >;
   promotions: Array<Omit<CustomerHomeResponse['promotions'][number], 'startsAt' | 'endsAt'>>;
 };
 type CustomerClubDetailResponse = Omit<
   CustomerHomeResponse,
-  'featuredItems' | 'hasResults' | 'counts' | 'emptyReasons'
+  'featuredItems' | 'hasResults' | 'counts' | 'emptyReasons' | 'events'
 > & {
   hasResults: true;
+  events: Array<
+    Omit<CustomerHomeResponse['events'][number], 'available' | 'accessStatus' | 'timing'>
+  >;
 };
 
 const clubInclude = {
@@ -1738,6 +1807,80 @@ const isClubOpenNow = (value: Prisma.JsonValue | null, now: Date) => {
     isOpenFromPreviousEntry(yesterdayEntry, currentMinutes)
   );
 };
+
+type HomeEventTime = { startsAt: Date; endsAt: Date };
+type HomeEventTickets = HomeEventTime & {
+  status: EventStatus;
+  ticketTypes: Array<{
+    id: string;
+    status: TicketTypeStatus;
+    quantityTotal: number;
+    quantitySold: number;
+    replacementReserved: number;
+    saleStartAt: Date | null;
+    saleEndAt: Date | null;
+    priceCents: number;
+    currency: string;
+  }>;
+};
+
+const homeNightWindow = (now: Date) => {
+  // America/Lima is UTC-05:00; the window changes at 06:00 local time.
+  const lima = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+  const day = lima.getUTCHours() < 6 ? lima.getUTCDate() - 1 : lima.getUTCDate();
+  return {
+    start: new Date(Date.UTC(lima.getUTCFullYear(), lima.getUTCMonth(), day, 23)),
+    end: new Date(Date.UTC(lima.getUTCFullYear(), lima.getUTCMonth(), day + 1, 11)),
+  };
+};
+
+const eventHomeGroup = (
+  event: HomeEventTime,
+  now: Date,
+  night: ReturnType<typeof homeNightWindow>,
+) =>
+  event.startsAt <= now && event.endsAt > now
+    ? 0
+    : event.startsAt < night.end && event.endsAt > night.start
+      ? 1
+      : 2;
+
+const homeEventAvailability = (
+  event: HomeEventTickets,
+  now: Date,
+  reserved: ReadonlyMap<string, number>,
+) => {
+  const active = event.ticketTypes.filter((ticket) => ticket.status === TicketTypeStatus.ACTIVE);
+  const physicalRemaining = (ticket: (typeof active)[number]) =>
+    Math.max(ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved, 0);
+  const remaining = (ticket: (typeof active)[number]) =>
+    Math.max(physicalRemaining(ticket) - (reserved.get(ticket.id) ?? 0), 0);
+  const stocked = active.reduce((sum, ticket) => sum + physicalRemaining(ticket), 0);
+  const sellable = eventAllowsSales(event, now)
+    ? active.filter(
+        (ticket) =>
+          (!ticket.saleStartAt || ticket.saleStartAt <= now) &&
+          (!ticket.saleEndAt || ticket.saleEndAt > now) &&
+          remaining(ticket) > 0,
+      )
+    : [];
+  const available = sellable.reduce((sum, ticket) => sum + remaining(ticket), 0);
+  const soldOut = event.status === EventStatus.SOLD_OUT || (active.length > 0 && stocked === 0);
+  const accessStatus = soldOut
+    ? ('SOLD_OUT' as const)
+    : event.ticketTypes.length === 0
+      ? ('INFORMATIONAL' as const)
+      : available > 0
+        ? ('AVAILABLE' as const)
+        : ('UNAVAILABLE' as const);
+  const cheapestTicket = sellable.sort(
+    (left, right) => left.priceCents - right.priceCents || left.id.localeCompare(right.id),
+  )[0];
+  return { available, accessStatus, cheapestTicket };
+};
+
+const homeAccessRank = (status: ReturnType<typeof homeEventAvailability>['accessStatus']) =>
+  status === 'SOLD_OUT' ? 2 : status === 'UNAVAILABLE' ? 1 : 0;
 
 const emptyScheduleEntry = (day: string) => ({
   day,

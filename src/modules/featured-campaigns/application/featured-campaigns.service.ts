@@ -18,6 +18,12 @@ import {
 } from '../../commerce/application/ports/payment-gateway.port';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { PlatformService } from '../../platform/application/platform.service';
+import { UploadsService } from '../../uploads/application/uploads.service';
+import {
+  readClubAddress,
+  readClubContact,
+  readClubSchedule,
+} from '../../clubs/application/club-profile';
 import { CreateFeaturedCheckoutDto } from '../presentation/create-featured-checkout.dto';
 
 type CampaignWithPayment = Prisma.FeaturedCampaignGetPayload<{
@@ -53,6 +59,7 @@ export class FeaturedCampaignsService {
     private readonly prisma: PrismaService,
     private readonly platform: PlatformService,
     private readonly commerce: CommerceService,
+    private readonly uploads: UploadsService,
     @Inject(WALLET_TOP_UP_PAYMENT_GATEWAY)
     private readonly paymentGateway: PaymentGateway,
   ) {}
@@ -271,11 +278,11 @@ export class FeaturedCampaignsService {
   async selectForHome(input: {
     viewerUserId: string;
     clubIds: readonly string[];
-    eventIds: readonly string[];
+    now: Date;
     limit?: number;
   }) {
     if (input.clubIds.length === 0) return [];
-    const now = new Date();
+    const now = input.now;
     const campaigns = await this.prisma.featuredCampaign.findMany({
       where: {
         status: FeaturedCampaignStatus.ACTIVE,
@@ -283,30 +290,98 @@ export class FeaturedCampaignsService {
         endsAt: { gt: now },
         clubId: { in: [...input.clubIds] },
       },
-      select: { id: true, clubId: true, eventId: true, targetType: true },
+      include: { club: true, event: true },
     });
-    const visible = campaigns.filter(
-      (campaign) =>
-        campaign.targetType === FeaturedTargetType.BUSINESS ||
-        (campaign.eventId !== null && input.eventIds.includes(campaign.eventId)),
-    );
+    const visible = campaigns.filter((campaign) => {
+      const club = campaign.club;
+      const address = readClubAddress(club.addressJson);
+      const contact = readClubContact(club.contactJson);
+      const schedule = readClubSchedule(club.scheduleJson);
+      const complete =
+        club.status === ClubStatus.ACTIVE &&
+        Boolean(club.coverImageUrl?.trim()) &&
+        Boolean(address.direccion.trim()) &&
+        Boolean(address.distrito.trim() || address.provincia.trim()) &&
+        Boolean(address.departamento.trim()) &&
+        Boolean(contact.phone.trim() || contact.email.trim()) &&
+        schedule.some((entry) => entry.isOpen && entry.openTime && entry.closeTime);
+      if (!complete) return false;
+      if (campaign.targetType === FeaturedTargetType.BUSINESS) return true;
+      const event = campaign.event;
+      return (
+        event !== null &&
+        event.clubId === club.id &&
+        ELIGIBLE_EVENT_STATUSES.includes(
+          event.status as (typeof ELIGIBLE_EVENT_STATUSES)[number],
+        ) &&
+        event.endsAt > now &&
+        Boolean(event.imageUrl?.trim())
+      );
+    });
+    const readyClubs = await this.prisma.club.findMany({
+      where: {
+        id: { in: [...new Set(visible.map((campaign) => campaign.clubId))] },
+        sellerConnections: {
+          some: {
+            provider: 'mercado_pago',
+            status: SellerConnectionStatus.CONNECTED,
+            OR: [{ tokenExpiresAt: null }, { tokenExpiresAt: { gt: now } }],
+          },
+        },
+      },
+      select: { id: true },
+    });
+    const readyIds = new Set(readyClubs.map((club) => club.id));
+    const eligible = visible.filter((campaign) => readyIds.has(campaign.clubId));
     const seed = `${input.viewerUserId}:${now.toISOString().slice(0, 13)}`;
-    visible.sort((left, right) => hash(seed, left.id) - hash(seed, right.id));
-    const selected: typeof visible = [];
-    const usedClubs = new Set<string>();
-    for (const campaign of visible) {
-      if (usedClubs.has(campaign.clubId)) continue;
-      usedClubs.add(campaign.clubId);
+    eligible.sort(
+      (left, right) =>
+        hash(seed, left.id) - hash(seed, right.id) || left.id.localeCompare(right.id),
+    );
+    const selected: typeof eligible = [];
+    const usedTargets = new Set<string>();
+    for (const campaign of eligible) {
+      const targetId =
+        campaign.targetType === FeaturedTargetType.EVENT ? campaign.eventId : campaign.clubId;
+      const key = `${campaign.targetType}:${targetId}`;
+      if (usedTargets.has(key)) continue;
+      usedTargets.add(key);
       selected.push(campaign);
       if (selected.length >= (input.limit ?? 5)) break;
     }
-    return selected.map((campaign) => ({
-      campaignId: campaign.id,
-      targetType: campaign.targetType,
-      clubId: campaign.clubId,
-      eventId: campaign.eventId,
-      isSponsored: true,
-    }));
+    return Promise.all(
+      selected.map(async (campaign) => {
+        if (campaign.targetType === FeaturedTargetType.EVENT && campaign.event) {
+          return {
+            campaignId: campaign.id,
+            targetType: FeaturedTargetType.EVENT,
+            targetId: campaign.event.id,
+            clubId: campaign.clubId,
+            eventId: campaign.event.id,
+            title: campaign.event.name,
+            imageUrl:
+              (await this.uploads.createReadableImageUrl(campaign.event.imageUrl)) ??
+              campaign.event.imageUrl!,
+            context: campaign.club.name,
+            isSponsored: true,
+          };
+        }
+        const address = readClubAddress(campaign.club.addressJson);
+        return {
+          campaignId: campaign.id,
+          targetType: FeaturedTargetType.BUSINESS,
+          targetId: campaign.clubId,
+          clubId: campaign.clubId,
+          eventId: null,
+          title: campaign.club.name,
+          imageUrl:
+            (await this.uploads.createReadableImageUrl(campaign.club.coverImageUrl)) ??
+            campaign.club.coverImageUrl!,
+          context: address.distrito || address.provincia,
+          isSponsored: true,
+        };
+      }),
+    );
   }
 
   private offerFor(settings: Record<string, unknown>, targetType: FeaturedTargetType) {

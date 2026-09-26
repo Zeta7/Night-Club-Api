@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
   ClubStatus,
   EventStatus,
@@ -17,21 +17,43 @@ import {
 } from '../domain/customer-discovery-status';
 import { ClubContactResponseDto, ClubScheduleResponseDto } from './club-profile.response.dto';
 
-export class CustomerHomeFeaturedItemDto {
+class CustomerHomeFeaturedBaseDto {
   @ApiProperty({ type: 'string' })
   campaignId!: string;
 
-  @ApiProperty({ enum: FeaturedTargetType, enumName: 'FeaturedTargetType' })
-  targetType!: FeaturedTargetType;
+  @ApiProperty({ type: 'string' })
+  targetId!: string;
 
   @ApiProperty({ type: 'string' })
   clubId!: string;
 
-  @ApiProperty({ type: 'string', nullable: true })
-  eventId!: string | null;
+  @ApiProperty({ type: 'string' })
+  title!: string;
+
+  @ApiProperty({ type: 'string' })
+  imageUrl!: string;
+
+  @ApiProperty({ type: 'string' })
+  context!: string;
 
   @ApiProperty({ type: 'boolean' })
   isSponsored!: boolean;
+}
+
+export class CustomerHomeFeaturedClubDto extends CustomerHomeFeaturedBaseDto {
+  @ApiProperty({ enum: [FeaturedTargetType.BUSINESS] })
+  targetType!: 'BUSINESS';
+
+  @ApiProperty({ type: 'string', nullable: true, example: null })
+  eventId!: null;
+}
+
+export class CustomerHomeFeaturedEventDto extends CustomerHomeFeaturedBaseDto {
+  @ApiProperty({ enum: [FeaturedTargetType.EVENT] })
+  targetType!: 'EVENT';
+
+  @ApiProperty({ type: 'string' })
+  eventId!: string;
 }
 
 export class CustomerViewerDto {
@@ -163,6 +185,17 @@ export class CustomerEventDto {
 
   @ApiProperty({ type: 'string' })
   currency!: string;
+}
+
+export class CustomerHomeEventDto extends CustomerEventDto {
+  @ApiProperty({ type: 'integer' })
+  available!: number;
+
+  @ApiProperty({ enum: ['AVAILABLE', 'UNAVAILABLE', 'SOLD_OUT', 'INFORMATIONAL'] })
+  accessStatus!: 'AVAILABLE' | 'UNAVAILABLE' | 'SOLD_OUT' | 'INFORMATIONAL';
+
+  @ApiProperty({ enum: ['ONGOING', 'TONIGHT', 'FUTURE'] })
+  timing!: 'ONGOING' | 'TONIGHT' | 'FUTURE';
 }
 
 export class CustomerTicketTypeDto {
@@ -319,35 +352,35 @@ export class CustomerDiscoveryEmptyStateDto {
 export class CustomerHomeCountsDto {
   @ApiProperty({
     type: 'integer',
-    description: 'Locales incluidos en esta respuesta de Inicio.',
+    description: 'Total de Locales elegibles en el ámbito de Inicio.',
     example: 3,
   })
   clubs!: number;
 
   @ApiProperty({
     type: 'integer',
-    description: 'Locales incluidos con pagos vigentes.',
+    description: 'Total de Locales elegibles con pagos vigentes.',
     example: 2,
   })
   paymentReadyClubs!: number;
 
   @ApiProperty({
     type: 'integer',
-    description: 'Locales incluidos sin pagos vigentes.',
+    description: 'Total de Locales elegibles sin pagos vigentes.',
     example: 1,
   })
   paymentsUnavailableClubs!: number;
 
   @ApiProperty({
     type: 'integer',
-    description: 'Eventos incluidos en esta respuesta de Inicio.',
+    description: 'Total de Eventos elegibles en el ámbito de Inicio.',
     example: 1,
   })
   events!: number;
 
   @ApiProperty({
     type: 'integer',
-    description: 'Promociones incluidas en esta respuesta de Inicio.',
+    description: 'Total de Promociones elegibles en el ámbito de Inicio.',
     example: 0,
   })
   promotions!: number;
@@ -382,9 +415,25 @@ export class CustomerHomeEmptyReasonsDto {
   promotions!: CustomerHomeEmptyReason | null;
 }
 
+@ApiExtraModels(CustomerHomeFeaturedClubDto, CustomerHomeFeaturedEventDto)
 export class CustomerHomeResponseDto {
-  @ApiProperty({ type: () => [CustomerHomeFeaturedItemDto] })
-  featuredItems!: CustomerHomeFeaturedItemDto[];
+  @ApiProperty({
+    type: 'array',
+    items: {
+      oneOf: [
+        { $ref: getSchemaPath(CustomerHomeFeaturedClubDto) },
+        { $ref: getSchemaPath(CustomerHomeFeaturedEventDto) },
+      ],
+      discriminator: {
+        propertyName: 'targetType',
+        mapping: {
+          BUSINESS: getSchemaPath(CustomerHomeFeaturedClubDto),
+          EVENT: getSchemaPath(CustomerHomeFeaturedEventDto),
+        },
+      },
+    },
+  })
+  featuredItems!: Array<CustomerHomeFeaturedClubDto | CustomerHomeFeaturedEventDto>;
 
   @ApiProperty({ type: () => CustomerViewerDto })
   viewer!: CustomerViewerDto;
@@ -413,8 +462,8 @@ export class CustomerHomeResponseDto {
   })
   emptyReasons!: CustomerHomeEmptyReasonsDto;
 
-  @ApiProperty({ type: () => [CustomerEventDto] })
-  events!: CustomerEventDto[];
+  @ApiProperty({ type: () => [CustomerHomeEventDto] })
+  events!: CustomerHomeEventDto[];
 
   @ApiProperty({ type: () => [CustomerTicketTypeDto] })
   tickets!: CustomerTicketTypeDto[];

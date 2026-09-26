@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- 2026-09-26 — Inicio: Destacados tipados y autocontenidos con elegibilidad de Local
+  y Evento, deduplicación por destino y selección nacional o administrativa. La
+  API ordena Eventos, Locales y Promociones con horario de Lima, entrega vistas
+  previas de 3/3/6 y totales completos, y agrega disponibilidad de Entradas por
+  Evento. API #13, especificación Mobile #8. El SDK Mobile debe regenerarse.
+
 - 2026-09-26 — Inicio: contrato base de contenido cercano con coincidencia administrativa,
   Locales activos visibles aunque no puedan vender, disponibilidad comercial,
   cantidades y causas vacías estructuradas. Se mantienen temporalmente los campos

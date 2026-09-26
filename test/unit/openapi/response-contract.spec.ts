@@ -100,6 +100,41 @@ describe('Public response contracts', () => {
         'NO_ACTIVE_PROMOTIONS',
       ],
     });
+    expect(document.components?.schemas?.CustomerHomeResponseDto).toMatchObject({
+      properties: {
+        featuredItems: {
+          type: 'array',
+          items: {
+            oneOf: [
+              { $ref: '#/components/schemas/CustomerHomeFeaturedClubDto' },
+              { $ref: '#/components/schemas/CustomerHomeFeaturedEventDto' },
+            ],
+            discriminator: {
+              propertyName: 'targetType',
+              mapping: {
+                BUSINESS: '#/components/schemas/CustomerHomeFeaturedClubDto',
+                EVENT: '#/components/schemas/CustomerHomeFeaturedEventDto',
+              },
+            },
+          },
+        },
+        events: { type: 'array', items: { $ref: '#/components/schemas/CustomerHomeEventDto' } },
+      },
+    });
+    expect(document.components?.schemas?.CustomerHomeFeaturedEventDto).toMatchObject({
+      properties: {
+        targetId: { type: 'string' },
+        eventId: { type: 'string' },
+        title: { type: 'string' },
+        imageUrl: { type: 'string' },
+      },
+    });
+    expect(document.components?.schemas?.CustomerHomeEventDto).toMatchObject({
+      properties: {
+        available: { type: 'integer' },
+        accessStatus: { enum: ['AVAILABLE', 'UNAVAILABLE', 'SOLD_OUT', 'INFORMATIONAL'] },
+      },
+    });
   });
 
   it('publishes concrete club profile fields instead of opaque JSON', () => {
