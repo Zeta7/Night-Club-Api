@@ -68,7 +68,10 @@ Swagger UI esta disponible en:
 ## Contrato OpenAPI
 
 Ejecuta `pnpm docs:build` para regenerar el contrato y `pnpm docs:check` para
-comprobarlo. El despliegue exige este control y las pruebas de contrato.
+comprobarlo. GitHub Actions ejecuta este control y las pruebas unitarias,
+incluidas las de contrato, antes de autorizar el despliegue del mismo commit.
+En EC2 sólo se instalan dependencias, se genera Prisma Client, se compila,
+se aplican migraciones y se recarga la aplicación con PM2.
 
 En los DTOs, `@IsInteger()` valida y documenta enteros. `@OptionalField()`
 permite omitir un campo; aceptar `null` requiere `nullable: true`, un tipo
