@@ -10,6 +10,11 @@ import {
 } from '@prisma/client';
 import { OfferScope } from '../../../shared/domain/offer-scope';
 import { BusinessType } from '../domain/business-type';
+import {
+  CustomerClubEmptyReason,
+  CustomerCommerceStatus,
+  CustomerHomeEmptyReason,
+} from '../domain/customer-discovery-status';
 import { ClubContactResponseDto, ClubScheduleResponseDto } from './club-profile.response.dto';
 
 export class CustomerHomeFeaturedItemDto {
@@ -98,6 +103,25 @@ export class CustomerClubDto {
 
   @ApiProperty({ enum: ClubStatus, enumName: 'ClubStatus' })
   status!: ClubStatus;
+}
+
+export class CustomerHomeClubDto extends CustomerClubDto {
+  @ApiProperty({
+    enum: CustomerCommerceStatus,
+    enumName: 'CustomerCommerceStatus',
+    description: 'Indica si este Local puede ofrecer compras mediante Beerry.',
+    example: CustomerCommerceStatus.AVAILABLE,
+  })
+  commerceStatus!: CustomerCommerceStatus;
+
+  @ApiProperty({
+    enum: CustomerClubEmptyReason,
+    enumName: 'CustomerClubEmptyReason',
+    nullable: true,
+    description: 'Causa de ausencia de Eventos y Ofertas; null cuando hay contenido visible.',
+    example: CustomerClubEmptyReason.NO_EVENTS_OR_OFFERS,
+  })
+  emptyReason!: CustomerClubEmptyReason | null;
 }
 
 export class CustomerEventDto {
@@ -292,6 +316,72 @@ export class CustomerDiscoveryEmptyStateDto {
   sections!: DiscoveryEmptySectionsDto;
 }
 
+export class CustomerHomeCountsDto {
+  @ApiProperty({
+    type: 'integer',
+    description: 'Locales incluidos en esta respuesta de Inicio.',
+    example: 3,
+  })
+  clubs!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Locales incluidos con pagos vigentes.',
+    example: 2,
+  })
+  paymentReadyClubs!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Locales incluidos sin pagos vigentes.',
+    example: 1,
+  })
+  paymentsUnavailableClubs!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Eventos incluidos en esta respuesta de Inicio.',
+    example: 1,
+  })
+  events!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Promociones incluidas en esta respuesta de Inicio.',
+    example: 0,
+  })
+  promotions!: number;
+}
+
+export class CustomerHomeEmptyReasonsDto {
+  @ApiProperty({
+    enum: CustomerHomeEmptyReason,
+    enumName: 'CustomerHomeEmptyReason',
+    nullable: true,
+    description: 'Causa de ausencia de Locales; null cuando hay al menos uno.',
+    example: CustomerHomeEmptyReason.NO_ACTIVE_CLUBS_IN_SCOPE,
+  })
+  clubs!: CustomerHomeEmptyReason | null;
+
+  @ApiProperty({
+    enum: CustomerHomeEmptyReason,
+    enumName: 'CustomerHomeEmptyReason',
+    nullable: true,
+    description: 'Causa de ausencia de Eventos; null cuando hay al menos uno.',
+    example: CustomerHomeEmptyReason.NO_VISIBLE_EVENTS,
+  })
+  events!: CustomerHomeEmptyReason | null;
+
+  @ApiProperty({
+    enum: CustomerHomeEmptyReason,
+    enumName: 'CustomerHomeEmptyReason',
+    nullable: true,
+    description: 'Causa de ausencia de Promociones; null cuando hay al menos una.',
+    example: CustomerHomeEmptyReason.NO_ACTIVE_PROMOTIONS,
+  })
+  promotions!: CustomerHomeEmptyReason | null;
+}
+
 export class CustomerHomeResponseDto {
   @ApiProperty({ type: () => [CustomerHomeFeaturedItemDto] })
   featuredItems!: CustomerHomeFeaturedItemDto[];
@@ -308,8 +398,20 @@ export class CustomerHomeResponseDto {
   @ApiProperty({ type: 'boolean' })
   hasResults!: boolean;
 
-  @ApiProperty({ type: () => [CustomerClubDto] })
-  clubs!: CustomerClubDto[];
+  @ApiProperty({ type: () => [CustomerHomeClubDto] })
+  clubs!: CustomerHomeClubDto[];
+
+  @ApiProperty({
+    type: () => CustomerHomeCountsDto,
+    description: 'Cantidades incluidas en Inicio.',
+  })
+  counts!: CustomerHomeCountsDto;
+
+  @ApiProperty({
+    type: () => CustomerHomeEmptyReasonsDto,
+    description: 'Causas vacías por sección.',
+  })
+  emptyReasons!: CustomerHomeEmptyReasonsDto;
 
   @ApiProperty({ type: () => [CustomerEventDto] })
   events!: CustomerEventDto[];
@@ -323,7 +425,7 @@ export class CustomerHomeResponseDto {
   @ApiProperty({ type: () => [CustomerProductDto] })
   products!: CustomerProductDto[];
 
-  @ApiProperty({ type: () => CustomerDiscoveryEmptyStateDto, nullable: true })
+  @ApiProperty({ type: () => CustomerDiscoveryEmptyStateDto, nullable: true, deprecated: true })
   emptyState!: CustomerDiscoveryEmptyStateDto | null;
 }
 
@@ -428,8 +530,8 @@ export class CustomerClubDetailResponseDto {
   @ApiProperty({ type: () => CustomerViewerDto })
   viewer!: CustomerViewerDto;
 
-  @ApiProperty({ type: () => [CustomerClubDto] })
-  clubs!: CustomerClubDto[];
+  @ApiProperty({ type: () => [CustomerHomeClubDto] })
+  clubs!: CustomerHomeClubDto[];
 
   @ApiProperty({ type: () => CustomerDiscoveryEmptyStateDto, nullable: true })
   emptyState!: CustomerDiscoveryEmptyStateDto | null;

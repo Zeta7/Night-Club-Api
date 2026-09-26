@@ -32,7 +32,23 @@ los componentes OpenAPI a partir de esos DTOs. No hay un generador propio de tip
 - Mantén `strict` completo y `noUncheckedIndexedAccess`: una propiedad de clase
   debe inicializarse y un acceso por índice puede no encontrar un valor.
 
+## Inicio: disponibilidad y causas vacías
+
+`GET /clubs/customer/home` agrega `counts` y `emptyReasons`. `counts` describe las
+filas incluidas en esta respuesta limitada de Inicio, no los totales del catálogo.
+`emptyReasons` entrega códigos por sección: `NO_ACTIVE_CLUBS_IN_SCOPE`,
+`PAYMENTS_UNAVAILABLE`, `NO_VISIBLE_EVENTS` y `NO_ACTIVE_PROMOTIONS`. Un valor
+`null` indica que la sección tiene resultados.
+
+Cada Local de Inicio y su detalle expone `commerceStatus` (`AVAILABLE` o
+`PAYMENTS_UNAVAILABLE`) y `emptyReason` (`PAYMENTS_UNAVAILABLE`,
+`NO_EVENTS_OR_OFFERS` o `null`). El Local activo sin pagos vigentes conserva
+dirección, contacto y horario, pero su contenido comercial no se publica.
+`emptyState` con textos sigue presente y marcado como obsoleto mientras Mobile
+migra al contrato estructurado. Los campos nuevos no contienen copy de interfaz.
+
 ## Tipos de negocio y alcance de ofertas
+
 
 Los requests de creación y edición de locales y sus respuestas públicas comparten
 el componente OpenAPI `BusinessType`. Sus valores son `club`, `discoteca`,

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- 2026-09-26 — Inicio: contrato base de contenido cercano con coincidencia administrativa,
+  Locales activos visibles aunque no puedan vender, disponibilidad comercial,
+  cantidades y causas vacías estructuradas. Se mantienen temporalmente los campos
+  antiguos de Mobile; el SDK debe regenerarse desde OpenAPI en el trabajo Mobile.
+  API #12, especificación Mobile #8. Validación: TypeScript, 263 pruebas de 40
+  suites con PostgreSQL temporal, build y generación OpenAPI.
+
 - Recargas abandonadas con vencimiento efectivo de 30 minutos: revisión al iniciar
   API y cada minuto, recuperación de registros antiguos sin fecha y cierre de
   intento y recarga en una transacción. Las consultas de detalle reconcilian

@@ -79,7 +79,7 @@ export class ClubsController {
   @ApiOperation({
     summary: 'Consultar el inicio por ubicación (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve el contenido del inicio del cliente filtrado por la ciudad/zona enviada desde mobile y solo considera locales nocturnos activos con eventos, promociones y productos visibles.',
+      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve Locales activos según distrito o provincia; usa departamento solo si ambos faltan y una consulta sin filtros conserva el alcance nacional. Locales sin pagos vigentes siguen visibles, con estado comercial estructurado y sin Eventos ni Ofertas. Las causas vacías y cantidades se entregan en campos tipados; emptyState se conserva temporalmente para Mobile.',
   })
   @ApiResponse({
     type: CustomerHomeResponseDto,

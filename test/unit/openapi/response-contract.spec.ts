@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
@@ -71,6 +72,33 @@ describe('Public response contracts', () => {
     });
     expect(document.components?.schemas?.LoginResponseDto).toMatchObject({
       properties: { user: { $ref: '#/components/schemas/UserProfileDto' } },
+    });
+  });
+
+  it('publishes typed Home availability, counts and empty reasons', () => {
+    expect(document.components?.schemas?.CustomerHomeResponseDto).toMatchObject({
+      properties: {
+        clubs: { type: 'array', items: { $ref: '#/components/schemas/CustomerHomeClubDto' } },
+        counts: { allOf: [{ $ref: '#/components/schemas/CustomerHomeCountsDto' }] },
+        emptyReasons: { allOf: [{ $ref: '#/components/schemas/CustomerHomeEmptyReasonsDto' }] },
+      },
+    });
+    expect(document.components?.schemas?.CustomerHomeClubDto).toMatchObject({
+      properties: {
+        commerceStatus: { allOf: [{ $ref: '#/components/schemas/CustomerCommerceStatus' }] },
+        emptyReason: {
+          nullable: true,
+          allOf: [{ $ref: '#/components/schemas/CustomerClubEmptyReason' }],
+        },
+      },
+    });
+    expect(document.components?.schemas?.CustomerHomeEmptyReason).toMatchObject({
+      enum: [
+        'NO_ACTIVE_CLUBS_IN_SCOPE',
+        'PAYMENTS_UNAVAILABLE',
+        'NO_VISIBLE_EVENTS',
+        'NO_ACTIVE_PROMOTIONS',
+      ],
     });
   });
 
