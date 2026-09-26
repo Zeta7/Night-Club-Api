@@ -1,15 +1,16 @@
 /// <reference types="jest" />
-import { ok } from 'node:assert';
-import 'dotenv/config';
-import { ConfigService } from '@nestjs/config';
-import { CommerceItemType } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
-import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '@modules/uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 import { CommerceService } from '@modules/commerce/application/commerce.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 import { NotificationService } from '@modules/notification/application/notification.service';
 import { SimulatedPushNotificationChannel } from '@modules/notification/infrastructure/simulated-push-notification.channel';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { ConfigService } from '@nestjs/config';
+import { CommerceItemType } from '@prisma/client';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import 'dotenv/config';
+import { ok } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(180_000);
 
@@ -140,9 +141,12 @@ describe('Inventory reservations integration', () => {
     expect(beforePayment.stockQuantity).toBe(1);
     expect(activeReservations._sum.quantity).toBe(1);
 
-    const winner = winners[0].value;
+    const [winnerResult] = winners;
+    ok(winnerResult);
+    const winner = winnerResult.value;
     ok(winner.paymentAttemptId, 'This payment scenario must create a payment attempt');
     const [saleAdmin] = await createUsers(1);
+    ok(saleAdmin);
     await prisma.clubAdmin.create({ data: { clubId: product.clubId, userId: saleAdmin.id } });
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
       where: { id: winner.paymentAttemptId },
@@ -164,8 +168,8 @@ describe('Inventory reservations integration', () => {
     expect(afterPayment.stockQuantity).toBe(0);
     expect(confirmedReservations).toBe(1);
     expect(deliveries).toHaveLength(1);
-    expect(deliveries[0].items).toHaveLength(1);
-    expect(deliveries[0].items[0]).toEqual(
+    expect(deliveries[0]?.items).toHaveLength(1);
+    expect(deliveries[0]?.items[0]).toEqual(
       expect.objectContaining({ productId: product.id, quantity: 1 }),
     );
     const paidOrder = await prisma.order.findUniqueOrThrow({ where: { id: winner.orderId } });
@@ -186,6 +190,7 @@ describe('Inventory reservations integration', () => {
   it('expires an abandoned order and releases its reservation without changing stock', async () => {
     const product = await createProduct(2);
     const [user] = await createUsers(1);
+    ok(user);
     await service.addCartItem(user, {
       id: product.id,
       type: CommerceItemType.PRODUCT,

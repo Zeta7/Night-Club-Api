@@ -1,8 +1,13 @@
-import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ReferralCaptureMethod,
+  ReferralExpirationMode,
+  ReferralRewardStatus,
+} from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-  IsDateString,
   IsBoolean,
+  IsDateString,
   IsEnum,
   IsString,
   Matches,
@@ -10,13 +15,14 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { ReferralCaptureMethod, ReferralExpirationMode, ReferralRewardStatus } from '@prisma/client';
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
 
 export class AssociateReferralDto {
   @IsString()
   @MaxLength(64)
   code!: string;
 
+  @ApiPropertyOptional({ enum: ReferralCaptureMethod, enumName: 'ReferralCaptureMethod' })
   @OptionalField()
   @IsEnum(ReferralCaptureMethod)
   captureMethod?: ReferralCaptureMethod;
@@ -49,7 +55,10 @@ export class UpdateReferralSettingsDto {
   @Min(1)
   maximumMonthlyRewardCents?: number | null;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(0) @Max(720) holdHours?: number;
-  @OptionalField() @IsEnum(ReferralExpirationMode) expirationMode?: ReferralExpirationMode;
+  @ApiPropertyOptional({ enum: ReferralExpirationMode, enumName: 'ReferralExpirationMode' })
+  @OptionalField()
+  @IsEnum(ReferralExpirationMode)
+  expirationMode?: ReferralExpirationMode;
   @OptionalField({ nullable: true, type: 'integer' })
   @Type(() => Number)
   @IsInteger()
@@ -74,8 +83,10 @@ export class UpdateReferralSettingsDto {
   @IsInteger()
   @Min(1)
   maxMonthlyTransferCents?: number | null;
-  @OptionalField({ nullable: true, type: String, format: 'date-time' }) @IsDateString() startsAt?: string | null;
-  @OptionalField({ nullable: true, type: String, format: 'date-time' }) @IsDateString() endsAt?: string | null;
+  @OptionalField({ nullable: true, type: String, format: 'date-time' }) @IsDateString() startsAt?:
+    string | null;
+  @OptionalField({ nullable: true, type: String, format: 'date-time' }) @IsDateString() endsAt?:
+    string | null;
 }
 
 export class TransferCreditDto {
@@ -101,7 +112,9 @@ export class TransferCreditDto {
 }
 
 export class ReferralAdminQueryDto {
-  @OptionalField({ enum: ReferralRewardStatus }) @IsEnum(ReferralRewardStatus) status?: ReferralRewardStatus;
+  @OptionalField({ enum: ReferralRewardStatus, enumName: 'ReferralRewardStatus' })
+  @IsEnum(ReferralRewardStatus)
+  status?: ReferralRewardStatus;
   @OptionalField() @IsString() search?: string;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(1) page = 1;
   @OptionalField() @Type(() => Number) @IsInteger() @Min(1) @Max(100) pageSize = 20;

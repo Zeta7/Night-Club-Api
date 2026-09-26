@@ -1,15 +1,16 @@
 /// <reference types="jest" />
-import 'dotenv/config';
-import { ConfigService } from '@nestjs/config';
-import { UserRole, WorkerPermission } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
-import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
 import { ClubsService } from '@modules/clubs/application/clubs.service';
-import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 import { CommerceService } from '@modules/commerce/application/commerce.service';
-import { Test, TestingModule } from '@nestjs/testing';
-import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 import { FeaturedCampaignsService } from '@modules/featured-campaigns/application/featured-campaigns.service';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
+import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
+import { UserRole, WorkerPermission } from '@prisma/client';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import 'dotenv/config';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(180_000);
 
@@ -177,9 +178,9 @@ describe('Module 8 - business administration', () => {
   it('lists and filters real orders with customer, items and payment', async () => {
     const result = await commerce.listClubOrders(worker(), clubId, { status: 'PAID', productId });
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].user.email).toBe(`${suffix}@module8.test`);
-    expect(result.items[0].items[0].itemId).toBe(productId);
-    expect(result.items[0].paymentAttempts[0].status).toBe('APPROVED');
+    expect(result.items[0]?.user.email).toBe(`${suffix}@module8.test`);
+    expect(result.items[0]?.items[0]?.itemId).toBe(productId);
+    expect(result.items[0]?.paymentAttempts[0]?.status).toBe('APPROVED');
     expect(result.summary.salesCents).toBe(3000);
   });
 

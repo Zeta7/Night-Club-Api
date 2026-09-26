@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import twilio, { Twilio } from 'twilio';
+import { isRecord } from '../../../shared/domain/json';
 import { serviceUnavailable } from '../../../shared/presentation/api-exception';
 import {
   PhoneMessageSender,
@@ -62,12 +63,8 @@ type TwilioErrorDetails = {
 };
 
 const normalizeTwilioError = (error: unknown): TwilioErrorDetails => {
-  if (typeof error === 'object' && error !== null) {
-    const candidate = error as {
-      status?: unknown;
-      code?: unknown;
-      message?: unknown;
-    };
+  if (isRecord(error)) {
+    const candidate = error;
 
     return {
       status: typeof candidate.status === 'number' ? candidate.status : undefined,

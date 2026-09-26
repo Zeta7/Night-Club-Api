@@ -1090,11 +1090,42 @@ model Event {
   @@index([startsAt])
 }
 
+enum EventCancellationMode {
+  REFUND_REQUESTED
+  REFUND_DECLINED
+  REPLACEMENT
+}
+
+enum EventCancellationStatus {
+  PENDING_BEERRY
+  CONTACT_REQUIRED
+  REPLACEMENT_PROPOSED
+  AUTHORIZED
+  REJECTED
+}
+
+enum EventBuyerRefundStatus {
+  PENDING_BUSINESS
+  BUSINESS_DECLINED
+  PENDING_BEERRY
+  AUTHORIZED
+  REJECTED
+}
+
+enum EventRefundJobStatus {
+  QUEUED
+  PROCESSING
+  WAITING_PROVIDER
+  COMPLETED
+  MANUAL_REVIEW
+  REJECTED
+}
+
 model EventCancellation {
   id                 String   @id @default(uuid())
   eventId            String   @unique
-  mode               String
-  status             String
+  mode               EventCancellationMode
+  status             EventCancellationStatus
   reason             String
   replacementEventId String?
   requestedByUserId  String
@@ -1116,7 +1147,7 @@ model EventBuyerRefundRequest {
   id String @id @default(uuid())
   cancellationId String
   orderItemId String
-  status String @default("PENDING_BUSINESS")
+  status EventBuyerRefundStatus @default(PENDING_BUSINESS)
   reason String
   businessReason String?
   businessReviewedBy String?
@@ -1161,7 +1192,7 @@ model EventRefundJob {
   cancellationId String
   orderItemId String
   refundRequestId String? @unique
-  status String @default("QUEUED")
+  status EventRefundJobStatus @default(QUEUED)
   amountCents Int
   authorizedBy String
   attempts Int @default(0)

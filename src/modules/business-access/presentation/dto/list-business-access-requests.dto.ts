@@ -1,13 +1,19 @@
-import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BusinessAccessRequestStatus, BusinessAccessRequestType } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 
 export class ListBusinessAccessRequestsDto {
+  @ApiPropertyOptional({
+    enum: BusinessAccessRequestStatus,
+    enumName: 'BusinessAccessRequestStatus',
+  })
   @OptionalField()
   @IsEnum(BusinessAccessRequestStatus)
   status?: BusinessAccessRequestStatus;
 
+  @ApiPropertyOptional({ enum: BusinessAccessRequestType, enumName: 'BusinessAccessRequestType' })
   @OptionalField()
   @IsEnum(BusinessAccessRequestType)
   type?: BusinessAccessRequestType;

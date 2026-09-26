@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MarketplaceFeeSource, UserRole } from '@prisma/client';
+import { isRecord } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { conflict, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuditService } from '../../audit/application/audit.service';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
+import type {
+  ClubMarketplaceFeeResponseDto,
+  MarketplaceFeeResponseDto,
+} from '../presentation/platform.response.dto';
 
 const SETTINGS_ID = 'platform';
 
@@ -55,7 +60,7 @@ export class MarketplaceFeeService {
     };
   }
 
-  async readGlobal() {
+  async readGlobal(): Promise<MarketplaceFeeResponseDto> {
     const record = await this.prisma.platformSettings.findUnique({ where: { id: SETTINGS_ID } });
     const settings = parseSettings(record?.settingsJson);
     const explicit = integerOrNull(settings.defaultMarketplaceFeeBps);
@@ -102,7 +107,10 @@ export class MarketplaceFeeService {
     return this.readGlobal();
   }
 
-  async effectiveFor(actor: AuthenticatedUser, clubId: string) {
+  async effectiveFor(
+    actor: AuthenticatedUser,
+    clubId: string,
+  ): Promise<ClubMarketplaceFeeResponseDto> {
     await this.assertClubAdmin(actor, clubId);
     const club = await this.prisma.club.findUnique({
       where: { id: clubId },
@@ -198,8 +206,8 @@ export class MarketplaceFeeService {
 
 const parseSettings = (json?: string): Record<string, unknown> => {
   try {
-    const parsed = JSON.parse(json ?? '{}');
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+    const parsed: unknown = JSON.parse(json ?? '{}');
+    return isRecord(parsed) ? parsed : {};
   } catch {
     return {};
   }

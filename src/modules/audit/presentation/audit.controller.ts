@@ -1,10 +1,15 @@
 import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { SuperAdminGuard } from '../../platform/presentation/guards/super-admin.guard';
 import { AuditService } from '../application/audit.service';
 import { AuditQueryDto, UpdateAuditPolicyDto } from './audit.dto';
+import {
+  AuditPolicyResponseDto,
+  AuditSearchResponseDto,
+  AuditVerificationResponseDto,
+} from './audit.response.dto';
 
 @ApiTags('Audit')
 @ApiBearerAuth()
@@ -12,8 +17,30 @@ import { AuditQueryDto, UpdateAuditPolicyDto } from './audit.dto';
 @Controller('platform/audit-logs')
 export class AuditController {
   constructor(private readonly service: AuditService) {}
-  @Get() search(@Query() query: AuditQueryDto) { return this.service.search(query); }
-  @Get('policy') policy() { return this.service.getPolicy(); }
-  @Patch('policy') updatePolicy(@CurrentUser() user: AuthenticatedUser, @Body() body: UpdateAuditPolicyDto) { return this.service.updatePolicy(user.id, user.role, body.retentionDays); }
-  @Get('verify') verify(@Query('clubId') clubId?: string) { return this.service.verifyIntegrity(clubId); }
+  @ApiOperation({ summary: 'Buscar registros de auditoría' })
+  @ApiResponse({ status: 200, type: AuditSearchResponseDto })
+  @Get()
+  search(@Query() query: AuditQueryDto): Promise<AuditSearchResponseDto> {
+    return this.service.search(query);
+  }
+  @ApiOperation({ summary: 'Obtener la política de auditoría' })
+  @ApiResponse({ status: 200, type: AuditPolicyResponseDto })
+  @Get('policy')
+  policy(): Promise<AuditPolicyResponseDto> {
+    return this.service.getPolicy();
+  }
+  @ApiResponse({ status: 200, type: AuditPolicyResponseDto })
+  @Patch('policy')
+  updatePolicy(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: UpdateAuditPolicyDto,
+  ): Promise<AuditPolicyResponseDto> {
+    return this.service.updatePolicy(user.id, user.role, body.retentionDays);
+  }
+  @ApiOperation({ summary: 'Verificar la integridad de auditoría' })
+  @ApiResponse({ status: 200, type: AuditVerificationResponseDto })
+  @Get('verify')
+  verify(@Query('clubId') clubId?: string): Promise<AuditVerificationResponseDto> {
+    return this.service.verifyIntegrity(clubId);
+  }
 }

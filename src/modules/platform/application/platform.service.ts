@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, UserRole, UserStatus } from '@prisma/client';
+import { isJsonObject, isRecord } from '../../../shared/domain/json';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, notFound } from '../../../shared/presentation/api-exception';
@@ -96,7 +97,15 @@ export class PlatformService {
         settingsJson: JSON.stringify(next),
       },
     });
-    await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'UPDATE_PLATFORM_SETTINGS', resourceType: 'PLATFORM_SETTINGS', resourceId: settings.id, severity: 'WARNING', metadata: { settings: input.settings } });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'UPDATE_PLATFORM_SETTINGS',
+      resourceType: 'PLATFORM_SETTINGS',
+      resourceId: settings.id,
+      severity: 'WARNING',
+      metadata: { settings: input.settings },
+    });
 
     return {
       message: 'Configuracion de plataforma actualizada correctamente.',
@@ -151,7 +160,15 @@ export class PlatformService {
       where: { id: user.id },
       data: { role: input.role },
     });
-    await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'CHANGE_USER_ROLE', resourceType: 'USER', resourceId: userId, severity: 'CRITICAL', metadata: { previousRole: user.role, newRole: input.role } });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'CHANGE_USER_ROLE',
+      resourceType: 'USER',
+      resourceId: userId,
+      severity: 'CRITICAL',
+      metadata: { previousRole: user.role, newRole: input.role },
+    });
 
     return {
       message: 'Rol de usuario actualizado correctamente.',
@@ -165,7 +182,15 @@ export class PlatformService {
       where: { id: user.id },
       data: { status: UserStatus.ACTIVE },
     });
-    await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'CHANGE_USER_STATUS', resourceType: 'USER', resourceId: userId, severity: 'WARNING', metadata: { previousStatus: user.status, newStatus: UserStatus.ACTIVE } });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'CHANGE_USER_STATUS',
+      resourceType: 'USER',
+      resourceId: userId,
+      severity: 'WARNING',
+      metadata: { previousStatus: user.status, newStatus: UserStatus.ACTIVE },
+    });
 
     return {
       message: 'Usuario activado correctamente.',
@@ -179,7 +204,15 @@ export class PlatformService {
       where: { id: user.id },
       data: { status: input.status },
     });
-    await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'CHANGE_USER_STATUS', resourceType: 'USER', resourceId: userId, severity: input.status === UserStatus.BLOCKED ? 'CRITICAL' : 'WARNING', metadata: { previousStatus: user.status, newStatus: input.status } });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'CHANGE_USER_STATUS',
+      resourceType: 'USER',
+      resourceId: userId,
+      severity: input.status === UserStatus.BLOCKED ? 'CRITICAL' : 'WARNING',
+      metadata: { previousStatus: user.status, newStatus: input.status },
+    });
     return {
       message: 'Estado de usuario actualizado correctamente.',
       user: toPlatformUser(updatedUser, this.config),
@@ -193,7 +226,15 @@ export class PlatformService {
       where: { id: user.id },
       data: { status: UserStatus.INACTIVE },
     });
-    await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'CHANGE_USER_STATUS', resourceType: 'USER', resourceId: userId, severity: 'WARNING', metadata: { previousStatus: user.status, newStatus: UserStatus.INACTIVE } });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'CHANGE_USER_STATUS',
+      resourceType: 'USER',
+      resourceId: userId,
+      severity: 'WARNING',
+      metadata: { previousStatus: user.status, newStatus: UserStatus.INACTIVE },
+    });
 
     return {
       message: 'Usuario desactivado correctamente.',
@@ -207,7 +248,15 @@ export class PlatformService {
       where: { id: user.id },
       data: { status: UserStatus.BLOCKED },
     });
-    await this.audit.record({ actorUserId: actor.id, actorRole: actor.role, action: 'CHANGE_USER_STATUS', resourceType: 'USER', resourceId: userId, severity: 'CRITICAL', metadata: { previousStatus: user.status, newStatus: UserStatus.BLOCKED } });
+    await this.audit.record({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'CHANGE_USER_STATUS',
+      resourceType: 'USER',
+      resourceId: userId,
+      severity: 'CRITICAL',
+      metadata: { previousStatus: user.status, newStatus: UserStatus.BLOCKED },
+    });
     return {
       message: 'Usuario bloqueado correctamente.',
       user: toPlatformUser(updatedUser, this.config),
@@ -254,32 +303,33 @@ export class PlatformService {
 
 const parseSettings = (settingsJson: string): Prisma.JsonObject => {
   try {
-    const parsed: Prisma.JsonValue = JSON.parse(settingsJson);
+    const parsed: unknown = JSON.parse(settingsJson);
 
-    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? parsed : {};
+    return isJsonObject(parsed) ? parsed : {};
   } catch {
     return {};
   }
 };
 
 const toSettingsRecord = (value: unknown): Record<string, unknown> | undefined =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+  isRecord(value) ? value : undefined;
 
-const toPlatformUser = (user: {
-  id: string;
-  phoneCountryCode: string;
-  phoneNumber: string;
-  email: string | null;
-  fullName: string;
-  profileImageUrl: string | null;
-  role: UserRole;
-  status: UserStatus;
-  phoneVerifiedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}, config: ConfigService) => ({
+const toPlatformUser = (
+  user: {
+    id: string;
+    phoneCountryCode: string;
+    phoneNumber: string;
+    email: string | null;
+    fullName: string;
+    profileImageUrl: string | null;
+    role: UserRole;
+    status: UserStatus;
+    phoneVerifiedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  config: ConfigService,
+) => ({
   id: user.id,
   phoneCountryCode: user.phoneCountryCode,
   phoneNumber: user.phoneNumber,

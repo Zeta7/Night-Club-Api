@@ -2,7 +2,7 @@
 import { ok } from 'node:assert';
 import 'dotenv/config';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { CommerceItemType, UserRole } from '@prisma/client';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
 import { UploadsService } from '@modules/uploads/application/uploads.service';
@@ -113,6 +113,35 @@ describe('Module 4 - hardened QR redemption', () => {
     );
     return prisma.ticket.findFirstOrThrow({ where: { orderId: checkout.orderId } });
   }
+
+  it('rejects signed payloads with an invalid JSON structure or key version', async () => {
+    const ticket = await issueTicket();
+    for (const payload of [
+      null,
+      [],
+      'ticket',
+      { id: ticket.id, clubId, resource: 'TICKET', v: 1 },
+    ]) {
+      const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
+      const signature = createHmac(
+        'sha256',
+        'module-4-integration-secret-with-more-than-32-characters',
+      )
+        .update(encoded)
+        .digest('base64url');
+      const result = await service.validateCode(
+        admin(),
+        clubId,
+        'TICKET',
+        `${encoded}.${signature}`,
+        true,
+      );
+      expect(result.validation.isValid).toBe(false);
+    }
+    expect(
+      (await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } })).redemptionCount,
+    ).toBe(0);
+  });
 
   it('rejects a manipulated QR and records an INVALID attempt', async () => {
     const ticket = await issueTicket();

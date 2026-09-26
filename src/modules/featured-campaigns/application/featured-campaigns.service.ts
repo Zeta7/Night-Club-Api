@@ -8,6 +8,7 @@ import {
   SellerConnectionStatus,
   UserRole,
 } from '@prisma/client';
+import { isRecord } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { conflict, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { CommerceService } from '../../commerce/application/commerce.service';
@@ -187,7 +188,7 @@ export class FeaturedCampaignsService {
           providerData: {
             ...payment.providerData,
             checkoutUrl: payment.checkoutUrl,
-          } as Prisma.InputJsonValue,
+          },
         },
       });
       return this.checkoutResponse({ ...created.campaign, paymentAttempt, event: null });
@@ -220,7 +221,10 @@ export class FeaturedCampaignsService {
       throw notFound('FEATURED_CAMPAIGN_NOT_FOUND', 'No encontramos esta promoción.');
     }
     const attempt = campaign.paymentAttempt;
-    if (campaign.status === FeaturedCampaignStatus.PENDING_PAYMENT && attempt?.status === 'PENDING') {
+    if (
+      campaign.status === FeaturedCampaignStatus.PENDING_PAYMENT &&
+      attempt?.status === 'PENDING'
+    ) {
       try {
         const sellerExternalId = attempt.sellerExternalId ?? undefined;
         const event =
@@ -288,7 +292,7 @@ export class FeaturedCampaignsService {
     );
     const seed = `${input.viewerUserId}:${now.toISOString().slice(0, 13)}`;
     visible.sort((left, right) => hash(seed, left.id) - hash(seed, right.id));
-    const selected = [] as typeof visible;
+    const selected: typeof visible = [];
     const usedClubs = new Set<string>();
     for (const campaign of visible) {
       if (usedClubs.has(campaign.clubId)) continue;
@@ -358,18 +362,17 @@ export class FeaturedCampaignsService {
   }
 
   private checkoutResponse(campaign: CampaignWithPayment) {
-    const providerData =
-      campaign.paymentAttempt?.providerData &&
-      typeof campaign.paymentAttempt.providerData === 'object'
-        ? (campaign.paymentAttempt.providerData as Record<string, unknown>)
-        : undefined;
+    const providerData = isRecord(campaign.paymentAttempt?.providerData)
+      ? campaign.paymentAttempt.providerData
+      : undefined;
     return {
       campaign: this.campaignResponse(campaign),
       payment: {
         provider: campaign.paymentAttempt?.provider ?? null,
         paymentAttemptId: campaign.paymentAttempt?.id ?? null,
         status: campaign.paymentAttempt?.status ?? null,
-        checkoutUrl: typeof providerData?.checkoutUrl === 'string' ? providerData.checkoutUrl : null,
+        checkoutUrl:
+          typeof providerData?.checkoutUrl === 'string' ? providerData.checkoutUrl : null,
         expiresAt: campaign.paymentAttempt?.expiresAt ?? null,
         failureCode: campaign.paymentAttempt?.failureCode ?? null,
         failureMessage: campaign.paymentAttempt?.failureMessage ?? null,
@@ -436,7 +439,5 @@ function hash(seed: string, value: string) {
 }
 
 function toSettingsRecord(value: unknown): Record<string, unknown> | undefined {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+  return isRecord(value) ? value : undefined;
 }

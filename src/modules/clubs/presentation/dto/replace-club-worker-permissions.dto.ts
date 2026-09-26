@@ -5,6 +5,7 @@ import { ArrayUnique, IsArray, IsEnum } from 'class-validator';
 export class ReplaceClubWorkerPermissionsDto {
   @ApiProperty({
     enum: WorkerPermission,
+    enumName: 'WorkerPermission',
     isArray: true,
     example: [WorkerPermission.VALIDATE_PRODUCTS, WorkerPermission.VALIDATE_PROMOTIONS],
   })

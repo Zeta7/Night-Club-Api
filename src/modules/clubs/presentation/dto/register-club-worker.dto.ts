@@ -18,6 +18,7 @@ export class RegisterClubWorkerDto {
 
   @ApiProperty({
     enum: WorkerPermission,
+    enumName: 'WorkerPermission',
     isArray: true,
     example: [WorkerPermission.VALIDATE_TICKETS],
   })

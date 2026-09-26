@@ -1,10 +1,21 @@
 import { Body, Controller, Get, Header, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { WalletAcceptanceDto } from './wallet-acceptance.dto';
-import { ApiBearerAuth, ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SellerConnectionService } from '../application/seller-connection.service';
+import { ConfigService } from '@nestjs/config';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
-import { ConfigService } from '@nestjs/config';
+import { SellerConnectionService } from '../application/seller-connection.service';
+import {
+  SellerConnectionAuthorizationResponseDto,
+  SellerConnectionResponseDto,
+  WalletAcceptanceResponseDto,
+} from './payments.response.dto';
+import { WalletAcceptanceDto } from './wallet-acceptance.dto';
 
 @ApiTags('Mercado Pago connections')
 @ApiBearerAuth()
@@ -13,35 +24,49 @@ import { ConfigService } from '@nestjs/config';
 export class MercadoPagoConnectionsController {
   constructor(private readonly connections: SellerConnectionService) {}
 
+  @ApiResponse({ status: 200, type: WalletAcceptanceResponseDto })
   @Get('wallet-acceptance')
-  walletAcceptance(@Param('clubId') clubId: string) {
+  walletAcceptance(@Param('clubId') clubId: string): Promise<WalletAcceptanceResponseDto> {
     return this.connections.walletAcceptance(clubId);
   }
 
+  @ApiResponse({ status: 201, type: WalletAcceptanceResponseDto })
   @Post('wallet-acceptance')
   setWalletAcceptance(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Body() input: WalletAcceptanceDto,
-  ) {
+  ): Promise<WalletAcceptanceResponseDto> {
     return this.connections.setWalletAcceptance(user, clubId, input.enabled);
   }
 
+  @ApiResponse({ status: 200, type: SellerConnectionResponseDto })
   @Get()
   @ApiOperation({ summary: 'Consultar estado de conexión Mercado Pago' })
-  status(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string) {
+  status(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+  ): Promise<SellerConnectionResponseDto> {
     return this.connections.status(user, clubId);
   }
 
+  @ApiResponse({ status: 201, type: SellerConnectionAuthorizationResponseDto })
   @Post('connect')
   @ApiOperation({ summary: 'Crear URL OAuth de un solo uso para Mercado Pago' })
-  connect(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string) {
+  connect(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+  ): Promise<SellerConnectionAuthorizationResponseDto> {
     return this.connections.start(user, clubId);
   }
 
+  @ApiResponse({ status: 201, type: SellerConnectionResponseDto })
   @Post('disconnect')
   @ApiOperation({ summary: 'Desconectar Mercado Pago del negocio' })
-  disconnect(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string) {
+  disconnect(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+  ): Promise<SellerConnectionResponseDto> {
     return this.connections.disconnect(user, clubId);
   }
 }

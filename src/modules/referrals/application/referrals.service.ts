@@ -7,6 +7,7 @@ import {
   UserStatus,
 } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
+import { isRecord } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import {
   badRequest,
@@ -642,9 +643,19 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
     await this.restoreOrderCredits(tx, orderId);
   }
 
-  async restoreOrderCredits(tx: Prisma.TransactionClient, orderId: string, cumulativeRefundCents?: number, orderTotalCents?: number) {
-    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId }, select: { userId: true } });
-    await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${'customer-wallet:' + order.userId}))::text`);
+  async restoreOrderCredits(
+    tx: Prisma.TransactionClient,
+    orderId: string,
+    cumulativeRefundCents?: number,
+    orderTotalCents?: number,
+  ) {
+    const order = await tx.order.findUniqueOrThrow({
+      where: { id: orderId },
+      select: { userId: true },
+    });
+    await tx.$queryRaw(
+      Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${'customer-wallet:' + order.userId}))::text`,
+    );
     const consumptions = await tx.walletCreditConsumption.findMany({
       where: { orderId },
       include: { creditLot: true },
@@ -652,17 +663,26 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
     });
     const total = orderTotalCents ?? consumptions.reduce((sum, item) => sum + item.amountCents, 0);
     const cumulative = cumulativeRefundCents ?? total;
-    if (!Number.isSafeInteger(cumulative) || cumulative < 0 || cumulative > total) throw new Error('INVALID_CREDIT_REFUND_ALLOCATION');
+    if (!Number.isSafeInteger(cumulative) || cumulative < 0 || cumulative > total)
+      throw new Error('INVALID_CREDIT_REFUND_ALLOCATION');
     let prefix = 0;
     for (const item of consumptions) {
-      const before = total > 0 ? Number(BigInt(prefix) * BigInt(cumulative) / BigInt(total)) : 0;
+      const before = total > 0 ? Number((BigInt(prefix) * BigInt(cumulative)) / BigInt(total)) : 0;
       prefix += item.amountCents;
-      const target = total > 0 ? Number(BigInt(prefix) * BigInt(cumulative) / BigInt(total)) - before : 0;
+      const target =
+        total > 0 ? Number((BigInt(prefix) * BigInt(cumulative)) / BigInt(total)) - before : 0;
       const delta = target - item.restoredCents;
       if (delta <= 0) continue;
-      await tx.walletCreditConsumption.update({ where: { id: item.id }, data: { restoredCents: target } });
+      await tx.walletCreditConsumption.update({
+        where: { id: item.id },
+        data: { restoredCents: target },
+      });
       // Keep original reward expiration and origin. Never turn expired rewards into cash.
-      if (item.creditLot.status === 'REVERSED' || (item.creditLot.expiresAt && item.creditLot.expiresAt <= new Date())) continue;
+      if (
+        item.creditLot.status === 'REVERSED' ||
+        (item.creditLot.expiresAt && item.creditLot.expiresAt <= new Date())
+      )
+        continue;
       const remaining = item.creditLot.remainingAmountCents + delta;
       await tx.walletCreditLot.update({
         where: { id: item.creditLotId },
@@ -671,7 +691,14 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
           status: remaining >= item.creditLot.originalAmountCents ? 'AVAILABLE' : 'PARTIALLY_USED',
         },
       });
-      if (item.creditLot.referralRewardId) await tx.referralReward.updateMany({ where: { id: item.creditLot.referralRewardId, status: { not: 'REVERSED' } }, data: { status: remaining >= item.creditLot.originalAmountCents ? 'AVAILABLE' : 'PARTIALLY_USED' } });
+      if (item.creditLot.referralRewardId)
+        await tx.referralReward.updateMany({
+          where: { id: item.creditLot.referralRewardId, status: { not: 'REVERSED' } },
+          data: {
+            status:
+              remaining >= item.creditLot.originalAmountCents ? 'AVAILABLE' : 'PARTIALLY_USED',
+          },
+        });
       await tx.wallet.update({
         where: { id: item.creditLot.walletId },
         data: { balanceCents: { increment: delta } },
@@ -925,7 +952,7 @@ export class ReferralsService implements OnModuleInit, OnModuleDestroy {
           await this.prisma.user.update({ where: { id: userId }, data: { referralCode: code } })
         ).referralCode!;
       } catch (error) {
-        if ((error as { code?: string }).code !== 'P2002') throw error;
+        if (!isRecord(error) || error.code !== 'P2002') throw error;
       }
     }
     throw conflict(

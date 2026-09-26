@@ -1,12 +1,14 @@
 /// <reference types="jest" />
-import 'dotenv/config';
+import { CommerceService } from '@modules/commerce/application/commerce.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
 import { ConfigService } from '@nestjs/config';
 import { CommerceItemType } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '@modules/uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
-import { CommerceService } from '@modules/commerce/application/commerce.service';
+import 'dotenv/config';
+import { ok } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+
 
 describe('CommerceService persistent cart integration', () => {
   const config = new ConfigService();
@@ -146,8 +148,10 @@ describe('CommerceService persistent cart integration', () => {
       quantity: 1,
     });
 
+    const [item] = cart.items;
+    ok(item);
     await expect(
-      service.updateCartItem(attacker, cart.items[0].cartItemId, 2),
+      service.updateCartItem(attacker, item.cartItemId, 2),
     ).rejects.toBeDefined();
   });
 

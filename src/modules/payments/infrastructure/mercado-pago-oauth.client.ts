@@ -37,7 +37,11 @@ export class MercadoPagoOAuthClient {
     return this.token({ grant_type: 'refresh_token', refresh_token: refreshToken });
   }
 
-  private async token(input: Record<string, string>) {
+  private async token(
+    input:
+      | { grant_type: 'refresh_token'; refresh_token: string }
+      | { grant_type: 'authorization_code'; code: string; redirect_uri: string },
+  ): Promise<MercadoPagoOAuthToken> {
     const credentials = {
       client_id: this.required('MERCADO_PAGO_CLIENT_ID'),
       client_secret: this.required('MERCADO_PAGO_CLIENT_SECRET'),
@@ -49,9 +53,19 @@ export class MercadoPagoOAuthClient {
         : await oauth.create({
             body: { ...credentials, code: input.code, redirect_uri: input.redirect_uri },
           });
-    if (typeof body.access_token !== 'string' || body.user_id == null)
+    if (
+      typeof body.access_token !== 'string' ||
+      (typeof body.user_id !== 'number' && typeof body.user_id !== 'string')
+    )
       throw new Error('MERCADO_PAGO_OAUTH_INVALID_RESPONSE');
-    return body as MercadoPagoOAuthToken;
+    return {
+      access_token: body.access_token,
+      refresh_token: body.refresh_token,
+      expires_in: body.expires_in,
+      scope: body.scope,
+      user_id: body.user_id,
+      public_key: body.public_key,
+    };
   }
 
   private client() {

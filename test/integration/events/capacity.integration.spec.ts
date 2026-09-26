@@ -1,10 +1,12 @@
 /// <reference types="jest" />
-import 'dotenv/config';
+import { CapacityService } from '@modules/events/application/capacity.service';
 import { ConfigService } from '@nestjs/config';
 import { UserRole, WorkerPermission } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
-import { CapacityService } from '@modules/events/application/capacity.service';
+import 'dotenv/config';
+import { ok } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(180_000);
 
@@ -111,7 +113,11 @@ describe('Module 10 - realtime capacity', () => {
   });
 
   it('registers exits idempotently and supports controlled reentry', async () => {
-    const ticketId = `ticket-a-${suffix}`;
+    const admitted = await prisma.capacityMovement.findFirst({
+      where: { eventId, type: 'ENTRY' },
+    });
+    ok(admitted?.ticketId, 'The concurrent entry test must admit a ticket');
+    const ticketId = admitted.ticketId;
     const firstExit = await service.registerExit(
       admin(),
       clubId,

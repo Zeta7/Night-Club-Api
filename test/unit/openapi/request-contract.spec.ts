@@ -1,40 +1,43 @@
 /// <reference types="jest" />
-import { enhanceOpenApiDocument } from '../../../src/shared/presentation/openapi/openapi.enhancer';
-import { ListNotificationsQueryDto } from '../../../src/modules/notification/presentation/notification.dto';
-import {
-  ListWithdrawalsDto,
-  DailyReconciliationQueryDto,
-} from '../../../src/modules/wallets/presentation/withdrawal.dto';
-import { ListPromotionsQueryDto } from '../../../src/modules/promotions/presentation/dto/create-promotion.dto';
-import {
-  CreatePresignedUploadUrlDto,
-  ALLOWED_IMAGE_CONTENT_TYPES,
-} from '../../../src/modules/uploads/presentation/dto/create-presigned-upload-url.dto';
-
-import 'reflect-metadata';
 import { INestApplication, Module, Type, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '../../../src/shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '../../../src/modules/uploads/application/uploads.service';
+import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
-import { plainToInstance } from 'class-transformer';
+import { Test, TestingModule } from '@nestjs/testing';
 import { ReferralExpirationMode, UserRole, UserStatus } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
+import 'reflect-metadata';
+import { ClubWorkersService } from '../../../src/modules/clubs/application/club-workers.service';
+import { ClubSocialMediaDto } from '../../../src/modules/clubs/presentation/dto/create-club.dto';
+import { UpdateClubWorkerDto } from '../../../src/modules/clubs/presentation/dto/update-club-worker.dto';
+import { UpdateClubDto } from '../../../src/modules/clubs/presentation/dto/update-club.dto';
+import { ValidateCodeDto } from '../../../src/modules/commerce/presentation/validate-code.dto';
+import { CancelEventDto } from '../../../src/modules/events/presentation/dto/cancel-event.dto';
 import { CreateEventDto } from '../../../src/modules/events/presentation/dto/create-event.dto';
 import { UpdateEventDto } from '../../../src/modules/events/presentation/dto/update-event.dto';
-import { UpdateTicketTypeDto } from '../../../src/modules/tickets/presentation/dto/update-ticket-type.dto';
-import { UpdateMyProfileDto } from '../../../src/modules/users/presentation/dto/update-my-profile.dto';
-import { UpdateNotificationPreferenceDto } from '../../../src/modules/notification/presentation/notification.dto';
-import { UpdateClubDto } from '../../../src/modules/clubs/presentation/dto/update-club.dto';
-import { UpdateClubWorkerDto } from '../../../src/modules/clubs/presentation/dto/update-club-worker.dto';
-import { ClubWorkersService } from '../../../src/modules/clubs/application/club-workers.service';
-import { UpdateReferralSettingsDto } from '../../../src/modules/referrals/presentation/referral.dto';
-import { ReferralsService } from '../../../src/modules/referrals/application/referrals.service';
+import {
+  ListNotificationsQueryDto,
+  UpdateNotificationPreferenceDto,
+} from '../../../src/modules/notification/presentation/notification.dto';
+import { ListPromotionsQueryDto } from '../../../src/modules/promotions/presentation/dto/create-promotion.dto';
 import { PromotionItemDto } from '../../../src/modules/promotions/presentation/dto/promotion-item.dto';
-import { ValidateCodeDto } from '../../../src/modules/commerce/presentation/validate-code.dto';
 import { UpdatePromotionDto } from '../../../src/modules/promotions/presentation/dto/update-promotion.dto';
+import { ReferralsService } from '../../../src/modules/referrals/application/referrals.service';
+import { UpdateReferralSettingsDto } from '../../../src/modules/referrals/presentation/referral.dto';
+import { UpdateTicketTypeDto } from '../../../src/modules/tickets/presentation/dto/update-ticket-type.dto';
+import { UploadsService } from '../../../src/modules/uploads/application/uploads.service';
+import {
+  ALLOWED_IMAGE_CONTENT_TYPES,
+  CreatePresignedUploadUrlDto,
+} from '../../../src/modules/uploads/presentation/dto/create-presigned-upload-url.dto';
 import { UsersService } from '../../../src/modules/users/application/users.service';
+import { UpdateMyProfileDto } from '../../../src/modules/users/presentation/dto/update-my-profile.dto';
+import {
+  DailyReconciliationQueryDto,
+  ListWithdrawalsDto,
+} from '../../../src/modules/wallets/presentation/withdrawal.dto';
+import { PrismaService } from '../../../src/shared/infrastructure/prisma/prisma.service';
+import { enhanceOpenApiDocument } from '../../../src/shared/presentation/openapi/openapi.enhancer';
 import { createValidationException } from '../../../src/shared/presentation/validation-exception.factory';
 
 @Module({})
@@ -68,6 +71,8 @@ describe('Request contract: integers and PATCH presence', () => {
         UpdateTicketTypeDto,
         UpdateMyProfileDto,
         UpdatePromotionDto,
+        ClubSocialMediaDto,
+        CancelEventDto,
       ],
     });
   });
@@ -190,10 +195,10 @@ describe('Request contract: integers and PATCH presence', () => {
       { id: user.id, role: user.role },
       plainToInstance(UpdateMyProfileDto, {}),
     );
-    expect(update.mock.calls[0][0].data).not.toHaveProperty('email');
+    expect(update.mock.calls[0]?.[0].data).toEqual({});
     const cleared = await input(UpdateMyProfileDto, { email: null });
     await service.updateMyProfile({ id: user.id, role: user.role }, cleared);
-    expect(update.mock.calls[1][0].data).toEqual({ email: null });
+    expect(update.mock.calls[1]?.[0].data).toEqual({ email: null });
   });
 
   it('clears worker assignments while omission preserves the saved assignments', async () => {
@@ -330,7 +335,15 @@ describe('Request contract: integers and PATCH presence', () => {
       await expect(input(dto, { status: 'NOT_A_STATUS' })).rejects.toMatchObject({ status: 400 });
       await expect(input(dto, { status: null })).rejects.toMatchObject({ status: 400 });
       expect(document.components?.schemas?.[dto.name]).toMatchObject({
-        properties: { status: { type: 'string', enum: expect.any(Array) } },
+        properties: {
+          status: {
+            allOf: [
+              {
+                $ref: `#/components/schemas/${dto === ListWithdrawalsDto ? 'WithdrawalStatus' : 'PromotionStatus'}`,
+              },
+            ],
+          },
+        },
       });
     },
   );
@@ -417,10 +430,10 @@ describe('Request contract: integers and PATCH presence', () => {
     expect(enhanced.components?.schemas?.ContractInput).not.toMatchObject({
       properties: { callbackUrl: { format: 'uri' } },
     });
-    expect(enhanced.paths['/contract'].post?.parameters?.[0]).toMatchObject({
+    expect(enhanced.paths['/contract']?.post?.parameters?.[0]).toMatchObject({
       schema: { enum: ['A', 'B'] },
     });
-    expect(enhanced.paths['/contract'].post?.responses['201']).toMatchObject({
+    expect(enhanced.paths['/contract']?.post?.responses['201']).toMatchObject({
       content: { 'application/json': { schema: { type: 'string', enum: ['created'] } } },
     });
   });
@@ -448,31 +461,26 @@ describe('Request contract: integers and PATCH presence', () => {
     ).toThrow('Missing OpenAPI schema for ContractController_get parameter value.');
   });
 
-  it('uses the generated response when the Nest plugin supplies an empty Object placeholder', () => {
-    const enhanced = enhanceOpenApiDocument({
-      openapi: '3.0.0',
-      info: { title: 'Contract', version: '1' },
-      paths: {
-        '/cart': {
-          get: {
-            operationId: 'CommerceController_cart',
-            responses: {
-              '200': {
-                description: '',
-                content: { 'application/json': { schema: { type: 'object' } } },
+  it('rejects a response without an explicit contract', () => {
+    expect(() =>
+      enhanceOpenApiDocument({
+        openapi: '3.0.0',
+        info: { title: 'Contract', version: '1' },
+        paths: {
+          '/cart': {
+            get: {
+              operationId: 'CommerceController_cart',
+              responses: {
+                '200': {
+                  description: '',
+                  content: { 'application/json': { schema: { type: 'object' } } },
+                },
               },
             },
           },
         },
-      },
-    });
-    expect(enhanced.paths['/cart'].get?.responses['200']).toMatchObject({
-      content: {
-        'application/json': {
-          schema: { $ref: '#/components/schemas/CommerceController_cartResponse' },
-        },
-      },
-    });
+      }),
+    ).toThrow('Missing response DTO for CommerceController_cart');
   });
 
   it('publishes date-time from the DTO before enhancement, including nullable PATCH dates', () => {
@@ -495,9 +503,13 @@ describe('Request contract: integers and PATCH presence', () => {
       string,
       { properties: Record<string, { type?: string; nullable?: boolean; enum?: unknown[] }> }
     >;
-    schemas.UpdateEventDto.properties.capacity.type = 'number';
-    schemas.UpdateEventDto.properties.description.nullable = false;
-    schemas.ListWithdrawalsDto.properties.status.enum = ['INVALID'];
+    const capacity = schemas.UpdateEventDto?.properties.capacity;
+    const description = schemas.UpdateEventDto?.properties.description;
+    const status = schemas.ListWithdrawalsDto?.properties.status;
+    if (!capacity || !description || !status) throw new Error('Missing request contract fixture');
+    capacity.type = 'number';
+    description.nullable = false;
+    status.enum = ['INVALID'];
     const result = checkRequestSchemas([UpdateEventDto, ListWithdrawalsDto], schemas);
     expect(result.failures).toEqual(
       expect.arrayContaining([
@@ -506,5 +518,78 @@ describe('Request contract: integers and PATCH presence', () => {
         expect.stringContaining('UpdateEventDto.description'),
       ]),
     );
+  });
+
+  it('checks named request enums through references and rejects drift', () => {
+    const { checkRequestSchemas } = require('../../../scripts/check-openapi.cjs') as {
+      checkRequestSchemas: (models: Type<unknown>[], schemas: object) => { failures: string[] };
+    };
+    const schemas = structuredClone(document.components?.schemas ?? {});
+    expect(checkRequestSchemas([ClubSocialMediaDto, CancelEventDto], schemas).failures).toEqual([]);
+    const socialType = schemas.ClubSocialType;
+    if (!socialType || '$ref' in socialType) throw new Error('Missing social type enum fixture');
+    socialType.enum = ['INVALID'];
+    expect(checkRequestSchemas([ClubSocialMediaDto], schemas).failures).toEqual([
+      'ClubSocialMediaDto.type: Swagger enum must match the values accepted by validation.',
+    ]);
+  });
+
+  it('keeps declared documentation and leaves undocumented examples absent', () => {
+    const operation: NonNullable<OpenAPIObject['paths'][string]['get']> = {
+      operationId: 'ContractController_get',
+      summary: 'Resumen declarado',
+      description: 'Descripción declarada',
+      parameters: [
+        { in: 'query', name: 'token', description: 'Token declarado', schema: { type: 'string' } },
+      ],
+      responses: {
+        '200': {
+          description: 'OK',
+          content: { 'application/json': { schema: { type: 'string' } } },
+        },
+      },
+    };
+    const fixture: OpenAPIObject = {
+      ...structuredClone(document),
+      paths: { '/contract': { get: operation } },
+    };
+    const enhanced = enhanceOpenApiDocument(fixture).paths['/contract']?.get;
+    expect(enhanced).toMatchObject({
+      summary: 'Resumen declarado',
+      description: 'Descripción declarada',
+      parameters: [expect.objectContaining({ description: 'Token declarado' })],
+    });
+    expect(enhanced?.parameters?.[0]).not.toHaveProperty('example');
+  });
+
+  it('preserves scalar enums when closing request object schemas', () => {
+    const enhanced = enhanceOpenApiDocument({
+      ...structuredClone(document),
+      paths: {
+        '/contract': {
+          post: {
+            operationId: 'ContractController_create',
+            requestBody: {
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ClubSocialMediaDto' } },
+              },
+            },
+            responses: {
+              '201': {
+                description: 'Created',
+                content: { 'application/json': { schema: { type: 'string' } } },
+              },
+            },
+          },
+        },
+      },
+    });
+    expect(enhanced.components?.schemas?.ClubSocialType).toEqual({
+      type: 'string',
+      enum: ['tiktok', 'instagram', 'facebook', 'web'],
+    });
+    expect(enhanced.components?.schemas?.ClubSocialMediaDto).toMatchObject({
+      additionalProperties: false,
+    });
   });
 });

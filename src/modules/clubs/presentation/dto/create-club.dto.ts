@@ -1,7 +1,7 @@
-import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsEmail,
@@ -13,22 +13,13 @@ import {
   IsUUID,
   Matches,
   MaxLength,
-  ArrayMaxSize,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
+import { CLUB_SCHEDULE_DAYS, CLUB_SOCIAL_TYPES } from '../../domain/club-profile';
 
 const businessTypes = ['club', 'discoteca', 'karaoke', 'bar', 'restobar', 'lounge'] as const;
-const socialTypes = ['tiktok', 'instagram', 'facebook', 'web'] as const;
-const scheduleDays = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
-] as const;
 
 export class ClubAddressDto {
   @ApiPropertyOptional({ example: 'Av. Larco 1234' })
@@ -81,9 +72,9 @@ export class ClubContactDto {
 }
 
 export class ClubSocialMediaDto {
-  @ApiProperty({ example: 'instagram', enum: socialTypes })
-  @IsIn(socialTypes, { message: 'La red social no es valida.' })
-  type!: (typeof socialTypes)[number];
+  @ApiProperty({ example: 'instagram', enum: CLUB_SOCIAL_TYPES, enumName: 'ClubSocialType' })
+  @IsIn(CLUB_SOCIAL_TYPES, { message: 'La red social no es valida.' })
+  type!: (typeof CLUB_SOCIAL_TYPES)[number];
 
   @ApiProperty({ example: 'https://instagram.com/point' })
   @IsUrl({}, { message: 'La URL de la red social debe ser valida.' })
@@ -91,9 +82,9 @@ export class ClubSocialMediaDto {
 }
 
 export class ClubScheduleDayDto {
-  @ApiProperty({ example: 'friday', enum: scheduleDays })
-  @IsIn(scheduleDays, { message: 'El dia del horario no es valido.' })
-  day!: (typeof scheduleDays)[number];
+  @ApiProperty({ example: 'friday', enum: CLUB_SCHEDULE_DAYS, enumName: 'ClubScheduleDay' })
+  @IsIn(CLUB_SCHEDULE_DAYS, { message: 'El dia del horario no es valido.' })
+  day!: (typeof CLUB_SCHEDULE_DAYS)[number];
 
   @ApiProperty({ example: true })
   @IsBoolean({ message: 'El estado abierto/cerrado debe ser booleano.' })

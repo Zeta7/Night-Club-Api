@@ -1,13 +1,14 @@
 /// <reference types="jest" />
-import { ok } from 'node:assert';
-import 'dotenv/config';
-import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'node:crypto';
-import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
-import { UploadsService } from '@modules/uploads/application/uploads.service';
-import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
 import { CommerceService } from '@modules/commerce/application/commerce.service';
+import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
+import { UploadsService } from '@modules/uploads/application/uploads.service';
 import { LedgerService } from '@modules/wallets/application/ledger.service';
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import 'dotenv/config';
+import { ok } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(60_000);
 
@@ -89,10 +90,10 @@ describe('Module 18 - wallet top-ups', () => {
     expect(lots).toHaveLength(1);
     expect(rewards).toBe(0);
     expect(transactions).toHaveLength(1);
-    expect(transactions[0].type).toBe('TOP_UP');
-    expect(transactions[0].debitTotalCents).toBe(2500);
-    expect(transactions[0].creditTotalCents).toBe(2500);
-    expect(transactions[0].entries).toHaveLength(2);
+    expect(transactions[0]?.type).toBe('TOP_UP');
+    expect(transactions[0]?.debitTotalCents).toBe(2500);
+    expect(transactions[0]?.creditTotalCents).toBe(2500);
+    expect(transactions[0]?.entries).toHaveLength(2);
   });
 
   it('does not change the wallet when a simulated payment is rejected', async () => {

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserRole } from '@prisma/client';
 
+
 type JwtExpiresIn = `${number}${'s' | 'm' | 'h' | 'd'}`;
 
 type GenerateAuthTokensInput = {
@@ -103,7 +104,7 @@ const addDuration = (date: Date, duration: string): Date => {
   }
 
   const amount = Number(match[1]);
-  const unit = match[2];
+  const unit = match[2] ?? '';
   const multipliers: Record<string, number> = {
     s: 1000,
     m: 60 * 1000,
@@ -111,5 +112,7 @@ const addDuration = (date: Date, duration: string): Date => {
     d: 24 * 60 * 60 * 1000,
   };
 
-  return new Date(date.getTime() + amount * multipliers[unit]);
+  const multiplier = multipliers[unit];
+  if (multiplier === undefined) throw new Error('INVALID_TOKEN_DURATION_UNIT');
+  return new Date(date.getTime() + amount * multiplier);
 };

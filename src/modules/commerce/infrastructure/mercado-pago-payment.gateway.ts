@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoConfig, Preference, Payment, PaymentRefund, Order } from 'mercadopago';
+import { isJsonObject, isRecord } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { SellerConnectionService } from '../../payments/application/seller-connection.service';
 import { SellerCredentialCipher } from '../../payments/infrastructure/seller-credential-cipher';
@@ -104,6 +105,7 @@ export class MercadoPagoPaymentGateway {
       );
       throw new Error('MERCADO_PAGO_CHECKOUT_URL_MISSING');
     }
+    const headers: unknown = body.api_response?.headers;
     this.logger.log(
       JSON.stringify({
         event: 'mercado_pago.preference.create.succeeded',
@@ -113,9 +115,7 @@ export class MercadoPagoPaymentGateway {
         preferenceId: body.id,
         collectorId: collectorId ?? seller.sellerExternalId ?? null,
         sellerExternalId: seller.sellerExternalId ?? null,
-        mercadoPagoRequestId:
-          (body.api_response?.headers as unknown as Record<string, unknown>)?.['x-request-id'] ??
-          null,
+        mercadoPagoRequestId: isRecord(headers) ? (headers['x-request-id'] ?? null) : null,
         environment,
         checkoutHost: new URL(checkoutUrl).host,
         initPointHost: typeof body.init_point === 'string' ? new URL(body.init_point).host : null,
@@ -175,11 +175,26 @@ export class MercadoPagoPaymentGateway {
   }
 
   async queryRefund(input: { paymentId: string; sellerExternalId: string; refundId: string }) {
-    const connection = await this.prisma.marketplaceSellerConnection.findUniqueOrThrow({ where: { provider_externalSellerId: { provider: this.provider, externalSellerId: input.sellerExternalId } } });
+    const connection = await this.prisma.marketplaceSellerConnection.findUniqueOrThrow({
+      where: {
+        provider_externalSellerId: {
+          provider: this.provider,
+          externalSellerId: input.sellerExternalId,
+        },
+      },
+    });
     const client = this.client(this.cipher.decrypt(connection.accessTokenEncrypted));
-    const refund = await this.sdkCall('refund.get', () => new PaymentRefund(client).get({ payment_id: input.paymentId, refund_id: input.refundId }));
-    if (String(refund.payment_id) !== input.paymentId || String(refund.id) !== input.refundId) throw new Error('REFUND_IDENTITY_MISMATCH');
-    return { id: String(refund.id), amountCents: moneyToCents(refund.amount), status: String(refund.status), payment: await this.queryPayment(input.paymentId, input.sellerExternalId) };
+    const refund = await this.sdkCall('refund.get', () =>
+      new PaymentRefund(client).get({ payment_id: input.paymentId, refund_id: input.refundId }),
+    );
+    if (String(refund.payment_id) !== input.paymentId || String(refund.id) !== input.refundId)
+      throw new Error('REFUND_IDENTITY_MISMATCH');
+    return {
+      id: String(refund.id),
+      amountCents: moneyToCents(refund.amount),
+      status: String(refund.status),
+      payment: await this.queryPayment(input.paymentId, input.sellerExternalId),
+    };
   }
 
   queryExternalPayment(externalPaymentId: string, sellerExternalId?: string) {
@@ -218,7 +233,7 @@ export class MercadoPagoPaymentGateway {
     const body = await this.sdkCall('payment.get', () =>
       new Payment(this.client(accessToken)).get({ id: paymentId }),
     );
-    const metadata: Record<string, unknown> = body.metadata && typeof body.metadata === 'object' && !Array.isArray(body.metadata) ? body.metadata : {};
+    const metadata = isJsonObject(body.metadata) ? body.metadata : {};
     const attemptId = stringValue(metadata.attempt_id) ?? stringValue(body.external_reference);
     const snapshot = await this.paymentSnapshot(attemptId);
     const event: VerifiedPaymentEvent = {
@@ -383,15 +398,19 @@ export class MercadoPagoPaymentGateway {
     try {
       return await action();
     } catch (error) {
-      const details = error as { status?: number; code?: string };
+      const status = isRecord(error) && typeof error.status === 'number' ? error.status : undefined;
+      const code =
+        isRecord(error) && (typeof error.code === 'string' || typeof error.code === 'number')
+          ? error.code
+          : undefined;
       this.logger.error(
         JSON.stringify({
           event: `mercado_pago.${operation}.failed`,
-          status: details?.status ?? null,
-          code: details?.code ?? null,
+          status: status ?? null,
+          code: code ?? null,
         }),
       );
-      throw new Error(`MERCADO_PAGO_SDK_ERROR:${operation}:${details?.status ?? 'UNKNOWN'}`);
+      throw new Error(`MERCADO_PAGO_SDK_ERROR:${operation}:${status ?? 'UNKNOWN'}`);
     }
   }
 

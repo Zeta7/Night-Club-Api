@@ -17,21 +17,27 @@ import {
 } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { forbidden, notFound } from '../../../shared/presentation/api-exception';
-import { AuthenticatedUser } from '../../identity/presentation/current-user';
-import { FeaturedCampaignsService } from '../../featured-campaigns/application/featured-campaigns.service';
-import { UploadsService } from '../../uploads/application/uploads.service';
-import { CreateClubDto } from '../presentation/dto/create-club.dto';
-import { CustomerHomeQueryDto } from '../presentation/dto/customer-home-query.dto';
-import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-query.dto';
-import { UpdateClubDto } from '../presentation/dto/update-club.dto';
-import { UpdateClubOperationalProfileDto } from '../presentation/dto/update-club-operational-profile.dto';
-
 import {
   currentEventsWhere,
   effectiveEventStatus,
 } from '../../events/application/event-availability';
-import { paymentReadyClubWhere } from './club-commerce-availability';
+import { FeaturedCampaignsService } from '../../featured-campaigns/application/featured-campaigns.service';
+import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { currentPromotionsWhere } from '../../promotions/application/promotion-availability';
+import { UploadsService } from '../../uploads/application/uploads.service';
+import { CLUB_SCHEDULE_DAYS as scheduleDayOrder } from '../domain/club-profile';
+import { CreateClubDto } from '../presentation/dto/create-club.dto';
+import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-query.dto';
+import { CustomerHomeQueryDto } from '../presentation/dto/customer-home-query.dto';
+import { UpdateClubOperationalProfileDto } from '../presentation/dto/update-club-operational-profile.dto';
+import { UpdateClubDto } from '../presentation/dto/update-club.dto';
+import { paymentReadyClubWhere } from './club-commerce-availability';
+import {
+  readClubAddress,
+  readClubContact,
+  readClubSchedule,
+  readClubSocialMedia,
+} from './club-profile';
 
 const CUSTOMER_VISIBLE_EVENT_STATUSES = [
   EventStatus.PUBLISHED,
@@ -131,6 +137,16 @@ export class ClubsService {
         message: 'Dashboard admin obtenido correctamente.',
         hasClub: false as const,
         club: null,
+        workerContext: null,
+        summary: null,
+        metrics: null,
+        upcomingEvents: [],
+        quickActions: [],
+        alerts: [],
+        latestSales: [],
+        topProducts: [],
+        topPromotions: [],
+        recentActivity: [],
         emptyState: {
           title: 'Aun no tienes una discoteca',
           text: 'Para comenzar a gestionar eventos, vender entradas y ver tus estadisticas, primero debes registrar tu discoteca o club en POINT.',
@@ -299,6 +315,8 @@ export class ClubsService {
     return {
       message: 'Dashboard admin obtenido correctamente.',
       hasClub: true as const,
+      emptyState: null,
+      features: [],
       club: {
         id: club.id,
         name: club.name,
@@ -307,10 +325,10 @@ export class ClubsService {
         status: club.status,
         profileImage,
         coverImage,
-        address: club.addressJson ?? {},
-        contact: club.contactJson ?? {},
-        socialMedia: club.socialMediaJson ?? [],
-        schedule: club.scheduleJson ?? [],
+        address: readClubAddress(club.addressJson),
+        contact: readClubContact(club.contactJson),
+        socialMedia: readClubSocialMedia(club.socialMediaJson),
+        schedule: readClubSchedule(club.scheduleJson),
       },
       workerContext: currentWorker
         ? {
@@ -375,7 +393,7 @@ export class ClubsService {
         paymentStatus: order.paymentAttempts[0]?.status ?? null,
         createdAt: order.createdAt,
         paidAt: order.paidAt,
-        category: order.items[0]?.itemType ?? 'MIXED',
+        category: order.items[0]?.itemType ?? ('MIXED' as const),
         items: order.items.map((item) => ({
           id: item.id,
           type: item.itemType,
@@ -541,7 +559,7 @@ export class ClubsService {
           profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
           coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
           address: toLocationAddress(club.addressJson),
-          contact: club.contactJson ?? {},
+          contact: readClubContact(club.contactJson),
           schedule: toScheduleSummary(club.scheduleJson),
           isOpenNow: isClubOpenNow(club.scheduleJson, now),
           status: club.status,
@@ -755,7 +773,7 @@ export class ClubsService {
           profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
           coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
           address: toLocationAddress(club.addressJson),
-          contact: club.contactJson ?? {},
+          contact: readClubContact(club.contactJson),
           schedule: toScheduleSummary(club.scheduleJson),
           isOpenNow: isClubOpenNow(club.scheduleJson, now),
           status: club.status,
@@ -928,7 +946,7 @@ export class ClubsService {
           profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
           coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
           address: toLocationAddress(club.addressJson),
-          contact: club.contactJson ?? {},
+          contact: readClubContact(club.contactJson),
           schedule: toScheduleSummary(club.scheduleJson),
           isOpenNow: isClubOpenNow(club.scheduleJson, now),
           status: club.status,
@@ -1065,7 +1083,7 @@ export class ClubsService {
         profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
         coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
         address: toLocationAddress(club.addressJson),
-        contact: club.contactJson ?? {},
+        contact: readClubContact(club.contactJson),
         schedule: toScheduleSummary(club.scheduleJson),
         isOpenNow: isClubOpenNow(club.scheduleJson, now),
         status: club.status,
@@ -1570,24 +1588,15 @@ const normalizeSchedule = (
   });
 };
 
-const scheduleDayOrder = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
-] as const;
-
 const removeEmptyStringValues = (
   value: Record<string, string | undefined>,
 ): Record<string, string> => {
-  return Object.fromEntries(
-    Object.entries(value)
-      .map(([key, item]) => [key, item?.trim()] as const)
-      .filter(([, item]) => item !== undefined && item !== ''),
-  ) as Record<string, string>;
+  const result: Record<string, string> = {};
+  for (const [key, item] of Object.entries(value)) {
+    const trimmed = item?.trim();
+    if (trimmed) result[key] = trimmed;
+  }
+  return result;
 };
 
 const toLocationAddress = (value: Prisma.JsonValue | null) => {
@@ -1601,16 +1610,7 @@ const toLocationAddress = (value: Prisma.JsonValue | null) => {
   };
 };
 
-const parseAddressJson = (value: Prisma.JsonValue | null) => {
-  const address = (value ?? {}) as Record<string, unknown>;
-  return {
-    direccion: readString(address['direccion']),
-    distrito: readString(address['distrito']),
-    provincia: readString(address['provincia']),
-    departamento: readString(address['departamento']),
-    pais: readString(address['pais']),
-  };
-};
+const parseAddressJson = readClubAddress;
 
 const toScheduleSummary = (value: Prisma.JsonValue | null) => {
   const entries = parseScheduleJson(value);
@@ -1622,26 +1622,7 @@ const toScheduleSummary = (value: Prisma.JsonValue | null) => {
   }));
 };
 
-const parseScheduleJson = (value: Prisma.JsonValue | null) => {
-  if (!Array.isArray(value)) {
-    return [] as Array<{
-      day: string;
-      isOpen: boolean;
-      openTime: string;
-      closeTime: string;
-    }>;
-  }
-
-  return value.map((entry) => {
-    const item = entry as Record<string, unknown>;
-    return {
-      day: readString(item['day']),
-      isOpen: item['isOpen'] == true,
-      openTime: readString(item['openTime']),
-      closeTime: readString(item['closeTime']),
-    };
-  });
-};
+const parseScheduleJson = readClubSchedule;
 
 const isClubOpenNow = (value: Prisma.JsonValue | null, now: Date) => {
   const entries = parseScheduleJson(value);
@@ -1654,6 +1635,7 @@ const isClubOpenNow = (value: Prisma.JsonValue | null, now: Date) => {
   const currentMinutes = limaNow.getUTCHours() * 60 + limaNow.getUTCMinutes();
   const today = scheduleDayOrder[dayIndex];
   const yesterday = scheduleDayOrder[(dayIndex + 6) % 7];
+  if (!today || !yesterday) return false;
   const todayEntry = entries.find((entry) => entry.day === today) ?? emptyScheduleEntry(today);
   const yesterdayEntry =
     entries.find((entry) => entry.day === yesterday) ?? emptyScheduleEntry(yesterday);
@@ -1759,8 +1741,6 @@ const normalizeComparable = (value: string) =>
     .trim()
     .toLowerCase();
 
-const readString = (value: unknown) => (typeof value === 'string' ? value : '');
-
 const buildCustomerHomeEmptyState = (location: {
   district: string;
   province: string;
@@ -1850,16 +1830,10 @@ const toClubResponse = (
   coverImageObjectKey: club.coverImageUrl,
   profileImage: buildMediaUrl(club.profileImageUrl, config),
   profileImageObjectKey: club.profileImageUrl,
-  address: club.addressJson ?? {
-    direccion: '',
-    distrito: '',
-    provincia: '',
-    departamento: '',
-    pais: '',
-  },
-  contact: club.contactJson ?? { phone: '', email: '' },
-  socialMedia: club.socialMediaJson ?? [],
-  schedule: club.scheduleJson ?? [],
+  address: readClubAddress(club.addressJson),
+  contact: readClubContact(club.contactJson),
+  socialMedia: readClubSocialMedia(club.socialMediaJson),
+  schedule: readClubSchedule(club.scheduleJson),
   status: club.status,
   createdAt: club.createdAt,
   updatedAt: club.updatedAt,

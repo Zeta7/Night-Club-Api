@@ -1,10 +1,10 @@
-import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
-import { FeaturedTargetType } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { FeaturedTargetType } from '@prisma/client';
 import { IsEnum, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
 
 export class CreateFeaturedCheckoutDto {
-  @ApiProperty({ enum: FeaturedTargetType })
+  @ApiProperty({ enum: FeaturedTargetType, enumName: 'FeaturedTargetType' })
   @IsEnum(FeaturedTargetType)
   targetType!: FeaturedTargetType;
 

@@ -1,6 +1,7 @@
-import { OptionalField } from '../../../shared/presentation/dto-fields';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { OrderStatus } from '@prisma/client';
 import { IsDateString, IsEnum, IsString, IsUUID } from 'class-validator';
+import { OptionalField } from '../../../shared/presentation/dto-fields';
 
 export class ClubOrdersQueryDto {
   @OptionalField({ format: 'date-time' })
@@ -19,6 +20,7 @@ export class ClubOrdersQueryDto {
   @IsUUID()
   productId?: string;
 
+  @ApiPropertyOptional({ enum: OrderStatus, enumName: 'OrderStatus' })
   @OptionalField()
   @IsEnum(OrderStatus)
   status?: OrderStatus;

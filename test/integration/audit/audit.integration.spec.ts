@@ -1,11 +1,11 @@
 /// <reference types="jest" />
-import 'dotenv/config';
+import { AuditService } from '@modules/audit/application/audit.service';
+import { PlatformService } from '@modules/platform/application/platform.service';
 import { ConfigService } from '@nestjs/config';
 import { AuditSeverity, UserRole } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
-import { PlatformService } from '@modules/platform/application/platform.service';
-import { AuditService } from '@modules/audit/application/audit.service';
+import 'dotenv/config';
+import { randomUUID } from 'node:crypto';
 
 jest.setTimeout(180_000);
 
@@ -75,6 +75,9 @@ describe('Module 12 - central audit and support', () => {
         reason: 'Support review',
         accessToken: 'must-not-be-stored',
         nested: { password: 'secret' },
+        optional: undefined,
+        nonFinite: Infinity,
+        values: [undefined, NaN, true],
       },
     });
     expect(entry).toMatchObject({
@@ -86,9 +89,12 @@ describe('Module 12 - central audit and support', () => {
       correlationId: `corr-${suffix}`,
     });
     expect(entry.integrityHash).toHaveLength(64);
+    expect(entry.metadata).not.toHaveProperty('optional');
     expect(entry.metadata).toMatchObject({
       accessToken: '[REDACTED]',
       nested: { password: '[REDACTED]' },
+      nonFinite: null,
+      values: [null, null, true],
     });
   });
 
@@ -122,7 +128,7 @@ describe('Module 12 - central audit and support', () => {
       pageSize: 10,
     });
     expect(result.items).toHaveLength(1);
-    expect(result.items[0].resourceId).toBe(`order-${suffix}`);
+    expect(result.items[0]?.resourceId).toBe(`order-${suffix}`);
     expect(result.pagination).toMatchObject({ page: 1, pageSize: 10, total: 1 });
   });
 

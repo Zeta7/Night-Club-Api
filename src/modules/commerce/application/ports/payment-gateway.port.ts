@@ -1,3 +1,4 @@
+import { JsonObject } from '../../../../shared/domain/json';
 export const PAYMENT_GATEWAY = Symbol('PAYMENT_GATEWAY');
 export const WALLET_TOP_UP_PAYMENT_GATEWAY = Symbol('WALLET_TOP_UP_PAYMENT_GATEWAY');
 export const REFUND_GATEWAY = Symbol('REFUND_GATEWAY');
@@ -30,7 +31,7 @@ export type CreatePaymentResult = {
   externalPaymentId: string;
   status: 'PENDING';
   checkoutUrl?: string;
-  providerData?: Record<string, unknown>;
+  providerData?: JsonObject;
   sellerExternalId?: string;
 };
 
@@ -41,7 +42,7 @@ export type VerifiedPaymentEvent = {
   outcome: PaymentOutcome;
   failureCode?: string;
   failureMessage?: string;
-  payload?: Record<string, unknown>;
+  payload?: JsonObject;
   attemptId?: string;
   orderId?: string;
   clubId?: string;
@@ -82,5 +83,9 @@ export interface PaymentGateway {
 export interface RefundGateway {
   readonly provider: string;
   createRefund(input: CreateRefundInput): Promise<CreateRefundResult>;
-  queryRefund?(input: { paymentId: string; sellerExternalId: string; refundId: string }): Promise<{ id: string; amountCents: number; status: string; payment: VerifiedPaymentEvent }>;
+  queryRefund?(input: {
+    paymentId: string;
+    sellerExternalId: string;
+    refundId: string;
+  }): Promise<{ id: string; amountCents: number; status: string; payment: VerifiedPaymentEvent }>;
 }

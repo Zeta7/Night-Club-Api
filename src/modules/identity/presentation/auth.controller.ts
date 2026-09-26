@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { MessageResponseDto } from '../../../shared/presentation/response.dto';
 import { AuthService } from '../application/auth.service';
 import { AuthenticatedUser, CurrentUser } from './current-user';
 import { ConfirmPhoneDto } from './dto/confirm-phone.dto';
@@ -11,6 +12,11 @@ import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { ResendPhoneCodeDto } from './dto/resend-phone-code.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AccessTokenGuard } from './guards/access-token.guard';
+import {
+  LoginResponseDto,
+  RefreshTokenResponseDto,
+  UserProfileResponseDto,
+} from './identity.response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -23,28 +29,34 @@ export class AuthController {
     description:
       'Usado por: Cliente. No requiere token. Se usa para crear una cuenta de cliente con telefono, contrasena y datos basicos; deja el usuario pendiente de confirmacion y envia un codigo al telefono registrado.',
   })
-  @ApiResponse({ status: 201, description: 'Registro inicial procesado.' })
-  register(@Body() body: RegisterUserDto) {
+  @ApiResponse({
+    type: UserProfileResponseDto,
+    status: 201,
+    description: 'Registro inicial procesado.',
+  })
+  register(@Body() body: RegisterUserDto): Promise<UserProfileResponseDto> {
     return this.authService.register(body);
   }
 
+  @ApiResponse({ status: 201, type: MessageResponseDto })
   @Post('confirm-phone')
   @ApiOperation({
     summary: 'Confirmar telefono con codigo de verificacion (CLIENTE)',
     description:
       'Usado por: Cliente. No requiere token. Se usa para validar el codigo recibido por telefono, confirmar la propiedad del numero y completar la activacion inicial de la cuenta.',
   })
-  confirmPhone(@Body() body: ConfirmPhoneDto) {
+  confirmPhone(@Body() body: ConfirmPhoneDto): Promise<MessageResponseDto> {
     return this.authService.confirmPhone(body);
   }
 
+  @ApiResponse({ status: 201, type: MessageResponseDto })
   @Post('resend-phone-code')
   @ApiOperation({
     summary: 'Reenviar codigo de confirmacion telefonica (CLIENTE)',
     description:
       'Usado por: Cliente. No requiere token. Se usa cuando el cliente necesita recibir nuevamente el codigo de confirmacion para poder verificar su telefono.',
   })
-  resendPhoneCode(@Body() body: ResendPhoneCodeDto) {
+  resendPhoneCode(@Body() body: ResendPhoneCodeDto): Promise<MessageResponseDto> {
     return this.authService.resendPhoneCode(body);
   }
 
@@ -54,9 +66,9 @@ export class AuthController {
     description:
       'Usado por: Cliente, Trabajador, Admin y Super Admin. No requiere token. Se usa para autenticar credenciales validas y obtener accessToken y refreshToken para consumir endpoints protegidos.',
   })
-  @ApiResponse({ status: 201, description: 'Inicio de sesion correcto.' })
+  @ApiResponse({ type: LoginResponseDto, status: 201, description: 'Inicio de sesion correcto.' })
   @ApiResponse({ status: 401, description: 'Credenciales invalidas o usuario no activo.' })
-  login(@Body() body: LoginDto) {
+  login(@Body() body: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(body);
   }
 
@@ -66,8 +78,12 @@ export class AuthController {
     description:
       'Usado por: Usuario autenticado previamente. No requiere accessToken; requiere refreshToken valido. Se usa para generar un nuevo accessToken sin volver a iniciar sesion.',
   })
-  @ApiResponse({ status: 201, description: 'Token renovado correctamente.' })
-  refresh(@Body() body: RefreshTokenDto) {
+  @ApiResponse({
+    type: RefreshTokenResponseDto,
+    status: 201,
+    description: 'Token renovado correctamente.',
+  })
+  refresh(@Body() body: RefreshTokenDto): Promise<RefreshTokenResponseDto> {
     return this.authService.refresh(body);
   }
 
@@ -77,8 +93,12 @@ export class AuthController {
     description:
       'Usado por: Cliente, Trabajador, Admin y Super Admin. Requiere refreshToken para revocar la sesion. Se usa para cerrar sesion e invalidar el refreshToken entregado.',
   })
-  @ApiResponse({ status: 201, description: 'Sesion cerrada correctamente.' })
-  logout(@Body() body: LogoutDto) {
+  @ApiResponse({
+    type: MessageResponseDto,
+    status: 201,
+    description: 'Sesion cerrada correctamente.',
+  })
+  logout(@Body() body: LogoutDto): Promise<MessageResponseDto> {
     return this.authService.logout(body);
   }
 
@@ -88,8 +108,12 @@ export class AuthController {
     description:
       'Usado por: Cliente, Trabajador, Admin y Super Admin. No requiere token. Se usa para iniciar la recuperacion de contrasena enviando un codigo de verificacion al telefono registrado.',
   })
-  @ApiResponse({ status: 201, description: 'Codigo de recuperacion enviado.' })
-  requestPasswordReset(@Body() body: RequestPasswordResetDto) {
+  @ApiResponse({
+    type: MessageResponseDto,
+    status: 201,
+    description: 'Codigo de recuperacion enviado.',
+  })
+  requestPasswordReset(@Body() body: RequestPasswordResetDto): Promise<MessageResponseDto> {
     return this.authService.requestPasswordReset(body);
   }
 
@@ -100,8 +124,12 @@ export class AuthController {
     description:
       'Usado por: Cliente, Trabajador, Admin y Super Admin. No requiere token. Se usa para validar el codigo de recuperacion y guardar una nueva contrasena para la cuenta.',
   })
-  @ApiResponse({ status: 201, description: 'Contrasena actualizada correctamente.' })
-  resetPassword(@Body() body: ResetPasswordDto) {
+  @ApiResponse({
+    type: MessageResponseDto,
+    status: 201,
+    description: 'Contrasena actualizada correctamente.',
+  })
+  resetPassword(@Body() body: ResetPasswordDto): Promise<MessageResponseDto> {
     return this.authService.resetPassword(body);
   }
 
@@ -113,8 +141,12 @@ export class AuthController {
     description:
       'Usado por: Cliente, Trabajador, Admin y Super Admin. Requiere accessToken. Se usa para consultar los datos del usuario asociado al token enviado en la peticion.',
   })
-  @ApiResponse({ status: 200, description: 'Usuario autenticado obtenido correctamente.' })
-  me(@CurrentUser() user: AuthenticatedUser) {
+  @ApiResponse({
+    type: UserProfileResponseDto,
+    status: 200,
+    description: 'Usuario autenticado obtenido correctamente.',
+  })
+  me(@CurrentUser() user: AuthenticatedUser): Promise<UserProfileResponseDto> {
     return this.authService.me(user.id);
   }
 }

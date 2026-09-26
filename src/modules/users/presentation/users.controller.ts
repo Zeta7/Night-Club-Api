@@ -2,9 +2,11 @@ import { Body, Controller, Get, Patch, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
+import { UserProfileResponseDto } from '../../identity/presentation/identity.response.dto';
 import { UsersService } from '../application/users.service';
 import { SearchUsersDto } from './dto/search-users.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
+import { UserSearchResponseDto } from './users.response.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -19,8 +21,15 @@ export class UsersController {
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Se usa para buscar usuarios por nombre, telefono o email y seleccionar uno sin ingresar su ID manualmente. ADMIN recibe usuarios activos; SUPER_ADMIN puede buscar usuarios de la plataforma.',
   })
-  @ApiResponse({ status: 200, description: 'Usuarios encontrados correctamente.' })
-  searchUsers(@CurrentUser() currentUser: AuthenticatedUser, @Query() query: SearchUsersDto) {
+  @ApiResponse({
+    type: UserSearchResponseDto,
+    status: 200,
+    description: 'Usuarios encontrados correctamente.',
+  })
+  searchUsers(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query() query: SearchUsersDto,
+  ): Promise<UserSearchResponseDto> {
     return this.usersService.searchUsers(currentUser, query);
   }
 
@@ -30,11 +39,15 @@ export class UsersController {
     description:
       'Permite actualizar nombre, email y foto de perfil del usuario autenticado usando accessToken.',
   })
-  @ApiResponse({ status: 200, description: 'Perfil actualizado correctamente.' })
+  @ApiResponse({
+    type: UserProfileResponseDto,
+    status: 200,
+    description: 'Perfil actualizado correctamente.',
+  })
   updateMyProfile(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Body() body: UpdateMyProfileDto,
-  ) {
+  ): Promise<UserProfileResponseDto> {
     return this.usersService.updateMyProfile(currentUser, body);
   }
 }

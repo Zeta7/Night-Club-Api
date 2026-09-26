@@ -3,10 +3,12 @@ import { BusinessAccessRequestStatus, BusinessAccessRequestType, Prisma } from '
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, conflict, notFound } from '../../../shared/presentation/api-exception';
 import { AuditService } from '../../audit/application/audit.service';
+import { clubWithProfile } from '../../clubs/application/club-profile';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { NotificationService } from '../../notification/application/notification.service';
 import { CreateBusinessAccessRequestDto } from '../presentation/dto/create-business-access-request.dto';
 import { ListBusinessAccessRequestsDto } from '../presentation/dto/list-business-access-requests.dto';
+
 
 const ACTIVE_STATUSES: BusinessAccessRequestStatus[] = [
   BusinessAccessRequestStatus.PENDING,
@@ -183,7 +185,7 @@ export class BusinessAccessService {
     });
     if (!request)
       throw notFound('BUSINESS_ACCESS_REQUEST_NOT_FOUND', 'No encontramos la solicitud.');
-    return { request };
+    return { request: { ...request, requestedClub: request.requestedClub ? clubWithProfile(request.requestedClub) : null } };
   }
 
   async startReview(actor: AuthenticatedUser, id: string) {

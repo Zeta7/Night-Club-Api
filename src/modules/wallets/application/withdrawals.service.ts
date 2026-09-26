@@ -1,6 +1,12 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClubFinancialProfile, Prisma, UserRole, WithdrawalRequest, WithdrawalStatus } from '@prisma/client';
+import {
+  ClubFinancialProfile,
+  Prisma,
+  UserRole,
+  WithdrawalRequest,
+  WithdrawalStatus,
+} from '@prisma/client';
 import { createCipheriv, createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import {
@@ -9,10 +15,12 @@ import {
   forbidden,
   notFound,
 } from '../../../shared/presentation/api-exception';
+import { clubWithProfile } from '../../clubs/application/club-profile';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { NotificationService } from '../../notification/application/notification.service';
 import { CreateWithdrawalDto, UpsertFinancialProfileDto } from '../presentation/withdrawal.dto';
 import { LedgerService } from './ledger.service';
+
 
 @Injectable()
 export class WithdrawalsService {
@@ -159,12 +167,12 @@ export class WithdrawalsService {
   async listPlatform(user: AuthenticatedUser, status?: WithdrawalStatus) {
     this.assertSuperAdmin(user);
     return {
-      items: await this.prisma.withdrawalRequest.findMany({
+      items: (await this.prisma.withdrawalRequest.findMany({
         where: status ? { status } : {},
         include: { club: true, requestedBy: { omit: { passwordHash: true } } },
         orderBy: { createdAt: 'desc' },
         take: 200,
-      }),
+      })).map((item) => ({ ...item, club: clubWithProfile(item.club) })),
     };
   }
 

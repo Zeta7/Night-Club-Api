@@ -1,10 +1,12 @@
 import { Body, Controller, Headers, Logger, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { ApiOperation, ApiExcludeEndpoint, ApiResponse } from '@nestjs/swagger';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { isRecord } from '../../../shared/domain/json';
 import { unauthorized } from '../../../shared/presentation/api-exception';
 import { CommerceService } from '../application/commerce.service';
 import { MercadoPagoPaymentGateway } from '../infrastructure/mercado-pago-payment.gateway';
+import { PaymentWebhookResponseDto } from './commerce.response.dto';
 
 @Controller('payments/mercado-pago')
 export class MercadoPagoPaymentsController {
@@ -16,6 +18,8 @@ export class MercadoPagoPaymentsController {
     private readonly config: ConfigService,
   ) {}
 
+  @ApiOperation({ summary: 'Procesar una notificación firmada de Mercado Pago' })
+  @ApiResponse({ status: 201, type: PaymentWebhookResponseDto })
   @Post('webhook')
   @ApiExcludeEndpoint()
   async webhook(
@@ -23,7 +27,7 @@ export class MercadoPagoPaymentsController {
     @Headers('x-signature') signature: string | undefined,
     @Headers('x-request-id') requestId: string | undefined,
     @Body() body: unknown,
-  ) {
+  ): Promise<PaymentWebhookResponseDto> {
     const payload = asRecord(body);
     const dataId = queryDataId ?? String(asRecord(payload.data).id ?? '');
     this.logger.log(
@@ -105,7 +109,5 @@ export class MercadoPagoPaymentsController {
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : {};
+  return isRecord(value) ? value : {};
 }

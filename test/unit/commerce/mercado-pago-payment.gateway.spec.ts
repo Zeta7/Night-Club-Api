@@ -1,6 +1,8 @@
 /// <reference types="jest" />
-import { Preference, Payment, PaymentRefund } from 'mercadopago';
 import { MercadoPagoPaymentGateway } from '@modules/commerce/infrastructure/mercado-pago-payment.gateway';
+import { Payment, PaymentRefund, Preference } from 'mercadopago';
+
+
 describe('Mercado Pago SDK gateway', () => {
   afterEach(() => jest.restoreAllMocks());
   const values: Record<string, string> = {
@@ -65,7 +67,7 @@ describe('Mercado Pago SDK gateway', () => {
           }),
         }),
       );
-      expect(create.mock.calls[0][0].body).not.toHaveProperty('payer');
+      expect(create.mock.calls[0]?.[0].body).not.toHaveProperty('payer');
       expect(result.checkoutUrl).toContain(environment === 'test' ? 'sandbox.' : 'www.');
     },
   );

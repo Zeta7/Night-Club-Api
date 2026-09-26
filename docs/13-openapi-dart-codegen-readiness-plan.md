@@ -1,5 +1,9 @@
 # Plan mínimo de documentación OpenAPI para el SDK Dart
 
+> Documento histórico de agosto de 2026. Su restricción a cambios documentales
+> y su generador de inferencia fueron reemplazados en septiembre de 2026.
+> El contrato vigente se mantiene según [Contrato HTTP y SDK](openapi-contract.md).
+
 ## Estado
 
 - Repositorio: `Zeta7/Night-Club-Api`.

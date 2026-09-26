@@ -1,11 +1,13 @@
 /// <reference types="jest" />
-import 'dotenv/config';
-import { ConfigService } from '@nestjs/config';
-import { UserRole } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
-import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
 import { LedgerService } from '@modules/wallets/application/ledger.service';
 import { WithdrawalsService } from '@modules/wallets/application/withdrawals.service';
+import { ConfigService } from '@nestjs/config';
+import { UserRole } from '@prisma/client';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import 'dotenv/config';
+import { ok } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(180_000);
 
@@ -170,6 +172,7 @@ describe('Module 6 - business withdrawals', () => {
     });
     const listed = await service.listPlatform(superAdmin());
     expect(listed.items).toHaveLength(1);
+    ok(listed.items[0]);
     expect(listed.items[0].requestedBy).not.toHaveProperty('passwordHash');
     expect(account.availableCents).toBe(30_000);
     expect(account.heldCents).toBe(70_000);

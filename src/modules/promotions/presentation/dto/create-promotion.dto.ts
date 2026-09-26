@@ -1,6 +1,5 @@
-import { OptionalField } from '../../../../shared/presentation/dto-fields';
-import { PromotionPricingMode, PromotionStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { PromotionPricingMode, PromotionStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
@@ -14,6 +13,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { PromotionItemDto } from './promotion-item.dto';
 
 export class CreatePromotionDto {
@@ -38,6 +38,7 @@ export class CreatePromotionDto {
 
   @ApiProperty({
     enum: PromotionPricingMode,
+    enumName: 'PromotionPricingMode',
     required: false,
     default: PromotionPricingMode.CALCULATED,
   })
@@ -84,7 +85,7 @@ export class ListPromotionsQueryDto {
   @IsUUID()
   eventId?: string;
 
-  @OptionalField({ enum: PromotionStatus })
+  @OptionalField({ enum: PromotionStatus, enumName: 'PromotionStatus' })
   @IsEnum(PromotionStatus)
   status?: PromotionStatus;
 }

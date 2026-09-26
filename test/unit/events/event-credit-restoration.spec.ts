@@ -1,13 +1,19 @@
 /// <reference types="jest" />
 import { ReferralsService } from '../../../src/modules/referrals/application/referrals.service';
 
+
 describe('cumulative wallet restoration', () => {
   function fixture(expired = false) {
     const rows = [333, 667].map((amountCents, index) => ({ id: String(index), creditLotId: String(index), amountCents, restoredCents: 0,
       creditLot: { walletId: 'wallet', remainingAmountCents: 0, originalAmountCents: amountCents, status: 'USED', expiresAt: expired && index === 0 ? new Date('2000-01-01') : null } }));
+    const rowById = (id: string) => {
+      const row = rows[Number(id)];
+      if (!row) throw new Error('Missing wallet credit fixture: ' + id);
+      return row;
+    };
     const tx = { order: { findUniqueOrThrow: jest.fn().mockResolvedValue({ userId: 'buyer' }) }, $queryRaw: jest.fn(),
-      walletCreditConsumption: { findMany: jest.fn(async () => rows), update: jest.fn(async ({ where, data }) => Object.assign(rows[Number(where.id)], data)) },
-      walletCreditLot: { update: jest.fn(async ({ where, data }) => Object.assign(rows[Number(where.id)].creditLot, data)) },
+      walletCreditConsumption: { findMany: jest.fn(async () => rows), update: jest.fn(async ({ where, data }) => Object.assign(rowById(where.id), data)) },
+      walletCreditLot: { update: jest.fn(async ({ where, data }) => Object.assign(rowById(where.id).creditLot, data)) },
       wallet: { update: jest.fn() }, walletMovement: { create: jest.fn() },
     };
     const service = Object.create(ReferralsService.prototype) as ReferralsService;
@@ -22,8 +28,8 @@ describe('cumulative wallet restoration', () => {
   });
   it('keeps original expiration and does not revive expired rewards', async () => {
     const { rows, tx, restore } = fixture(true); await restore(1000);
-    expect(rows[0].restoredCents).toBe(333); expect(rows[0].creditLot.remainingAmountCents).toBe(0);
-    expect(rows[0].creditLot.expiresAt).toEqual(new Date('2000-01-01'));
+    expect(rows[0]?.restoredCents).toBe(333); expect(rows[0]?.creditLot.remainingAmountCents).toBe(0);
+    expect(rows[0]?.creditLot.expiresAt).toEqual(new Date('2000-01-01'));
     expect(tx.wallet.update).toHaveBeenCalledTimes(1);
   });
 });

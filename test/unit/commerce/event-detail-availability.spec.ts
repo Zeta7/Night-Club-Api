@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@prisma/client';
 import { ClubsService } from '../../../src/modules/clubs/application/clubs.service';
 
+
 describe('Event detail inventory', () => {
   it.each([
     [3, 1, 5, 3],
@@ -47,8 +48,8 @@ describe('Event detail inventory', () => {
         { id: 'user', role: UserRole.CUSTOMER },
         'event',
       );
-      expect(result.tickets[0].quantityAvailable).toBe(expectedAvailable);
-      expect(result.tickets[0].remainingUserLimit).toBe(expectedLimit);
+      expect(result.tickets[0]?.quantityAvailable).toBe(expectedAvailable);
+      expect(result.tickets[0]?.remainingUserLimit).toBe(expectedLimit);
       expect(prisma.inventoryReservation.aggregate).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {

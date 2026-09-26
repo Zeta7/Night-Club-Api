@@ -1,12 +1,13 @@
 /// <reference types="jest" />
-import 'dotenv/config';
-import { ConfigService } from '@nestjs/config';
-import { UserRole, WorkerPermission } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
-import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import { ClubWorkersService } from '@modules/clubs/application/club-workers.service';
 import { CommerceService } from '@modules/commerce/application/commerce.service';
 import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
-import { ClubWorkersService } from '@modules/clubs/application/club-workers.service';
+import { ConfigService } from '@nestjs/config';
+import { UserRole, WorkerPermission } from '@prisma/client';
+import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
+import 'dotenv/config';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(180_000);
 
@@ -133,7 +134,7 @@ describe('Module 9 - worker operations', () => {
         lastClientActivityAt: new Date().toISOString(),
       }),
     ).rejects.toBeDefined();
-    expect((await service.listShifts(admin(), clubId, workerId)).items[0].status).toBe('CLOSED');
+    expect((await service.listShifts(admin(), clubId, workerId)).items[0]?.status).toBe('CLOSED');
     expect(authorized.device.status).toBe('AUTHORIZED');
   });
 

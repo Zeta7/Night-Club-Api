@@ -10,7 +10,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma, UploadStatus } from '@prisma/client';
+import { UploadStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';

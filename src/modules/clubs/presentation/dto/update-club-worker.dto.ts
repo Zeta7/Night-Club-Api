@@ -1,10 +1,14 @@
-import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ClubWorkerStatus } from '@prisma/client';
 import { IsEnum, IsString, MaxLength } from 'class-validator';
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 
 export class UpdateClubWorkerDto {
-  @ApiPropertyOptional({ enum: ClubWorkerStatus, example: ClubWorkerStatus.ACTIVE })
+  @ApiPropertyOptional({
+    enum: ClubWorkerStatus,
+    enumName: 'ClubWorkerStatus',
+    example: ClubWorkerStatus.ACTIVE,
+  })
   @IsEnum(ClubWorkerStatus, { message: 'El estado del trabajador no es valido.' })
   @OptionalField()
   status?: ClubWorkerStatus;

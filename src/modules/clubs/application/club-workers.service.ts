@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClubWorkerStatus, UserRole, UserStatus } from '@prisma/client';
+import {
+  ClubWorkerStatus,
+  UserRole,
+  UserStatus,
+  WorkerDeviceStatus,
+  WorkerPermission,
+  WorkerShiftStatus,
+} from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { conflict, forbidden, notFound } from '../../../shared/presentation/api-exception';
@@ -8,7 +15,12 @@ import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { RegisterClubWorkerDto } from '../presentation/dto/register-club-worker.dto';
 import { ReplaceClubWorkerPermissionsDto } from '../presentation/dto/replace-club-worker-permissions.dto';
 import { UpdateClubWorkerDto } from '../presentation/dto/update-club-worker.dto';
-import { AuthorizeWorkerDeviceDto, StartWorkerShiftDto, SyncWorkerShiftDto } from '../presentation/dto/worker-operations.dto';
+import {
+  AuthorizeWorkerDeviceDto,
+  StartWorkerShiftDto,
+  SyncWorkerShiftDto,
+} from '../presentation/dto/worker-operations.dto';
+
 
 @Injectable()
 export class ClubWorkersService {
@@ -182,7 +194,7 @@ export class ClubWorkersService {
       if (changed.count !== 1) throw notFound('WORKER_DEVICE_NOT_FOUND', 'No se encontró el dispositivo autorizado.');
       await tx.workerShift.updateMany({ where: { workerId, deviceFingerprint: (await tx.workerAuthorizedDevice.findUniqueOrThrow({ where: { id: deviceId } })).fingerprint, status: 'ACTIVE' }, data: { status: 'REVOKED', endedAt: new Date(), closedByUserId: currentUser.id, closeReason: 'DEVICE_REVOKED' } });
       await tx.auditLogEntry.create({ data: { actorUserId: currentUser.id, clubId, action: 'REVOKE_WORKER_DEVICE', resourceType: 'WORKER_DEVICE', resourceId: deviceId, metadata: { workerId } } });
-      return { deviceId, status: 'REVOKED' };
+      return { deviceId, status: WorkerDeviceStatus.REVOKED };
     });
   }
 
@@ -228,7 +240,7 @@ export class ClubWorkersService {
       const changed = await tx.workerShift.updateMany({ where: { id: shiftId, workerId, status: 'ACTIVE' }, data: { status: 'CLOSED', endedAt, closedByUserId: currentUser.id, closeReason: reason.trim() } });
       if (changed.count !== 1) throw conflict('WORKER_SHIFT_NOT_ACTIVE', 'El turno ya no está activo.');
       await tx.auditLogEntry.create({ data: { actorUserId: currentUser.id, clubId, action: 'CLOSE_WORKER_SHIFT', resourceType: 'WORKER_SHIFT', resourceId: shiftId, metadata: { workerId, reason: reason.trim() } } });
-      return { shiftId, status: 'CLOSED', endedAt };
+      return { shiftId, status: WorkerShiftStatus.CLOSED, endedAt };
     });
   }
 
@@ -301,7 +313,7 @@ const toWorkerResponse = (worker: {
   userId: string;
   status: ClubWorkerStatus;
   roleLabel: string | null;
-  permissions: string[];
+  permissions: WorkerPermission[];
   createdAt: Date;
   updatedAt: Date;
   assignedDoor: string | null;

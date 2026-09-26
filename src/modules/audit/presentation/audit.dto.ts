@@ -1,7 +1,8 @@
-import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AuditSeverity } from '@prisma/client';
-import { IsDateString, IsEnum, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsDateString, IsEnum, IsString, IsUUID, Max, Min } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../shared/presentation/dto-fields';
 
 export class AuditQueryDto {
   @OptionalField() @IsUUID() clubId?: string;
@@ -9,7 +10,10 @@ export class AuditQueryDto {
   @OptionalField() @IsString() action?: string;
   @OptionalField() @IsString() resourceType?: string;
   @OptionalField() @IsString() resourceId?: string;
-  @OptionalField() @IsEnum(AuditSeverity) severity?: AuditSeverity;
+  @ApiPropertyOptional({ enum: AuditSeverity, enumName: 'AuditSeverity' })
+  @OptionalField()
+  @IsEnum(AuditSeverity)
+  severity?: AuditSeverity;
   @OptionalField() @IsString() correlationId?: string;
   @OptionalField({ format: 'date-time' }) @IsDateString() from?: string;
   @OptionalField({ format: 'date-time' }) @IsDateString() to?: string;

@@ -1,12 +1,10 @@
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { NotificationCategory, Prisma } from '@prisma/client';
+import { isRecord, JsonObject } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { notFound } from '../../../shared/presentation/api-exception';
 import { PHONE_MESSAGE_SENDER, PhoneMessageSender } from './ports/phone-message-sender.port';
-import {
-  NotificationChannel,
-  PUSH_NOTIFICATION_CHANNEL,
-} from './ports/notification-channel.port';
+import { NotificationChannel, PUSH_NOTIFICATION_CHANNEL } from './ports/notification-channel.port';
 import { UpdateNotificationPreferenceDto } from '../presentation/notification.dto';
 
 type SendPhoneVerificationCodeInput = {
@@ -59,36 +57,44 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     userId: string,
     templateKey: string,
     variables: Record<string, string | number>,
-    data: Record<string, unknown> = {},
+    data: JsonObject = {},
     tx: Prisma.TransactionClient | PrismaService = this.prisma,
   ) {
     const template = await tx.notificationTemplate.findFirst({
       where: { key: templateKey, active: true },
       orderBy: { version: 'desc' },
     });
-    if (!template) throw notFound('NOTIFICATION_TEMPLATE_NOT_FOUND', `No existe la plantilla ${templateKey}.`);
+    if (!template)
+      throw notFound('NOTIFICATION_TEMPLATE_NOT_FOUND', `No existe la plantilla ${templateKey}.`);
     const preference = await tx.notificationPreference.findUnique({
       where: { userId_category: { userId, category: template.category } },
     });
     const inAppEnabled = preference?.inAppEnabled ?? true;
     const pushEnabled = preference?.pushEnabled ?? true;
     if (!inAppEnabled && !pushEnabled) return null;
-    const render = (value: string | null) =>
-      value?.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key: string) => String(variables[key] ?? '')) ?? null;
+    const render = (value: string) =>
+      value.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key: string) => String(variables[key] ?? ''));
     return tx.notification.create({
       data: {
         userId,
         category: template.category,
         templateKey: template.key,
         templateVersion: template.version,
-        title: render(template.titleTemplate)!,
-        body: render(template.bodyTemplate)!,
-        deepLink: render(template.deepLinkTemplate),
-        data: data as Prisma.InputJsonValue,
+        title: render(template.titleTemplate),
+        body: render(template.bodyTemplate),
+        deepLink: template.deepLinkTemplate === null ? null : render(template.deepLinkTemplate),
+        data,
         deliveries: {
           create: [
             ...(inAppEnabled
-              ? [{ channel: 'IN_APP' as const, status: 'SENT' as const, provider: 'internal', sentAt: new Date() }]
+              ? [
+                  {
+                    channel: 'IN_APP' as const,
+                    status: 'SENT' as const,
+                    provider: 'internal',
+                    sentAt: new Date(),
+                  },
+                ]
               : []),
             ...(pushEnabled
               ? [{ channel: 'PUSH' as const, status: 'PENDING' as const, provider: 'simulated' }]
@@ -101,19 +107,23 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
 
   async list(
     userId: string,
-    filters: {
-      category?: NotificationCategory;
-      readStatus?: 'all' | 'unread' | 'read';
-    } | boolean = {},
+    filters:
+      | {
+          category?: NotificationCategory;
+          readStatus?: 'all' | 'unread' | 'read';
+        }
+      | boolean = {},
   ) {
-    const normalized = typeof filters === 'boolean'
-      ? { readStatus: filters ? 'unread' as const : 'all' as const }
-      : filters;
-    const readFilter = normalized.readStatus === 'unread'
-      ? { readAt: null }
-      : normalized.readStatus === 'read'
-        ? { readAt: { not: null } }
-        : {};
+    const normalized =
+      typeof filters === 'boolean'
+        ? { readStatus: filters ? ('unread' as const) : ('all' as const) }
+        : filters;
+    const readFilter =
+      normalized.readStatus === 'unread'
+        ? { readAt: null }
+        : normalized.readStatus === 'read'
+          ? { readAt: { not: null } }
+          : {};
     const [items, unreadCount] = await Promise.all([
       this.prisma.notification.findMany({
         where: {
@@ -126,7 +136,11 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         take: 100,
       }),
       this.prisma.notification.count({
-        where: { userId, readAt: null, deliveries: { some: { channel: 'IN_APP', status: 'SENT' } } },
+        where: {
+          userId,
+          readAt: null,
+          deliveries: { some: { channel: 'IN_APP', status: 'SENT' } },
+        },
       }),
     ]);
     return { items, unreadCount };
@@ -138,7 +152,9 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       data: { readAt: new Date() },
     });
     if (result.count === 0) {
-      const exists = await this.prisma.notification.findFirst({ where: { id: notificationId, userId } });
+      const exists = await this.prisma.notification.findFirst({
+        where: { id: notificationId, userId },
+      });
       if (!exists) throw notFound('NOTIFICATION_NOT_FOUND', 'No se encontró la notificación.');
     }
     return { notificationId, read: true };
@@ -235,11 +251,13 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           title: delivery.notification.title,
           body: delivery.notification.body,
           deepLink: delivery.notification.deepLink,
-          data: (delivery.notification.data ?? {}) as Record<string, unknown>,
+          data: isRecord(delivery.notification.data) ? delivery.notification.data : {},
           deviceTokens: devices.map((item) => item.token),
         });
         const invalidTokens = Array.isArray(result.metadata?.invalidTokens)
-          ? result.metadata.invalidTokens.filter((token): token is string => typeof token === 'string')
+          ? result.metadata.invalidTokens.filter(
+              (token): token is string => typeof token === 'string',
+            )
           : [];
         if (invalidTokens.length > 0) {
           await this.prisma.deviceToken.updateMany({
@@ -253,7 +271,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
             status: result.skipped ? 'SKIPPED' : 'SENT',
             provider: result.provider,
             sentAt: result.skipped ? null : new Date(),
-            providerData: result.metadata as Prisma.InputJsonValue | undefined,
+            providerData: result.metadata,
           },
         });
       } catch (error) {
@@ -273,24 +291,132 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
 
   private async ensureTemplates() {
     const templates = [
-      ['PAYMENT_APPROVED', NotificationCategory.PAYMENT, 'Pago aprobado', 'Tu pago de S/ {amount} fue aprobado.', '/orders/{orderId}'],
-      ['PAYMENT_REJECTED', NotificationCategory.PAYMENT, 'Pago rechazado', 'No pudimos aprobar tu pago. Tu carrito se mantiene disponible.', '/cart'],
-      ['PAYMENT_EXPIRED', NotificationCategory.PAYMENT, 'Pago vencido', 'La reserva venció antes de completar el pago. Puedes intentarlo nuevamente.', '/cart'],
-      ['PAYMENT_PARTIALLY_REFUNDED', NotificationCategory.PAYMENT, 'Devolución parcial confirmada', 'Mercado Pago confirmó una devolución parcial de S/ {amount}.', '/orders/{orderId}'],
-      ['PAYMENT_REFUNDED', NotificationCategory.PAYMENT, 'Devolución confirmada', 'Mercado Pago confirmó tu devolución de S/ {amount}.', '/orders/{orderId}'],
-      ['PAYMENT_CHARGEBACK', NotificationCategory.PAYMENT, 'Contracargo registrado', 'Se registró un contracargo para la orden {orderId}.', '/orders/{orderId}'],
-      ['QR_AVAILABLE', NotificationCategory.QR, 'QR disponible', 'Tu compra fue confirmada y ya puedes usar tus QR.', '/qrs'],
-      ['ADMIN_NEW_SALE', NotificationCategory.ORDER, 'Nueva venta: {saleType}', '{customerName} realizó una compra por S/ {amount}: {itemSummary}.', '/admin/sales'],
-      ['WITHDRAWAL_REQUESTED', NotificationCategory.WITHDRAWAL, 'Retiro solicitado', 'Registramos tu solicitud de retiro por S/ {amount}.', '/admin/wallet'],
-      ['WITHDRAWAL_APPROVED', NotificationCategory.WITHDRAWAL, 'Retiro aprobado', 'Tu retiro por S/ {amount} fue aprobado.', '/admin/wallet'],
-      ['WITHDRAWAL_REJECTED', NotificationCategory.WITHDRAWAL, 'Retiro no procesado', 'Tu retiro por S/ {amount} fue rechazado o no pudo procesarse.', '/admin/wallet'],
-      ['WITHDRAWAL_PAID', NotificationCategory.WITHDRAWAL, 'Retiro pagado', 'Tu retiro por S/ {amount} fue marcado como pagado.', '/admin/wallet'],
-      ['REFERRAL_ASSOCIATED', NotificationCategory.PROMOTION, 'Nuevo referido', '{customer} se registró con tu código de referido.', '/referrals'],
-      ['REFERRAL_REWARD_PENDING', NotificationCategory.PROMOTION, 'Recompensa pendiente', 'Generaste S/ {amount} por una compra de tu referido. Te avisaremos cuando esté disponible.', '/referrals'],
-      ['REFERRAL_REWARD_AVAILABLE', NotificationCategory.PROMOTION, 'Crédito Beerry disponible', 'Ya tienes S/ {amount} adicionales en tu billetera.', '/wallet'],
-      ['REFERRAL_TRANSFER_RECEIVED', NotificationCategory.PROMOTION, 'Recibiste Crédito Beerry', 'Recibiste una transferencia de S/ {amount}.', '/wallet'],
-      ['BUSINESS_ACCESS_APPROVED', NotificationCategory.SYSTEM, 'Solicitud comercial aprobada', 'Ya puedes configurar y administrar {businessName}.', '/profile/business-access'],
-      ['BUSINESS_ACCESS_REJECTED', NotificationCategory.SYSTEM, 'Solicitud comercial revisada', 'La solicitud para {businessName} fue rechazada. {comment}', '/profile/business-access'],
+      [
+        'PAYMENT_APPROVED',
+        NotificationCategory.PAYMENT,
+        'Pago aprobado',
+        'Tu pago de S/ {amount} fue aprobado.',
+        '/orders/{orderId}',
+      ],
+      [
+        'PAYMENT_REJECTED',
+        NotificationCategory.PAYMENT,
+        'Pago rechazado',
+        'No pudimos aprobar tu pago. Tu carrito se mantiene disponible.',
+        '/cart',
+      ],
+      [
+        'PAYMENT_EXPIRED',
+        NotificationCategory.PAYMENT,
+        'Pago vencido',
+        'La reserva venció antes de completar el pago. Puedes intentarlo nuevamente.',
+        '/cart',
+      ],
+      [
+        'PAYMENT_PARTIALLY_REFUNDED',
+        NotificationCategory.PAYMENT,
+        'Devolución parcial confirmada',
+        'Mercado Pago confirmó una devolución parcial de S/ {amount}.',
+        '/orders/{orderId}',
+      ],
+      [
+        'PAYMENT_REFUNDED',
+        NotificationCategory.PAYMENT,
+        'Devolución confirmada',
+        'Mercado Pago confirmó tu devolución de S/ {amount}.',
+        '/orders/{orderId}',
+      ],
+      [
+        'PAYMENT_CHARGEBACK',
+        NotificationCategory.PAYMENT,
+        'Contracargo registrado',
+        'Se registró un contracargo para la orden {orderId}.',
+        '/orders/{orderId}',
+      ],
+      [
+        'QR_AVAILABLE',
+        NotificationCategory.QR,
+        'QR disponible',
+        'Tu compra fue confirmada y ya puedes usar tus QR.',
+        '/qrs',
+      ],
+      [
+        'ADMIN_NEW_SALE',
+        NotificationCategory.ORDER,
+        'Nueva venta: {saleType}',
+        '{customerName} realizó una compra por S/ {amount}: {itemSummary}.',
+        '/admin/sales',
+      ],
+      [
+        'WITHDRAWAL_REQUESTED',
+        NotificationCategory.WITHDRAWAL,
+        'Retiro solicitado',
+        'Registramos tu solicitud de retiro por S/ {amount}.',
+        '/admin/wallet',
+      ],
+      [
+        'WITHDRAWAL_APPROVED',
+        NotificationCategory.WITHDRAWAL,
+        'Retiro aprobado',
+        'Tu retiro por S/ {amount} fue aprobado.',
+        '/admin/wallet',
+      ],
+      [
+        'WITHDRAWAL_REJECTED',
+        NotificationCategory.WITHDRAWAL,
+        'Retiro no procesado',
+        'Tu retiro por S/ {amount} fue rechazado o no pudo procesarse.',
+        '/admin/wallet',
+      ],
+      [
+        'WITHDRAWAL_PAID',
+        NotificationCategory.WITHDRAWAL,
+        'Retiro pagado',
+        'Tu retiro por S/ {amount} fue marcado como pagado.',
+        '/admin/wallet',
+      ],
+      [
+        'REFERRAL_ASSOCIATED',
+        NotificationCategory.PROMOTION,
+        'Nuevo referido',
+        '{customer} se registró con tu código de referido.',
+        '/referrals',
+      ],
+      [
+        'REFERRAL_REWARD_PENDING',
+        NotificationCategory.PROMOTION,
+        'Recompensa pendiente',
+        'Generaste S/ {amount} por una compra de tu referido. Te avisaremos cuando esté disponible.',
+        '/referrals',
+      ],
+      [
+        'REFERRAL_REWARD_AVAILABLE',
+        NotificationCategory.PROMOTION,
+        'Crédito Beerry disponible',
+        'Ya tienes S/ {amount} adicionales en tu billetera.',
+        '/wallet',
+      ],
+      [
+        'REFERRAL_TRANSFER_RECEIVED',
+        NotificationCategory.PROMOTION,
+        'Recibiste Crédito Beerry',
+        'Recibiste una transferencia de S/ {amount}.',
+        '/wallet',
+      ],
+      [
+        'BUSINESS_ACCESS_APPROVED',
+        NotificationCategory.SYSTEM,
+        'Solicitud comercial aprobada',
+        'Ya puedes configurar y administrar {businessName}.',
+        '/profile/business-access',
+      ],
+      [
+        'BUSINESS_ACCESS_REJECTED',
+        NotificationCategory.SYSTEM,
+        'Solicitud comercial revisada',
+        'La solicitud para {businessName} fue rechazada. {comment}',
+        '/profile/business-access',
+      ],
     ] as const;
     for (const [key, category, titleTemplate, bodyTemplate, deepLinkTemplate] of templates) {
       await this.prisma.notificationTemplate.upsert({

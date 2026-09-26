@@ -1,17 +1,24 @@
+import { BadRequestException, Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { IsDateString, IsIn, IsString, IsUUID, MaxLength, Min, MinLength } from 'class-validator';
 import { IsInteger } from '../../../shared/presentation/dto-fields';
-import { Body, Controller, Get, Param, Post, UseGuards, BadRequestException } from '@nestjs/common';
-import { IsIn, IsUUID, Min, IsString, MinLength, MaxLength, IsDateString } from 'class-validator';
-import { CommerceItemType } from '@prisma/client';
-import { ApiProperty } from '@nestjs/swagger';
-import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
-import { EventReplacementService } from '../application/event-replacement.service';
+import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { EventRefundWorker } from '../application/event-refund-worker.service';
+import { EventReplacementService } from '../application/event-replacement.service';
+import {
+  AcceptReplacementResponseDto,
+  EventRefundJobsResponseDto,
+  ReplacementMappingResponseDto,
+  ReplacementOptionsResponseDto,
+  ReviewRefundJobResponseDto,
+  UnallocatedRefundResponseDto,
+} from './event-resolution.response.dto';
 
 class ReplacementMappingDto {
   @ApiProperty({ enum: ['TICKET', 'PROMOTION'] })
   @IsIn(['TICKET', 'PROMOTION'])
-  itemType!: CommerceItemType;
+  itemType!: 'TICKET' | 'PROMOTION';
   @ApiProperty({ format: 'uuid' })
   @IsUUID()
   sourceItemId!: string;
@@ -33,7 +40,7 @@ class AcceptReplacementDto {
 class ReviewJobDto {
   @ApiProperty({ enum: ['APPROVE', 'REJECT'] })
   @IsIn(['APPROVE', 'REJECT'])
-  decision!: string;
+  decision!: 'APPROVE' | 'REJECT';
   @ApiProperty({ minimum: 1, description: 'Importe exacto a devolver, en céntimos.' })
   @IsInteger()
   @Min(1)
@@ -52,24 +59,27 @@ export class EventResolutionController {
     private readonly replacements: EventReplacementService,
     private readonly refunds: EventRefundWorker,
   ) {}
+  @ApiResponse({ status: 200, type: EventRefundJobsResponseDto })
   @Get('events/admin/refund-jobs')
-  jobs(@CurrentUser() user: AuthenticatedUser) {
+  jobs(@CurrentUser() user: AuthenticatedUser): Promise<EventRefundJobsResponseDto> {
     return this.refunds.list(user);
   }
+  @ApiResponse({ status: 200, type: EventRefundJobsResponseDto })
   @Get('clubs/:clubId/events/:eventId/refund-jobs')
   businessJobs(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') club: string,
     @Param('eventId') event: string,
-  ) {
+  ): Promise<EventRefundJobsResponseDto> {
     return this.refunds.list(user, club, event);
   }
+  @ApiResponse({ status: 201, type: ReviewRefundJobResponseDto })
   @Post('events/admin/refund-jobs/:id/review')
   reviewJob(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() input: ReviewJobDto,
-  ) {
+  ): Promise<ReviewRefundJobResponseDto> {
     return this.refunds.review(
       user,
       id,
@@ -78,31 +88,34 @@ export class EventResolutionController {
       input.decision === 'APPROVE',
     );
   }
+  @ApiResponse({ status: 201, type: UnallocatedRefundResponseDto })
   @Post('events/admin/unallocated-refunds/:id/process')
   processUnallocated(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() input: ReviewJobDto,
-  ) {
+  ): Promise<UnallocatedRefundResponseDto> {
     if (input.decision !== 'APPROVE')
       throw new BadRequestException('Se requiere aprobación explícita.');
     return this.refunds.processUnallocated(user, id, input.amountCents, input.reason);
   }
+  @ApiResponse({ status: 200, type: ReplacementOptionsResponseDto })
   @Get('clubs/:clubId/events/:eventId/replacement-options')
   options(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') club: string,
     @Param('eventId') event: string,
-  ) {
+  ): Promise<ReplacementOptionsResponseDto> {
     return this.replacements.options(user, club, event);
   }
+  @ApiResponse({ status: 201, type: ReplacementMappingResponseDto })
   @Post('clubs/:clubId/events/:eventId/replacement-mappings')
   configure(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') club: string,
     @Param('eventId') event: string,
     @Body() input: ReplacementMappingDto,
-  ) {
+  ): Promise<ReplacementMappingResponseDto> {
     return this.replacements.configure(
       user,
       club,
@@ -112,12 +125,13 @@ export class EventResolutionController {
       input.targetItemId,
     );
   }
+  @ApiResponse({ status: 201, type: AcceptReplacementResponseDto })
   @Post('events/me/purchases/:id/accept-replacement')
   accept(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() input: AcceptReplacementDto,
-  ) {
+  ): Promise<AcceptReplacementResponseDto> {
     return this.replacements.accept(user, id, input.cancellationId, input.startsAt, input.endsAt);
   }
 }

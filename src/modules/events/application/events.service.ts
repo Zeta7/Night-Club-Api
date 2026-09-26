@@ -2,22 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ClubStatus,
+  EventBuyerRefundStatus,
   EventStatus,
   Prisma,
   RedeemableStatus,
+  TicketTypeStatus,
   UserRole,
 } from '@prisma/client';
 import { buildMediaUrl } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { badRequest, conflict, forbidden, notFound } from '../../../shared/presentation/api-exception';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+} from '../../../shared/presentation/api-exception';
+import { paymentReadyClubWhere } from '../../clubs/application/club-commerce-availability';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { UploadsService } from '../../uploads/application/uploads.service';
-import { paymentReadyClubWhere } from '../../clubs/application/club-commerce-availability';
-import { currentEventsWhere, effectiveEventStatus } from './event-availability';
-import { CreateEventDto } from '../presentation/dto/create-event.dto';
-import { UpdateEventDto } from '../presentation/dto/update-event.dto';
 import { CancelEventDto, ReviewEventCancellationDto } from '../presentation/dto/cancel-event.dto';
+import { CreateEventDto } from '../presentation/dto/create-event.dto';
 import { EventReasonDto, RescheduleEventDto } from '../presentation/dto/reschedule-event.dto';
+import { UpdateEventDto } from '../presentation/dto/update-event.dto';
+import { currentEventsWhere, effectiveEventStatus } from './event-availability';
+
 
 @Injectable()
 export class EventsService {
@@ -106,6 +114,7 @@ export class EventsService {
       return {
         message: 'Dashboard de eventos obtenido correctamente.',
         hasClub: false as const,
+        club: null,
         summary: emptyAdminEventsSummary(),
         alerts: [],
         events: [],
@@ -597,7 +606,7 @@ export class EventsService {
       if (!current || (business && (current.orderItem.clubId !== clubId || current.cancellation.eventId !== eventId))) throw notFound('REQUEST_NOT_FOUND', 'No encontramos la solicitud.');
       const allowed = business ? ['PENDING_BUSINESS', 'BUSINESS_DECLINED'] : ['PENDING_BEERRY'];
       if (!allowed.includes(current.status)) throw conflict('REQUEST_CHANGED', 'La solicitud no admite esta decisión. Actualiza la pantalla.');
-      const status = business ? (input.decision === 'APPROVE' ? 'PENDING_BEERRY' : 'BUSINESS_DECLINED') : (input.decision === 'APPROVE' ? 'AUTHORIZED' : 'REJECTED');
+      const status: EventBuyerRefundStatus = business ? (input.decision === 'APPROVE' ? 'PENDING_BEERRY' : 'BUSINESS_DECLINED') : (input.decision === 'APPROVE' ? 'AUTHORIZED' : 'REJECTED');
       const result = await tx.eventBuyerRefundRequest.updateMany({ where: { id, status: current.status, updatedAt: current.updatedAt }, data: {
         status, ...(business ? { businessReason: input.reason.trim(), businessReviewedBy: user.id } : { beerryReason: input.reason.trim(), beerryReviewedBy: user.id }),
       } });
@@ -827,7 +836,7 @@ const toEventResponse = async (
       currency: string;
       quantityTotal: number;
       quantitySold: number;
-      status: string;
+      status: TicketTypeStatus;
       createdAt: Date;
       updatedAt: Date;
     }>;
@@ -893,7 +902,7 @@ const toAdminEventCard = (
       currency: string;
       quantityTotal: number;
       quantitySold: number;
-      status: string;
+      status: TicketTypeStatus;
       createdAt: Date;
       updatedAt: Date;
     }>;
@@ -939,7 +948,7 @@ const toEventTicketTypeResponse = (ticket: {
   currency: string;
   quantityTotal: number;
   quantitySold: number;
-  status: string;
+  status: TicketTypeStatus;
   createdAt: Date;
   updatedAt: Date;
 }) => ({
@@ -958,4 +967,9 @@ const toEventTicketTypeResponse = (ticket: {
 const getAdminEventDisplayStatus = (
   event: { startsAt: Date; endsAt: Date; status: EventStatus },
   now: Date,
-) => effectiveEventStatus(event, now).toLowerCase();
+) => eventDisplayStatuses[effectiveEventStatus(event, now)];
+
+const eventDisplayStatuses = {
+  DRAFT: 'draft', PUBLISHED: 'published', SALE_ACTIVE: 'sale_active', SOLD_OUT: 'sold_out',
+  IN_PROGRESS: 'in_progress', FINISHED: 'finished', CANCELLED: 'cancelled', POSTPONED: 'postponed',
+} as const satisfies Record<EventStatus, string>;

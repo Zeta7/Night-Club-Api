@@ -1,3 +1,4 @@
+import { JsonObject } from '../../../../shared/domain/json';
 export const PUSH_NOTIFICATION_CHANNEL = Symbol('PUSH_NOTIFICATION_CHANNEL');
 
 export type NotificationChannelMessage = {
@@ -6,7 +7,7 @@ export type NotificationChannelMessage = {
   title: string;
   body: string;
   deepLink?: string | null;
-  data?: Record<string, unknown>;
+  data?: JsonObject;
   deviceTokens: string[];
 };
 
@@ -14,7 +15,7 @@ export type NotificationDeliveryResult = {
   provider: string;
   providerMessageId?: string;
   skipped?: boolean;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 };
 
 export interface NotificationChannel {

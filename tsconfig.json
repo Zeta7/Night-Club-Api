@@ -12,9 +12,9 @@
     "baseUrl": "./",
     "incremental": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0",
-    "strictPropertyInitialization": false,
     "paths": {
       "@/*": ["src/*"],
       "@shared/*": ["src/shared/*"],

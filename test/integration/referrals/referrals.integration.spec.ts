@@ -1,10 +1,12 @@
 /// <reference types="jest" />
-import 'dotenv/config';
+import { ReferralsService } from '@modules/referrals/application/referrals.service';
 import { ConfigService } from '@nestjs/config';
 import { ReferralCaptureMethod, UserRole } from '@prisma/client';
-import { randomUUID } from 'node:crypto';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
-import { ReferralsService } from '@modules/referrals/application/referrals.service';
+import 'dotenv/config';
+import { ok } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+
 
 jest.setTimeout(180_000);
 
@@ -294,6 +296,7 @@ describe('Module 17 - referrals, rewards and shared credit', () => {
       include: { creditLot: true },
     });
     expect(consumptions.reduce((sum, item) => sum + item.amountCents, 0)).toBe(100);
+    ok(consumptions[0]);
     expect(consumptions[0].creditLot.expiresAt).not.toBeNull();
   });
 

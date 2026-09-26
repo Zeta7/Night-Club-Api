@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FinancialAccountOwnerType, FinancialBalanceBucket, LedgerEntryDirection, Prisma } from '@prisma/client';
+import {
+  FinancialAccountOwnerType,
+  FinancialBalanceBucket,
+  LedgerEntryDirection,
+  Prisma,
+} from '@prisma/client';
+import { isRecord } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 
 type Tx = Prisma.TransactionClient | PrismaService;
@@ -159,13 +165,15 @@ export class LedgerService {
       include: { entries: true },
     });
     if (!sale) throw new Error('LEDGER_SALE_NOT_FOUND');
-    const entries = sale.entries.map<Prisma.LedgerEntryUncheckedCreateWithoutTransactionInput>((entry) => ({
-      accountId: entry.accountId,
-      direction: entry.direction === 'DEBIT' ? 'CREDIT' : 'DEBIT',
-      bucket: entry.bucket,
-      amountCents: entry.amountCents,
-      description: `${input.type === 'REFUND' ? 'Reembolso' : 'Contracargo'}: ${entry.description}`,
-    }));
+    const entries = sale.entries.map<Prisma.LedgerEntryUncheckedCreateWithoutTransactionInput>(
+      (entry) => ({
+        accountId: entry.accountId,
+        direction: entry.direction === 'DEBIT' ? 'CREDIT' : 'DEBIT',
+        bucket: entry.bucket,
+        amountCents: entry.amountCents,
+        description: `${input.type === 'REFUND' ? 'Reembolso' : 'Contracargo'}: ${entry.description}`,
+      }),
+    );
     const transaction = await db.ledgerTransaction.create({
       data: {
         reference,
@@ -379,10 +387,7 @@ export class LedgerService {
       where: { postedAt: { gte: start, lt: end } },
     });
     const debitTotalCents = rows.reduce((sum: number, item) => sum + item.debitTotalCents, 0);
-    const creditTotalCents = rows.reduce(
-      (sum: number, item) => sum + item.creditTotalCents,
-      0,
-    );
+    const creditTotalCents = rows.reduce((sum: number, item) => sum + item.creditTotalCents, 0);
     return {
       date: start.toISOString().slice(0, 10),
       balanced: debitTotalCents === creditTotalCents,
@@ -473,7 +478,8 @@ export class LedgerService {
     const record = await tx.platformSettings.findUnique({ where: { id: 'platform' } });
     if (record) {
       try {
-        const percentage = Number(JSON.parse(record.settingsJson).commissionPercentage);
+        const settings: unknown = JSON.parse(record.settingsJson);
+        const percentage = Number(isRecord(settings) ? settings.commissionPercentage : undefined);
         if (Number.isFinite(percentage) && percentage >= 0 && percentage <= 100)
           return Math.round(percentage * 100);
       } catch {}

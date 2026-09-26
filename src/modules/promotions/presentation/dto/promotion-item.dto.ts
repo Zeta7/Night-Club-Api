@@ -1,11 +1,11 @@
-import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
-import { PromotionDiscountType, PromotionItemType } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { PromotionDiscountType, PromotionItemType } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, IsUUID, Min, ValidateIf } from 'class-validator';
+import { IsEnum, IsNumber, IsUUID, Min, ValidateIf } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 
 export class PromotionItemDto {
-  @ApiProperty({ enum: PromotionItemType })
+  @ApiProperty({ enum: PromotionItemType, enumName: 'PromotionItemType' })
   @IsEnum(PromotionItemType)
   itemType!: PromotionItemType;
 
@@ -33,6 +33,7 @@ export class PromotionItemDto {
 
   @ApiProperty({
     enum: PromotionDiscountType,
+    enumName: 'PromotionDiscountType',
     required: false,
     default: PromotionDiscountType.NONE,
   })

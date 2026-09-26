@@ -8,14 +8,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
-  createHash,
-  createHmac,
-  randomBytes,
-  randomInt,
-  randomUUID,
-  timingSafeEqual,
-} from 'node:crypto';
-import {
   ClubStatus,
   ClubWorkerStatus,
   CommerceItemType,
@@ -23,18 +15,27 @@ import {
   Order,
   OrderItem,
   PaymentAttempt,
-  WalletTopUp,
-  OrderStatus,
-  ProductStatus,
-  ProductDeliveryMode,
-  PromotionStatus,
   Prisma,
+  ProductDeliveryMode,
+  ProductStatus,
+  PromotionStatus,
   RedeemableStatus,
   SellerConnectionStatus,
   TicketTypeStatus,
   UserRole,
+  WalletTopUp,
   WorkerPermission,
 } from '@prisma/client';
+import {
+  createHash,
+  createHmac,
+  randomBytes,
+  randomInt,
+  randomUUID,
+  timingSafeEqual,
+} from 'node:crypto';
+import type { RedemptionReversalResponseDto } from '../presentation/operations.response.dto';
+import { isRecord } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import {
   badRequest,
@@ -42,30 +43,34 @@ import {
   forbidden,
   notFound,
 } from '../../../shared/presentation/api-exception';
+import { clubWithProfile } from '../../clubs/application/club-profile';
+import { CapacityService } from '../../events/application/capacity.service';
+import {
+  currentEventsWhere,
+  eventAllowsRedemption,
+  eventAllowsSales,
+} from '../../events/application/event-availability';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
-import { UploadsService } from '../../uploads/application/uploads.service';
-import { CheckoutDto } from '../presentation/checkout.dto';
-import { AddCartItemDto } from '../presentation/add-cart-item.dto';
 import { NotificationService } from '../../notification/application/notification.service';
+import { MarketplaceFeeService } from '../../platform/application/marketplace-fee.service';
+import { ReferralsService } from '../../referrals/application/referrals.service';
+import { UploadsService } from '../../uploads/application/uploads.service';
 import { LedgerService } from '../../wallets/application/ledger.service';
+import { AddCartItemDto } from '../presentation/add-cart-item.dto';
+import { CheckoutDto } from '../presentation/checkout.dto';
 import { ClubOrdersQueryDto } from '../presentation/club-orders-query.dto';
 import { UpdateProductDeliveryDto } from '../presentation/update-product-delivery.dto';
-import { CapacityService } from '../../events/application/capacity.service';
-import { currentEventsWhere, eventAllowsSales, eventAllowsRedemption } from '../../events/application/event-availability';
-import { ReferralsService } from '../../referrals/application/referrals.service';
+import { readEventSnapshot } from './order-snapshot';
 import {
   PAYMENT_GATEWAY,
-  REFUND_GATEWAY,
-  WALLET_TOP_UP_PAYMENT_GATEWAY,
   PaymentGateway,
-  RefundGateway,
   PaymentOutcome,
+  REFUND_GATEWAY,
+  RefundGateway,
   VerifiedPaymentEvent,
+  WALLET_TOP_UP_PAYMENT_GATEWAY,
 } from './ports/payment-gateway.port';
 import { buildProductDeliveryPlan } from './product-delivery-plan';
-import { MarketplaceFeeService } from '../../platform/application/marketplace-fee.service';
-
-type ValidationKind = 'TICKET' | 'PRODUCT' | 'PROMOTION';
 
 const mercadoPagoReadyRelation = (now = new Date()) => ({
   some: {
@@ -107,7 +112,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     if (this.expirationTimer) clearInterval(this.expirationTimer);
   }
 
-  private qr(resource: ValidationKind, id: string, clubId: string, eventId?: string | null) {
+  private qr(resource: CommerceItemType, id: string, clubId: string, eventId?: string | null) {
     const version = this.activeSigningVersion();
     const payload = {
       v: version,
@@ -133,7 +138,8 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const serialized = this.config.get<string>('QR_SIGNING_KEYS_JSON');
     if (serialized) {
       try {
-        const parsed = JSON.parse(serialized) as Record<string, unknown>;
+        const parsed: unknown = JSON.parse(serialized);
+        if (!isRecord(parsed)) throw new Error('Invalid signing keys');
         const keys = Object.fromEntries(
           Object.entries(parsed).filter(
             (entry): entry is [string, string] =>
@@ -260,7 +266,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             _sum: { quantity: true },
           });
           const availableQuantity = source
-            ? source.quantityTotal - source.quantitySold - (source.replacementReserved ?? 0) - (reserved._sum.quantity ?? 0)
+            ? source.quantityTotal -
+              source.quantitySold -
+              (source.replacementReserved ?? 0) -
+              (reserved._sum.quantity ?? 0)
             : 0;
           if (
             !source ||
@@ -357,8 +366,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         }
       }
 
+      const [firstItem] = resolved;
       const clubs = new Set(resolved.map((item) => item.clubId));
-      if (clubs.size !== 1) {
+      if (!firstItem || clubs.size !== 1) {
         throw badRequest(
           'MULTI_CLUB_CHECKOUT',
           'Para el MVP cada compra debe pertenecer a una sola discoteca.',
@@ -367,7 +377,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const total = resolved.reduce((sum, item) => sum + item.price * item.quantity, 0);
       if (requestedPaymentMethod === 'BEERRY_WALLET') {
         const club = await tx.club.findUnique({
-          where: { id: resolved[0].clubId },
+          where: { id: firstItem.clubId },
           select: { acceptsWalletPayments: true },
         });
         if (!club?.acceptsWalletPayments)
@@ -399,7 +409,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       const order = await tx.order.create({
         data: {
           userId: user.id,
-          clubId: resolved[0].clubId,
+          clubId: firstItem.clubId,
           totalCents: total,
           promotionalCreditUsedCents: promotionalCreditCents,
           walletBalanceUsedCents: requestedPaymentMethod === 'BEERRY_WALLET' ? total : 0,
@@ -438,11 +448,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             itemId: item.id,
             nameSnapshot: item.name,
             eventId: item.eventId,
-            eventSnapshot: purchasedEvent ? {
-              source: 'CHECKOUT', name: purchasedEvent.name,
-              startsAt: purchasedEvent.startsAt.toISOString(),
-              endsAt: purchasedEvent.endsAt.toISOString(),
-            } : undefined,
+            eventSnapshot: purchasedEvent
+              ? {
+                  source: 'CHECKOUT',
+                  name: purchasedEvent.name,
+                  startsAt: purchasedEvent.startsAt.toISOString(),
+                  endsAt: purchasedEvent.endsAt.toISOString(),
+                }
+              : undefined,
             quantity: item.quantity,
             productDeliveryMode: item.productDeliveryMode,
             unitPriceCents: item.price,
@@ -572,7 +585,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       where: { id: created.attempt.id },
       data: {
         externalPaymentId: providerPayment.externalPaymentId,
-        providerData: { ...providerPayment.providerData, checkoutUrl: providerPayment.checkoutUrl } as Prisma.InputJsonValue,
+        providerData: {
+          ...providerPayment.providerData,
+          checkoutUrl: providerPayment.checkoutUrl,
+        },
         externalCheckoutId:
           this.paymentGateway.provider === 'mercado_pago'
             ? providerPayment.externalPaymentId
@@ -596,6 +612,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         items: [],
         totalCents: 0,
         currency: 'PEN',
+        hasUnavailableItems: false,
       };
 
     const items = await Promise.all(
@@ -693,7 +710,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             ? providerPayment.externalPaymentId
             : undefined,
         sellerExternalId: providerPayment.sellerExternalId,
-        providerData: { ...providerPayment.providerData, checkoutUrl: providerPayment.checkoutUrl } as Prisma.InputJsonValue,
+        providerData: {
+          ...providerPayment.providerData,
+          checkoutUrl: providerPayment.checkoutUrl,
+        },
       },
     });
     return this.topUpResponse(created.topUp, attempt, providerPayment.checkoutUrl);
@@ -882,7 +902,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         _sum: { quantity: true },
       });
       const globalAvailable = source
-        ? Math.max(0, source.quantityTotal - source.quantitySold - (source.replacementReserved ?? 0) - (reserved._sum.quantity ?? 0))
+        ? Math.max(
+            0,
+            source.quantityTotal -
+              source.quantitySold -
+              (source.replacementReserved ?? 0) -
+              (reserved._sum.quantity ?? 0),
+          )
         : 0;
       const userAvailable = source?.perUserLimit
         ? Math.max(0, source.perUserLimit - alreadyOwned)
@@ -910,7 +936,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
             clubName: source.club.name,
             priceCents: source.priceCents,
             currency: source.currency,
-            imageUrl: null as string | null,
+            imageUrl: null,
             available,
             availableQuantity: Math.min(globalAvailable, userAvailable),
             availabilityMessage: available
@@ -1075,9 +1101,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
     const event = this.paymentGateway.createSimulatedEvent(attempt.externalPaymentId, outcome);
     await this.processPaymentEvent(event);
-    return attempt.orderId
-      ? this.getPayment(user, attempt.orderId)
-      : this.getWalletTopUp(user, attempt.walletTopUpId!);
+    if (attempt.orderId) {
+      return { order: await this.getPayment(user, attempt.orderId), topUp: null };
+    }
+    if (attempt.walletTopUpId) {
+      return { order: null, topUp: await this.getWalletTopUp(user, attempt.walletTopUpId) };
+    }
+    throw notFound('PAYMENT_ATTEMPT_NOT_FOUND', 'No se encontró la compra o recarga del pago.');
   }
 
   async bindAuthoritativeExternalPayment(event: VerifiedPaymentEvent) {
@@ -1154,11 +1184,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           provider: event.provider,
           providerEventId: event.providerEventId,
           type: `PAYMENT_${event.outcome}`,
-          payload: event.payload as Prisma.InputJsonValue | undefined,
+          payload: event.payload,
         },
       });
     } catch (error) {
-      if ((error as { code?: string }).code === 'P2002') {
+      if (isRecord(error) && error.code === 'P2002') {
         const existing = await this.prisma.paymentProviderEvent.findUnique({
           where: {
             provider_providerEventId: {
@@ -1200,7 +1230,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         const current = await tx.paymentAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
         const refundDeltaCents = providerRefundedCents - current.refundedAmountCents;
         if (refundDeltaCents <= 0) return;
-        const feeDeltaCents = Math.round(providerRefundedCents * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents) - Math.round(current.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents);
+        const feeDeltaCents =
+          Math.round(
+            (providerRefundedCents * (attempt.marketplaceFeeCents ?? 0)) / attempt.amountCents,
+          ) -
+          Math.round(
+            (current.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0)) /
+              attempt.amountCents,
+          );
         await this.ledger?.reverseSalePartial(tx, {
           paymentAttemptId: attempt.id,
           providerEventId: event.providerEventId,
@@ -1213,7 +1250,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         });
         await tx.order.update({ where: { id: orderId }, data: { status: 'PARTIALLY_REFUNDED' } });
         await tx.refundRequest.updateMany({
-          where: { orderId, status: 'PROCESSING', eventJob: { is: null }, approvedAmountCents: refundDeltaCents },
+          where: {
+            orderId,
+            status: 'PROCESSING',
+            eventJob: { is: null },
+            approvedAmountCents: refundDeltaCents,
+          },
           data: {
             status: 'COMPLETED',
             processedAmountCents: refundDeltaCents,
@@ -1282,7 +1324,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         });
         if (event.outcome === 'REFUNDED') {
           await tx.refundRequest.updateMany({
-            where: { orderId, status: { in: ['APPROVED', 'PROCESSING'] }, eventJob: { is: null }, approvedAmountCents: remainingAmountCents },
+            where: {
+              orderId,
+              status: { in: ['APPROVED', 'PROCESSING'] },
+              eventJob: { is: null },
+              approvedAmountCents: remainingAmountCents,
+            },
             data: {
               status: 'COMPLETED',
               processedAmountCents: remainingAmountCents,
@@ -1341,14 +1388,28 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`);
       const current = await tx.paymentAttempt.findUnique({ where: { id: attempt.id } });
-      if (!current || (current.status !== 'PENDING' && !(current.status === 'EXPIRED' && event.outcome === 'APPROVED'))) return;
+      if (
+        !current ||
+        (current.status !== 'PENDING' &&
+          !(current.status === 'EXPIRED' && event.outcome === 'APPROVED'))
+      )
+        return;
       if (event.outcome === 'APPROVED') {
         const paidAt = new Date();
         const fulfilled = await this.confirmOrderReservations(tx, order, paidAt);
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
-          data: { status: 'APPROVED', approvedAt: paidAt,
-            ...(event.provider === 'mercado_pago' && /^\d+$/.test(String(event.payload?.id ?? '')) ? { providerData: { ...(attempt.providerData as Prisma.JsonObject ?? {}), paymentId: String(event.payload!.id) } } : {}),
+          data: {
+            status: 'APPROVED',
+            approvedAt: paidAt,
+            ...(event.provider === 'mercado_pago' && /^\d+$/.test(String(event.payload?.id ?? ''))
+              ? {
+                  providerData: {
+                    ...(isRecord(attempt.providerData) ? attempt.providerData : {}),
+                    paymentId: String(event.payload?.id),
+                  },
+                }
+              : {}),
           },
         });
         await tx.order.update({ where: { id: orderId }, data: { status: 'PAID', paidAt } });
@@ -1386,11 +1447,41 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           await this.referrals?.createRewardForPaidOrder(tx, orderId);
           await this.issueOrderResources(tx, order);
         } else {
-          await tx.refundRequest.create({ data: { orderId, clubId: order.clubId, requestedByUserId: order.userId, reason: 'Pago confirmado después del vencimiento de la reserva. Requiere resolución de Beerry.', status: 'UNDER_REVIEW', requestedAmountCents: attempt.amountCents } });
+          await tx.refundRequest.create({
+            data: {
+              orderId,
+              clubId: order.clubId,
+              requestedByUserId: order.userId,
+              reason:
+                'Pago confirmado después del vencimiento de la reserva. Requiere resolución de Beerry.',
+              status: 'UNDER_REVIEW',
+              requestedAmountCents: attempt.amountCents,
+            },
+          });
           await tx.order.update({ where: { id: orderId }, data: { status: 'REFUND_PENDING' } });
-          const reviewers = await tx.user.findMany({ where: { role: UserRole.SUPER_ADMIN, status: 'ACTIVE' }, select: { id: true } });
-          if (reviewers.length) await tx.notification.createMany({ data: reviewers.map((reviewer) => ({ userId: reviewer.id, category: 'EVENT' as const, title: 'Pago recibido sin reserva vigente', body: 'Revisa la compra y su solicitud de devolución. No se emitieron QR.', data: { orderId } })) });
-          await tx.notification.create({ data: { userId: order.userId, category: 'EVENT', title: 'Pago recibido: compra en revisión', body: 'El pago se confirmó cuando la reserva ya no estaba disponible. No se emitieron QR. Beerry revisará la solución.', data: { orderId } } });
+          const reviewers = await tx.user.findMany({
+            where: { role: UserRole.SUPER_ADMIN, status: 'ACTIVE' },
+            select: { id: true },
+          });
+          if (reviewers.length)
+            await tx.notification.createMany({
+              data: reviewers.map((reviewer) => ({
+                userId: reviewer.id,
+                category: 'EVENT' as const,
+                title: 'Pago recibido sin reserva vigente',
+                body: 'Revisa la compra y su solicitud de devolución. No se emitieron QR.',
+                data: { orderId },
+              })),
+            });
+          await tx.notification.create({
+            data: {
+              userId: order.userId,
+              category: 'EVENT',
+              title: 'Pago recibido: compra en revisión',
+              body: 'El pago se confirmó cuando la reserva ya no estaba disponible. No se emitieron QR. Beerry revisará la solución.',
+              data: { orderId },
+            },
+          });
         }
         await this.notifications?.notifyFromTemplate(
           order.userId,
@@ -1399,13 +1490,14 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           { orderId, paymentAttemptId: attempt.id },
           tx,
         );
-        if (fulfilled) await this.notifications?.notifyFromTemplate(
-          order.userId,
-          'QR_AVAILABLE',
-          { orderId },
-          { orderId },
-          tx,
-        );
+        if (fulfilled)
+          await this.notifications?.notifyFromTemplate(
+            order.userId,
+            'QR_AVAILABLE',
+            { orderId },
+            { orderId },
+            tx,
+          );
         await this.notifyClubSale(tx, order, order.totalCents, attempt.currency);
         const cart = await tx.cart.findUnique({ where: { userId: order.userId } });
         if (cart) {
@@ -1479,11 +1571,23 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
-  async issueReplacementResources(tx: Prisma.TransactionClient, orderItemId: string, targetItemId: string, targetEventId: string) {
-    const item = await tx.orderItem.findUniqueOrThrow({ where: { id: orderItemId }, include: { order: true } });
+  async issueReplacementResources(
+    tx: Prisma.TransactionClient,
+    orderItemId: string,
+    targetItemId: string,
+    targetEventId: string,
+  ) {
+    const item = await tx.orderItem.findUniqueOrThrow({
+      where: { id: orderItemId },
+      include: { order: true },
+    });
     // New resource IDs: a QR from the cancelled event remains cancelled forever.
-    await this.issueOrderResources(tx, { id: item.orderId, userId: item.order.userId, combineProducts: false,
-      items: [{ ...item, itemId: targetItemId, eventId: targetEventId }] });
+    await this.issueOrderResources(tx, {
+      id: item.orderId,
+      userId: item.order.userId,
+      combineProducts: false,
+      items: [{ ...item, itemId: targetItemId, eventId: targetEventId }],
+    });
   }
 
   private async issueOrderResources(
@@ -1493,7 +1597,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     // Cancellation and late payment issuance serialize on the same event lock.
     // Payment approval remains a financial fact; cancelled rights must not become usable.
     const eventStates = new Map<string, { status: string; startsAt: Date; endsAt: Date }>();
-    const eventIds = [...new Set<string>(order.items.map((item) => item.eventId).filter((id): id is string => id !== null))].sort();
+    const eventIds = [
+      ...new Set<string>(
+        order.items.map((item) => item.eventId).filter((id): id is string => id !== null),
+      ),
+    ].sort();
     for (const eventId of eventIds) {
       await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR SHARE`);
       eventStates.set(eventId, await tx.event.findUniqueOrThrow({ where: { id: eventId } }));
@@ -1530,7 +1638,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
               signatureVersion: this.activeSigningVersion(),
               validFrom: event?.startsAt ?? null,
               validUntil: event?.endsAt ?? ticketType?.saleEndAt,
-              ...(cancelled ? { status: 'CANCELLED', revokedAt: new Date(), revokedReason: `EVENT_CANCELLED:${eventId}` } : {}),
+              ...(cancelled
+                ? {
+                    status: 'CANCELLED',
+                    revokedAt: new Date(),
+                    revokedReason: `EVENT_CANCELLED:${eventId}`,
+                  }
+                : {}),
             },
           });
         } else {
@@ -1557,21 +1671,37 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
               signatureVersion: this.activeSigningVersion(),
               validFrom: promotion?.startsAt ?? promotion?.event?.startsAt ?? null,
               validUntil: promotion?.endsAt ?? promotion?.event?.endsAt ?? null,
-              ...(cancelled ? { status: 'CANCELLED', revokedAt: new Date(), revokedReason: `EVENT_CANCELLED:${eventId}` } : {}),
+              ...(cancelled
+                ? {
+                    status: 'CANCELLED',
+                    revokedAt: new Date(),
+                    revokedReason: `EVENT_CANCELLED:${eventId}`,
+                  }
+                : {}),
             },
           });
         }
       }
     }
     if ([...eventStates.values()].some((event) => event.status === 'CANCELLED')) {
-      await tx.notification.create({ data: { userId: order.userId, category: 'EVENT',
-        title: 'Compra recibida después de una cancelación',
-        body: 'El pago fue recibido, pero el evento está cancelado. Los QR afectados no son válidos. Revisa el estado de tu compra; aún no hay una devolución confirmada.',
-        data: { orderId: order.id },
-      } });
-      await tx.auditLogEntry.create({ data: { actorUserId: order.userId, action: 'PAYMENT_APPROVED_AFTER_EVENT_CANCELLATION',
-        resourceType: 'ORDER', resourceId: order.id, metadata: { eventIds },
-      } });
+      await tx.notification.create({
+        data: {
+          userId: order.userId,
+          category: 'EVENT',
+          title: 'Compra recibida después de una cancelación',
+          body: 'El pago fue recibido, pero el evento está cancelado. Los QR afectados no son válidos. Revisa el estado de tu compra; aún no hay una devolución confirmada.',
+          data: { orderId: order.id },
+        },
+      });
+      await tx.auditLogEntry.create({
+        data: {
+          actorUserId: order.userId,
+          action: 'PAYMENT_APPROVED_AFTER_EVENT_CANCELLATION',
+          resourceType: 'ORDER',
+          resourceId: order.id,
+          metadata: { eventIds },
+        },
+      });
     }
   }
 
@@ -1587,14 +1717,16 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }>,
   ) {
     const id = randomUUID();
+    const [firstItem] = items;
+    if (!firstItem) throw new Error('EMPTY_PRODUCT_DELIVERY');
     await tx.productDelivery.create({
       data: {
         id,
         orderId: order.id,
-        clubId: items[0].clubId,
+        clubId: firstItem.clubId,
         ownerUserId: order.userId,
         code: this.backupCode(),
-        qrPayload: this.qr('PRODUCT', id, items[0].clubId),
+        qrPayload: this.qr('PRODUCT', id, firstItem.clubId),
         signatureVersion: this.activeSigningVersion(),
         items: {
           create: items.map((item) => ({
@@ -1672,9 +1804,15 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   private async assertEventForCheckout(tx: Prisma.TransactionClient, eventId: string) {
     // Serialize with changes to the event, retaining the lock until checkout commits.
     await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${eventId} FOR SHARE`);
-    const event = await tx.event.findUnique({ where: { id: eventId }, select: { status: true, endsAt: true } });
+    const event = await tx.event.findUnique({
+      where: { id: eventId },
+      select: { status: true, endsAt: true },
+    });
     if (!event || !eventAllowsSales(event)) {
-      throw badRequest('EVENT_SALES_UNAVAILABLE', 'Este evento no admite nuevas compras en este momento.');
+      throw badRequest(
+        'EVENT_SALES_UNAVAILABLE',
+        'Este evento no admite nuevas compras en este momento.',
+      );
     }
   }
 
@@ -1718,11 +1856,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         const rows = await tx.$queryRaw<Array<{ available: number }>>(Prisma.sql`
           SELECT "quantityTotal" - "quantitySold" - "replacementReserved" AS available
           FROM "TicketType" WHERE id = ${reservation.resourceId} FOR UPDATE`);
-        if (!rows.length || rows[0].available < reservation.quantity) return false;
+        if (!rows[0] || rows[0].available < reservation.quantity) return false;
       } else if (reservation.resourceType === CommerceItemType.PRODUCT) {
         const rows = await tx.$queryRaw<Array<{ available: number }>>(Prisma.sql`
           SELECT "stockQuantity" AS available FROM "Product" WHERE id = ${reservation.resourceId} FOR UPDATE`);
-        if (!rows.length || rows[0].available < reservation.quantity) return false;
+        if (!rows[0] || rows[0].available < reservation.quantity) return false;
       }
     }
     for (const reservation of reservations) {
@@ -1856,7 +1994,10 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private async processFeaturedCampaignEvent(attempt: Prisma.PaymentAttemptGetPayload<{ include: { featuredCampaign: true } }>, event: VerifiedPaymentEvent) {
+  private async processFeaturedCampaignEvent(
+    attempt: Prisma.PaymentAttemptGetPayload<{ include: { featuredCampaign: true } }>,
+    event: VerifiedPaymentEvent,
+  ) {
     const campaign = attempt.featuredCampaign;
     if (!campaign) {
       throw notFound(
@@ -1871,11 +2012,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           provider: event.provider,
           providerEventId: event.providerEventId,
           type: `FEATURED_CAMPAIGN_${event.outcome}`,
-          payload: event.payload as Prisma.InputJsonValue | undefined,
+          payload: event.payload,
         },
       });
     } catch (error) {
-      if ((error as { code?: string }).code === 'P2002') {
+      if (isRecord(error) && error.code === 'P2002') {
         const existing = await this.prisma.paymentProviderEvent.findUnique({
           where: {
             provider_providerEventId: {
@@ -1935,10 +2076,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
-  private async processWalletTopUpEvent(attempt: Prisma.PaymentAttemptGetPayload<{ include: { walletTopUp: true } }>, event: VerifiedPaymentEvent) {
+  private async processWalletTopUpEvent(
+    attempt: Prisma.PaymentAttemptGetPayload<{ include: { walletTopUp: true } }>,
+    event: VerifiedPaymentEvent,
+  ) {
     const topUp = attempt.walletTopUp;
-    if (!topUp)
-      throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No se encontró la recarga asociada.');
+    if (!topUp) throw notFound('WALLET_TOP_UP_NOT_FOUND', 'No se encontró la recarga asociada.');
     try {
       await this.prisma.paymentProviderEvent.create({
         data: {
@@ -1946,11 +2089,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           provider: event.provider,
           providerEventId: event.providerEventId,
           type: `WALLET_TOP_UP_${event.outcome}`,
-          payload: event.payload as Prisma.InputJsonValue | undefined,
+          payload: event.payload,
         },
       });
     } catch (error) {
-      if ((error as { code?: string }).code === 'P2002') {
+      if (isRecord(error) && error.code === 'P2002') {
         const existing = await this.prisma.paymentProviderEvent.findUnique({
           where: {
             provider_providerEventId: {
@@ -2039,11 +2182,12 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     await this.finishProviderEvent(event, 'PROCESSED');
   }
 
-  private paymentResponse(order: Order, attempt: PaymentAttempt | null | undefined, checkoutUrl?: string) {
-    const storedProviderData =
-      attempt?.providerData && typeof attempt.providerData === 'object'
-        ? (attempt.providerData as Record<string, unknown>)
-        : undefined;
+  private paymentResponse(
+    order: Order,
+    attempt: PaymentAttempt | null | undefined,
+    checkoutUrl?: string,
+  ) {
+    const storedProviderData = isRecord(attempt?.providerData) ? attempt.providerData : undefined;
     return {
       message:
         order.status === 'PENDING'
@@ -2055,18 +2199,22 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       paymentStatus: attempt?.status ?? null,
       paymentProvider: attempt?.provider ?? null,
       paymentMethod: order.paymentMethod ?? null,
-      checkoutUrl: checkoutUrl ?? (typeof storedProviderData?.checkoutUrl === 'string' ? storedProviderData.checkoutUrl : null),
+      checkoutUrl:
+        checkoutUrl ??
+        (typeof storedProviderData?.checkoutUrl === 'string'
+          ? storedProviderData.checkoutUrl
+          : null),
       total: order.totalCents / 100,
       currency: order.currency,
-      generatedCount: order.status === 'PAID' ? undefined : 0,
     };
   }
 
-  private topUpResponse(topUp: WalletTopUp, attempt: PaymentAttempt | null | undefined, checkoutUrl?: string) {
-    const storedProviderData =
-      attempt?.providerData && typeof attempt.providerData === 'object'
-        ? (attempt.providerData as Record<string, unknown>)
-        : undefined;
+  private topUpResponse(
+    topUp: WalletTopUp,
+    attempt: PaymentAttempt | null | undefined,
+    checkoutUrl?: string,
+  ) {
+    const storedProviderData = isRecord(attempt?.providerData) ? attempt.providerData : undefined;
     return {
       topUpId: topUp.id,
       status: topUp.status,
@@ -2075,7 +2223,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       paymentAttemptId: attempt?.id ?? null,
       paymentStatus: attempt?.status ?? null,
       paymentProvider: attempt?.provider ?? null,
-      checkoutUrl: checkoutUrl ?? (typeof storedProviderData?.checkoutUrl === 'string' ? storedProviderData.checkoutUrl : null),
+      checkoutUrl:
+        checkoutUrl ??
+        (typeof storedProviderData?.checkoutUrl === 'string'
+          ? storedProviderData.checkoutUrl
+          : null),
       createdAt: topUp.createdAt,
       approvedAt: topUp.approvedAt,
     };
@@ -2097,7 +2249,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   async validateCode(
     user: AuthenticatedUser,
     clubId: string,
-    kind: ValidationKind,
+    kind: CommerceItemType,
     rawCode: string,
     confirmUse: boolean,
   ) {
@@ -2284,10 +2436,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       );
       return this.invalidValidation('CÓDIGO VENCIDO', 'La vigencia de este código ya finalizó.');
     }
-    if (
-      resource.event &&
-      !eventAllowsRedemption(resource.event)
-    ) {
+    if (resource.event && !eventAllowsRedemption(resource.event)) {
       await this.recordValidationAttempt(
         user,
         clubId,
@@ -2309,10 +2458,18 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       await this.prisma.$transaction(async (tx) => {
         await this.assertOrderAllowsRedemption(tx, resource.order.id);
         if (resource.eventId) {
-          await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${resource.eventId} FOR SHARE`);
-          const currentEvent = await tx.event.findUnique({ where: { id: resource.eventId }, select: { status: true, endsAt: true } });
+          await tx.$queryRaw(
+            Prisma.sql`SELECT "id" FROM "Event" WHERE "id" = ${resource.eventId} FOR SHARE`,
+          );
+          const currentEvent = await tx.event.findUnique({
+            where: { id: resource.eventId },
+            select: { status: true, endsAt: true },
+          });
           if (!currentEvent || !eventAllowsRedemption(currentEvent)) {
-            throw conflict('EVENT_UNAVAILABLE', 'El evento cambió y ya no permite canjear este código.');
+            throw conflict(
+              'EVENT_UNAVAILABLE',
+              'El evento cambió y ya no permite canjear este código.',
+            );
           }
         }
         const nextRedemptionCount = resource.redemptionCount + 1;
@@ -2455,7 +2612,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     const attendeeImageUrl = await this.uploadsService.createReadableImageUrl(
       delivery.owner.profileImageUrl,
     );
-    const response = (overrides: Partial<{ isValid: boolean; statusLabel: string; title: string; message: string }>) => ({
+    const response = (
+      overrides: Partial<{ isValid: boolean; statusLabel: string; title: string; message: string }>,
+    ) => ({
       validation: {
         isValid: true,
         statusLabel: confirmUse ? 'ENTREGADO CORRECTAMENTE' : 'LISTO PARA ENTREGAR',
@@ -2631,7 +2790,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
     return {
       items: logs.map((log) => {
-        const metadata = (log.metadata ?? {}) as Record<string, unknown>;
+        const metadata = isRecord(log.metadata) ? log.metadata : {};
         return {
           id: log.id,
           actorUserId: log.actorUserId,
@@ -2654,9 +2813,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     rawKind: string,
     resourceId: string,
     reason: string,
-  ) {
-    const kind = rawKind.toUpperCase() as ValidationKind;
-    if (!['TICKET', 'PRODUCT', 'PROMOTION'].includes(kind)) {
+  ): Promise<RedemptionReversalResponseDto> {
+    const kind = rawKind.toUpperCase();
+    if (kind !== 'TICKET' && kind !== 'PRODUCT' && kind !== 'PROMOTION') {
       throw badRequest('INVALID_REDEMPTION_KIND', 'El tipo de canje no es válido.');
     }
     if (user.role !== UserRole.SUPER_ADMIN) {
@@ -2797,7 +2956,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     clubId: string,
     code: string,
     outcome: 'VALID' | 'INVALID' | 'REPEATED' | 'REVERSED',
-    resourceType: ValidationKind | null,
+    resourceType: CommerceItemType | null,
     resourceId: string | null,
     reasonCode: string | null,
     tx: Prisma.TransactionClient | PrismaService = this.prisma,
@@ -2815,7 +2974,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private validationAction(kind: ValidationKind) {
+  private validationAction(kind: CommerceItemType) {
     return kind === 'TICKET'
       ? 'VALIDATE_TICKET'
       : kind === 'PRODUCT'
@@ -2871,19 +3030,16 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
 
   private isSignedQrValid(
     value: string,
-    expectedKind: ValidationKind,
+    expectedKind: CommerceItemType,
     expectedId: string,
     expectedClubId: string,
   ) {
     try {
       const [encoded, suppliedSignature, extra] = value.split('.');
       if (!encoded || !suppliedSignature || extra) return false;
-      const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')) as {
-        v?: string;
-        resource?: string;
-        id?: string;
-        clubId?: string;
-      };
+      const payload: unknown = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
+      if (!isRecord(payload) || (payload.v !== undefined && typeof payload.v !== 'string'))
+        return false;
       const expectedSignature = createHmac('sha256', this.signingKey(payload.v ?? 'legacy'))
         .update(encoded)
         .digest('base64url');
@@ -2905,9 +3061,8 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     try {
       const [encoded, signature, extra] = value.split('.');
       if (!encoded || !signature || extra) return null;
-      const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')) as {
-        id?: unknown;
-      };
+      const payload: unknown = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
+      if (!isRecord(payload)) return null;
       return typeof payload.id === 'string' && payload.id.length <= 100 ? payload.id : null;
     } catch {
       return null;
@@ -2917,7 +3072,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   private async assertValidationPermission(
     user: AuthenticatedUser,
     clubId: string,
-    kind: ValidationKind,
+    kind: CommerceItemType,
   ) {
     if (user.role === UserRole.SUPER_ADMIN) return;
     const admin = await this.prisma.clubAdmin.findUnique({
@@ -3069,7 +3224,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         paidOrders: aggregate._count,
         currency: 'PEN',
       },
-      items: orders,
+      items: orders.map((order) => ({
+        ...order,
+        items: order.items.map((item) => ({
+          ...item,
+          eventSnapshot: readEventSnapshot(item.eventSnapshot),
+        })),
+      })),
     };
   }
 
@@ -3080,7 +3241,15 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       include: this.orderInclude(),
     });
     if (!order) throw notFound('ORDER_NOT_FOUND', 'No se encontró la orden del negocio.');
-    return { order };
+    return {
+      order: {
+        ...order,
+        items: order.items.map((item) => ({
+          ...item,
+          eventSnapshot: readEventSnapshot(item.eventSnapshot),
+        })),
+      },
+    };
   }
 
   async exportClubOrders(user: AuthenticatedUser, clubId: string, query: ClubOrdersQueryDto) {
@@ -3111,7 +3280,9 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   ) {
     await this.assertClubPermission(user, clubId, WorkerPermission.REQUEST_REFUNDS);
     return this.prisma.$transaction(async (tx) => {
-      await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Order" WHERE "id" = ${orderId} AND "clubId" = ${clubId} FOR UPDATE`);
+      await tx.$queryRaw(
+        Prisma.sql`SELECT "id" FROM "Order" WHERE "id" = ${orderId} AND "clubId" = ${clubId} FOR UPDATE`,
+      );
       const order = await tx.order.findFirst({
         where: { id: orderId, clubId },
         include: {
@@ -3192,25 +3363,46 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     });
     if (!request)
       throw notFound('REFUND_REQUEST_NOT_FOUND', 'No se encontró la solicitud de devolución.');
-    if ((request.status === 'PROCESSING' && !(recoverEventJob && request.approvedAmountCents != null)) || request.status === 'COMPLETED') {
+    if (
+      (request.status === 'PROCESSING' &&
+        !(recoverEventJob && request.approvedAmountCents != null)) ||
+      request.status === 'COMPLETED'
+    ) {
       return { message: 'La devolución ya fue enviada.', refundRequest: request };
     }
-    if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED', ...(recoverEventJob && request.approvedAmountCents != null ? ['PROCESSING'] : [])].includes(request.status)) {
+    if (
+      ![
+        'REQUESTED',
+        'UNDER_REVIEW',
+        'APPROVED',
+        'FAILED',
+        ...(recoverEventJob && request.approvedAmountCents != null ? ['PROCESSING'] : []),
+      ].includes(request.status)
+    ) {
       throw conflict(
         'REFUND_REQUEST_NOT_PROCESSABLE',
         'La solicitud no se puede procesar en su estado actual.',
       );
     }
     const requiresManualReview = await this.orderHasUsedResources(this.prisma, request.orderId);
-    const unresolvedCancellation = await this.prisma.eventCancellation.findFirst({ where: {
-      status: { not: 'AUTHORIZED' }, event: { OR: [
-        { purchasedItems: { some: { orderId: request.orderId } } },
-        { tickets: { some: { orderId: request.orderId } } },
-        { consumableRights: { some: { orderId: request.orderId } } },
-      ] },
-    }, select: { id: true } });
+    const unresolvedCancellation = await this.prisma.eventCancellation.findFirst({
+      where: {
+        status: { not: 'AUTHORIZED' },
+        event: {
+          OR: [
+            { purchasedItems: { some: { orderId: request.orderId } } },
+            { tickets: { some: { orderId: request.orderId } } },
+            { consumableRights: { some: { orderId: request.orderId } } },
+          ],
+        },
+      },
+      select: { id: true },
+    });
     if (unresolvedCancellation && !request.eventJob) {
-      throw conflict('EVENT_REFUND_NOT_AUTHORIZED', 'La cancelación todavía no tiene autorización de devolución de Beerry.');
+      throw conflict(
+        'EVENT_REFUND_NOT_AUTHORIZED',
+        'La cancelación todavía no tiene autorización de devolución de Beerry.',
+      );
     }
     if (requiresManualReview && (!resolutionNote?.trim() || approvedAmountCents === undefined)) {
       throw conflict(
@@ -3235,7 +3427,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
     const requested = request.requestedAmountCents ?? attempt.amountCents;
     const amountCents = approvedAmountCents ?? request.approvedAmountCents ?? requested;
-    if (request.approvedAmountCents != null && request.approvedAmountCents !== amountCents) throw conflict('REFUND_AMOUNT_IMMUTABLE', 'No se puede cambiar el importe de un envío de devolución.');
+    if (request.approvedAmountCents != null && request.approvedAmountCents !== amountCents)
+      throw conflict(
+        'REFUND_AMOUNT_IMMUTABLE',
+        'No se puede cambiar el importe de un envío de devolución.',
+      );
     const refundableCents = attempt.amountCents - attempt.refundedAmountCents;
     if (
       !Number.isInteger(amountCents) ||
@@ -3255,11 +3451,33 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       );
     }
     await this.prisma.$transaction(async (tx) => {
-      await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${request.orderId} FOR UPDATE`);
-      const other = await tx.refundRequest.findFirst({ where: { orderId: request.orderId, id: { not: request.id }, status: { in: ['PROCESSING','APPROVED','FAILED'] } }, select: { id: true } });
-      if (other) throw conflict('REFUND_IN_FLIGHT', 'Debe conciliarse la devolución anterior antes de enviar otra.');
-      const updated = await tx.refundRequest.updateMany({ where: { id: request.id, status: request.status }, data: { status: 'PROCESSING', approvedAmountCents: amountCents, resolutionNote: resolutionNote?.trim(), reviewedAt: new Date() } });
-      if (updated.count !== 1) throw conflict('REFUND_CHANGED', 'La devolución cambió; actualiza su estado.');
+      await tx.$queryRaw(
+        Prisma.sql`SELECT id FROM "Order" WHERE id = ${request.orderId} FOR UPDATE`,
+      );
+      const other = await tx.refundRequest.findFirst({
+        where: {
+          orderId: request.orderId,
+          id: { not: request.id },
+          status: { in: ['PROCESSING', 'APPROVED', 'FAILED'] },
+        },
+        select: { id: true },
+      });
+      if (other)
+        throw conflict(
+          'REFUND_IN_FLIGHT',
+          'Debe conciliarse la devolución anterior antes de enviar otra.',
+        );
+      const updated = await tx.refundRequest.updateMany({
+        where: { id: request.id, status: request.status },
+        data: {
+          status: 'PROCESSING',
+          approvedAmountCents: amountCents,
+          resolutionNote: resolutionNote?.trim(),
+          reviewedAt: new Date(),
+        },
+      });
+      if (updated.count !== 1)
+        throw conflict('REFUND_CHANGED', 'La devolución cambió; actualiza su estado.');
     });
     try {
       const providerRefund = await this.refundGateway.createRefund({
@@ -3302,28 +3520,69 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async refundPaymentId(attempt: { id: string; externalPaymentId: string | null; providerData: unknown }) {
-    const stored = (attempt.providerData as Record<string, unknown> | null)?.paymentId;
+  async refundPaymentId(attempt: {
+    id: string;
+    externalPaymentId: string | null;
+    providerData: unknown;
+  }) {
+    const stored = isRecord(attempt.providerData) ? attempt.providerData.paymentId : undefined;
     if (/^\d+$/.test(String(stored ?? ''))) return String(stored);
-    if (/^\d+$/.test(attempt.externalPaymentId ?? '')) return attempt.externalPaymentId!;
-    const events = await this.prisma.paymentProviderEvent.findMany({ where: { paymentAttemptId: attempt.id, type: 'PAYMENT_APPROVED' }, orderBy: { createdAt: 'desc' }, take: 10 });
-    const ids = [...new Set(events.map((event) => String((event.payload as Prisma.JsonObject | null)?.id ?? '')).filter((id) => /^\d+$/.test(id)))];
-    if (ids.length !== 1) throw conflict('PAYMENT_ID_UNRESOLVED', 'Debe conciliarse el identificador del pago real antes de devolver. Una preferencia no es un pago.');
-    return ids[0];
+    if (attempt.externalPaymentId && /^\d+$/.test(attempt.externalPaymentId))
+      return attempt.externalPaymentId;
+    const events = await this.prisma.paymentProviderEvent.findMany({
+      where: { paymentAttemptId: attempt.id, type: 'PAYMENT_APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+    const ids = [
+      ...new Set(
+        events
+          .map((event) => String(isRecord(event.payload) ? (event.payload.id ?? '') : ''))
+          .filter((id) => /^\d+$/.test(id)),
+      ),
+    ];
+    const [paymentId] = ids;
+    if (ids.length !== 1 || !paymentId)
+      throw conflict(
+        'PAYMENT_ID_UNRESOLVED',
+        'Debe conciliarse el identificador del pago real antes de devolver. Una preferencia no es un pago.',
+      );
+    return paymentId;
   }
 
   async reconcileEventRefund(requestId: string) {
-    const request = await this.prisma.refundRequest.findUniqueOrThrow({ where: { id: requestId }, include: { eventJob: true, order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } } } });
+    const request = await this.prisma.refundRequest.findUniqueOrThrow({
+      where: { id: requestId },
+      include: {
+        eventJob: true,
+        order: { include: { paymentAttempts: { orderBy: { createdAt: 'desc' }, take: 1 } } },
+      },
+    });
     if (request.status === 'COMPLETED') return true;
     const attempt = request.order.paymentAttempts[0];
-    if (!request.externalRefundId || !attempt?.sellerExternalId || !this.refundGateway?.queryRefund) return false;
-    const verified = await this.refundGateway.queryRefund({ paymentId: await this.refundPaymentId(attempt), sellerExternalId: attempt.sellerExternalId, refundId: request.externalRefundId });
-    if (verified.amountCents !== request.approvedAmountCents) throw new Error('REFUND_AMOUNT_MISMATCH');
+    if (!request.externalRefundId || !attempt?.sellerExternalId || !this.refundGateway?.queryRefund)
+      return false;
+    const verified = await this.refundGateway.queryRefund({
+      paymentId: await this.refundPaymentId(attempt),
+      sellerExternalId: attempt.sellerExternalId,
+      refundId: request.externalRefundId,
+    });
+    if (verified.amountCents !== request.approvedAmountCents)
+      throw new Error('REFUND_AMOUNT_MISMATCH');
     if (verified.status !== 'approved') return false;
     await this.processPaymentEvent(verified.payment);
     await this.prisma.$transaction(async (tx) => {
-      await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE id = ${request.orderId} FOR UPDATE`);
-      await tx.refundRequest.updateMany({ where: { id: requestId, status: { not: 'COMPLETED' } }, data: { status: 'COMPLETED', processedAmountCents: verified.amountCents, completedAt: new Date() } });
+      await tx.$queryRaw(
+        Prisma.sql`SELECT id FROM "Order" WHERE id = ${request.orderId} FOR UPDATE`,
+      );
+      await tx.refundRequest.updateMany({
+        where: { id: requestId, status: { not: 'COMPLETED' } },
+        data: {
+          status: 'COMPLETED',
+          processedAmountCents: verified.amountCents,
+          completedAt: new Date(),
+        },
+      });
     });
     return true;
   }
@@ -3331,18 +3590,35 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
   private async assertOrderAllowsRedemption(tx: Prisma.TransactionClient, orderId: string) {
     await tx.$queryRaw(Prisma.sql`SELECT "id" FROM "Order" WHERE "id" = ${orderId} FOR UPDATE`);
     const order = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } });
-    const allocatedPartial = order?.status === 'PARTIALLY_REFUNDED' && !await tx.refundRequest.findFirst({ where: { orderId, status: 'COMPLETED', eventJob: { is: null } }, select: { id: true } });
+    const allocatedPartial =
+      order?.status === 'PARTIALLY_REFUNDED' &&
+      !(await tx.refundRequest.findFirst({
+        where: { orderId, status: 'COMPLETED', eventJob: { is: null } },
+        select: { id: true },
+      }));
     if (!order || (order.status !== 'PAID' && !allocatedPartial)) {
       throw conflict('ORDER_NOT_REDEEMABLE', 'La compra está en revisión o ya no permite canjes.');
     }
   }
 
-  private async orderHasUsedResources(tx: Prisma.TransactionClient, orderId: string): Promise<boolean> {
-    const used = { OR: [{ status: RedeemableStatus.USED }, { usedAt: { not: null } }, { redemptionCount: { gt: 0 } }] };
+  private async orderHasUsedResources(
+    tx: Prisma.TransactionClient,
+    orderId: string,
+  ): Promise<boolean> {
+    const used = {
+      OR: [
+        { status: RedeemableStatus.USED },
+        { usedAt: { not: null } },
+        { redemptionCount: { gt: 0 } },
+      ],
+    };
     const [ticket, consumable, delivery] = await Promise.all([
       tx.ticket.findFirst({ where: { orderId, ...used }, select: { id: true } }),
       tx.consumableRight.findFirst({ where: { orderId, ...used }, select: { id: true } }),
-      tx.productDelivery.findFirst({ where: { orderId, OR: [{ status: RedeemableStatus.USED }, { usedAt: { not: null } }] }, select: { id: true } }),
+      tx.productDelivery.findFirst({
+        where: { orderId, OR: [{ status: RedeemableStatus.USED }, { usedAt: { not: null } }] },
+        select: { id: true },
+      }),
     ]);
     return !!(ticket || consumable || delivery);
   }
@@ -3367,7 +3643,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         if (!['REQUESTED', 'UNDER_REVIEW', 'APPROVED', 'FAILED'].includes(request.status))
           throw conflict('REFUND_REQUEST_NOT_PROCESSABLE', 'La devolución está en proceso.');
         const attempt = request.order.paymentAttempts[0];
-        if (!attempt || attempt.provider !== 'beerry_wallet' || !['APPROVED', 'PARTIALLY_REFUNDED'].includes(attempt.status))
+        if (
+          !attempt ||
+          attempt.provider !== 'beerry_wallet' ||
+          !['APPROVED', 'PARTIALLY_REFUNDED'].includes(attempt.status)
+        )
           throw conflict('PAYMENT_NOT_REFUNDABLE', 'La compra de billetera no está aprobada.');
         const amount =
           approvedAmountCents ??
@@ -3376,8 +3656,11 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           attempt.amountCents;
         // Partial refunds require an authorized line allocation; generic requests stay full-only.
         if (
-          (!request.eventJob && (amount !== attempt.amountCents || attempt.refundedAmountCents !== 0)) ||
-          !Number.isSafeInteger(amount) || amount <= 0 || amount > attempt.amountCents - attempt.refundedAmountCents ||
+          (!request.eventJob &&
+            (amount !== attempt.amountCents || attempt.refundedAmountCents !== 0)) ||
+          !Number.isSafeInteger(amount) ||
+          amount <= 0 ||
+          amount > attempt.amountCents - attempt.refundedAmountCents ||
           (request.requestedAmountCents != null && amount > request.requestedAmountCents)
         )
           throw conflict(
@@ -3388,34 +3671,72 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
         const now = new Date();
         const cumulative = attempt.refundedAmountCents + amount;
         const full = cumulative === attempt.amountCents;
-        const fee = Math.round(cumulative * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents) - Math.round(attempt.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0) / attempt.amountCents);
+        const fee =
+          Math.round((cumulative * (attempt.marketplaceFeeCents ?? 0)) / attempt.amountCents) -
+          Math.round(
+            (attempt.refundedAmountCents * (attempt.marketplaceFeeCents ?? 0)) /
+              attempt.amountCents,
+          );
         if (amount === attempt.amountCents) {
-          await this.ledger.reverseSale(tx, { paymentAttemptId: attempt.id, providerEventId: `wallet-refund:${request.id}`, type: 'REFUND' });
+          await this.ledger.reverseSale(tx, {
+            paymentAttemptId: attempt.id,
+            providerEventId: `wallet-refund:${request.id}`,
+            type: 'REFUND',
+          });
         } else {
-          await this.ledger.reverseSalePartial(tx, { paymentAttemptId: attempt.id, providerEventId: `wallet-refund:${request.id}`, amountCents: amount, marketplaceFeeCents: fee });
+          await this.ledger.reverseSalePartial(tx, {
+            paymentAttemptId: attempt.id,
+            providerEventId: `wallet-refund:${request.id}`,
+            amountCents: amount,
+            marketplaceFeeCents: fee,
+          });
         }
         if (full) await this.referrals.reverseOrderEffects(tx, request.orderId, 'REFUNDED');
-        else await this.referrals.restoreOrderCredits(tx, request.orderId, cumulative, attempt.amountCents);
+        else
+          await this.referrals.restoreOrderCredits(
+            tx,
+            request.orderId,
+            cumulative,
+            attempt.amountCents,
+          );
         await tx.paymentAttempt.update({
           where: { id: attempt.id },
-          data: { status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED', refundedAmountCents: cumulative },
+          data: {
+            status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED',
+            refundedAmountCents: cumulative,
+          },
         });
-        await tx.order.update({ where: { id: request.orderId }, data: { status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED' } });
+        await tx.order.update({
+          where: { id: request.orderId },
+          data: { status: full ? 'REFUNDED' : 'PARTIALLY_REFUNDED' },
+        });
         const revoke = {
           status: 'CANCELLED' as const,
           revokedAt: now,
           revokedReason: 'PAYMENT_REFUNDED',
         };
         await tx.ticket.updateMany({
-          where: { orderId: request.orderId, status: 'AVAILABLE', ...(!full && request.eventJob ? { orderItemId: request.eventJob.orderItemId } : {}) },
+          where: {
+            orderId: request.orderId,
+            status: 'AVAILABLE',
+            ...(!full && request.eventJob ? { orderItemId: request.eventJob.orderItemId } : {}),
+          },
           data: revoke,
         });
         await tx.consumableRight.updateMany({
-          where: { orderId: request.orderId, status: 'AVAILABLE', ...(!full && request.eventJob ? { orderItemId: request.eventJob.orderItemId } : {}) },
+          where: {
+            orderId: request.orderId,
+            status: 'AVAILABLE',
+            ...(!full && request.eventJob ? { orderItemId: request.eventJob.orderItemId } : {}),
+          },
           data: revoke,
         });
         await tx.productDelivery.updateMany({
-          where: { orderId: request.orderId, status: 'AVAILABLE', ...(!full ? { id: '__no_product_in_event_refund__' } : {}) },
+          where: {
+            orderId: request.orderId,
+            status: 'AVAILABLE',
+            ...(!full ? { id: '__no_product_in_event_refund__' } : {}),
+          },
           data: revoke,
         });
         await tx.wallet.update({
@@ -3531,11 +3852,13 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
 
   async listTickets(user: AuthenticatedUser) {
     return {
-      items: await this.prisma.ticket.findMany({
-        where: { ownerUserId: user.id },
-        include: { ticketType: true, club: true, event: true },
-        orderBy: { createdAt: 'desc' },
-      }),
+      items: (
+        await this.prisma.ticket.findMany({
+          where: { ownerUserId: user.id },
+          include: { ticketType: true, club: true, event: true },
+          orderBy: { createdAt: 'desc' },
+        })
+      ).map((item) => ({ ...item, club: clubWithProfile(item.club) })),
     };
   }
 
@@ -3553,26 +3876,21 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
       }),
     ]);
     return {
-      items: [
-        ...rights,
-        ...deliveries.map((delivery) => ({
-          ...delivery,
-          sourceType: CommerceItemType.PRODUCT,
-          title:
-            delivery.items.length === 1
-              ? `${delivery.items[0].nameSnapshot} ×${delivery.items[0].quantity}`
-              : 'Entrega de productos',
-          contents: delivery.items.map((item) => ({
-            productId: item.productId,
-            name: item.nameSnapshot,
-            quantity: item.quantity,
-            imageUrl: item.product.imageUrl,
-          })),
-          product: delivery.items.length === 1 ? delivery.items[0].product : null,
-          promotion: null,
-          event: null,
+      rights: rights.map((right) => ({ ...right, club: clubWithProfile(right.club) })),
+      deliveries: deliveries.map((delivery) => ({
+        ...delivery,
+        club: clubWithProfile(delivery.club),
+        title:
+          delivery.items.length === 1 && delivery.items[0]
+            ? `${delivery.items[0].nameSnapshot} ×${delivery.items[0].quantity}`
+            : 'Entrega de productos',
+        contents: delivery.items.map((item) => ({
+          productId: item.productId,
+          name: item.nameSnapshot,
+          quantity: item.quantity,
+          imageUrl: item.product.imageUrl,
         })),
-      ].sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime()),
+      })),
     };
   }
 }

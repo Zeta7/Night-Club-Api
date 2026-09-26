@@ -1,4 +1,3 @@
-import { OptionalField } from '../../../../shared/presentation/dto-fields';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BusinessAccessRequestType } from '@prisma/client';
 import {
@@ -11,9 +10,10 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
+import { OptionalField } from '../../../../shared/presentation/dto-fields';
 
 export class CreateBusinessAccessRequestDto {
-  @ApiProperty({ enum: BusinessAccessRequestType })
+  @ApiProperty({ enum: BusinessAccessRequestType, enumName: 'BusinessAccessRequestType' })
   @IsEnum(BusinessAccessRequestType)
   type!: BusinessAccessRequestType;
 

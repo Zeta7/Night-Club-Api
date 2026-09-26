@@ -1,10 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { EventCancellationMode } from '@prisma/client';
+import { IsEnum, IsIn, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { OptionalField } from '../../../../shared/presentation/dto-fields';
-import { IsIn, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class CancelEventDto {
-  @IsIn(['REFUND_REQUESTED', 'REFUND_DECLINED', 'REPLACEMENT'])
-  mode!: 'REFUND_REQUESTED' | 'REFUND_DECLINED' | 'REPLACEMENT';
+  @ApiProperty({ enum: EventCancellationMode, enumName: 'EventCancellationMode' })
+  @IsEnum(EventCancellationMode)
+  mode!: EventCancellationMode;
 
+  @ApiProperty({ type: String, minLength: 5, maxLength: 1000 })
   @IsString()
   @MinLength(5)
   @MaxLength(1000)

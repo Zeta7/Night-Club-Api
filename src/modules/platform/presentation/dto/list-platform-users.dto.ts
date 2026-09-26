@@ -1,7 +1,8 @@
-import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole, UserStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsInteger, OptionalField } from '../../../../shared/presentation/dto-fields';
 
 export class ListPlatformUsersDto {
   @OptionalField()
@@ -9,10 +10,12 @@ export class ListPlatformUsersDto {
   @MaxLength(80)
   query?: string;
 
+  @ApiPropertyOptional({ enum: UserRole, enumName: 'UserRole' })
   @OptionalField()
   @IsEnum(UserRole)
   role?: UserRole;
 
+  @ApiPropertyOptional({ enum: UserStatus, enumName: 'UserStatus' })
   @OptionalField()
   @IsEnum(UserStatus)
   status?: UserStatus;

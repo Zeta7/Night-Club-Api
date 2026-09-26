@@ -1,12 +1,29 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { MessageResponseDto } from '../../../shared/presentation/response.dto';
 import { AuthenticatedUser, CurrentUser } from '../../identity/presentation/current-user';
 import { AccessTokenGuard } from '../../identity/presentation/guards/access-token.guard';
 import { ClubWorkersService } from '../application/club-workers.service';
 import { RegisterClubWorkerDto } from './dto/register-club-worker.dto';
 import { ReplaceClubWorkerPermissionsDto } from './dto/replace-club-worker-permissions.dto';
 import { UpdateClubWorkerDto } from './dto/update-club-worker.dto';
-import { AuthorizeWorkerDeviceDto, CloseWorkerShiftDto, StartWorkerShiftDto, SyncWorkerShiftDto } from './dto/worker-operations.dto';
+import {
+  AuthorizeWorkerDeviceDto,
+  CloseWorkerShiftDto,
+  StartWorkerShiftDto,
+  SyncWorkerShiftDto,
+} from './dto/worker-operations.dto';
+import {
+  ClosedWorkerShiftResponseDto,
+  ClubWorkerResponseDto,
+  ClubWorkersResponseDto,
+  RevokedWorkerDeviceResponseDto,
+  WorkerDeviceResponseDto,
+  WorkerOperationsReportResponseDto,
+  WorkerShiftResponseDto,
+  WorkerShiftSyncResponseDto,
+  WorkerShiftsResponseDto,
+} from './worker.response.dto';
 
 @ApiTags('Club Workers')
 @ApiBearerAuth()
@@ -15,30 +32,40 @@ import { AuthorizeWorkerDeviceDto, CloseWorkerShiftDto, StartWorkerShiftDto, Syn
 export class ClubWorkersController {
   constructor(private readonly clubWorkersService: ClubWorkersService) {}
 
+  @ApiOperation({ summary: 'Iniciar mi turno' })
+  @ApiResponse({ status: 201, type: WorkerShiftResponseDto })
   @Post('me/shifts')
   startMyShift(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Body() body: StartWorkerShiftDto,
-  ) {
+  ): Promise<WorkerShiftResponseDto> {
     return this.clubWorkersService.startShift(currentUser, clubId, body);
   }
 
+  @ApiOperation({ summary: 'Sincronizar mi turno' })
+  @ApiResponse({ status: 201, type: WorkerShiftSyncResponseDto })
   @Post('me/shifts/:shiftId/sync')
   syncMyShift(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('shiftId') shiftId: string,
     @Body() body: SyncWorkerShiftDto,
-  ) {
+  ): Promise<WorkerShiftSyncResponseDto> {
     return this.clubWorkersService.syncShift(currentUser, clubId, shiftId, body);
   }
 
+  @ApiResponse({ status: 200, type: WorkerShiftsResponseDto })
   @Get(':workerId/shifts')
-  listShifts(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('workerId') workerId: string) {
+  listShifts(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('workerId') workerId: string,
+  ): Promise<WorkerShiftsResponseDto> {
     return this.clubWorkersService.listShifts(user, clubId, workerId);
   }
 
+  @ApiResponse({ status: 201, type: ClosedWorkerShiftResponseDto })
   @Post(':workerId/shifts/:shiftId/close')
   closeShift(
     @CurrentUser() user: AuthenticatedUser,
@@ -46,32 +73,39 @@ export class ClubWorkersController {
     @Param('workerId') workerId: string,
     @Param('shiftId') shiftId: string,
     @Body() body: CloseWorkerShiftDto,
-  ) {
+  ): Promise<ClosedWorkerShiftResponseDto> {
     return this.clubWorkersService.closeShift(user, clubId, workerId, shiftId, body.reason);
   }
 
+  @ApiResponse({ status: 201, type: WorkerDeviceResponseDto })
   @Post(':workerId/devices')
   authorizeDevice(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('workerId') workerId: string,
     @Body() body: AuthorizeWorkerDeviceDto,
-  ) {
+  ): Promise<WorkerDeviceResponseDto> {
     return this.clubWorkersService.authorizeDevice(user, clubId, workerId, body);
   }
 
+  @ApiResponse({ status: 200, type: RevokedWorkerDeviceResponseDto })
   @Delete(':workerId/devices/:deviceId')
   revokeDevice(
     @CurrentUser() user: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('workerId') workerId: string,
     @Param('deviceId') deviceId: string,
-  ) {
+  ): Promise<RevokedWorkerDeviceResponseDto> {
     return this.clubWorkersService.revokeDevice(user, clubId, workerId, deviceId);
   }
 
+  @ApiResponse({ status: 200, type: WorkerOperationsReportResponseDto })
   @Get(':workerId/report')
-  report(@CurrentUser() user: AuthenticatedUser, @Param('clubId') clubId: string, @Param('workerId') workerId: string) {
+  report(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+    @Param('workerId') workerId: string,
+  ): Promise<WorkerOperationsReportResponseDto> {
     return this.clubWorkersService.workerReport(user, clubId, workerId);
   }
 
@@ -81,12 +115,16 @@ export class ClubWorkersController {
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para vincular un usuario activo como trabajador del club y asignarle permisos operativos.',
   })
-  @ApiResponse({ status: 201, description: 'Trabajador registrado correctamente.' })
+  @ApiResponse({
+    type: ClubWorkerResponseDto,
+    status: 201,
+    description: 'Trabajador registrado correctamente.',
+  })
   registerWorker(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Body() body: RegisterClubWorkerDto,
-  ) {
+  ): Promise<ClubWorkerResponseDto> {
     return this.clubWorkersService.registerWorker(currentUser, clubId, body);
   }
 
@@ -96,8 +134,15 @@ export class ClubWorkersController {
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para consultar los trabajadores asociados al club, su estado y sus permisos configurados.',
   })
-  @ApiResponse({ status: 200, description: 'Trabajadores obtenidos correctamente.' })
-  listWorkers(@CurrentUser() currentUser: AuthenticatedUser, @Param('clubId') clubId: string) {
+  @ApiResponse({
+    type: ClubWorkersResponseDto,
+    status: 200,
+    description: 'Trabajadores obtenidos correctamente.',
+  })
+  listWorkers(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param('clubId') clubId: string,
+  ): Promise<ClubWorkersResponseDto> {
     return this.clubWorkersService.listWorkers(currentUser, clubId);
   }
 
@@ -107,13 +152,17 @@ export class ClubWorkersController {
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para cambiar el estado operativo de un trabajador dentro del club.',
   })
-  @ApiResponse({ status: 200, description: 'Trabajador actualizado correctamente.' })
+  @ApiResponse({
+    type: ClubWorkerResponseDto,
+    status: 200,
+    description: 'Trabajador actualizado correctamente.',
+  })
   updateWorker(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('workerId') workerId: string,
     @Body() body: UpdateClubWorkerDto,
-  ) {
+  ): Promise<ClubWorkerResponseDto> {
     return this.clubWorkersService.updateWorker(currentUser, clubId, workerId, body);
   }
 
@@ -123,13 +172,17 @@ export class ClubWorkersController {
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para reemplazar por completo la lista de permisos que tiene un trabajador dentro del club.',
   })
-  @ApiResponse({ status: 200, description: 'Permisos actualizados correctamente.' })
+  @ApiResponse({
+    type: ClubWorkerResponseDto,
+    status: 200,
+    description: 'Permisos actualizados correctamente.',
+  })
   replacePermissions(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('workerId') workerId: string,
     @Body() body: ReplaceClubWorkerPermissionsDto,
-  ) {
+  ): Promise<ClubWorkerResponseDto> {
     return this.clubWorkersService.replacePermissions(currentUser, clubId, workerId, body);
   }
 
@@ -139,12 +192,16 @@ export class ClubWorkersController {
     description:
       'Roles permitidos: ADMIN, SUPER_ADMIN. Requiere accessToken. Regla: ADMIN solo puede operar clubes que administra. Se usa para eliminar la relacion operativa entre un trabajador y el club.',
   })
-  @ApiResponse({ status: 200, description: 'Trabajador desvinculado correctamente.' })
+  @ApiResponse({
+    type: MessageResponseDto,
+    status: 200,
+    description: 'Trabajador desvinculado correctamente.',
+  })
   removeWorker(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Param('clubId') clubId: string,
     @Param('workerId') workerId: string,
-  ) {
+  ): Promise<MessageResponseDto> {
     return this.clubWorkersService.removeWorker(currentUser, clubId, workerId);
   }
 }

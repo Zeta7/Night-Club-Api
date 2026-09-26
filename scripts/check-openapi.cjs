@@ -31,86 +31,38 @@ const EXPECTED_MEDIA_TYPES = {
 const EXPECTED_REQUEST_MEDIA_TYPES = {};
 const DYNAMIC_RESPONSE_PATH_ALLOWLIST = [
   {
-    pattern:
-      /^AdminBusinessAccessController_(?:get|startReview)Response::properties\.request\.properties\.requestedClub\.properties\.(?:addressJson|contactJson|socialMediaJson|scheduleJson)$/,
-    reason: 'Administrative business access detail returns the stored club JSON fields unchanged.',
+    pattern: /^NotificationDto::properties\.data$/,
+    reason: 'Notification payloads vary by template.',
     nullable: true,
   },
   {
-    pattern: /^NotificationController_listResponse::properties\.items\.items\.properties\.data$/,
-    reason: 'Notification data is arbitrary nullable JSON selected by each template.',
+    pattern: /^PlatformDashboardDto::properties\.settings\.additionalProperties$/,
+    reason: 'Platform settings are keyed JSON values.',
     nullable: true,
   },
   {
-    pattern:
-      /^ClubsController_(?:createClub|getClub|updateClub|activateClub|deactivateClub)Response::properties\.club\.properties\.(?:address|contact|socialMedia|schedule)$/,
-    reason: 'Administrative club responses expose the stored JSON values without narrowing them.',
-    nullable: false,
-  },
-  {
-    pattern:
-      /^ClubsController_listClubsResponse::properties\.clubs\.items\.properties\.(?:address|contact|socialMedia|schedule)$/,
-    reason: 'The club list exposes the stored JSON values without narrowing them.',
-    nullable: false,
-  },
-  {
-    pattern:
-      /^ClubsController_getAdminDashboardResponse::properties\.club\.properties\.(?:address|contact|socialMedia|schedule)$/,
-    reason: 'The dashboard club uses the same open JSON fields as the administrative club payload.',
-    nullable: false,
-  },
-  {
-    pattern:
-      /^ClubsController_getCustomerHomeResponse::properties\.clubs\.items\.properties\.contact$/,
-    reason: 'Customer Home forwards the stored contact JSON without a guaranteed closed shape.',
-    nullable: false,
-  },
-  {
-    pattern:
-      /^ClubsController_(?:exploreCustomerContent|getCustomerClubDetail|getCustomerEventDetail)Response::properties\.(?:clubs\.items|club)\.properties\.contact$/,
-    reason:
-      'Customer discovery forwards the stored contact JSON without a guaranteed closed shape.',
-    nullable: false,
-  },
-  {
-    pattern:
-      /^PlatformController_(?:getDashboard|getSettings|updateSettings)Response::properties\.(?:dashboard\.properties\.)?settings\.additionalProperties$/,
-    reason: 'Platform settings are a map whose values are arbitrary JSON, including null.',
+    pattern: /^PlatformSettingsResponseDto::properties\.settings\.additionalProperties$/,
+    reason: 'Platform settings are keyed JSON values.',
     nullable: true,
   },
   {
-    pattern: /^AuditController_searchResponse::properties\.items\.items\.properties\.metadata$/,
-    reason: 'Audit metadata records operation-specific nullable JSON.',
+    pattern: /^AuditEntryDto::properties\.metadata$/,
+    reason: 'Audit details vary by operation.',
     nullable: true,
   },
   {
-    pattern:
-      /^WalletsController_(?:getClubLedger|reconcileOrder)Response::properties\.(?:movements\.items\.properties\.transaction|transactions\.items)\.properties\.metadata$/,
-    reason: 'Ledger transaction metadata is operation-specific nullable JSON.',
+    pattern: /^ClubLedgerMovementTransactionDto::properties\.metadata$/,
+    reason: 'Ledger metadata varies by transaction.',
     nullable: true,
   },
   {
-    pattern:
-      /^WalletsController_platformWithdrawalsResponse::properties\.items\.items\.properties\.club\.properties\.(?:addressJson|contactJson|socialMediaJson|scheduleJson)$/,
-    reason: 'Platform withdrawal rows include the Club JSON columns returned by the runtime.',
+    pattern: /^OrderReconciliationTransactionDto::properties\.metadata$/,
+    reason: 'Ledger metadata varies by transaction.',
     nullable: true,
   },
   {
-    pattern:
-      /^CommerceController_(?:clubOrders|clubOrderDetail)Response::properties\.(?:items\.items|order)\.properties\.paymentAttempts\.items\.properties\.providerData$/,
-    reason: 'Payment provider data is provider-specific nullable JSON.',
-    nullable: true,
-  },
-  {
-    pattern:
-      /^CommerceController_(?:tickets|consumables)Response::properties\.items\.items\.properties\.club\.properties\.(?:addressJson|contactJson|socialMediaJson|scheduleJson)$/,
-    reason: 'Redeemable rows include the Club JSON columns returned by the runtime.',
-    nullable: true,
-  },
-  {
-    pattern:
-      /^CommerceController_(?:clubOrders|clubOrderDetail)Response::properties\.(?:items\.items|order)\.properties\.items\.items\.properties\.eventSnapshot$/,
-    reason: 'Order lines preserve the nullable event snapshot stored as historical JSON.',
+    pattern: /^OrderPaymentAttemptDto::properties\.providerData$/,
+    reason: 'Provider-specific payment data.',
     nullable: true,
   },
 ];
@@ -259,6 +211,8 @@ function unionVariantsAreComplete(document, name, path, keyword, variants) {
 }
 
 function isClosedObjectOrTypedMap(schema) {
+  if (schema?.allOf?.length && !schema.properties && schema.allOf.every(isDeclaredSchema))
+    return true;
   if (schema?.type !== 'object') return true;
   if (schema.additionalProperties === false) return true;
   return (
@@ -291,7 +245,7 @@ function requestModels() {
     if (typeof type === 'function' && type.name.endsWith('Dto')) models.add(type);
   };
   for (const file of filesIn(path.join(ROOT, 'dist', 'src', 'modules'))) {
-    if (!/\.(dto|controller)\.js$/.test(file)) continue;
+    if (!/\.(dto|controller)\.js$/.test(file) || file.endsWith('.response.dto.js')) continue;
     for (const type of Object.values(require(file))) {
       if (typeof type !== 'function' || !type.prototype) continue;
       add(type);
@@ -310,6 +264,14 @@ function requestModels() {
 function checkRequestSchemas(models, schemas) {
   const failures = [];
   let fields = 0;
+  function enumValues(schema, visited = new Set()) {
+    if (!schema || visited.has(schema)) return undefined;
+    visited.add(schema);
+    if (schema.enum) return schema.enum.filter((value) => value !== null);
+    if (schema.$ref) return enumValues(schemas[schema.$ref.split('/').pop()], visited);
+    if (schema.allOf?.length === 1) return enumValues(schema.allOf[0], visited);
+    return undefined;
+  }
   function checkShape(schema, label) {
     if (!schema || typeof schema !== 'object') return;
     if (schema.required !== undefined && !Array.isArray(schema.required)) {
@@ -345,7 +307,7 @@ function checkRequestSchemas(models, schemas) {
       }
       for (const rule of rules.filter((item) => item.name === 'isEnum' || item.name === 'isIn')) {
         const expected = rule.name === 'isEnum' ? rule.constraints[1] : rule.constraints[0];
-        const actual = (rule.each ? field.items : field)?.enum?.filter((value) => value !== null);
+        const actual = enumValues(rule.each ? field.items : field);
         if (
           !actual ||
           actual.length !== expected.length ||
@@ -484,9 +446,27 @@ async function main() {
     check(Boolean(resolvePointer(document, reference)), `Broken local reference: ${reference}.`);
   }
 
+  const responseModelNames = new Set();
+  for (const file of filesIn(path.join(ROOT, 'dist', 'src'))) {
+    if (
+      !file.endsWith('.response.dto.js') &&
+      !file.endsWith(path.join('presentation', 'response.dto.js'))
+    )
+      continue;
+    for (const model of Object.values(require(file)))
+      if (typeof model === 'function') responseModelNames.add(model.name);
+  }
   const dynamicResponses = [];
   for (const [name, schema] of Object.entries(document.components?.schemas ?? {})) {
-    if (!name.endsWith('Response')) continue;
+    visitSchema(schema, (nested, path) => {
+      if (nested.type && nested.type !== 'object') {
+        check(
+          nested.additionalProperties === undefined,
+          `${normalizedSchemaPath(name, path)}: scalar and array schemas cannot declare object properties.`,
+        );
+      }
+    });
+    if (!responseModelNames.has(name)) continue;
     check(
       !isDynamicRootSchema(schema),
       `${name}: a stable response cannot use JsonValue as its root.`,

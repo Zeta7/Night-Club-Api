@@ -2,7 +2,6 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const CHECK_MODE = process.argv.includes('--check');
 const FALLBACK_DATABASE_URL = 'postgresql://openapi:openapi@127.0.0.1:5432/openapi';
 const environment = {
   ...process.env,
@@ -26,10 +25,6 @@ function runNodeModule(moduleId, arguments_) {
 
 runNodeModule('prisma/build/index.js', ['generate']);
 runNodeModule('typescript/bin/tsc', ['-b', 'tsconfig.build.json', '--clean']);
-run(process.execPath, [
-  path.join(ROOT, 'scripts', 'generate-openapi-response-schemas.cjs'),
-  ...(CHECK_MODE ? ['--check'] : []),
-]);
 runNodeModule('@nestjs/cli/bin/nest.js', ['build']);
 run(process.execPath, [path.join(ROOT, 'dist', 'src', 'generate-openapi.js')]);
 

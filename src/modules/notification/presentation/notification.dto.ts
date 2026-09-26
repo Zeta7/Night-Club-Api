@@ -1,9 +1,11 @@
-import { OptionalField } from '../../../shared/presentation/dto-fields';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { NotificationCategory } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsIn, IsString, MaxLength } from 'class-validator';
-import { NotificationCategory } from '@prisma/client';
+import { OptionalField } from '../../../shared/presentation/dto-fields';
 
 export class UpdateNotificationPreferenceDto {
+  @ApiProperty({ enum: NotificationCategory, enumName: 'NotificationCategory' })
   @IsEnum(NotificationCategory)
   category!: NotificationCategory;
 
@@ -24,6 +26,7 @@ export class ListNotificationsQueryDto {
   @IsBoolean()
   unreadOnly?: boolean;
 
+  @ApiPropertyOptional({ enum: NotificationCategory, enumName: 'NotificationCategory' })
   @OptionalField()
   @IsEnum(NotificationCategory)
   category?: NotificationCategory;
