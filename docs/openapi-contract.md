@@ -32,6 +32,40 @@ los componentes OpenAPI a partir de esos DTOs. No hay un generador propio de tip
 - Mantén `strict` completo y `noUncheckedIndexedAccess`: una propiedad de clase
   debe inicializarse y un acceso por índice puede no encontrar un valor.
 
+## Tipos de negocio y alcance de ofertas
+
+Los requests de creación y edición de locales y sus respuestas públicas comparten
+el componente OpenAPI `BusinessType`. Sus valores son `club`, `discoteca`,
+`karaoke`, `bar`, `restobar` y `lounge`. La definición vive en
+`src/modules/clubs/domain/business-type.ts`; los DTOs validan las entradas con
+`IsEnum` y Swagger reutiliza el componente mediante `enumName`.
+
+`OfferScope`, definido en `src/shared/domain/offer-scope.ts`, representa el
+alcance de promociones y tipos de entrada: `club` o `event`. Todas las respuestas
+que exponen este campo usan el mismo enum, incluidas las de Customer.
+
+**Cambio de contrato:** el alcance de las promociones en Inicio, Explorar,
+detalle de local y detalle de evento Customer pasa de `CLUB`/`EVENT` a
+`club`/`event`. El campo geográfico `scope: PERU` de Explorar representa otro
+concepto y conserva su valor.
+
+Al regenerar el SDK de Mobile, usar los enums generados en los consumidores y
+formularios. Las comparaciones de alcance deben usar el enum en lugar de strings
+o conversiones de mayúsculas. No duplicar los enums ni modificar código generado.
+
+No se modifican columnas ni se necesita una migración de base de datos.
+`Club.type` sigue almacenado como texto; al construir una respuesta se comprueba
+que pertenece a `BusinessType`. Un valor persistido desconocido produce un error;
+no se convierte silenciosamente a `club` ni se publica como un enum válido.
+
+Verificación local del 2026-09-26: `pnpm docs:build` regeneró
+`dist/openapi.json` y validó 166 paths, 193 operaciones, 404 schemas y cero
+referencias rotas. Los siete campos `type` de requests/respuestas de locales
+referencian `BusinessType`; los cinco campos de alcance de ofertas referencian
+`OfferScope`. Pasaron las 192 pruebas unitarias existentes. `dist/` es un
+artefacto de build ignorado por Git; se regenera desde los DTOs, no se versiona.
+Esta verificación no confirma el despliegue ni regenera el SDK de Mobile.
+
 ## Verificación
 
 ```powershell
