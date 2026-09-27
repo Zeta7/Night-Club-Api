@@ -870,47 +870,52 @@ export class ClubsService {
     currentUser: AuthenticatedUser,
     query: CustomerExploreQueryDto,
   ): Promise<CustomerExploreResponse> {
-    const search = query.q.trim();
+    const search = query.q ?? '';
+    const page = query.page ?? 1;
+    const pageSize = 30;
+    const offset = (page - 1) * pageSize;
     const now = new Date();
-    const searchPattern = `%${search}%`;
-    const matchedClubRows = await this.prisma.$queryRaw<Array<{ id: string }>>(Prisma.sql`
-      SELECT "id"
-      FROM "Club"
-      WHERE "status" = 'ACTIVE'::"ClubStatus"
-        AND (
-          "name" ILIKE ${searchPattern}
-          OR COALESCE("description", '') ILIKE ${searchPattern}
-          OR "type" ILIKE ${searchPattern}
-          OR COALESCE("addressJson"::text, '') ILIKE ${searchPattern}
-        )
-      ORDER BY "updatedAt" DESC
-      LIMIT 30
-    `);
-    const activeClubs = await this.prisma.club.findMany({
-      where: {
-        id: { in: matchedClubRows.map((club) => club.id) },
-        status: ClubStatus.ACTIVE,
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: 30,
+    const matchingClub: Prisma.ClubWhereInput | undefined = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+            { type: { contains: search, mode: 'insensitive' } },
+            ...(
+              ['direccion', 'distrito', 'provincia', 'departamento', 'pais', 'location'] as const
+            ).map((field): Prisma.ClubWhereInput => ({
+              addressJson: { path: [field], string_contains: search, mode: 'insensitive' },
+            })),
+          ],
+        }
+      : undefined;
+    const clubRows = await this.prisma.club.findMany({
+      where: { status: ClubStatus.ACTIVE, ...matchingClub },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+      skip: offset,
+      take: pageSize + 1,
     });
+    const activeClubs = clubRows.slice(0, pageSize);
     const matchedClubIds = activeClubs.map((club) => club.id);
     const clubRelationFilter = paymentReadyClubWhere(now);
 
-    const [events, promotions, products] = await Promise.all([
+    const [eventRows, promotionRows, productRows] = await Promise.all([
       this.prisma.event.findMany({
         where: {
           club: clubRelationFilter,
           status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
           endsAt: { gt: now },
-          OR: [
-            { clubId: { in: matchedClubIds } },
-            { name: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
-          ],
+          OR: search
+            ? [
+                { club: matchingClub },
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ]
+            : undefined,
         },
-        orderBy: { startsAt: 'asc' },
-        take: 30,
+        orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
+        skip: offset,
+        take: pageSize + 1,
         include: {
           club: true,
           ticketTypes: {
@@ -929,17 +934,22 @@ export class ClubsService {
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
             { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
             { OR: [{ eventId: null }, { event: currentEventsWhere(now) }] },
-            {
-              OR: [
-                { clubId: { in: matchedClubIds } },
-                { name: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-              ],
-            },
+            ...(search
+              ? [
+                  {
+                    OR: [
+                      { club: matchingClub },
+                      { name: { contains: search, mode: 'insensitive' } },
+                      { description: { contains: search, mode: 'insensitive' } },
+                    ],
+                  } satisfies Prisma.PromotionWhereInput,
+                ]
+              : []),
           ],
         },
-        orderBy: { updatedAt: 'desc' },
-        take: 30,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        skip: offset,
+        take: pageSize + 1,
         include: {
           club: true,
           event: true,
@@ -950,17 +960,31 @@ export class ClubsService {
         where: {
           club: clubRelationFilter,
           status: ProductStatus.ACTIVE,
-          OR: [
-            { clubId: { in: matchedClubIds } },
-            { name: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
-          ],
+          OR: search
+            ? [
+                { club: matchingClub },
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+              ]
+            : undefined,
         },
-        orderBy: { updatedAt: 'desc' },
-        take: 30,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        skip: offset,
+        take: pageSize + 1,
         include: { club: true },
       }),
     ]);
+
+    const events = eventRows.slice(0, pageSize);
+    const promotions = promotionRows.slice(0, pageSize);
+    const products = productRows.slice(0, pageSize);
+    const nextPage =
+      clubRows.length > pageSize ||
+      eventRows.length > pageSize ||
+      promotionRows.length > pageSize ||
+      productRows.length > pageSize
+        ? page + 1
+        : null;
 
     const referencedClubIds = new Set([
       ...matchedClubIds,
@@ -978,6 +1002,7 @@ export class ClubsService {
 
     return {
       message: 'Exploración nacional obtenida correctamente.',
+      nextPage,
       query: search,
       scope: 'PERU',
       location: { district: '', province: '', department: '' },

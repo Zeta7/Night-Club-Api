@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- 2026-09-27 — Explorar acepta una consulta sin `q` para el catálogo nacional y
+  expone páginas acotadas de 30 Locales, Eventos, Promociones y Productos por
+  categoría con `nextPage`. Conserva la búsqueda de al menos dos caracteres y
+  no aplica la ubicación del cliente. El DTO y el servicio compilan; la prueba
+  focalizada del contrato pasó. API #15, coordinación Mobile #15.
+
 - 2026-09-27 — Inicio: catálogos cercanos paginados de Eventos, Locales y
   Promociones con ámbito administrativo, orden autoritativo y cursor estable;
   Eventos pospuestos visibles en el catálogo. Las Promociones exponen tipo,

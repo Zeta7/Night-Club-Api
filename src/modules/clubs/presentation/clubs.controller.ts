@@ -142,9 +142,9 @@ export class ClubsController {
   @Get('customer/explore')
   @ApiOperation({
     summary:
-      'Buscar clubes, eventos, promociones y productos en Perú (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+      'Explorar clubes, eventos, promociones y productos en Perú (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Busca nacionalmente por nombre de negocio, ciudad, evento, promoción o producto. Solo devuelve negocios activos y contenido visible vigente.',
+      'Sin q muestra el catálogo nacional paginado; con q busca por negocio, ciudad, evento, promoción o producto. Solo devuelve negocios activos y contenido visible vigente.',
   })
   @ApiResponse({
     type: CustomerExploreResponseDto,

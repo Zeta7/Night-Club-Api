@@ -547,6 +547,13 @@ export class CustomerExplorePromotionDto {
 }
 
 export class CustomerExploreResponseDto {
+  @ApiProperty({
+    type: 'integer',
+    nullable: true,
+    description: 'Siguiente página del catálogo nacional; null al terminar.',
+  })
+  nextPage!: number | null;
+
   @ApiProperty({ type: 'string' })
   message!: string;
 
