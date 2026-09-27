@@ -5,8 +5,7 @@
 - 2026-09-27 — Explorar acepta una consulta sin `q` para el catálogo nacional y
   expone páginas acotadas de 30 Locales, Eventos, Promociones y Productos por
   categoría con `nextPage`. Conserva la búsqueda de al menos dos caracteres y
-  no aplica la ubicación del cliente. Acepta temporalmente `q` vacío de clientes
-  anteriores como catálogo sin filtro. El DTO y el servicio compilan; la prueba
+  no aplica la ubicación del cliente. El DTO y el servicio compilan; la prueba
   focalizada del contrato pasó. API #15, coordinación Mobile #15.
 
 - 2026-09-27 — Inicio: catálogos cercanos paginados de Eventos, Locales y

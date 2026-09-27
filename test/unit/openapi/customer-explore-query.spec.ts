@@ -13,10 +13,10 @@ describe('CustomerExploreQueryDto', () => {
     expect(validate(undefined, 2)).toHaveLength(0);
   });
 
-  it('keeps search bounds while accepting a legacy blank query', () => {
+  it('keeps search and page bounds', () => {
     expect(validate('x')).not.toHaveLength(0);
-    expect(validate('')).toHaveLength(0);
-    expect(validate('  ')).toHaveLength(0);
+    expect(validate('')).not.toHaveLength(0);
+    expect(validate('  ')).not.toHaveLength(0);
     expect(validate('li')).toHaveLength(0);
     expect(validate(undefined, 0)).not.toHaveLength(0);
     expect(validateSync(plainToInstance(CustomerExploreQueryDto, { q: null }))).not.toHaveLength(0);
