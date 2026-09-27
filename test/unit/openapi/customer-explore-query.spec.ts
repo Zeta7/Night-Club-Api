@@ -19,5 +19,6 @@ describe('CustomerExploreQueryDto', () => {
     expect(validate('  ')).not.toHaveLength(0);
     expect(validate('li')).toHaveLength(0);
     expect(validate(undefined, 0)).not.toHaveLength(0);
+    expect(validateSync(plainToInstance(CustomerExploreQueryDto, { q: null }))).not.toHaveLength(0);
   });
 });
