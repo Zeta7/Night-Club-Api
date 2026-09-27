@@ -137,6 +137,15 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
   ClubsController_getAdminDashboard: {
     '403': ['ADMIN_DASHBOARD_FORBIDDEN'],
   },
+  ClubsController_getCustomerNearbyEvents: {
+    '400': ['INVALID_NEARBY_CURSOR'],
+  },
+  ClubsController_getCustomerNearbyClubs: {
+    '400': ['INVALID_NEARBY_CURSOR'],
+  },
+  ClubsController_getCustomerNearbyPromotions: {
+    '400': ['INVALID_NEARBY_CURSOR'],
+  },
   ClubsController_getCustomerClubDetail: {
     '404': ['CLUB_NOT_FOUND'],
   },

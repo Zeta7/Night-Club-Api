@@ -8,6 +8,7 @@ import {
   InventoryReservationStatus,
   Prisma,
   ProductStatus,
+  PromotionItemType,
   PromotionStatus,
   SellerConnectionStatus,
   TicketTypeStatus,
@@ -19,7 +20,7 @@ import {
   extractObjectKeyFromUrl,
 } from '../../../shared/infrastructure/media/media-url';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
-import { forbidden, notFound } from '../../../shared/presentation/api-exception';
+import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import {
   currentEventsWhere,
   effectiveEventStatus,
@@ -39,6 +40,11 @@ import {
 import { CreateClubDto } from '../presentation/dto/create-club.dto';
 import { CustomerExploreQueryDto } from '../presentation/dto/customer-explore-query.dto';
 import { CustomerHomeQueryDto } from '../presentation/dto/customer-home-query.dto';
+import { CustomerNearbyCatalogQueryDto } from '../presentation/dto/customer-nearby-catalog-query.dto';
+import type {
+  CustomerClubDetailResponseDto,
+  CustomerExploreResponseDto,
+} from '../presentation/customer-discovery.response.dto';
 import { UpdateClubOperationalProfileDto } from '../presentation/dto/update-club-operational-profile.dto';
 import { UpdateClubDto } from '../presentation/dto/update-club.dto';
 import { paymentReadyClubWhere } from './club-commerce-availability';
@@ -61,6 +67,16 @@ const CUSTOMER_DETAIL_EVENT_STATUSES = [
   EventStatus.CANCELLED,
   EventStatus.POSTPONED,
 ] as const;
+const CUSTOMER_PROMOTION_COMPONENTS_WHERE: Prisma.PromotionWhereInput = {
+  items: {
+    every: {
+      OR: [
+        { itemType: PromotionItemType.PRODUCT, product: { isNot: null } },
+        { itemType: PromotionItemType.TICKET, ticketType: { isNot: null } },
+      ],
+    },
+  },
+};
 const MERCADO_PAGO_PROVIDER = 'mercado_pago';
 
 @Injectable()
@@ -446,6 +462,15 @@ export class ClubsService {
     query: CustomerHomeQueryDto,
     now = new Date(),
   ) {
+    return this.buildCustomerDiscovery(currentUser, query, now, null);
+  }
+
+  private async buildCustomerDiscovery(
+    currentUser: AuthenticatedUser,
+    query: CustomerHomeQueryDto,
+    now: Date,
+    category: 'clubs' | 'events' | 'promotions' | null,
+  ) {
     const location = normalizeCustomerLocationQuery(query);
     const clubs = await this.findCustomerVisibleClubs(location);
     const clubIds = clubs.map((club) => club.id);
@@ -457,10 +482,7 @@ export class ClubsService {
         hasResults: false as const,
         clubs: [],
         events: [],
-        tickets: [],
         promotions: [],
-        products: [],
-        emptyState: buildCustomerHomeEmptyState(location),
         counts: {
           clubs: 0,
           paymentReadyClubs: 0,
@@ -492,9 +514,14 @@ export class ClubsService {
       status: { in: [...CUSTOMER_VISIBLE_EVENT_STATUSES] },
       endsAt: { gt: now },
     };
+    const catalogEventWhere: Prisma.EventWhereInput = {
+      clubId: { in: paymentReadyClubIds },
+      OR: [visibleEventWhere, { status: EventStatus.POSTPONED }],
+    };
     const visiblePromotionWhere: Prisma.PromotionWhereInput = {
       clubId: { in: paymentReadyClubIds },
       status: PromotionStatus.ACTIVE,
+      ...CUSTOMER_PROMOTION_COMPONENTS_WHERE,
       AND: [
         { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
         { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
@@ -529,66 +556,44 @@ export class ClubsService {
       ],
     };
 
-    const [
-      events,
-      promotions,
-      products,
-      tickets,
-      eventCounts,
-      promotionCounts,
-      productCounts,
-      ticketCounts,
-    ] = await Promise.all([
-      this.prisma.event.findMany({
-        where: visibleEventWhere,
-        include: {
-          club: true,
-          ticketTypes: true,
-        },
-      }),
-      this.prisma.promotion.findMany({
-        where: visiblePromotionWhere,
-        include: {
-          club: true,
-          event: true,
-          items: true,
-        },
-      }),
-      this.prisma.product.findMany({
-        where: visibleProductWhere,
-        orderBy: [{ updatedAt: 'desc' }],
-        take: 12,
-        include: {
-          club: true,
-        },
-      }),
-      this.prisma.ticketType.findMany({
-        where: visibleTicketWhere,
-        orderBy: [{ priceCents: 'asc' }],
-        take: 40,
-        include: { club: true, event: true },
-      }),
-      this.prisma.event.groupBy({
-        by: ['clubId'],
-        where: visibleEventWhere,
-        _count: { _all: true },
-      }),
-      this.prisma.promotion.groupBy({
-        by: ['clubId'],
-        where: visiblePromotionWhere,
-        _count: { _all: true },
-      }),
-      this.prisma.product.groupBy({
-        by: ['clubId'],
-        where: visibleProductWhere,
-        _count: { _all: true },
-      }),
-      this.prisma.ticketType.groupBy({
-        by: ['clubId'],
-        where: visibleTicketWhere,
-        _count: { _all: true },
-      }),
-    ]);
+    const [events, promotions, eventCounts, promotionCounts, productCounts, ticketCounts] =
+      await Promise.all([
+        this.prisma.event.findMany({
+          where: catalogEventWhere,
+          include: {
+            club: true,
+            ticketTypes: true,
+          },
+        }),
+        this.prisma.promotion.findMany({
+          where: visiblePromotionWhere,
+          include: {
+            club: true,
+            event: true,
+            items: { include: { product: true, ticketType: true }, orderBy: { id: 'asc' } },
+          },
+        }),
+        this.prisma.event.groupBy({
+          by: ['clubId'],
+          where: catalogEventWhere,
+          _count: { _all: true },
+        }),
+        this.prisma.promotion.groupBy({
+          by: ['clubId'],
+          where: visiblePromotionWhere,
+          _count: { _all: true },
+        }),
+        this.prisma.product.groupBy({
+          by: ['clubId'],
+          where: visibleProductWhere,
+          _count: { _all: true },
+        }),
+        this.prisma.ticketType.groupBy({
+          by: ['clubId'],
+          where: visibleTicketWhere,
+          _count: { _all: true },
+        }),
+      ]);
     const clubsWithContent = new Set([
       ...eventCounts.map((row) => row.clubId),
       ...promotionCounts.map((row) => row.clubId),
@@ -616,14 +621,25 @@ export class ClubsService {
       events.map((event) => [event.id, homeEventAvailability(event, now, reservedByTicketId)]),
     );
     const night = homeNightWindow(now);
-    const rankedEvents = events.sort(
-      (left, right) =>
-        eventHomeGroup(left, now, night) - eventHomeGroup(right, now, night) ||
-        homeAccessRank(availabilityByEventId.get(left.id)!.accessStatus) -
-          homeAccessRank(availabilityByEventId.get(right.id)!.accessStatus) ||
-        left.startsAt.getTime() - right.startsAt.getTime() ||
-        left.id.localeCompare(right.id),
-    );
+    const rankedEvents = events
+      .filter((event) => event.status !== EventStatus.POSTPONED)
+      .sort(
+        (left, right) =>
+          eventHomeGroup(left, now, night) - eventHomeGroup(right, now, night) ||
+          homeAccessRank(availabilityByEventId.get(left.id)!.accessStatus) -
+            homeAccessRank(availabilityByEventId.get(right.id)!.accessStatus) ||
+          left.startsAt.getTime() - right.startsAt.getTime() ||
+          left.id.localeCompare(right.id),
+      );
+    const catalogEvents = [
+      ...rankedEvents,
+      ...events
+        .filter((event) => event.status === EventStatus.POSTPONED)
+        .sort(
+          (left, right) =>
+            left.startsAt.getTime() - right.startsAt.getTime() || left.id.localeCompare(right.id),
+        ),
+    ];
     const immediateEventClubIds = new Set(
       rankedEvents
         .filter((event) => eventHomeGroup(event, now, night) < 2)
@@ -657,82 +673,74 @@ export class ClubsService {
       location,
       hasResults: true as const,
       clubs: await Promise.all(
-        rankedClubs.slice(0, 3).map(async (club) => ({
-          id: club.id,
-          name: club.name,
-          description: club.description,
-          type: readBusinessType(club.type),
-          profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
-          coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
-          address: toLocationAddress(club.addressJson),
-          contact: readClubContact(club.contactJson),
-          schedule: toScheduleSummary(club.scheduleJson),
-          isOpenNow: isClubOpenNow(club.scheduleJson, now),
-          status: club.status,
-          commerceStatus: paymentReadyClubIdSet.has(club.id)
-            ? CustomerCommerceStatus.AVAILABLE
-            : CustomerCommerceStatus.PAYMENTS_UNAVAILABLE,
-          emptyReason: !paymentReadyClubIdSet.has(club.id)
-            ? CustomerClubEmptyReason.PAYMENTS_UNAVAILABLE
-            : clubsWithContent.has(club.id)
-              ? null
-              : CustomerClubEmptyReason.NO_EVENTS_OR_OFFERS,
-        })),
+        (category === 'clubs' ? rankedClubs : category ? [] : rankedClubs.slice(0, 3)).map(
+          async (club) => ({
+            id: club.id,
+            name: club.name,
+            description: club.description,
+            type: readBusinessType(club.type),
+            profileImage: await this.uploadsService.createReadableImageUrl(club.profileImageUrl),
+            coverImage: await this.uploadsService.createReadableImageUrl(club.coverImageUrl),
+            address: toLocationAddress(club.addressJson),
+            contact: readClubContact(club.contactJson),
+            schedule: toScheduleSummary(club.scheduleJson),
+            isOpenNow: isClubOpenNow(club.scheduleJson, now),
+            status: club.status,
+            commerceStatus: paymentReadyClubIdSet.has(club.id)
+              ? CustomerCommerceStatus.AVAILABLE
+              : CustomerCommerceStatus.PAYMENTS_UNAVAILABLE,
+            emptyReason: !paymentReadyClubIdSet.has(club.id)
+              ? CustomerClubEmptyReason.PAYMENTS_UNAVAILABLE
+              : clubsWithContent.has(club.id)
+                ? null
+                : CustomerClubEmptyReason.NO_EVENTS_OR_OFFERS,
+          }),
+        ),
       ),
       events: await Promise.all(
-        rankedEvents.slice(0, 3).map(async (event) => {
-          const availability = availabilityByEventId.get(event.id)!;
-          return {
-            id: event.id,
-            clubId: event.clubId,
-            clubName: event.club.name,
-            name: event.name,
-            description: event.description,
-            imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
-            startsAt: event.startsAt,
-            endsAt: event.endsAt,
-            status: effectiveEventStatus(event, now),
-            capacity: event.capacity,
-            sold: event.ticketTypes.reduce((sum, ticket) => sum + ticket.quantitySold, 0),
-            available: availability.available,
-            accessStatus: availability.accessStatus,
-            timing:
-              eventHomeGroup(event, now, night) === 0
-                ? ('ONGOING' as const)
-                : eventHomeGroup(event, now, night) === 1
-                  ? ('TONIGHT' as const)
-                  : ('FUTURE' as const),
-            priceFrom: availability.cheapestTicket
-              ? availability.cheapestTicket.priceCents / 100
-              : null,
-            currency: availability.cheapestTicket?.currency ?? 'PEN',
-          };
-        }),
-      ),
-      tickets: await Promise.all(
-        tickets.map(async (ticket) => ({
-          id: ticket.id,
-          clubId: ticket.clubId,
-          clubName: ticket.club.name,
-          eventId: ticket.eventId,
-          eventName: ticket.event?.name ?? null,
-          imageUrl: await this.uploadsService.createReadableImageUrl(ticket.event?.imageUrl),
-          name: ticket.name,
-          description: ticket.description,
-          price: ticket.priceCents / 100,
-          currency: ticket.currency,
-          quantityAvailable: Math.max(
-            ticket.quantityTotal - ticket.quantitySold - ticket.replacementReserved,
-            0,
-          ),
-          perUserLimit: ticket.perUserLimit,
-          saleStartAt: ticket.saleStartAt,
-          saleEndAt: ticket.saleEndAt,
-          status: ticket.status,
-        })),
+        (category === 'events' ? catalogEvents : category ? [] : rankedEvents.slice(0, 3)).map(
+          async (event) => {
+            const availability = availabilityByEventId.get(event.id)!;
+            return {
+              id: event.id,
+              clubId: event.clubId,
+              clubName: event.club.name,
+              name: event.name,
+              description: event.description,
+              imageUrl: await this.uploadsService.createReadableImageUrl(event.imageUrl),
+              startsAt: event.startsAt,
+              endsAt: event.endsAt,
+              status: effectiveEventStatus(event, now),
+              capacity: event.capacity,
+              sold: event.ticketTypes.reduce((sum, ticket) => sum + ticket.quantitySold, 0),
+              available: event.status === EventStatus.POSTPONED ? 0 : availability.available,
+              accessStatus:
+                event.status === EventStatus.POSTPONED
+                  ? ('UNAVAILABLE' as const)
+                  : availability.accessStatus,
+              timing:
+                event.status === EventStatus.POSTPONED
+                  ? ('POSTPONED' as const)
+                  : eventHomeGroup(event, now, night) === 0
+                    ? ('ONGOING' as const)
+                    : eventHomeGroup(event, now, night) === 1
+                      ? ('TONIGHT' as const)
+                      : ('FUTURE' as const),
+              priceFrom: availability.cheapestTicket
+                ? availability.cheapestTicket.priceCents / 100
+                : null,
+              currency: availability.cheapestTicket?.currency ?? 'PEN',
+            };
+          },
+        ),
       ),
       promotions: await Promise.all(
-        rankedPromotions.slice(0, 6).map(async (promotion) => ({
+        (category === 'promotions'
+          ? rankedPromotions
+          : category
+            ? []
+            : rankedPromotions.slice(0, 6)
+        ).map(async (promotion) => ({
           id: promotion.id,
           clubId: promotion.clubId,
           clubName: promotion.club.name,
@@ -747,50 +755,115 @@ export class ClubsService {
           endsAt: promotion.endsAt,
           status: promotion.status,
           itemsCount: promotion.items.length,
+          items: promotionComponents(promotion.items),
           scope: promotion.eventId ? OfferScope.EVENT : OfferScope.CLUB,
         })),
       ),
-      products: await Promise.all(
-        products.map(async (product) => ({
-          id: product.id,
-          clubId: product.clubId,
-          clubName: product.club.name,
-          name: product.name,
-          description: product.description,
-          imageUrl: await this.uploadsService.createReadableImageUrl(product.imageUrl),
-          price: product.priceCents / 100,
-          currency: product.currency,
-          stockQuantity: product.stockQuantity,
-          status: product.status,
-        })),
-      ),
-      emptyState: null,
       counts: {
         clubs: clubs.length,
         paymentReadyClubs: paymentReadyClubIds.length,
         paymentsUnavailableClubs: clubs.length - paymentReadyClubIds.length,
-        events: rankedEvents.length,
+        events: catalogEvents.length,
         promotions: rankedPromotions.length,
       },
       emptyReasons: buildCustomerHomeEmptyReasons(
         clubs.length,
         paymentReadyClubIds.length,
-        events.length,
+        rankedEvents.length,
         promotions.length,
       ),
     };
     return {
       ...payload,
-      featuredItems: await this.featuredCampaigns.selectForHome({
-        viewerUserId: currentUser.id,
-        clubIds,
-        now,
-      }),
+      featuredItems: category
+        ? []
+        : await this.featuredCampaigns.selectForHome({
+            viewerUserId: currentUser.id,
+            clubIds,
+            now,
+          }),
       viewer: {
         id: currentUser.id,
         role: currentUser.role,
       },
     };
+  }
+
+  getCustomerNearbyCatalog(
+    currentUser: AuthenticatedUser,
+    category: 'clubs',
+    query: CustomerNearbyCatalogQueryDto,
+    requestNow?: Date,
+  ): Promise<NearbyPage<CustomerHomeResponse['clubs'][number]>>;
+  getCustomerNearbyCatalog(
+    currentUser: AuthenticatedUser,
+    category: 'events',
+    query: CustomerNearbyCatalogQueryDto,
+    requestNow?: Date,
+  ): Promise<NearbyPage<CustomerHomeResponse['events'][number]>>;
+  getCustomerNearbyCatalog(
+    currentUser: AuthenticatedUser,
+    category: 'promotions',
+    query: CustomerNearbyCatalogQueryDto,
+    requestNow?: Date,
+  ): Promise<NearbyPage<CustomerHomeResponse['promotions'][number]>>;
+  async getCustomerNearbyCatalog(
+    currentUser: AuthenticatedUser,
+    category: 'clubs' | 'events' | 'promotions',
+    query: CustomerNearbyCatalogQueryDto,
+    requestNow = new Date(),
+  ) {
+    const location = normalizeCustomerLocationQuery(query);
+    let now = requestNow;
+    let afterId: string | null = null;
+    if (query.cursor) {
+      try {
+        const decoded: unknown = JSON.parse(
+          Buffer.from(query.cursor, 'base64url').toString('utf8'),
+        );
+        if (
+          !isNearbyCursor(decoded) ||
+          decoded.category !== category ||
+          decoded.location.district !== location.district ||
+          decoded.location.province !== location.province ||
+          decoded.location.department !== location.department ||
+          Date.parse(decoded.asOf) > requestNow.getTime() ||
+          requestNow.getTime() - Date.parse(decoded.asOf) > 10 * 60_000
+        ) {
+          throw new Error('Invalid cursor');
+        }
+        now = new Date(decoded.asOf);
+        afterId = decoded.afterId;
+      } catch {
+        throw badRequest('INVALID_NEARBY_CURSOR', 'La continuación del catálogo no es válida.');
+      }
+    }
+
+    const discovery = await this.buildCustomerDiscovery(currentUser, location, now, category);
+    const allItems = discovery[category];
+    const start = afterId ? allItems.findIndex((item) => item.id === afterId) + 1 : 0;
+    if (afterId && start === 0) {
+      throw badRequest(
+        'INVALID_NEARBY_CURSOR',
+        'La continuación del catálogo ya no está disponible.',
+      );
+    }
+    const limit = query.limit ?? 20;
+    const items = allItems.slice(start, start + limit);
+    const last = items.at(-1);
+    const nextCursor =
+      last && start + items.length < allItems.length
+        ? Buffer.from(
+            JSON.stringify({
+              version: 1,
+              category,
+              location,
+              asOf: now.toISOString(),
+              afterId: last.id,
+            }),
+          ).toString('base64url')
+        : null;
+    return { location, total: allItems.length, items, nextCursor };
   }
 
   async exploreCustomerContent(
@@ -851,6 +924,7 @@ export class ClubsService {
         where: {
           club: clubRelationFilter,
           status: PromotionStatus.ACTIVE,
+          ...CUSTOMER_PROMOTION_COMPONENTS_WHERE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
             { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
@@ -866,7 +940,11 @@ export class ClubsService {
         },
         orderBy: { updatedAt: 'desc' },
         take: 30,
-        include: { club: true, event: true, items: true },
+        include: {
+          club: true,
+          event: true,
+          items: { include: { product: true, ticketType: true }, orderBy: { id: 'asc' } },
+        },
       }),
       this.prisma.product.findMany({
         where: {
@@ -951,6 +1029,7 @@ export class ClubsService {
           currency: promotion.currency,
           status: promotion.status,
           itemsCount: promotion.items.length,
+          items: promotionComponents(promotion.items),
           scope: promotion.eventId ? OfferScope.EVENT : OfferScope.CLUB,
         })),
       ),
@@ -1023,6 +1102,7 @@ export class ClubsService {
         where: {
           clubId: { in: paidContentClubIds },
           status: PromotionStatus.ACTIVE,
+          ...CUSTOMER_PROMOTION_COMPONENTS_WHERE,
           AND: [
             { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
             { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
@@ -1040,7 +1120,11 @@ export class ClubsService {
           ],
         },
         orderBy: { updatedAt: 'desc' },
-        include: { club: true, event: true, items: true },
+        include: {
+          club: true,
+          event: true,
+          items: { include: { product: true, ticketType: true }, orderBy: { id: 'asc' } },
+        },
       }),
       this.prisma.product.findMany({
         where: {
@@ -1158,6 +1242,7 @@ export class ClubsService {
           endsAt: promotion.endsAt,
           status: promotion.status,
           itemsCount: promotion.items.length,
+          items: promotionComponents(promotion.items),
           scope: promotion.eventId ? OfferScope.EVENT : OfferScope.CLUB,
         })),
       ),
@@ -1197,13 +1282,16 @@ export class ClubsService {
         promotions: {
           where: {
             status: PromotionStatus.ACTIVE,
+            ...CUSTOMER_PROMOTION_COMPONENTS_WHERE,
             AND: [
               { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
               { OR: [{ endsAt: null }, { endsAt: { gt: now } }] },
             ],
           },
           orderBy: { updatedAt: 'desc' },
-          include: { items: true },
+          include: {
+            items: { include: { product: true, ticketType: true }, orderBy: { id: 'asc' } },
+          },
         },
       },
     });
@@ -1299,6 +1387,7 @@ export class ClubsService {
           currency: promotion.currency,
           status: promotion.status,
           itemsCount: promotion.items.length,
+          items: promotionComponents(promotion.items),
           scope: OfferScope.EVENT,
           startsAt: promotion.startsAt,
           endsAt: promotion.endsAt,
@@ -1641,27 +1730,57 @@ export class ClubsService {
 }
 
 type CustomerHomeResponse = Awaited<ReturnType<ClubsService['getCustomerHome']>>;
-type CustomerExploreResponse = Omit<
-  CustomerHomeResponse,
-  'featuredItems' | 'promotions' | 'counts' | 'emptyReasons' | 'clubs' | 'events'
-> & {
-  query: string;
-  scope: 'PERU';
-  clubs: Array<Omit<CustomerHomeResponse['clubs'][number], 'commerceStatus' | 'emptyReason'>>;
-  events: Array<
-    Omit<CustomerHomeResponse['events'][number], 'available' | 'accessStatus' | 'timing'>
-  >;
-  promotions: Array<Omit<CustomerHomeResponse['promotions'][number], 'startsAt' | 'endsAt'>>;
+type NearbyPage<T> = {
+  location: CustomerHomeResponse['location'];
+  total: number;
+  items: T[];
+  nextCursor: string | null;
 };
-type CustomerClubDetailResponse = Omit<
-  CustomerHomeResponse,
-  'featuredItems' | 'hasResults' | 'counts' | 'emptyReasons' | 'events'
-> & {
-  hasResults: true;
-  events: Array<
-    Omit<CustomerHomeResponse['events'][number], 'available' | 'accessStatus' | 'timing'>
-  >;
+const isNearbyCursor = (
+  value: unknown,
+): value is {
+  version: 1;
+  category: 'clubs' | 'events' | 'promotions';
+  location: { district: string; province: string; department: string };
+  asOf: string;
+  afterId: string;
+} => {
+  if (!value || typeof value !== 'object') return false;
+  const cursor = value as Record<string, unknown>;
+  const location = cursor.location;
+  return (
+    cursor.version === 1 &&
+    (cursor.category === 'clubs' ||
+      cursor.category === 'events' ||
+      cursor.category === 'promotions') &&
+    typeof cursor.asOf === 'string' &&
+    Number.isFinite(Date.parse(cursor.asOf)) &&
+    typeof cursor.afterId === 'string' &&
+    cursor.afterId.length > 0 &&
+    !!location &&
+    typeof location === 'object' &&
+    ['district', 'province', 'department'].every(
+      (key) => typeof (location as Record<string, unknown>)[key] === 'string',
+    )
+  );
 };
+
+const promotionComponents = (
+  items: Array<{
+    itemType: PromotionItemType;
+    product: { name: string } | null;
+    ticketType: { name: string } | null;
+    quantity: number;
+  }>,
+) =>
+  items.map((item) => {
+    const name =
+      item.itemType === PromotionItemType.PRODUCT ? item.product?.name : item.ticketType?.name;
+    if (!name) throw new Error('La Promoción contiene un componente sin nombre.');
+    return { type: item.itemType, name, quantity: item.quantity };
+  });
+type CustomerExploreResponse = CustomerExploreResponseDto;
+type CustomerClubDetailResponse = CustomerClubDetailResponseDto;
 
 const clubInclude = {
   admins: {
@@ -1976,26 +2095,6 @@ const normalizeComparable = (value: string) =>
     .replace(/\p{Diacritic}/gu, '')
     .trim()
     .toLowerCase();
-
-const buildCustomerHomeEmptyState = (location: {
-  district: string;
-  province: string;
-  department: string;
-}) => {
-  const locationLabel =
-    location.district || location.province || location.department || 'tu zona actual';
-
-  return {
-    title: 'Aun no hay actividad disponible',
-    text: `Todavia no encontramos discotecas activas registradas en ${locationLabel}. Cuando se sumen nuevos lugares, aqui apareceran sus eventos, promociones y productos.`,
-    sections: {
-      clubs: 'Aun no hay discotecas activas registradas en esta ciudad.',
-      events: 'Aun no hay eventos visibles para esta ciudad.',
-      promotions: 'Aun no hay promociones activas disponibles.',
-      products: 'Aun no hay productos publicados en esta zona.',
-    },
-  };
-};
 
 const buildCustomerHomeEmptyReasons = (
   clubCount: number,

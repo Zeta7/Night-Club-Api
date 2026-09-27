@@ -15,10 +15,14 @@ import {
   CustomerEventDetailResponseDto,
   CustomerExploreResponseDto,
   CustomerHomeResponseDto,
+  CustomerNearbyClubsResponseDto,
+  CustomerNearbyEventsResponseDto,
+  CustomerNearbyPromotionsResponseDto,
 } from './customer-discovery.response.dto';
 import { CreateClubDto } from './dto/create-club.dto';
 import { CustomerExploreQueryDto } from './dto/customer-explore-query.dto';
 import { CustomerHomeQueryDto } from './dto/customer-home-query.dto';
+import { CustomerNearbyCatalogQueryDto } from './dto/customer-nearby-catalog-query.dto';
 import { UpdateClubOperationalProfileDto } from './dto/update-club-operational-profile.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 
@@ -79,7 +83,7 @@ export class ClubsController {
   @ApiOperation({
     summary: 'Consultar el inicio por ubicación (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve Locales activos según distrito o provincia; usa departamento solo si ambos faltan y una consulta sin filtros conserva el alcance nacional. Locales sin pagos vigentes siguen visibles, con estado comercial estructurado y sin Eventos ni Ofertas. Las causas vacías y cantidades se entregan en campos tipados; emptyState se conserva temporalmente para Mobile.',
+      'Roles permitidos: CUSTOMER, WORKER, ADMIN, SUPER_ADMIN. Requiere accessToken. Devuelve vistas previas ordenadas de Eventos, Locales y Promociones según distrito o provincia; usa departamento solo si ambos faltan y una consulta sin filtros conserva el alcance nacional. Las causas vacías y los totales se entregan en campos tipados.',
   })
   @ApiResponse({
     type: CustomerHomeResponseDto,
@@ -91,6 +95,48 @@ export class ClubsController {
     @Query() query: CustomerHomeQueryDto,
   ): Promise<CustomerHomeResponseDto> {
     return this.clubsService.getCustomerHome(currentUser, query);
+  }
+
+  @Get('customer/catalog/events')
+  @ApiOperation({
+    summary: 'Listar Eventos cercanos (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Continúa el catálogo de Eventos con el mismo ámbito administrativo y orden de Inicio. Los Eventos pospuestos aparecen al final con estado explícito.',
+  })
+  @ApiResponse({ type: CustomerNearbyEventsResponseDto, status: 200 })
+  getCustomerNearbyEvents(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query() query: CustomerNearbyCatalogQueryDto,
+  ): Promise<CustomerNearbyEventsResponseDto> {
+    return this.clubsService.getCustomerNearbyCatalog(currentUser, 'events', query);
+  }
+
+  @Get('customer/catalog/clubs')
+  @ApiOperation({
+    summary: 'Listar Locales cercanos (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Continúa el catálogo de Locales con el mismo ámbito administrativo y orden de Inicio.',
+  })
+  @ApiResponse({ type: CustomerNearbyClubsResponseDto, status: 200 })
+  getCustomerNearbyClubs(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query() query: CustomerNearbyCatalogQueryDto,
+  ): Promise<CustomerNearbyClubsResponseDto> {
+    return this.clubsService.getCustomerNearbyCatalog(currentUser, 'clubs', query);
+  }
+
+  @Get('customer/catalog/promotions')
+  @ApiOperation({
+    summary: 'Listar Promociones cercanas (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Continúa el catálogo de Promociones con el mismo ámbito administrativo y orden de Inicio.',
+  })
+  @ApiResponse({ type: CustomerNearbyPromotionsResponseDto, status: 200 })
+  getCustomerNearbyPromotions(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query() query: CustomerNearbyCatalogQueryDto,
+  ): Promise<CustomerNearbyPromotionsResponseDto> {
+    return this.clubsService.getCustomerNearbyCatalog(currentUser, 'promotions', query);
   }
 
   @Get('customer/explore')

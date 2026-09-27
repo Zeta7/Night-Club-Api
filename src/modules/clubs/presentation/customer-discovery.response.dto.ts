@@ -4,6 +4,7 @@ import {
   EventStatus,
   FeaturedTargetType,
   ProductStatus,
+  PromotionItemType,
   PromotionStatus,
   TicketTypeStatus,
   UserRole,
@@ -194,8 +195,8 @@ export class CustomerHomeEventDto extends CustomerEventDto {
   @ApiProperty({ enum: ['AVAILABLE', 'UNAVAILABLE', 'SOLD_OUT', 'INFORMATIONAL'] })
   accessStatus!: 'AVAILABLE' | 'UNAVAILABLE' | 'SOLD_OUT' | 'INFORMATIONAL';
 
-  @ApiProperty({ enum: ['ONGOING', 'TONIGHT', 'FUTURE'] })
-  timing!: 'ONGOING' | 'TONIGHT' | 'FUTURE';
+  @ApiProperty({ enum: ['ONGOING', 'TONIGHT', 'FUTURE', 'POSTPONED'] })
+  timing!: 'ONGOING' | 'TONIGHT' | 'FUTURE' | 'POSTPONED';
 }
 
 export class CustomerTicketTypeDto {
@@ -245,6 +246,26 @@ export class CustomerTicketTypeDto {
   status!: TicketTypeStatus;
 }
 
+export class CustomerPromotionComponentDto {
+  @ApiProperty({
+    enum: PromotionItemType,
+    enumName: 'PromotionItemType',
+    description: 'Tipo de componente incluido en la Promoción.',
+    example: PromotionItemType.PRODUCT,
+  })
+  type!: PromotionItemType;
+
+  @ApiProperty({
+    type: 'string',
+    description: 'Nombre del Producto o la Entrada.',
+    example: 'Agua',
+  })
+  name!: string;
+
+  @ApiProperty({ type: 'integer', minimum: 1, description: 'Unidades incluidas.', example: 2 })
+  quantity!: number;
+}
+
 export class CustomerPromotionDto {
   @ApiProperty({ type: 'string' })
   id!: string;
@@ -287,6 +308,13 @@ export class CustomerPromotionDto {
 
   @ApiProperty({ type: 'integer' })
   itemsCount!: number;
+
+  @ApiProperty({
+    type: () => [CustomerPromotionComponentDto],
+    description: 'Componentes que el comprador recibirá con la Promoción.',
+    example: [{ type: 'PRODUCT', name: 'Agua', quantity: 2 }],
+  })
+  items!: CustomerPromotionComponentDto[];
 
   @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
   scope!: OfferScope;
@@ -373,7 +401,8 @@ export class CustomerHomeCountsDto {
 
   @ApiProperty({
     type: 'integer',
-    description: 'Total de Eventos elegibles en el ámbito de Inicio.',
+    description:
+      'Total de Eventos del catálogo cercano, incluidos los pospuestos fuera de la vista previa.',
     example: 1,
   })
   events!: number;
@@ -400,7 +429,7 @@ export class CustomerHomeEmptyReasonsDto {
     enum: CustomerHomeEmptyReason,
     enumName: 'CustomerHomeEmptyReason',
     nullable: true,
-    description: 'Causa de ausencia de Eventos; null cuando hay al menos uno.',
+    description: 'Causa de ausencia de Eventos en la vista previa; null cuando hay al menos uno.',
     example: CustomerHomeEmptyReason.NO_VISIBLE_EVENTS,
   })
   events!: CustomerHomeEmptyReason | null;
@@ -452,7 +481,7 @@ export class CustomerHomeResponseDto {
 
   @ApiProperty({
     type: () => CustomerHomeCountsDto,
-    description: 'Cantidades incluidas en Inicio.',
+    description: 'Totales elegibles de las secciones de Inicio, antes del límite de vista previa.',
   })
   counts!: CustomerHomeCountsDto;
 
@@ -465,17 +494,8 @@ export class CustomerHomeResponseDto {
   @ApiProperty({ type: () => [CustomerHomeEventDto] })
   events!: CustomerHomeEventDto[];
 
-  @ApiProperty({ type: () => [CustomerTicketTypeDto] })
-  tickets!: CustomerTicketTypeDto[];
-
   @ApiProperty({ type: () => [CustomerPromotionDto] })
   promotions!: CustomerPromotionDto[];
-
-  @ApiProperty({ type: () => [CustomerProductDto] })
-  products!: CustomerProductDto[];
-
-  @ApiProperty({ type: () => CustomerDiscoveryEmptyStateDto, nullable: true, deprecated: true })
-  emptyState!: CustomerDiscoveryEmptyStateDto | null;
 }
 
 export class CustomerExplorePromotionDto {
@@ -511,6 +531,13 @@ export class CustomerExplorePromotionDto {
 
   @ApiProperty({ type: 'integer' })
   itemsCount!: number;
+
+  @ApiProperty({
+    type: () => [CustomerPromotionComponentDto],
+    description: 'Componentes de la Promoción en Explorar.',
+    example: [{ type: 'PRODUCT', name: 'Agua', quantity: 2 }],
+  })
+  items!: CustomerPromotionComponentDto[];
 
   @ApiProperty({ type: 'number' })
   finalPrice!: number;
@@ -711,6 +738,13 @@ export class CustomerEventDetailPromotionDto {
   @ApiProperty({ type: 'integer' })
   itemsCount!: number;
 
+  @ApiProperty({
+    type: () => [CustomerPromotionComponentDto],
+    description: 'Componentes de la Promoción en el detalle del Evento.',
+    example: [{ type: 'TICKET', name: 'General', quantity: 1 }],
+  })
+  items!: CustomerPromotionComponentDto[];
+
   @ApiProperty({ enum: OfferScope, enumName: 'OfferScope' })
   scope!: OfferScope;
 
@@ -719,6 +753,58 @@ export class CustomerEventDetailPromotionDto {
 
   @ApiProperty({ type: 'string', format: 'date-time', nullable: true })
   endsAt!: Date | null;
+}
+
+class CustomerNearbyCatalogPageDto {
+  @ApiProperty({
+    type: () => CustomerLocationDto,
+    description: 'Ámbito administrativo aplicado al catálogo.',
+    example: { district: 'Miraflores', province: 'Lima', department: 'Lima' },
+  })
+  location!: CustomerLocationDto;
+
+  @ApiProperty({
+    type: 'integer',
+    minimum: 0,
+    description: 'Total de resultados antes de paginar.',
+    example: 24,
+  })
+  total!: number;
+
+  @ApiProperty({
+    type: 'string',
+    nullable: true,
+    description: 'Continuación de la siguiente página; null al terminar.',
+    example: null,
+  })
+  nextCursor!: string | null;
+}
+
+export class CustomerNearbyClubsResponseDto extends CustomerNearbyCatalogPageDto {
+  @ApiProperty({
+    type: () => [CustomerHomeClubDto],
+    description: 'Locales de esta página en el orden de Inicio.',
+    example: [],
+  })
+  items!: CustomerHomeClubDto[];
+}
+
+export class CustomerNearbyEventsResponseDto extends CustomerNearbyCatalogPageDto {
+  @ApiProperty({
+    type: () => [CustomerHomeEventDto],
+    description: 'Eventos de esta página en el orden de Inicio, con pospuestos al final.',
+    example: [],
+  })
+  items!: CustomerHomeEventDto[];
+}
+
+export class CustomerNearbyPromotionsResponseDto extends CustomerNearbyCatalogPageDto {
+  @ApiProperty({
+    type: () => [CustomerPromotionDto],
+    description: 'Promociones de esta página en el orden de Inicio.',
+    example: [],
+  })
+  items!: CustomerPromotionDto[];
 }
 
 export class CustomerEventDetailResponseDto {

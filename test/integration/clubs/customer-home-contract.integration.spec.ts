@@ -207,7 +207,7 @@ describe('Customer Home discovery contract', () => {
     expect(department.clubs.map((club) => club.id)).not.toContain(clubs.ready);
 
     const national = await service.getCustomerHome(viewer, {});
-    expect(national.counts.clubs).toBeGreaterThanOrEqual(7);
+    expect(national.counts.clubs).toBeGreaterThanOrEqual(6);
     expect(national.location).toEqual({ district: '', province: '', department: '' });
   });
 
@@ -246,7 +246,8 @@ describe('Customer Home discovery contract', () => {
     }
     expect(home.events.map((event) => event.clubId)).toEqual([clubs.ready]);
     expect(home.promotions.map((offer) => offer.clubId)).toEqual([clubs.ready]);
-    expect(home.products.map((product) => product.clubId)).toEqual([clubs.productOnly]);
+    expect(home).not.toHaveProperty('products');
+    expect(home).not.toHaveProperty('tickets');
     expect(home.clubs.map((club) => club.id)).not.toContain(clubs.inactive);
     const unavailableDetail = await service.getCustomerClubDetail(viewer, clubs.disconnected!);
     expect(unavailableDetail.clubs[0]).toMatchObject({
@@ -271,7 +272,7 @@ describe('Customer Home discovery contract', () => {
     });
   });
 
-  it('returns machine-readable empty causes without replacing the legacy response', async () => {
+  it('returns machine-readable empty causes without legacy copy', async () => {
     const empty = await service.getCustomerHome(viewer, { district: `missing-${suffix}` });
     expect(empty.hasResults).toBe(false);
     expect(empty.emptyReasons).toEqual({
@@ -286,7 +287,7 @@ describe('Customer Home discovery contract', () => {
       events: 0,
       promotions: 0,
     });
-    expect(empty.emptyState).toBeDefined();
+    expect(empty).not.toHaveProperty('emptyState');
 
     const noPayment = await service.getCustomerHome(viewer, { district: `Surco ${suffix}` });
     expect(noPayment.emptyReasons).toEqual({
@@ -482,6 +483,41 @@ describe('Customer Home discovery contract', () => {
     );
     expect(later.events.map((item) => item.id)).toContain(event.id);
     expect(later.featuredItems.map((item) => item.targetId)).toContain(event.id);
+    const catalog = await service.getCustomerNearbyCatalog(
+      viewer,
+      'events',
+      { district: `Featured ${suffix}` },
+      now,
+    );
+    expect(catalog.items.find((item) => item.id === postponedEvent.id)).toMatchObject({
+      status: 'POSTPONED',
+      timing: 'POSTPONED',
+      accessStatus: 'UNAVAILABLE',
+    });
+    expect(nearby.counts.events).toBe(catalog.total);
+    expect(nearby.events.map((item) => item.id)).not.toContain(postponedEvent.id);
+    expect(catalog.items.filter((item) => item.name.startsWith('Earlier '))).toHaveLength(3);
+    const pagedIds: string[] = [];
+    let nextCursor: string | null = null;
+    do {
+      const page: { items: Array<{ id: string }>; nextCursor: string | null } =
+        await service.getCustomerNearbyCatalog(
+          viewer,
+          'events',
+          {
+            district: `Featured ${suffix}`,
+            limit: 2,
+            ...(nextCursor ? { cursor: nextCursor } : {}),
+          },
+          now,
+        );
+      pagedIds.push(...page.items.map((item) => item.id));
+      nextCursor = page.nextCursor;
+    } while (nextCursor);
+    expect(pagedIds).toHaveLength(catalog.total);
+    expect(pagedIds).toEqual(catalog.items.map((item) => item.id));
+    expect(new Set(pagedIds).size).toBe(catalog.total);
+    expect(pagedIds.at(-1)).toBe(postponedEvent.id);
     const national = await service.getCustomerHome(viewer, {}, now);
     expect(national.featuredItems.map((item) => item.clubId)).toContain(otherClub);
     expect(national.featuredItems.map((item) => item.clubId)).not.toContain(incompleteClub);
@@ -624,6 +660,176 @@ describe('Customer Home discovery contract', () => {
     expect(home.promotions).toHaveLength(6);
     expect(home.events.map((event) => event.id)).not.toContain(later.id);
     expect(home.clubs.map((club) => club.id)).not.toContain(unavailable);
+
+    const firstEvents = await service.getCustomerNearbyCatalog(
+      viewer,
+      'events',
+      { province, limit: 2 },
+      now,
+    );
+    const secondEvents = await service.getCustomerNearbyCatalog(
+      viewer,
+      'events',
+      { province, limit: 2, cursor: firstEvents.nextCursor! },
+      now,
+    );
+    expect(firstEvents.total).toBe(4);
+    expect([...firstEvents.items, ...secondEvents.items].map((item) => item.id)).toEqual([
+      live.id,
+      night.id,
+      soldOut.id,
+      later.id,
+    ]);
+    expect(secondEvents.nextCursor).toBeNull();
+
+    const promotionIds: string[] = [];
+    let cursor: string | null = null;
+    do {
+      const page: { items: Array<{ id: string }>; nextCursor: string | null } =
+        await service.getCustomerNearbyCatalog(
+          viewer,
+          'promotions',
+          { province, limit: 2, ...(cursor ? { cursor } : {}) },
+          now,
+        );
+      promotionIds.push(...page.items.map((item) => item.id));
+      cursor = page.nextCursor;
+    } while (cursor);
+    expect(promotionIds).toHaveLength(7);
+    expect(new Set(promotionIds).size).toBe(7);
+    const firstClubs = await service.getCustomerNearbyCatalog(
+      viewer,
+      'clubs',
+      { province, limit: 2 },
+      now,
+    );
+    expect(firstClubs.items.map((club) => club.id)).toEqual([ongoing, tonight]);
+    expect(firstClubs.total).toBe(6);
+    await expect(
+      service.getCustomerNearbyCatalog(
+        viewer,
+        'clubs',
+        { district: 'different', cursor: firstClubs.nextCursor! },
+        now,
+      ),
+    ).rejects.toBeDefined();
+  });
+
+  it('returns every Promoción component without inferred savings', async () => {
+    const district = `Components ${suffix}`;
+    const clubId = await createClub(
+      'components',
+      ClubStatus.ACTIVE,
+      district,
+      limaProvince,
+      limaDepartment,
+    );
+    await connect(clubId, null);
+    const product = await prisma.product.create({
+      data: { clubId, name: 'Agua', priceCents: 500, stockQuantity: 10, status: 'ACTIVE' },
+    });
+    const event = await prisma.event.create({
+      data: {
+        clubId,
+        name: 'Noche',
+        startsAt: new Date(Date.now() + 86_400_000),
+        endsAt: new Date(Date.now() + 90_000_000),
+        capacity: 20,
+        status: 'PUBLISHED',
+      },
+    });
+    const ticket = await prisma.ticketType.create({
+      data: {
+        clubId,
+        eventId: event.id,
+        name: 'General',
+        priceCents: 1200,
+        quantityTotal: 20,
+        status: 'ACTIVE',
+      },
+    });
+    await prisma.promotion.create({
+      data: {
+        clubId,
+        eventId: event.id,
+        name: 'Combo',
+        basePriceCents: 2200,
+        finalPriceCents: 1800,
+        status: 'ACTIVE',
+        items: {
+          create: [
+            {
+              itemType: 'PRODUCT',
+              productId: product.id,
+              quantity: 2,
+              baseUnitPriceCents: 500,
+              discountedUnitPriceCents: 400,
+              lineBaseTotalCents: 1000,
+              lineFinalTotalCents: 800,
+            },
+            {
+              itemType: 'TICKET',
+              ticketTypeId: ticket.id,
+              quantity: 1,
+              baseUnitPriceCents: 1200,
+              discountedUnitPriceCents: 1000,
+              lineBaseTotalCents: 1200,
+              lineFinalTotalCents: 1000,
+            },
+          ],
+        },
+      },
+    });
+    const home = await service.getCustomerHome(viewer, { district });
+    expect(home.promotions[0]?.items).toEqual(
+      expect.arrayContaining([
+        { type: 'PRODUCT', name: 'Agua', quantity: 2 },
+        { type: 'TICKET', name: 'General', quantity: 1 },
+      ]),
+    );
+    expect(home.promotions[0]?.items).toHaveLength(2);
+    expect(home.promotions[0]).not.toHaveProperty('referencePrice');
+    expect(home.promotions[0]).not.toHaveProperty('savings');
+    const catalog = await service.getCustomerNearbyCatalog(viewer, 'promotions', { district });
+    expect(catalog.items[0]?.items).toEqual(home.promotions[0]?.items);
+
+    await prisma.product.delete({ where: { id: product.id } });
+    const afterDeletion = await service.getCustomerHome(viewer, { district });
+    expect(afterDeletion.promotions).toEqual([]);
+    expect(afterDeletion.counts.promotions).toBe(0);
+    expect(
+      (await service.getCustomerNearbyCatalog(viewer, 'promotions', { district })).items,
+    ).toEqual([]);
+    expect((await service.getCustomerClubDetail(viewer, clubId)).promotions).toEqual([]);
+  });
+
+  it('keeps a postponed-only Evento reachable through the catalog total', async () => {
+    const district = `Postponed ${suffix}`;
+    const clubId = await createClub(
+      'postponed',
+      ClubStatus.ACTIVE,
+      district,
+      limaProvince,
+      limaDepartment,
+    );
+    await connect(clubId, null);
+    const event = await prisma.event.create({
+      data: {
+        clubId,
+        name: 'Fecha por confirmar',
+        startsAt: new Date('2026-01-01T00:00:00Z'),
+        endsAt: new Date('2026-01-01T04:00:00Z'),
+        capacity: 20,
+        status: 'POSTPONED',
+      },
+    });
+    const home = await service.getCustomerHome(viewer, { district });
+    expect(home.events).toEqual([]);
+    expect(home.counts.events).toBe(1);
+    expect(home.emptyReasons.events).toBe('NO_VISIBLE_EVENTS');
+    const catalog = await service.getCustomerNearbyCatalog(viewer, 'events', { district });
+    expect(catalog.items.map((item) => item.id)).toEqual([event.id]);
+    expect(catalog.items[0]?.status).toBe('POSTPONED');
   });
 
   it('uses the Lima 18:00 and 06:00 boundaries for timing and Local opening', async () => {

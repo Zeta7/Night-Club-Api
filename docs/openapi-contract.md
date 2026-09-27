@@ -34,8 +34,9 @@ los componentes OpenAPI a partir de esos DTOs. No hay un generador propio de tip
 
 ## Inicio: disponibilidad y causas vacías
 
-`GET /clubs/customer/home` agrega `counts` y `emptyReasons`. `counts` describe las
-filas incluidas en esta respuesta limitada de Inicio, no los totales del catálogo.
+`GET /clubs/customer/home` entrega vistas previas limitadas y `counts` con los
+totales del catálogo cercano antes de aplicar los límites de Inicio. El total de
+Eventos incluye pospuestos aunque no estén en la vista previa.
 `emptyReasons` entrega códigos por sección: `NO_ACTIVE_CLUBS_IN_SCOPE`,
 `PAYMENTS_UNAVAILABLE`, `NO_VISIBLE_EVENTS` y `NO_ACTIVE_PROMOTIONS`. Un valor
 `null` indica que la sección tiene resultados.
@@ -44,8 +45,20 @@ Cada Local de Inicio y su detalle expone `commerceStatus` (`AVAILABLE` o
 `PAYMENTS_UNAVAILABLE`) y `emptyReason` (`PAYMENTS_UNAVAILABLE`,
 `NO_EVENTS_OR_OFFERS` o `null`). El Local activo sin pagos vigentes conserva
 dirección, contacto y horario, pero su contenido comercial no se publica.
-`emptyState` con textos sigue presente y marcado como obsoleto mientras Mobile
-migra al contrato estructurado. Los campos nuevos no contienen copy de interfaz.
+`emptyReasons` reemplaza el copy anterior de `emptyState`. Entradas y Productos
+no son secciones superiores de Inicio; siguen disponibles dentro de los detalles.
+Los campos de Inicio no contienen copy de interfaz.
+
+`GET /clubs/customer/catalog/events`, `/clubs/customer/catalog/clubs` y
+`/clubs/customer/catalog/promotions` continúan el mismo ámbito administrativo y
+orden de Inicio. Aceptan `district`, `province`, `department`, `limit` (1–30) y
+`cursor`. Cada respuesta contiene `items`, `total`, `location` y `nextCursor`.
+El cursor fija la hora de clasificación y el último ID; caduca a los 10 minutos
+y solo puede usarse con la misma categoría y ubicación. Los Eventos pospuestos
+aparecen al final del catálogo de Eventos con estado y `timing` `POSTPONED`.
+Cada Promoción entrega `items` con tipo, nombre y cantidad. No se publica ahorro
+ni precio de referencia porque el modelo actual no guarda esos hechos como
+declaraciones independientes de los precios de componentes.
 
 ## Tipos de negocio y alcance de ofertas
 

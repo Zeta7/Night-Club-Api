@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- 2026-09-27 — Inicio: catálogos cercanos paginados de Eventos, Locales y
+  Promociones con ámbito administrativo, orden autoritativo y cursor estable;
+  Eventos pospuestos visibles en el catálogo. Las Promociones exponen tipo,
+  nombre y cantidad de cada componente sin inferir ahorro ni referencia. Inicio
+  retira Entradas, Productos y copy transitorios. API #14, especificación Mobile #8.
+
 - 2026-09-26 — Inicio: Destacados tipados y autocontenidos con elegibilidad de Local
   y Evento, deduplicación por destino y selección nacional o administrativa. La
   API ordena Eventos, Locales y Promociones con horario de Lima, entrega vistas

@@ -10,7 +10,12 @@ import {
   readClubSocialMedia,
 } from '../../../src/modules/clubs/application/club-profile';
 import { ClubResponseDto } from '../../../src/modules/clubs/presentation/clubs.response.dto';
-import { CustomerHomeResponseDto } from '../../../src/modules/clubs/presentation/customer-discovery.response.dto';
+import {
+  CustomerHomeResponseDto,
+  CustomerNearbyClubsResponseDto,
+  CustomerNearbyEventsResponseDto,
+  CustomerNearbyPromotionsResponseDto,
+} from '../../../src/modules/clubs/presentation/customer-discovery.response.dto';
 import { ClubWorkersResponseDto } from '../../../src/modules/clubs/presentation/worker.response.dto';
 import { readEventSnapshot } from '../../../src/modules/commerce/application/order-snapshot';
 import {
@@ -41,6 +46,9 @@ describe('Public response contracts', () => {
         extraModels: [
           ClubResponseDto,
           CustomerHomeResponseDto,
+          CustomerNearbyClubsResponseDto,
+          CustomerNearbyEventsResponseDto,
+          CustomerNearbyPromotionsResponseDto,
           EventResponseDto,
           LoginResponseDto,
           ReservationMetricsResponseDto,
@@ -83,6 +91,10 @@ describe('Public response contracts', () => {
         emptyReasons: { allOf: [{ $ref: '#/components/schemas/CustomerHomeEmptyReasonsDto' }] },
       },
     });
+    const homeSchema = document.components?.schemas?.CustomerHomeResponseDto;
+    expect(homeSchema).not.toHaveProperty('properties.tickets');
+    expect(homeSchema).not.toHaveProperty('properties.products');
+    expect(homeSchema).not.toHaveProperty('properties.emptyState');
     expect(document.components?.schemas?.CustomerHomeClubDto).toMatchObject({
       properties: {
         commerceStatus: { allOf: [{ $ref: '#/components/schemas/CustomerCommerceStatus' }] },
@@ -135,6 +147,27 @@ describe('Public response contracts', () => {
         accessStatus: { enum: ['AVAILABLE', 'UNAVAILABLE', 'SOLD_OUT', 'INFORMATIONAL'] },
       },
     });
+    expect(document.components?.schemas?.CustomerPromotionDto).toMatchObject({
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: '#/components/schemas/CustomerPromotionComponentDto' },
+        },
+      },
+    });
+    for (const [name, itemType] of [
+      ['CustomerNearbyClubsResponseDto', 'CustomerHomeClubDto'],
+      ['CustomerNearbyEventsResponseDto', 'CustomerHomeEventDto'],
+      ['CustomerNearbyPromotionsResponseDto', 'CustomerPromotionDto'],
+    ] as const) {
+      expect(document.components?.schemas?.[name]).toMatchObject({
+        properties: {
+          items: { type: 'array', items: { $ref: `#/components/schemas/${itemType}` } },
+          total: { type: 'integer' },
+          nextCursor: { type: 'string', nullable: true },
+        },
+      });
+    }
   });
 
   it('publishes concrete club profile fields instead of opaque JSON', () => {
