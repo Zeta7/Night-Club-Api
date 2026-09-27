@@ -8,7 +8,11 @@ export class CustomerExploreQueryDto {
     description:
       'Omitir para el catálogo nacional; con al menos 2 caracteres busca negocios, ciudades, eventos, promociones o productos.',
   })
-  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
+  @Transform(({ value }: { value: unknown }) => {
+    if (typeof value !== 'string') return value;
+    const query = value.trim();
+    return query || undefined;
+  })
   @IsString({ message: 'La búsqueda debe ser texto.' })
   @MinLength(2, { message: 'Escribe al menos 2 caracteres para buscar.' })
   @MaxLength(120, { message: 'La búsqueda no debe superar 120 caracteres.' })
