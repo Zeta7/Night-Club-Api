@@ -1,4 +1,5 @@
 import { JsonObject } from '../../../../shared/domain/json';
+export const MAX_PUSH_BATCH_SIZE = 500;
 export const PUSH_NOTIFICATION_CHANNEL = Symbol('PUSH_NOTIFICATION_CHANNEL');
 
 export type NotificationChannelMessage = {
@@ -14,7 +15,10 @@ export type NotificationChannelMessage = {
 export type NotificationDeliveryResult = {
   provider: string;
   providerMessageId?: string;
-  skipped?: boolean;
+  sentTokens: string[];
+  invalidTokens: string[];
+  retryTokens: string[];
+  errorMessage?: string;
   metadata?: JsonObject;
 };
 

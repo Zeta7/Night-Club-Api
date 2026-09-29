@@ -12,7 +12,13 @@ export class SimulatedPushNotificationChannel implements NotificationChannel {
 
   async send(message: NotificationChannelMessage): Promise<NotificationDeliveryResult> {
     if (message.deviceTokens.length === 0) {
-      return { provider: 'simulated', skipped: true, metadata: { reason: 'NO_DEVICE_TOKEN' } };
+      return {
+        provider: 'simulated',
+        sentTokens: [],
+        invalidTokens: [],
+        retryTokens: [],
+        metadata: { reason: 'NO_DEVICE_TOKEN' },
+      };
     }
     const providerMessageId = `sim_push_${randomUUID()}`;
     this.logger.log(
@@ -21,6 +27,9 @@ export class SimulatedPushNotificationChannel implements NotificationChannel {
     return {
       provider: 'simulated',
       providerMessageId,
+      sentTokens: message.deviceTokens,
+      invalidTokens: [],
+      retryTokens: [],
       metadata: { deviceCount: message.deviceTokens.length },
     };
   }

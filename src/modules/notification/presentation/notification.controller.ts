@@ -34,7 +34,11 @@ import {
 export class NotificationController {
   constructor(private readonly notifications: NotificationService) {}
 
-  @ApiOperation({ summary: 'Listar mis notificaciones (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)' })
+  @ApiOperation({
+    summary: 'Listar mis notificaciones (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Página ordenada por fecha e identificador descendentes. nextCursor permite cargar avisos anteriores sin desplazar resultados cuando llegan nuevos. unreadCount conserva el total global no leído del usuario. Reiniciar el cursor al cambiar filtros.',
+  })
   @ApiResponse({ status: 200, type: NotificationsResponseDto })
   @Get('notifications')
   list(
@@ -43,6 +47,8 @@ export class NotificationController {
   ): Promise<NotificationsResponseDto> {
     return this.notifications.list(user.id, {
       category: query.category,
+      cursor: query.cursor,
+      limit: query.limit,
       readStatus: query.unreadOnly ? 'unread' : (query.readStatus ?? 'all'),
     });
   }

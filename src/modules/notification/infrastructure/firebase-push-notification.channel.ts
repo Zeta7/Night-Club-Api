@@ -10,6 +10,7 @@ import {
 import { getMessaging, Message } from 'firebase-admin/messaging';
 import { isRecord } from '../../../shared/domain/json';
 import {
+  MAX_PUSH_BATCH_SIZE,
   NotificationChannel,
   NotificationChannelMessage,
   NotificationDeliveryResult,
@@ -48,8 +49,17 @@ export class FirebasePushNotificationChannel implements NotificationChannel {
   }
 
   async send(message: NotificationChannelMessage): Promise<NotificationDeliveryResult> {
+    if (message.deviceTokens.length > MAX_PUSH_BATCH_SIZE) {
+      throw new RangeError('El lote push excede 500 dispositivos.');
+    }
     if (message.deviceTokens.length === 0) {
-      return { provider: 'firebase', skipped: true, metadata: { reason: 'NO_DEVICE_TOKEN' } };
+      return {
+        provider: 'firebase',
+        sentTokens: [],
+        invalidTokens: [],
+        retryTokens: [],
+        metadata: { reason: 'NO_DEVICE_TOKEN' },
+      };
     }
     const response = await getMessaging().sendEach(
       message.deviceTokens.map((token): Message => ({
@@ -71,35 +81,33 @@ export class FirebasePushNotificationChannel implements NotificationChannel {
         apns: { payload: { aps: { sound: 'default', contentAvailable: true } } },
       })),
     );
-    const invalidTokens = response.responses.flatMap((item, index) => {
-      const code = item.error?.code;
-      const token = message.deviceTokens[index];
-      return token &&
-        (code === 'messaging/registration-token-not-registered' ||
-          code === 'messaging/invalid-registration-token')
-        ? [token]
-        : [];
-    });
-    if (response.successCount === 0 && response.failureCount > invalidTokens.length) {
-      throw (
-        response.responses.find(
-          (item) =>
-            item.error &&
-            ![
-              'messaging/registration-token-not-registered',
-              'messaging/invalid-registration-token',
-            ].includes(item.error.code),
-        )?.error ?? new Error('FCM delivery failed')
-      );
+    const sentTokens: string[] = [];
+    const invalidTokens: string[] = [];
+    const retryTokens: string[] = [];
+    let errorMessage: string | undefined;
+    for (const [index, token] of message.deviceTokens.entries()) {
+      const item = response.responses[index];
+      if (item?.success) sentTokens.push(token);
+      else if (
+        item?.error?.code === 'messaging/registration-token-not-registered' ||
+        item?.error?.code === 'messaging/invalid-registration-token'
+      )
+        invalidTokens.push(token);
+      else {
+        retryTokens.push(token);
+        errorMessage ??= item?.error?.message ?? 'FCM no confirmó la entrega al dispositivo.';
+      }
     }
     return {
       provider: 'firebase',
-      skipped: response.successCount === 0,
       providerMessageId: response.responses.find((item) => item.success)?.messageId,
+      sentTokens,
+      invalidTokens,
+      retryTokens,
+      errorMessage,
       metadata: {
-        successCount: response.successCount,
-        failureCount: response.failureCount,
-        invalidTokens,
+        successCount: sentTokens.length,
+        failureCount: invalidTokens.length + retryTokens.length,
       },
     };
   }

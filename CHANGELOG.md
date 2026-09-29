@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- 2026-09-29 — Auditoría de notificaciones completada: el centro ofrece páginas
+  por cursor con orden estable y filtros por usuario; Firebase divide los envíos
+  en lotes de 500 y persiste resultados por dispositivo para reintentar solamente
+  pendientes. Conserva ownership, deshabilita tokens inválidos y protege claims
+  concurrentes. Se añaden integraciones PostgreSQL para paginación, avisos de
+  evento, outbox y recuperación de entregas. API #16, coordinación Mobile #16.
+
 - 2026-09-29 — Notificaciones: los pagos rechazados o vencidos abren su compra;
   QR disponibles abre el inventario de esa orden; los avisos de eventos enlazan
   una orden propia, el evento del negocio o el historial de QR de sus titulares.

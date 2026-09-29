@@ -77,7 +77,7 @@ describe('Firebase notification boundary', () => {
       body: 'Body',
       deviceTokens: ['valid', 'invalid'],
     });
-    expect(result.metadata?.invalidTokens).toEqual(['invalid']);
+    expect(result.invalidTokens).toEqual(['invalid']);
   });
 
   it('keeps navigation identifiers authoritative when metadata repeats their names', async () => {
@@ -111,15 +111,13 @@ describe('Firebase notification boundary', () => {
       client_email: 'test@example.com',
       private_key: 'key',
     });
-    jest
-      .mocked(getMessaging().sendEach)
-      .mockResolvedValue({
-        successCount: 0,
-        failureCount: 1,
-        responses: [
-          { success: false, error: { code: 'messaging/invalid-registration-token' } as never },
-        ],
-      });
+    jest.mocked(getMessaging().sendEach).mockResolvedValue({
+      successCount: 0,
+      failureCount: 1,
+      responses: [
+        { success: false, error: { code: 'messaging/invalid-registration-token' } as never },
+      ],
+    });
     await expect(
       channel.send({
         notificationId: 'notice',
@@ -128,7 +126,7 @@ describe('Firebase notification boundary', () => {
         body: 'Body',
         deviceTokens: ['invalid'],
       }),
-    ).resolves.toMatchObject({ skipped: true, metadata: { invalidTokens: ['invalid'] } });
+    ).resolves.toMatchObject({ sentTokens: [], invalidTokens: ['invalid'], retryTokens: [] });
   });
 
   it('retries a failed batch even when another token was invalid', async () => {
@@ -155,6 +153,91 @@ describe('Firebase notification boundary', () => {
         body: 'Body',
         deviceTokens: ['invalid', 'retry'],
       }),
-    ).rejects.toBe(unavailable);
+    ).resolves.toMatchObject({
+      sentTokens: [],
+      invalidTokens: ['invalid'],
+      retryTokens: ['retry'],
+      errorMessage: 'FCM unavailable',
+    });
+  });
+
+  it('keeps successes out of retry tokens after a partial failure', async () => {
+    const channel = configure({
+      project_id: 'beerry-test',
+      client_email: 'test@example.com',
+      private_key: 'key',
+    });
+    jest.mocked(getMessaging().sendEach).mockResolvedValue({
+      successCount: 1,
+      failureCount: 1,
+      responses: [
+        { success: true, messageId: 'accepted' },
+        {
+          success: false,
+          error: { code: 'messaging/server-unavailable', message: 'Later' } as never,
+        },
+      ],
+    });
+    await expect(
+      channel.send({
+        notificationId: 'notice',
+        userId: 'user',
+        title: 'Title',
+        body: 'Body',
+        deviceTokens: ['success', 'retry'],
+      }),
+    ).resolves.toMatchObject({
+      sentTokens: ['success'],
+      retryTokens: ['retry'],
+      invalidTokens: [],
+    });
+  });
+
+  it('accepts 500 devices and rejects a batch beyond the provider limit before sending', async () => {
+    const channel = configure({
+      project_id: 'beerry-test',
+      client_email: 'test@example.com',
+      private_key: 'key',
+    });
+    const tokens = Array.from({ length: 500 }, (_, index) => `token-${index}`);
+    jest
+      .mocked(getMessaging().sendEach)
+      .mockResolvedValue({
+        successCount: 500,
+        failureCount: 0,
+        responses: tokens.map(() => ({ success: true })),
+      });
+    const message = {
+      notificationId: 'notice',
+      userId: 'user',
+      title: 'Title',
+      body: 'Body',
+      deviceTokens: tokens,
+    };
+    expect((await channel.send(message)).sentTokens).toHaveLength(500);
+    await expect(channel.send({ ...message, deviceTokens: [...tokens, 'extra'] })).rejects.toThrow(
+      '500',
+    );
+    expect(getMessaging().sendEach).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries a submitted device when its response is absent', async () => {
+    const channel = configure({
+      project_id: 'beerry-test',
+      client_email: 'test@example.com',
+      private_key: 'key',
+    });
+    jest
+      .mocked(getMessaging().sendEach)
+      .mockResolvedValue({ successCount: 1, failureCount: 0, responses: [{ success: true }] });
+    await expect(
+      channel.send({
+        notificationId: 'notice',
+        userId: 'user',
+        title: 'Title',
+        body: 'Body',
+        deviceTokens: ['success', 'unknown'],
+      }),
+    ).resolves.toMatchObject({ sentTokens: ['success'], retryTokens: ['unknown'] });
   });
 });

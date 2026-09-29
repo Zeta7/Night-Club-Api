@@ -37,6 +37,13 @@ export class NotificationDto {
 }
 
 export class NotificationsResponseDto {
+  @ApiProperty({
+    type: 'string',
+    nullable: true,
+    description: 'Cursor para la siguiente página; null cuando no quedan más notificaciones.',
+  })
+  nextCursor!: string | null;
+
   @ApiProperty({ type: () => [NotificationDto] })
   items!: NotificationDto[];
 
