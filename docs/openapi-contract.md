@@ -95,6 +95,35 @@ referencian `BusinessType`; los cinco campos de alcance de ofertas referencian
 artefacto de build ignorado por Git; se regenera desde los DTOs, no se versiona.
 Esta verificación no confirma el despliegue ni regenera el SDK de Mobile.
 
+## Notificaciones: páginas y entrega por dispositivo
+
+`GET /me/notifications` acepta `cursor` opaco y `limit` entero entre 1 y 100
+(100 por defecto para conservar el tamaño de página de clientes anteriores).
+La respuesta conserva `items` y `unreadCount` y añade `nextCursor`: un string
+para continuar o `null` al finalizar. El total no leído sigue siendo global para
+el usuario, aunque se apliquen filtros o se pidan páginas posteriores.
+
+Las páginas ordenan por `createdAt DESC, id DESC`. El cursor conserva ambos
+valores; insertar avisos nuevos o eliminar el aviso del cursor no desplaza la
+continuación. El cliente debe omitir el cursor al actualizar o cambiar categoría
+/ estado de lectura. Todas las páginas aplican ownership y visibilidad IN_APP.
+Los cursores inválidos devuelven `INVALID_NOTIFICATION_CURSOR`; los límites
+inválidos se rechazan por validación y por `INVALID_NOTIFICATION_LIMIT` en el
+servicio. Mobile usa páginas de 30 y el SDK regenerado, sin mapeos JSON manuales.
+
+El dispatcher envía lotes de hasta 500 dispositivos y guarda los tokens pendientes
+y el número de éxitos en `NotificationDelivery.providerData` después de cada
+lote. Los reintentos conservan ese progreso y excluyen dispositivos deshabilitados
+o que ahora pertenecen a otro usuario. Un claim renovable y el número de intento
+protegen las escrituras frente a workers concurrentes. No se añade una migración.
+FCM no ofrece atomicidad con PostgreSQL: una caída entre la aceptación del mensaje
+y el commit de su resultado puede repetir esa entrega; los éxitos ya persistidos
+no se vuelven a enviar.
+
+OpenAPI regenerado y validado el 2026-09-29: 169 paths, 196 operaciones, 416 schemas
+y cero referencias rotas. `dist/openapi.json` permanece como artefacto ignorado;
+las fuentes del contrato y esta documentación sí se versionan.
+
 ## Verificación
 
 ```powershell

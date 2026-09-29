@@ -1,5 +1,8 @@
 /** Documented domain errors by operation. Update when changing public error behavior. */
 export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
+  NotificationController_list: {
+    '400': ['INVALID_NOTIFICATION_CURSOR', 'INVALID_NOTIFICATION_LIMIT'],
+  },
   NotificationController_markRead: {
     '404': ['NOTIFICATION_NOT_FOUND'],
   },
