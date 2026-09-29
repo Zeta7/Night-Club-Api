@@ -7,6 +7,9 @@
   mensajes y estados de lectura. La API pagina y marca leído en el ámbito
   elegido, expone ambos contadores pendientes y transporta audience reservado
   en push. Omitir audience mantiene el comportamiento combinado anterior.
+  El dashboard Trabajador elige una asignación activa y evita que un vínculo
+  inactivo más antiguo impida recuperar el modo; sin asignación activa no ofrece
+  contexto operativo y conserva los permisos existentes.
   API #17, coordinación Mobile #17.
 
 - 2026-09-29 — Nueva venta: avisos de entradas, productos, promociones y compras

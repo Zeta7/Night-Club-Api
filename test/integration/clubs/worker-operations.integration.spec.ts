@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { ClubsService } from '@modules/clubs/application/clubs.service';
 import { ClubWorkersService } from '@modules/clubs/application/club-workers.service';
 import { CommerceService } from '@modules/commerce/application/commerce.service';
 import { SimulatedPaymentGateway } from '@modules/commerce/infrastructure/simulated-payment.gateway';
@@ -8,13 +9,13 @@ import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 
-
 jest.setTimeout(180_000);
 
 describe('Module 9 - worker operations', () => {
   const config = new ConfigService();
   const prisma = new PrismaService(config);
   const service = new ClubWorkersService(prisma, config);
+  const clubs = new ClubsService(prisma, config, {} as never, {} as never);
   const commerce = new CommerceService(prisma, config, {} as any, new SimulatedPaymentGateway());
   const suffix = randomUUID().slice(0, 8);
   let adminId: string;
@@ -70,7 +71,7 @@ describe('Module 9 - worker operations', () => {
 
   afterAll(async () => {
     await prisma.auditLogEntry.deleteMany({ where: { clubId } });
-    await prisma.clubWorker.deleteMany({ where: { clubId } });
+    await prisma.clubWorker.deleteMany({ where: { clubId: { in: [clubId, otherClubId] } } });
     await prisma.clubAdmin.deleteMany({ where: { clubId } });
     await prisma.club.deleteMany({ where: { id: { in: [clubId, otherClubId] } } });
     await prisma.user.deleteMany({ where: { id: { in: [adminId, workerUserId] } } });
@@ -136,6 +137,43 @@ describe('Module 9 - worker operations', () => {
     ).rejects.toBeDefined();
     expect((await service.listShifts(admin(), clubId, workerId)).items[0]?.status).toBe('CLOSED');
     expect(authorized.device.status).toBe('AUTHORIZED');
+  });
+
+  it('chooses an active assignment instead of an older inactive business', async () => {
+    await prisma.clubWorker.create({
+      data: {
+        clubId: otherClubId,
+        userId: workerUserId,
+        status: 'INACTIVE',
+        permissions: [],
+        createdAt: new Date('2000-01-01T00:00:00Z'),
+      },
+    });
+    const dashboard = await clubs.getAdminDashboard(worker());
+    expect(dashboard).toMatchObject({
+      hasClub: true,
+      club: { id: clubId },
+      workerContext: {
+        id: workerId,
+        status: 'ACTIVE',
+        permissions: [WorkerPermission.VIEW_OPERATIONS, WorkerPermission.VALIDATE_TICKETS],
+      },
+    });
+    await expect(commerce.getClubOperations(worker(), otherClubId)).rejects.toBeDefined();
+  });
+
+  it('returns no worker dashboard when every assignment is inactive', async () => {
+    await prisma.clubWorker.update({ where: { id: workerId }, data: { status: 'INACTIVE' } });
+    try {
+      expect(await clubs.getAdminDashboard(worker())).toMatchObject({
+        hasClub: false,
+        club: null,
+        workerContext: null,
+      });
+      await expect(commerce.getClubOperations(worker(), clubId)).rejects.toBeDefined();
+    } finally {
+      await prisma.clubWorker.update({ where: { id: workerId }, data: { status: 'ACTIVE' } });
+    }
   });
 
   it('records worker changes and exposes a traceable report', async () => {

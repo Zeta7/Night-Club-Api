@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   ClubOperationalProfile,
   ClubStatus,
+  ClubWorkerStatus,
   CommerceItemType,
   EventStatus,
   InventoryReservationStatus,
@@ -1680,6 +1681,7 @@ export class ClubsService {
       const relation = await this.prisma.clubWorker.findFirst({
         where: {
           userId: currentUser.id,
+          status: ClubWorkerStatus.ACTIVE,
         },
         orderBy: { createdAt: 'asc' },
         include: {
