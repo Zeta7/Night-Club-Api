@@ -1,3 +1,4 @@
+import { NotificationAudience } from '@prisma/client';
 import { JsonObject } from '../../../../shared/domain/json';
 export const MAX_PUSH_BATCH_SIZE = 500;
 export const PUSH_NOTIFICATION_CHANNEL = Symbol('PUSH_NOTIFICATION_CHANNEL');
@@ -5,6 +6,7 @@ export const PUSH_NOTIFICATION_CHANNEL = Symbol('PUSH_NOTIFICATION_CHANNEL');
 export type NotificationChannelMessage = {
   notificationId: string;
   userId: string;
+  audience: NotificationAudience;
   title: string;
   body: string;
   deepLink?: string | null;

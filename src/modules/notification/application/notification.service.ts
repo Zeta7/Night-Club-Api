@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { NotificationCategory, Prisma } from '@prisma/client';
+import { NotificationAudience, NotificationCategory, Prisma } from '@prisma/client';
 import { isRecord, JsonObject } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
 import { badRequest, notFound } from '../../../shared/presentation/api-exception';
@@ -83,6 +83,17 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     const preference = await tx.notificationPreference.findUnique({
       where: { userId_category: { userId, category: template.category } },
     });
+    // Account requests belong to the recipient's available experience at emission time.
+    // Purchases and other templates keep their producer audience regardless of account role.
+    let audience = template.audience;
+    let deepLinkTemplate = template.deepLinkTemplate;
+    if (templateKey === 'BUSINESS_ACCESS_APPROVED' || templateKey === 'BUSINESS_ACCESS_REJECTED') {
+      const recipient = await tx.user.findUnique({ where: { id: userId }, select: { role: true } });
+      if (recipient?.role === 'ADMIN' || recipient?.role === 'SUPER_ADMIN') {
+        audience = NotificationAudience.OPERATIONS;
+        deepLinkTemplate = '/admin/profile/business-access';
+      }
+    }
     const inAppEnabled = preference?.inAppEnabled ?? true;
     const pushEnabled = preference?.pushEnabled ?? true;
     if (!inAppEnabled && !pushEnabled) return null;
@@ -92,11 +103,12 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       data: {
         userId,
         category: template.category,
+        audience,
         templateKey: template.key,
         templateVersion: template.version,
         title: render(template.titleTemplate),
         body: render(template.bodyTemplate),
-        deepLink: template.deepLinkTemplate === null ? null : render(template.deepLinkTemplate),
+        deepLink: deepLinkTemplate === null ? null : render(deepLinkTemplate),
         data,
         deliveries: {
           create: [
@@ -124,6 +136,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     filters:
       | {
           category?: NotificationCategory;
+          audience?: NotificationAudience;
           readStatus?: 'all' | 'unread' | 'read';
           cursor?: string;
           limit?: number;
@@ -138,17 +151,21 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
       throw badRequest('INVALID_NOTIFICATION_LIMIT', 'El límite debe estar entre 1 y 100.');
     }
-    const cursor = normalized.cursor === undefined ? null : this.readInboxCursor(normalized.cursor);
+    const cursor =
+      normalized.cursor === undefined
+        ? null
+        : this.readInboxCursor(normalized.cursor, normalized.audience);
     const readFilter =
       normalized.readStatus === 'unread'
         ? { readAt: null }
         : normalized.readStatus === 'read'
           ? { readAt: { not: null } }
           : {};
-    const [items, unreadCount] = await Promise.all([
+    const [items, unreadGroups] = await Promise.all([
       this.prisma.notification.findMany({
         where: {
           userId,
+          ...(normalized.audience ? { audience: normalized.audience } : {}),
           ...(normalized.category ? { category: normalized.category } : {}),
           ...readFilter,
           ...(cursor
@@ -164,7 +181,9 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: limit + 1,
       }),
-      this.prisma.notification.count({
+      this.prisma.notification.groupBy({
+        by: ['audience'],
+        _count: { _all: true },
         where: {
           userId,
           readAt: null,
@@ -177,13 +196,32 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     const nextCursor =
       items.length > limit && last
         ? Buffer.from(
-            JSON.stringify({ createdAt: last.createdAt.toISOString(), id: last.id }),
+            JSON.stringify({
+              createdAt: last.createdAt.toISOString(),
+              id: last.id,
+              audience: normalized.audience ?? null,
+            }),
           ).toString('base64url')
         : null;
-    return { items: page, unreadCount, nextCursor };
+    const unreadCounts = { customer: 0, operations: 0 };
+    for (const group of unreadGroups) {
+      if (group.audience === NotificationAudience.CUSTOMER)
+        unreadCounts.customer = group._count._all;
+      else unreadCounts.operations = group._count._all;
+    }
+    const unreadCount =
+      normalized.audience === NotificationAudience.CUSTOMER
+        ? unreadCounts.customer
+        : normalized.audience === NotificationAudience.OPERATIONS
+          ? unreadCounts.operations
+          : unreadCounts.customer + unreadCounts.operations;
+    return { items: page, unreadCount, unreadCounts, nextCursor };
   }
 
-  private readInboxCursor(value: string): { createdAt: Date; id: string } {
+  private readInboxCursor(
+    value: string,
+    audience?: NotificationAudience,
+  ): { createdAt: Date; id: string } {
     try {
       if (value.length > 512 || !/^[A-Za-z0-9_-]+$/.test(value))
         throw new Error('Invalid encoding');
@@ -197,6 +235,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       ) {
         throw new Error('Invalid cursor');
       }
+      if ((decoded.audience ?? null) !== (audience ?? null)) throw new Error('Audience mismatch');
       const createdAt = new Date(decoded.createdAt);
       if (!Number.isFinite(createdAt.getTime()) || createdAt.toISOString() !== decoded.createdAt) {
         throw new Error('Invalid date');
@@ -221,9 +260,14 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     return { notificationId, read: true };
   }
 
-  async markAllRead(userId: string) {
+  async markAllRead(userId: string, audience?: NotificationAudience) {
     const result = await this.prisma.notification.updateMany({
-      where: { userId, readAt: null, deliveries: { some: { channel: 'IN_APP', status: 'SENT' } } },
+      where: {
+        userId,
+        ...(audience ? { audience } : {}),
+        readAt: null,
+        deliveries: { some: { channel: 'IN_APP', status: 'SENT' } },
+      },
       data: { readAt: new Date() },
     });
     return { updated: result.count };
@@ -287,9 +331,9 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       ORDER BY n."createdAt" LIMIT 100
     ), prepared AS (
       UPDATE "Notification" n SET "deepLink" = COALESCE(n."deepLink", CASE
-        WHEN n.data->>'orderId' IS NOT NULL AND EXISTS (SELECT 1 FROM "Order" o WHERE o.id = n.data->>'orderId' AND o."userId" = n."userId") THEN 'beerry://customer/operations/orders/' || (n.data->>'orderId')
-        WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'SUPER_ADMIN') THEN 'beerry://admin/event-resolutions'
-        WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'ADMIN') THEN 'beerry://admin/club/events' || CASE WHEN NULLIF(n.data->>'eventId', '') IS NOT NULL THEN '/' || (n.data->>'eventId') ELSE '' END
+        WHEN n.audience = 'CUSTOMER' AND n.data->>'orderId' IS NOT NULL AND EXISTS (SELECT 1 FROM "Order" o WHERE o.id = n.data->>'orderId' AND o."userId" = n."userId") THEN 'beerry://customer/operations/orders/' || (n.data->>'orderId')
+        WHEN n.audience = 'OPERATIONS' AND EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'SUPER_ADMIN') THEN 'beerry://admin/event-resolutions'
+        WHEN n.audience = 'OPERATIONS' AND EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'ADMIN') THEN 'beerry://admin/club/events' || CASE WHEN NULLIF(n.data->>'eventId', '') IS NOT NULL THEN '/' || (n.data->>'eventId') ELSE '' END
         ELSE 'beerry://customer/qrs?filter=HISTORY' END)
       FROM candidates c WHERE n.id = c.id RETURNING n.*
     ) INSERT INTO "NotificationDelivery" (id, "notificationId", channel, status, provider, "updatedAt")
@@ -356,6 +400,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           const result = await this.sendPushBatch(delivery.id, attempt, {
             notificationId: delivery.notificationId,
             userId: delivery.notification.userId,
+            audience: delivery.notification.audience,
             title: delivery.notification.title,
             body: delivery.notification.body,
             deepLink: delivery.notification.deepLink,
@@ -463,6 +508,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'PAYMENT_APPROVED',
         NotificationCategory.PAYMENT,
+        NotificationAudience.CUSTOMER,
         'Pago aprobado',
         'Tu pago de S/ {amount} fue aprobado.',
         '/orders/{orderId}',
@@ -470,6 +516,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'PAYMENT_REJECTED',
         NotificationCategory.PAYMENT,
+        NotificationAudience.CUSTOMER,
         'Pago rechazado',
         'No pudimos aprobar tu pago. Tu carrito se mantiene disponible.',
         '/orders/{orderId}',
@@ -477,6 +524,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'PAYMENT_EXPIRED',
         NotificationCategory.PAYMENT,
+        NotificationAudience.CUSTOMER,
         'Pago vencido',
         'La reserva venció antes de completar el pago. Puedes intentarlo nuevamente.',
         '/orders/{orderId}',
@@ -484,6 +532,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'PAYMENT_PARTIALLY_REFUNDED',
         NotificationCategory.PAYMENT,
+        NotificationAudience.CUSTOMER,
         'Devolución parcial confirmada',
         'Mercado Pago confirmó una devolución parcial de S/ {amount}.',
         '/orders/{orderId}',
@@ -491,6 +540,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'PAYMENT_REFUNDED',
         NotificationCategory.PAYMENT,
+        NotificationAudience.CUSTOMER,
         'Devolución confirmada',
         'Mercado Pago confirmó tu devolución de S/ {amount}.',
         '/orders/{orderId}',
@@ -498,6 +548,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'PAYMENT_CHARGEBACK',
         NotificationCategory.PAYMENT,
+        NotificationAudience.CUSTOMER,
         'Contracargo registrado',
         'Se registró un contracargo para la orden {orderId}.',
         '/orders/{orderId}',
@@ -505,6 +556,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'QR_AVAILABLE',
         NotificationCategory.QR,
+        NotificationAudience.CUSTOMER,
         'QR disponible',
         'Tu compra fue confirmada y ya puedes usar tus QR.',
         '/customer/qrs?orderId={orderId}',
@@ -512,6 +564,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'ADMIN_NEW_SALE',
         NotificationCategory.ORDER,
+        NotificationAudience.OPERATIONS,
         'Nueva venta: {saleType}',
         '{customerName} realizó una compra por S/ {amount}: {itemSummary}.',
         '/admin/sales/{orderId}?clubId={clubId}',
@@ -519,6 +572,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'WITHDRAWAL_REQUESTED',
         NotificationCategory.WITHDRAWAL,
+        NotificationAudience.OPERATIONS,
         'Retiro solicitado',
         'Registramos tu solicitud de retiro por S/ {amount}.',
         '/admin/wallet',
@@ -526,6 +580,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'WITHDRAWAL_APPROVED',
         NotificationCategory.WITHDRAWAL,
+        NotificationAudience.OPERATIONS,
         'Retiro aprobado',
         'Tu retiro por S/ {amount} fue aprobado.',
         '/admin/wallet',
@@ -533,6 +588,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'WITHDRAWAL_REJECTED',
         NotificationCategory.WITHDRAWAL,
+        NotificationAudience.OPERATIONS,
         'Retiro no procesado',
         'Tu retiro por S/ {amount} fue rechazado o no pudo procesarse.',
         '/admin/wallet',
@@ -540,6 +596,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'WITHDRAWAL_PAID',
         NotificationCategory.WITHDRAWAL,
+        NotificationAudience.OPERATIONS,
         'Retiro pagado',
         'Tu retiro por S/ {amount} fue marcado como pagado.',
         '/admin/wallet',
@@ -547,6 +604,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'REFERRAL_ASSOCIATED',
         NotificationCategory.PROMOTION,
+        NotificationAudience.CUSTOMER,
         'Nuevo referido',
         '{customer} se registró con tu código de referido.',
         '/referrals',
@@ -554,6 +612,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'REFERRAL_REWARD_PENDING',
         NotificationCategory.PROMOTION,
+        NotificationAudience.CUSTOMER,
         'Recompensa pendiente',
         'Generaste S/ {amount} por una compra de tu referido. Te avisaremos cuando esté disponible.',
         '/referrals',
@@ -561,6 +620,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'REFERRAL_REWARD_AVAILABLE',
         NotificationCategory.PROMOTION,
+        NotificationAudience.CUSTOMER,
         'Crédito Beerry disponible',
         'Ya tienes S/ {amount} adicionales en tu billetera.',
         '/wallet',
@@ -568,6 +628,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'REFERRAL_TRANSFER_RECEIVED',
         NotificationCategory.PROMOTION,
+        NotificationAudience.CUSTOMER,
         'Recibiste Crédito Beerry',
         'Recibiste una transferencia de S/ {amount}.',
         '/wallet',
@@ -575,6 +636,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'BUSINESS_ACCESS_APPROVED',
         NotificationCategory.SYSTEM,
+        NotificationAudience.CUSTOMER,
         'Solicitud comercial aprobada',
         'Ya puedes configurar y administrar {businessName}.',
         '/profile/business-access',
@@ -582,16 +644,32 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       [
         'BUSINESS_ACCESS_REJECTED',
         NotificationCategory.SYSTEM,
+        NotificationAudience.CUSTOMER,
         'Solicitud comercial revisada',
         'La solicitud para {businessName} fue rechazada. {comment}',
         '/profile/business-access',
       ],
     ] as const;
-    for (const [key, category, titleTemplate, bodyTemplate, deepLinkTemplate] of templates) {
+    for (const [
+      key,
+      category,
+      audience,
+      titleTemplate,
+      bodyTemplate,
+      deepLinkTemplate,
+    ] of templates) {
       await this.prisma.notificationTemplate.upsert({
         where: { key_version: { key, version: 1 } },
-        create: { key, version: 1, category, titleTemplate, bodyTemplate, deepLinkTemplate },
-        update: { category, titleTemplate, bodyTemplate, deepLinkTemplate, active: true },
+        create: {
+          key,
+          version: 1,
+          category,
+          audience,
+          titleTemplate,
+          bodyTemplate,
+          deepLinkTemplate,
+        },
+        update: { category, audience, titleTemplate, bodyTemplate, deepLinkTemplate, active: true },
       });
     }
   }

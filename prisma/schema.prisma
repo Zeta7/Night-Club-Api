@@ -295,6 +295,11 @@ enum InventoryReservationStatus {
   EXPIRED
 }
 
+enum NotificationAudience {
+  CUSTOMER
+  OPERATIONS
+}
+
 enum NotificationCategory {
   PAYMENT
   ORDER
@@ -470,6 +475,7 @@ model NotificationTemplate {
   key              String
   version          Int                  @default(1)
   category         NotificationCategory
+  audience         NotificationAudience @default(CUSTOMER)
   titleTemplate    String
   bodyTemplate     String
   deepLinkTemplate String?
@@ -485,6 +491,7 @@ model Notification {
   id              String               @id @default(uuid())
   userId          String
   category        NotificationCategory
+  audience        NotificationAudience @default(CUSTOMER)
   templateKey     String?
   templateVersion Int?
   title           String
@@ -498,6 +505,7 @@ model Notification {
   deliveries NotificationDelivery[]
 
   @@index([userId, readAt, createdAt])
+  @@index([userId, audience, readAt, createdAt])
   @@index([userId, category, createdAt])
 }
 

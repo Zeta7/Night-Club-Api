@@ -68,10 +68,11 @@ export class FirebasePushNotificationChannel implements NotificationChannel {
         data: {
           ...Object.fromEntries(
             Object.entries(message.data ?? {})
-              .filter(([key]) => key !== 'notificationId' && key !== 'deepLink')
+              .filter(([key]) => !['notificationId', 'deepLink', 'audience'].includes(key))
               .map(([key, value]) => [key, String(value)]),
           ),
           notificationId: message.notificationId,
+          audience: message.audience,
           ...(message.deepLink ? { deepLink: message.deepLink } : {}),
         },
         android: {

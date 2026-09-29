@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- 2026-09-29 — Bandejas de notificaciones separadas por Cliente y Operaciones,
+  con audiencia persistida por productor y migración histórica que conserva
+  mensajes y estados de lectura. La API pagina y marca leído en el ámbito
+  elegido, expone ambos contadores pendientes y transporta audience reservado
+  en push. Omitir audience mantiene el comportamiento combinado anterior.
+  API #17, coordinación Mobile #17.
+
 - 2026-09-29 — Nueva venta: avisos de entradas, productos, promociones y compras
   mixtas enlazan el detalle de su orden y local. Los trabajadores activos con
   VIEW_SALES reciben el mismo destino y conservan los permisos de consulta.

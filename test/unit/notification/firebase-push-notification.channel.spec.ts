@@ -73,6 +73,7 @@ describe('Firebase notification boundary', () => {
     const result = await channel.send({
       notificationId: 'notification',
       userId: 'user',
+      audience: 'CUSTOMER' as const,
       title: 'Title',
       body: 'Body',
       deviceTokens: ['valid', 'invalid'],
@@ -92,15 +93,26 @@ describe('Firebase notification boundary', () => {
     await channel.send({
       notificationId: 'notice',
       userId: 'user',
+      audience: 'CUSTOMER' as const,
       title: 'Title',
       body: 'Body',
       deepLink: '/orders/order',
-      data: { notificationId: 'other', deepLink: '/cart', orderId: 'order' },
+      data: {
+        notificationId: 'other',
+        deepLink: '/cart',
+        audience: 'OPERATIONS',
+        orderId: 'order',
+      },
       deviceTokens: ['token'],
     });
     expect(getMessaging().sendEach).toHaveBeenCalledWith([
       expect.objectContaining({
-        data: { notificationId: 'notice', deepLink: '/orders/order', orderId: 'order' },
+        data: {
+          notificationId: 'notice',
+          deepLink: '/orders/order',
+          audience: 'CUSTOMER' as const,
+          orderId: 'order',
+        },
       }),
     ]);
   });
@@ -122,6 +134,7 @@ describe('Firebase notification boundary', () => {
       channel.send({
         notificationId: 'notice',
         userId: 'user',
+        audience: 'CUSTOMER' as const,
         title: 'Title',
         body: 'Body',
         deviceTokens: ['invalid'],
@@ -149,6 +162,7 @@ describe('Firebase notification boundary', () => {
       channel.send({
         notificationId: 'notice',
         userId: 'user',
+        audience: 'CUSTOMER' as const,
         title: 'Title',
         body: 'Body',
         deviceTokens: ['invalid', 'retry'],
@@ -182,6 +196,7 @@ describe('Firebase notification boundary', () => {
       channel.send({
         notificationId: 'notice',
         userId: 'user',
+        audience: 'CUSTOMER' as const,
         title: 'Title',
         body: 'Body',
         deviceTokens: ['success', 'retry'],
@@ -200,16 +215,15 @@ describe('Firebase notification boundary', () => {
       private_key: 'key',
     });
     const tokens = Array.from({ length: 500 }, (_, index) => `token-${index}`);
-    jest
-      .mocked(getMessaging().sendEach)
-      .mockResolvedValue({
-        successCount: 500,
-        failureCount: 0,
-        responses: tokens.map(() => ({ success: true })),
-      });
+    jest.mocked(getMessaging().sendEach).mockResolvedValue({
+      successCount: 500,
+      failureCount: 0,
+      responses: tokens.map(() => ({ success: true })),
+    });
     const message = {
       notificationId: 'notice',
       userId: 'user',
+      audience: 'CUSTOMER' as const,
       title: 'Title',
       body: 'Body',
       deviceTokens: tokens,
@@ -234,6 +248,7 @@ describe('Firebase notification boundary', () => {
       channel.send({
         notificationId: 'notice',
         userId: 'user',
+        audience: 'CUSTOMER' as const,
         title: 'Title',
         body: 'Body',
         deviceTokens: ['success', 'unknown'],

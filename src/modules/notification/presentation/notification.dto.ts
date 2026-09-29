@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NotificationCategory } from '@prisma/client';
+import { NotificationAudience, NotificationCategory } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsIn, IsInt, IsString, Max, MaxLength, Min } from 'class-validator';
 import { OptionalField } from '../../../shared/presentation/dto-fields';
@@ -20,7 +20,17 @@ export class RegisterDeviceDto {
   @IsString() @MaxLength(30) platform!: string;
 }
 
-export class ListNotificationsQueryDto {
+export class NotificationAudienceQueryDto {
+  @OptionalField({
+    enum: NotificationAudience,
+    enumName: 'NotificationAudience',
+    description: 'Bandeja Cliente u Operaciones. Omitir conserva la bandeja combinada anterior.',
+  })
+  @IsEnum(NotificationAudience)
+  audience?: NotificationAudience;
+}
+
+export class ListNotificationsQueryDto extends NotificationAudienceQueryDto {
   @OptionalField({
     type: 'string',
     maxLength: 512,

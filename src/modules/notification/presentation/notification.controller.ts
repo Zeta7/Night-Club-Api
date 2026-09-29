@@ -15,6 +15,7 @@ import { AccessTokenGuard } from '../../identity/presentation/guards/access-toke
 import { NotificationService } from '../application/notification.service';
 import {
   ListNotificationsQueryDto,
+  NotificationAudienceQueryDto,
   RegisterDeviceDto,
   UpdateNotificationPreferenceDto,
 } from './notification.dto';
@@ -37,7 +38,7 @@ export class NotificationController {
   @ApiOperation({
     summary: 'Listar mis notificaciones (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
     description:
-      'Página ordenada por fecha e identificador descendentes. nextCursor permite cargar avisos anteriores sin desplazar resultados cuando llegan nuevos. unreadCount conserva el total global no leído del usuario. Reiniciar el cursor al cambiar filtros.',
+      'Página ordenada por fecha e identificador descendentes. nextCursor permite cargar avisos anteriores sin desplazar resultados cuando llegan nuevos. audience separa Cliente de Operaciones sin conceder permisos sobre recursos. unreadCount es el total no leído del audience seleccionado o global si se omite. unreadCounts siempre contiene ambos totales sin filtros de categoría o lectura. Reiniciar el cursor al cambiar filtros.',
   })
   @ApiResponse({ status: 200, type: NotificationsResponseDto })
   @Get('notifications')
@@ -46,6 +47,7 @@ export class NotificationController {
     @Query() query: ListNotificationsQueryDto,
   ): Promise<NotificationsResponseDto> {
     return this.notifications.list(user.id, {
+      audience: query.audience,
       category: query.category,
       cursor: query.cursor,
       limit: query.limit,
@@ -67,11 +69,16 @@ export class NotificationController {
 
   @ApiOperation({
     summary: 'Marcar todas las notificaciones como leídas (CUSTOMER, WORKER, ADMIN, SUPER_ADMIN)',
+    description:
+      'Marca solo avisos visibles propios del audience seleccionado; omitir audience conserva la lectura global.',
   })
   @ApiResponse({ status: 201, type: ReadAllNotificationsResponseDto })
   @Post('notifications/read-all')
-  markAllRead(@CurrentUser() user: AuthenticatedUser): Promise<ReadAllNotificationsResponseDto> {
-    return this.notifications.markAllRead(user.id);
+  markAllRead(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: NotificationAudienceQueryDto,
+  ): Promise<ReadAllNotificationsResponseDto> {
+    return this.notifications.markAllRead(user.id, query.audience);
   }
 
   @ApiOperation({

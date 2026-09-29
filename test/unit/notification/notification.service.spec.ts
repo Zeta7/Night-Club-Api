@@ -6,6 +6,7 @@ import { NotificationService } from '@modules/notification/application/notificat
 describe('Notification center policies', () => {
   const create = () => {
     const prisma = {
+      user: { findUnique: jest.fn() },
       notificationTemplate: {
         upsert: jest.fn(async (_input: Prisma.NotificationTemplateUpsertArgs) => ({})),
         findFirst: jest.fn(),
@@ -64,7 +65,8 @@ describe('Notification center policies', () => {
       });
       prisma.notificationTemplate.findFirst.mockResolvedValue({
         key,
-        category: 'PAYMENT',
+        category: input.create.category,
+        audience: input.create.audience,
         version: 1,
         titleTemplate: 'Pago',
         bodyTemplate: 'Estado',
@@ -77,7 +79,37 @@ describe('Notification center policies', () => {
           { orderId: 'order', clubId: 'club' },
           { orderId: 'order' },
         ),
-      ).resolves.toMatchObject({ deepLink: renderedLink, data: { orderId: 'order' } });
+      ).resolves.toMatchObject({
+        deepLink: renderedLink,
+        data: { orderId: 'order' },
+        audience: key === 'ADMIN_NEW_SALE' ? 'OPERATIONS' : 'CUSTOMER',
+      });
+    },
+  );
+
+  it.each(['BUSINESS_ACCESS_APPROVED', 'BUSINESS_ACCESS_REJECTED'])(
+    'persists %s in the recipient available experience without moving worker purchases',
+    async (key) => {
+      const { prisma, service } = create();
+      prisma.notificationTemplate.findFirst.mockResolvedValue({
+        key,
+        category: 'SYSTEM',
+        audience: 'CUSTOMER',
+        version: 1,
+        titleTemplate: 'Solicitud',
+        bodyTemplate: 'Estado',
+        deepLinkTemplate: '/profile/business-access',
+      });
+      for (const role of ['CUSTOMER', 'WORKER', 'ADMIN', 'SUPER_ADMIN']) {
+        prisma.user.findUnique.mockResolvedValue({ role });
+        expect(await service.notifyFromTemplate('recipient', key, {})).toMatchObject({
+          audience: role === 'ADMIN' || role === 'SUPER_ADMIN' ? 'OPERATIONS' : 'CUSTOMER',
+          deepLink:
+            role === 'ADMIN' || role === 'SUPER_ADMIN'
+              ? '/admin/profile/business-access'
+              : '/profile/business-access',
+        });
+      }
     },
   );
 

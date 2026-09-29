@@ -116,11 +116,17 @@ describe('Transactional event notification outbox (PostgreSQL)', () => {
     });
   }
 
-  async function notice(userId: string, data: Prisma.InputJsonObject = {}, createdAt = new Date()) {
+  async function notice(
+    userId: string,
+    data: Prisma.InputJsonObject = {},
+    createdAt = new Date(),
+    audience: 'CUSTOMER' | 'OPERATIONS' = 'CUSTOMER',
+  ) {
     return prisma.notification.create({
       data: {
         userId,
         category: 'EVENT',
+        audience,
         title: 'Event updated',
         body: 'Review your purchase',
         data,
@@ -211,8 +217,8 @@ describe('Transactional event notification outbox (PostgreSQL)', () => {
     const paid = await order(context, buyer.id, 'PAID', new Date());
     await notice(buyer.id, { eventId: context.event.id, orderId: paid.id });
     await notice(transferred.id, { eventId: context.event.id, orderId: paid.id });
-    await notice(context.admin.id, { eventId: context.event.id });
-    await notice(reviewer.id, { eventId: context.event.id });
+    await notice(context.admin.id, { eventId: context.event.id }, new Date(), 'OPERATIONS');
+    await notice(reviewer.id, { eventId: context.event.id }, new Date(), 'OPERATIONS');
 
     await service.dispatchPending();
     expect((await service.list(buyer.id)).items[0]?.deepLink).toBe(

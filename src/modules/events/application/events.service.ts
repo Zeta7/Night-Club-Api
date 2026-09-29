@@ -459,7 +459,7 @@ export class EventsService {
         if (decision.mode !== 'REPLACEMENT') {
           const admins = await tx.user.findMany({ where: { role: 'SUPER_ADMIN', status: 'ACTIVE' }, select: { id: true } });
           await tx.notification.createMany({ data: admins.map((admin) => ({
-            userId: admin.id, category: 'EVENT' as const,
+            userId: admin.id, category: 'EVENT' as const, audience: 'OPERATIONS' as const,
             title: decision.mode === 'REFUND_REQUESTED' ? 'Cancelación: devolución solicitada' : 'Cancelación: contactar al negocio',
             body: decision.mode === 'REFUND_REQUESTED'
               ? `${current.name}: el negocio acepta devolver. Se requiere revisión de Beerry.`
@@ -581,7 +581,7 @@ export class EventsService {
       if (otherRefund) throw conflict('REFUND_ALREADY_REQUESTED', 'La compra ya tiene una gestión de devolución.');
       const request = await tx.eventBuyerRefundRequest.create({ data: { cancellationId: cancellation.id, orderItemId, reason: input.reason.trim() } });
       const admins = await tx.clubAdmin.findMany({ where: { clubId: item.clubId, user: { status: 'ACTIVE' } }, select: { userId: true } });
-      if (admins.length) await tx.notification.createMany({ data: admins.map((admin) => ({ userId: admin.userId, category: 'EVENT' as const,
+      if (admins.length) await tx.notification.createMany({ data: admins.map((admin) => ({ userId: admin.userId, category: 'EVENT' as const, audience: 'OPERATIONS' as const,
         title: 'Un comprador no acepta el reemplazo', body: 'Revisa la solicitud individual de devolución. Aceptarla la enviará a Beerry para autorización.',
         data: { eventId: item.eventId, clubId: item.clubId, buyerRefundRequestId: request.id },
       })) });
@@ -626,7 +626,7 @@ export class EventsService {
       } });
       if (business && status === 'PENDING_BEERRY') {
         const reviewers = await tx.user.findMany({ where: { role: UserRole.SUPER_ADMIN, status: 'ACTIVE' }, select: { id: true } });
-        if (reviewers.length) await tx.notification.createMany({ data: reviewers.map((reviewer) => ({ userId: reviewer.id, category: 'EVENT' as const, title: 'Devolución individual pendiente de revisión', body: 'El negocio aceptó una solicitud por rechazo de reemplazo. Se requiere autorización de Beerry.', data: { buyerRefundRequestId: id } })) });
+        if (reviewers.length) await tx.notification.createMany({ data: reviewers.map((reviewer) => ({ userId: reviewer.id, category: 'EVENT' as const, audience: 'OPERATIONS' as const, title: 'Devolución individual pendiente de revisión', body: 'El negocio aceptó una solicitud por rechazo de reemplazo. Se requiere autorización de Beerry.', data: { buyerRefundRequestId: id } })) });
       }
       await tx.auditLogEntry.create({ data: { actorUserId: user.id, clubId: current.orderItem.clubId, action: business ? 'BUSINESS_REVIEWS_EVENT_BUYER_REFUND' : 'BEERRY_REVIEWS_EVENT_BUYER_REFUND', resourceType: 'EVENT_BUYER_REFUND', resourceId: id, metadata: { previousStatus: current.status, status, reason: input.reason.trim() } } });
       return { request: { id, status } };
@@ -662,7 +662,7 @@ export class EventsService {
       } });
       const reviewers = await tx.user.findMany({ where: { role: UserRole.SUPER_ADMIN, status: 'ACTIVE' }, select: { id: true } });
       if (reviewers.length) await tx.notification.createMany({ data: reviewers.map((reviewer) => ({
-        userId: reviewer.id, category: 'EVENT' as const, title: 'Negocio acepta solicitar devoluciones',
+        userId: reviewer.id, category: 'EVENT' as const, audience: 'OPERATIONS' as const, title: 'Negocio acepta solicitar devoluciones',
         body: 'Revisa la nueva decisión del negocio antes de autorizar cualquier devolución.',
         data: { eventId, cancellationId: current.id, status: 'PENDING_BEERRY' },
       })) });

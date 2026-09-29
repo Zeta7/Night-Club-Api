@@ -1462,6 +1462,7 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
               data: reviewers.map((reviewer) => ({
                 userId: reviewer.id,
                 category: 'EVENT' as const,
+                audience: 'OPERATIONS' as const,
                 title: 'Pago recibido sin reserva vigente',
                 body: 'Revisa la compra y su solicitud de devolución. No se emitieron QR.',
                 data: { orderId },

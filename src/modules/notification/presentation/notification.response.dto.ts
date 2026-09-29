@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NotificationCategory, Prisma } from '@prisma/client';
+import { NotificationAudience, NotificationCategory, Prisma } from '@prisma/client';
 
 export class NotificationDto {
+  @ApiProperty({ enum: NotificationAudience, enumName: 'NotificationAudience' })
+  audience!: NotificationAudience;
+
   @ApiProperty({ type: 'string' })
   id!: string;
 
@@ -36,7 +39,24 @@ export class NotificationDto {
   readAt!: Date | null;
 }
 
+export class NotificationUnreadCountsDto {
+  @ApiProperty({
+    type: 'integer',
+    description: 'No leídas visibles en Cliente, sin filtros de categoría o lectura.',
+  })
+  customer!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'No leídas visibles en Operaciones, sin filtros de categoría o lectura.',
+  })
+  operations!: number;
+}
+
 export class NotificationsResponseDto {
+  @ApiProperty({ type: () => NotificationUnreadCountsDto })
+  unreadCounts!: NotificationUnreadCountsDto;
+
   @ApiProperty({
     type: 'string',
     nullable: true,
@@ -47,7 +67,11 @@ export class NotificationsResponseDto {
   @ApiProperty({ type: () => [NotificationDto] })
   items!: NotificationDto[];
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({
+    type: 'integer',
+    description:
+      'No leídas de audience seleccionado; total combinado al omitir audience. Ignora categoría y estado de lectura.',
+  })
   unreadCount!: number;
 }
 
