@@ -5,12 +5,11 @@ import { NotificationService } from '@modules/notification/application/notificat
 import { SimulatedPushNotificationChannel } from '@modules/notification/infrastructure/simulated-push-notification.channel';
 import { UploadsService } from '@modules/uploads/application/uploads.service';
 import { ConfigService } from '@nestjs/config';
-import { CommerceItemType } from '@prisma/client';
+import { ClubWorkerStatus, CommerceItemType, UserRole, WorkerPermission } from '@prisma/client';
 import { PrismaService } from '@shared/infrastructure/prisma/prisma.service';
 import 'dotenv/config';
 import { ok } from 'node:assert';
 import { randomUUID } from 'node:crypto';
-
 
 jest.setTimeout(180_000);
 
@@ -46,6 +45,7 @@ describe('Inventory reservations integration', () => {
     await prisma.wallet.deleteMany({ where: { userId: { in: userIds } } });
     await prisma.product.deleteMany({ where: { id: { in: productIds } } });
     await prisma.ticketType.deleteMany({ where: { id: { in: ticketTypeIds } } });
+    await prisma.clubWorker.deleteMany({ where: { clubId: { in: clubIds } } });
     await prisma.clubAdmin.deleteMany({ where: { clubId: { in: clubIds } } });
     await prisma.club.deleteMany({ where: { id: { in: clubIds } } });
     await prisma.user.deleteMany({ where: { id: { in: userIds } } });
@@ -145,9 +145,38 @@ describe('Inventory reservations integration', () => {
     ok(winnerResult);
     const winner = winnerResult.value;
     ok(winner.paymentAttemptId, 'This payment scenario must create a payment attempt');
-    const [saleAdmin] = await createUsers(1);
+    const [saleAdmin, salesWorker, otherWorker, inactiveWorker] = await createUsers(4);
     ok(saleAdmin);
+    ok(salesWorker);
+    ok(otherWorker);
+    ok(inactiveWorker);
     await prisma.clubAdmin.create({ data: { clubId: product.clubId, userId: saleAdmin.id } });
+    await prisma.user.updateMany({
+      where: { id: { in: [salesWorker.id, otherWorker.id, inactiveWorker.id] } },
+      data: { role: UserRole.WORKER },
+    });
+    await prisma.clubWorker.createMany({
+      data: [
+        {
+          clubId: product.clubId,
+          userId: salesWorker.id,
+          status: ClubWorkerStatus.ACTIVE,
+          permissions: [WorkerPermission.VIEW_SALES],
+        },
+        {
+          clubId: product.clubId,
+          userId: otherWorker.id,
+          status: ClubWorkerStatus.ACTIVE,
+          permissions: [],
+        },
+        {
+          clubId: product.clubId,
+          userId: inactiveWorker.id,
+          status: ClubWorkerStatus.INACTIVE,
+          permissions: [WorkerPermission.VIEW_SALES],
+        },
+      ],
+    });
     const attempt = await prisma.paymentAttempt.findUniqueOrThrow({
       where: { id: winner.paymentAttemptId },
     });
@@ -179,7 +208,40 @@ describe('Inventory reservations integration', () => {
     });
     expect(adminSaleNotification.title).toBe('Nueva venta: producto');
     expect(adminSaleNotification.body).toContain(`Limited ${suffix} x1`);
-    expect(adminSaleNotification.deepLink).toBe('/admin/sales');
+    const saleLink = `/admin/sales/${winner.orderId}?clubId=${product.clubId}`;
+    expect(adminSaleNotification.deepLink).toBe(saleLink);
+    const workerNotice = await prisma.notification.findFirstOrThrow({
+      where: { userId: salesWorker.id, templateKey: 'ADMIN_NEW_SALE' },
+    });
+    expect(workerNotice.deepLink).toBe(saleLink);
+    expect(workerNotice.data).toMatchObject({ orderId: winner.orderId, clubId: product.clubId });
+    expect(
+      await prisma.notification.count({
+        where: {
+          userId: { in: [otherWorker.id, inactiveWorker.id] },
+          templateKey: 'ADMIN_NEW_SALE',
+        },
+      }),
+    ).toBe(0);
+    await expect(
+      service.getClubOrder(
+        { id: salesWorker.id, role: UserRole.WORKER },
+        product.clubId,
+        winner.orderId,
+      ),
+    ).resolves.toMatchObject({ order: { id: winner.orderId, clubId: product.clubId } });
+    for (const worker of [otherWorker, inactiveWorker]) {
+      await expect(
+        service.getClubOrder(
+          { id: worker.id, role: UserRole.WORKER },
+          product.clubId,
+          winner.orderId,
+        ),
+      ).rejects.toMatchObject({
+        status: 403,
+        response: { error: { code: 'CLUB_PERMISSION_REQUIRED' } },
+      });
+    }
     expect(
       await prisma.notification.count({
         where: { userId: saleAdmin.id, templateKey: 'ADMIN_NEW_SALE' },

@@ -1776,6 +1776,8 @@ export class CommerceService implements OnModuleInit, OnModuleDestroy {
           userId,
           'ADMIN_NEW_SALE',
           {
+            orderId: order.id,
+            clubId: order.clubId,
             saleType,
             customerName: order.user.fullName,
             amount: (amountCents / 100).toFixed(2),

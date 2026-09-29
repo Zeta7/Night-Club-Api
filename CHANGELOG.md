@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- 2026-09-29 — Nueva venta: avisos de entradas, productos, promociones y compras
+  mixtas enlazan el detalle de su orden y local. Los trabajadores activos con
+  VIEW_SALES reciben el mismo destino y conservan los permisos de consulta.
+  API #16, coordinación Mobile #16.
+
 - 2026-09-29 — Auditoría de notificaciones completada: el centro ofrece páginas
   por cursor con orden estable y filtros por usuario; Firebase divide los envíos
   en lotes de 500 y persiste resultados por dispositivo para reintentar solamente

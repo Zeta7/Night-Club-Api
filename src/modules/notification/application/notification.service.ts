@@ -514,7 +514,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         NotificationCategory.ORDER,
         'Nueva venta: {saleType}',
         '{customerName} realizó una compra por S/ {amount}: {itemSummary}.',
-        '/admin/sales',
+        '/admin/sales/{orderId}?clubId={clubId}',
       ],
       [
         'WITHDRAWAL_REQUESTED',

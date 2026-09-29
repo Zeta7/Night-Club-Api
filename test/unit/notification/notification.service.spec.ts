@@ -46,6 +46,7 @@ describe('Notification center policies', () => {
     ['PAYMENT_REJECTED', '/orders/{orderId}', '/orders/order'],
     ['PAYMENT_EXPIRED', '/orders/{orderId}', '/orders/order'],
     ['QR_AVAILABLE', '/customer/qrs?orderId={orderId}', '/customer/qrs?orderId=order'],
+    ['ADMIN_NEW_SALE', '/admin/sales/{orderId}?clubId={clubId}', '/admin/sales/order?clubId=club'],
   ])(
     'points %s at the resource for the affected order',
     async (key, templateLink, renderedLink) => {
@@ -70,7 +71,12 @@ describe('Notification center policies', () => {
         deepLinkTemplate: input.create.deepLinkTemplate,
       });
       await expect(
-        service.notifyFromTemplate('owner', key, { orderId: 'order' }, { orderId: 'order' }),
+        service.notifyFromTemplate(
+          'owner',
+          key,
+          { orderId: 'order', clubId: 'club' },
+          { orderId: 'order' },
+        ),
       ).resolves.toMatchObject({ deepLink: renderedLink, data: { orderId: 'order' } });
     },
   );
