@@ -172,3 +172,36 @@ La migración `20260926000100_type_event_resolution_states` convierte cuatro
 columnas de texto en enums con los mismos valores que sus restricciones CHECK
 anteriores. Debe aplicarse antes de desplegar el backend actualizado. No modifica
 las decisiones ni las transiciones de cancelaciones y devoluciones.
+
+## Notificaciones: bandejas por modo
+
+`NotificationAudience` contiene `CUSTOMER` (compras, pagos, QR y solicitudes
+personales) y `OPERATIONS` (ventas recibidas por trabajadores con VIEW_SALES,
+retiros y revisiones administrativas). Cada `NotificationDto.audience` es
+obligatorio y persistido según su productor; cambiar el rol o modo de la cuenta
+no mueve sus avisos de una bandeja a otra. Las respuestas a solicitudes comerciales
+se fijan en CUSTOMER para Cliente/Trabajador y OPERATIONS para Admin/SuperAdmin
+al emitirse, según la experiencia disponible del destinatario. Admin/SuperAdmin
+abre su propia solicitud en `/admin/profile/business-access`; Cliente/Trabajador
+conserva `/profile/business-access`. La categoría no determina la bandeja:
+EVENT y ORDER pueden aparecer en ambos contextos.
+
+`GET /me/notifications` admite `audience` opcional. El servidor filtra antes
+de paginar y vincula el cursor a ese audience. Cambiar de modo requiere reiniciar
+el cursor. Un cursor histórico sin audience solo es válido al omitir el filtro.
+`unreadCount` cuenta los avisos visibles no leídos del audience seleccionado,
+o todos si se omite. `unreadCounts` (`NotificationUnreadCountsDto`) siempre
+entrega `customer` y `operations` globales para el usuario, sin filtros de
+categoría o estado de lectura.
+
+`POST /me/notifications/read-all?audience=...` afecta solo a los avisos visibles
+de esa bandeja; omitir audience conserva la lectura global anterior.
+`PATCH /me/notifications/:notificationId/read` mantiene la comprobación de
+propiedad individual. El filtro de bandeja no concede permisos sobre compras,
+ventas, locales ni revisiones: esos endpoints conservan su autorización.
+
+La migración `20260929000100_notification_audience` clasifica los avisos existentes
+por plantillas, metadata de revisión y destinos conocidos; conserva IDs, contenido
+y estado leído. Repara los eventos de compradores que el despachador antiguo
+había dirigido al modo administrativo por el rol de la cuenta. Firebase transporta
+`audience` como campo reservado que metadata no puede sobrescribir.
