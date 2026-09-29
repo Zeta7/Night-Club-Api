@@ -363,7 +363,7 @@ export class WithdrawalsService {
     });
   }
 
-  private notify(userId: string, template: string, withdrawal: Pick<WithdrawalRequest, 'id' | 'amountCents'>) {
+  private notify(userId: string, template: string, withdrawal: Pick<WithdrawalRequest, 'id' | 'clubId' | 'amountCents'>) {
     return this.notifications?.notifyFromTemplate(
       userId,
       template,
@@ -371,7 +371,7 @@ export class WithdrawalsService {
         amount: (withdrawal.amountCents / 100).toFixed(2),
         withdrawalId: withdrawal.id,
       },
-      { withdrawalId: withdrawal.id },
+      { withdrawalId: withdrawal.id, clubId: withdrawal.clubId },
     );
   }
 }

@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { NotificationCategory, Prisma } from '@prisma/client';
 import { isRecord, JsonObject } from '../../../shared/domain/json';
 import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.service';
@@ -16,6 +16,7 @@ type SendPhoneVerificationCodeInput = {
 
 @Injectable()
 export class NotificationService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(NotificationService.name);
   private deliveryTimer?: NodeJS.Timeout;
 
   constructor(
@@ -28,9 +29,15 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     await this.ensureTemplates();
-    this.deliveryTimer = setInterval(() => void this.dispatchPending(), 5_000);
+    this.deliveryTimer = setInterval(() => this.dispatchInBackground(), 5_000);
     this.deliveryTimer.unref();
-    void this.dispatchPending();
+    this.dispatchInBackground();
+  }
+
+  private dispatchInBackground() {
+    void this.dispatchPending().catch((error: unknown) => {
+      this.logger.error('No se pudieron despachar las notificaciones pendientes.', error);
+    });
   }
 
   onModuleDestroy() {
@@ -162,7 +169,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
 
   async markAllRead(userId: string) {
     const result = await this.prisma.notification.updateMany({
-      where: { userId, readAt: null },
+      where: { userId, readAt: null, deliveries: { some: { channel: 'IN_APP', status: 'SENT' } } },
       data: { readAt: new Date() },
     });
     return { updated: result.count };
@@ -218,8 +225,8 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       UPDATE "Notification" n SET "deepLink" = COALESCE(n."deepLink", CASE
         WHEN n.data->>'orderId' IS NOT NULL AND EXISTS (SELECT 1 FROM "Order" o WHERE o.id = n.data->>'orderId' AND o."userId" = n."userId") THEN 'beerry://customer/operations/orders/' || (n.data->>'orderId')
         WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'SUPER_ADMIN') THEN 'beerry://admin/event-resolutions'
-        WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'ADMIN') THEN 'beerry://admin/club/events'
-        ELSE 'beerry://customer/wallet' END)
+        WHEN EXISTS (SELECT 1 FROM "User" u WHERE u.id = n."userId" AND u.role = 'ADMIN') THEN 'beerry://admin/club/events' || CASE WHEN NULLIF(n.data->>'eventId', '') IS NOT NULL THEN '/' || (n.data->>'eventId') ELSE '' END
+        ELSE 'beerry://customer/qrs?filter=HISTORY' END)
       FROM candidates c WHERE n.id = c.id RETURNING n.*
     ) INSERT INTO "NotificationDelivery" (id, "notificationId", channel, status, provider, "updatedAt")
       SELECT gen_random_uuid()::text, n.id, ch.channel::"NotificationChannelType",
@@ -303,14 +310,14 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         NotificationCategory.PAYMENT,
         'Pago rechazado',
         'No pudimos aprobar tu pago. Tu carrito se mantiene disponible.',
-        '/cart',
+        '/orders/{orderId}',
       ],
       [
         'PAYMENT_EXPIRED',
         NotificationCategory.PAYMENT,
         'Pago vencido',
         'La reserva venció antes de completar el pago. Puedes intentarlo nuevamente.',
-        '/cart',
+        '/orders/{orderId}',
       ],
       [
         'PAYMENT_PARTIALLY_REFUNDED',
@@ -338,7 +345,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         NotificationCategory.QR,
         'QR disponible',
         'Tu compra fue confirmada y ya puedes usar tus QR.',
-        '/qrs',
+        '/customer/qrs?orderId={orderId}',
       ],
       [
         'ADMIN_NEW_SALE',

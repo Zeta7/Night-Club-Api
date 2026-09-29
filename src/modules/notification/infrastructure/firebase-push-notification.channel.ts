@@ -56,11 +56,13 @@ export class FirebasePushNotificationChannel implements NotificationChannel {
         token,
         notification: { title: message.title, body: message.body },
         data: {
+          ...Object.fromEntries(
+            Object.entries(message.data ?? {})
+              .filter(([key]) => key !== 'notificationId' && key !== 'deepLink')
+              .map(([key, value]) => [key, String(value)]),
+          ),
           notificationId: message.notificationId,
           ...(message.deepLink ? { deepLink: message.deepLink } : {}),
-          ...Object.fromEntries(
-            Object.entries(message.data ?? {}).map(([key, value]) => [key, String(value)]),
-          ),
         },
         android: {
           priority: 'high',
@@ -78,13 +80,21 @@ export class FirebasePushNotificationChannel implements NotificationChannel {
         ? [token]
         : [];
     });
-    if (response.successCount === 0 && response.failureCount > 0 && invalidTokens.length === 0) {
+    if (response.successCount === 0 && response.failureCount > invalidTokens.length) {
       throw (
-        response.responses.find((item) => item.error)?.error ?? new Error('FCM delivery failed')
+        response.responses.find(
+          (item) =>
+            item.error &&
+            ![
+              'messaging/registration-token-not-registered',
+              'messaging/invalid-registration-token',
+            ].includes(item.error.code),
+        )?.error ?? new Error('FCM delivery failed')
       );
     }
     return {
       provider: 'firebase',
+      skipped: response.successCount === 0,
       providerMessageId: response.responses.find((item) => item.success)?.messageId,
       metadata: {
         successCount: response.successCount,

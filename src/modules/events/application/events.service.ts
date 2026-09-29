@@ -539,7 +539,14 @@ export class EventsService {
   private async notifyEventBuyers(tx: Prisma.TransactionClient, eventId: string, title: string, body: string) {
     // One database statement, no per-buyer HTTP calls and no in-memory fan-out.
     await tx.$executeRaw(Prisma.sql`INSERT INTO "Notification" ("id", "userId", "category", "title", "body", "data", "createdAt")
-      SELECT gen_random_uuid()::text, buyers."ownerUserId", 'EVENT'::"NotificationCategory", ${title}, ${body}, jsonb_build_object('eventId', ${eventId}::text), NOW()
+      SELECT gen_random_uuid()::text, buyers."ownerUserId", 'EVENT'::"NotificationCategory", ${title}, ${body},
+        jsonb_strip_nulls(jsonb_build_object('eventId', ${eventId}::text, 'orderId', (
+          SELECT o.id FROM "Order" o JOIN "OrderItem" i ON i."orderId" = o.id
+          WHERE o."userId" = buyers."ownerUserId" AND i."eventId" = ${eventId}
+            AND o.status IN ('PENDING', 'PAID', 'REFUND_PENDING', 'PARTIALLY_REFUNDED')
+          ORDER BY CASE WHEN o.status = 'PENDING' THEN 1 ELSE 0 END,
+            o."createdAt" DESC, o.id DESC LIMIT 1
+        ))), NOW()
       FROM (SELECT "ownerUserId" FROM "Ticket" WHERE "eventId" = ${eventId}
         UNION SELECT "ownerUserId" FROM "ConsumableRight" WHERE "eventId" = ${eventId}
         UNION SELECT o."userId" FROM "Order" o JOIN "OrderItem" i ON i."orderId" = o."id"
@@ -576,7 +583,7 @@ export class EventsService {
       const admins = await tx.clubAdmin.findMany({ where: { clubId: item.clubId, user: { status: 'ACTIVE' } }, select: { userId: true } });
       if (admins.length) await tx.notification.createMany({ data: admins.map((admin) => ({ userId: admin.userId, category: 'EVENT' as const,
         title: 'Un comprador no acepta el reemplazo', body: 'Revisa la solicitud individual de devolución. Aceptarla la enviará a Beerry para autorización.',
-        data: { eventId: item.eventId, buyerRefundRequestId: request.id },
+        data: { eventId: item.eventId, clubId: item.clubId, buyerRefundRequestId: request.id },
       })) });
       await tx.auditLogEntry.create({ data: { actorUserId: user.id, clubId: item.clubId, action: 'BUYER_REJECTS_EVENT_REPLACEMENT', resourceType: 'EVENT_BUYER_REFUND', resourceId: request.id, metadata: { orderItemId, cancellationId: cancellation.id } } });
       // No payment/order state mutation: this is a request, not authorization.

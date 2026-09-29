@@ -79,4 +79,82 @@ describe('Firebase notification boundary', () => {
     });
     expect(result.metadata?.invalidTokens).toEqual(['invalid']);
   });
+
+  it('keeps navigation identifiers authoritative when metadata repeats their names', async () => {
+    const channel = configure({
+      project_id: 'beerry-test',
+      client_email: 'test@example.com',
+      private_key: 'key',
+    });
+    jest
+      .mocked(getMessaging().sendEach)
+      .mockResolvedValue({ successCount: 1, failureCount: 0, responses: [{ success: true }] });
+    await channel.send({
+      notificationId: 'notice',
+      userId: 'user',
+      title: 'Title',
+      body: 'Body',
+      deepLink: '/orders/order',
+      data: { notificationId: 'other', deepLink: '/cart', orderId: 'order' },
+      deviceTokens: ['token'],
+    });
+    expect(getMessaging().sendEach).toHaveBeenCalledWith([
+      expect.objectContaining({
+        data: { notificationId: 'notice', deepLink: '/orders/order', orderId: 'order' },
+      }),
+    ]);
+  });
+
+  it('skips a batch when every submitted token is invalid', async () => {
+    const channel = configure({
+      project_id: 'beerry-test',
+      client_email: 'test@example.com',
+      private_key: 'key',
+    });
+    jest
+      .mocked(getMessaging().sendEach)
+      .mockResolvedValue({
+        successCount: 0,
+        failureCount: 1,
+        responses: [
+          { success: false, error: { code: 'messaging/invalid-registration-token' } as never },
+        ],
+      });
+    await expect(
+      channel.send({
+        notificationId: 'notice',
+        userId: 'user',
+        title: 'Title',
+        body: 'Body',
+        deviceTokens: ['invalid'],
+      }),
+    ).resolves.toMatchObject({ skipped: true, metadata: { invalidTokens: ['invalid'] } });
+  });
+
+  it('retries a failed batch even when another token was invalid', async () => {
+    const channel = configure({
+      project_id: 'beerry-test',
+      client_email: 'test@example.com',
+      private_key: 'key',
+    });
+    const unavailable = new Error('FCM unavailable');
+    Object.assign(unavailable, { code: 'messaging/server-unavailable' });
+    jest.mocked(getMessaging().sendEach).mockResolvedValue({
+      successCount: 0,
+      failureCount: 2,
+      responses: [
+        { success: false, error: { code: 'messaging/invalid-registration-token' } as never },
+        { success: false, error: unavailable as never },
+      ],
+    });
+    await expect(
+      channel.send({
+        notificationId: 'notice',
+        userId: 'user',
+        title: 'Title',
+        body: 'Body',
+        deviceTokens: ['invalid', 'retry'],
+      }),
+    ).rejects.toBe(unavailable);
+  });
 });

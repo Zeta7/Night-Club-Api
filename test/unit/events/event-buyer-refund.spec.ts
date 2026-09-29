@@ -30,7 +30,9 @@ describe('individual replacement refund consent', () => {
     const { service, tx } = fixture();
     expect(await service.requestReplacementRefund(buyer, 'item', { reason: 'No acepto la nueva fecha' })).toEqual({ request: { id: 'request', status: 'PENDING_BUSINESS' } });
     expect(tx.orderItem.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: 'item', order: { userId: 'buyer' } } }));
-    expect(tx.notification.createMany).toHaveBeenCalledTimes(1);
+    expect(tx.notification.createMany).toHaveBeenCalledWith({ data: [expect.objectContaining({
+      userId: 'admin', data: { eventId: 'event', clubId: 'club', buyerRefundRequestId: 'request' },
+    })] });
   });
   it('does not offer this route for postponement', async () => {
     const { service, tx } = fixture();

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- 2026-09-29 — Notificaciones: los pagos rechazados o vencidos abren su compra;
+  QR disponibles abre el inventario de esa orden; los avisos de eventos enlazan
+  una orden propia, el evento del negocio o el historial de QR de sus titulares.
+  La lectura masiva afecta solo al centro
+  visible y los errores del despachador periódico quedan registrados. Firebase
+  conserva los identificadores de navegación, omite lotes totalmente inválidos
+  y reintenta fallos completos aunque incluyan un token inválido. API #16,
+  coordinación Mobile #16.
+
 - 2026-09-27 — Explorar acepta una consulta sin `q` para el catálogo nacional y
   expone páginas acotadas de 30 Locales, Eventos, Promociones y Productos por
   categoría con `nextPage`. Conserva la búsqueda de al menos dos caracteres y
