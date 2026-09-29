@@ -16,6 +16,10 @@ describe('SellerCredentialCipher', () => {
   it('rejects tampered ciphertext', () => {
     const cipher = new SellerCredentialCipher(config);
     const encrypted = cipher.encrypt('secret');
-    expect(() => cipher.decrypt(`${encrypted.slice(0, -1)}A`)).toThrow();
+    const parts = encrypted.split('.');
+    const ciphertext = Buffer.from(parts[3]!, 'base64url');
+    ciphertext.writeUInt8(ciphertext.readUInt8(0) ^ 1, 0);
+    parts[3] = ciphertext.toString('base64url');
+    expect(() => cipher.decrypt(parts.join('.'))).toThrow();
   });
 });
