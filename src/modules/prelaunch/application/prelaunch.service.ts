@@ -16,7 +16,9 @@ import { NotificationService } from '../../notification/application/notification
 import { UbigeoService } from '../infrastructure/ubigeo.service';
 import {
   AdminPreLaunchQueryDto,
+  CheckPreLaunchPhoneDto,
   CreateBusinessPreLaunchApplicationDto,
+  RecoverPreLaunchAccessDto,
   PublishBusinessPreLaunchApplicationDto,
   StartPreLaunchRegistrationDto,
   TrackPreLaunchEventDto,
@@ -42,7 +44,13 @@ const PRELAUNCH_OTP_REQUEST_LIMIT = 3;
 const PRELAUNCH_OTP_MAX_ATTEMPTS = 5;
 const PRELAUNCH_OTP_EXPIRATION_MINUTES = 10;
 const PRELAUNCH_DEFAULT_CITY_GOAL = 500;
-const PRELAUNCH_REGISTRATION_IP_LIMIT = 8;
+// Una mesa de amigos comparte el wifi del local: todos salen por la misma IP
+// pública. Un techo bajo castigaba al grupo, que es la palanca de crecimiento
+// más fuerte del prelanzamiento. Quien defiende de verdad es el OTP —no se
+// puede verificar un número ajeno— más Turnstile.
+const PRELAUNCH_REGISTRATION_IP_LIMIT = 40;
+// Techo de SMS por IP y hora, sobre cualquier vía que envíe un código.
+const PRELAUNCH_OTP_IP_LIMIT = 30;
 
 @Injectable()
 export class PreLaunchService implements OnModuleInit {
@@ -161,23 +169,18 @@ export class PreLaunchService implements OnModuleInit {
       if (existingPhone.status === PreLaunchLeadStatus.BLOCKED) {
         throw badRequest('PRELAUNCH_LEAD_BLOCKED', 'Este registro requiere revisión.');
       }
-      const rawRecoveryToken = randomBytes(32).toString('base64url');
-      await this.prisma.preLaunchLead.update({
-        where: { id: existingPhone.id },
-        data: { recoveryTokenHash: this.hash(rawRecoveryToken) },
-      });
-      await this.sendOtp(existingPhone, client, input.turnstileToken, false);
-      return {
-        message: 'Encontramos tu registro. Te enviamos un código para recuperar tu acceso.',
-        accessToken: rawRecoveryToken,
-        maskedPhone: `*** *** ${phoneNumber.slice(-3)}`,
-        expiresInSeconds: PRELAUNCH_OTP_EXPIRATION_MINUTES * 60,
-        existingRegistration: true,
-      };
+      // Acuse, no sesión y sin SMS. Quien ya estaba dentro casi siempre solo
+      // quiere su enlace de vuelta; el código se envía por `recoverAccess`
+      // y únicamente si lo pide. El enlace de referido se puede mostrar
+      // porque es público por diseño; el nombre, la posición y el distrito no.
+      return this.registeredAcknowledgement(existingPhone, phoneNumber);
     }
     const existingEmail = await this.prisma.preLaunchLead.findUnique({ where: { email } });
     if (existingEmail && existingEmail.id !== existingPhone?.id) {
-      throw conflict('EMAIL_ALREADY_REGISTERED', 'Este correo ya pertenece a otro registro.');
+      // Antes este error era terminal: no había salida en la interfaz. Ahora
+      // el celular es el primer paso, así que se puede volver y entrar con el
+      // número correcto.
+      throw conflict('EMAIL_ALREADY_REGISTERED', 'Ese correo ya está en otro registro. Usa otro correo, o toca "Cambiar" y entra con el celular con el que te registraste.');
     }
     const sourceBusiness = input.sourceBusinessSlug
       ? await this.prisma.preLaunchPartner.findUnique({ where: { slug: input.sourceBusinessSlug.toLowerCase() } })
@@ -207,6 +210,67 @@ export class PreLaunchService implements OnModuleInit {
     await this.recordEvent(PreLaunchEventType.REGISTRATION_COMPLETED, lead, input, client);
     await this.sendOtp(lead, client, input.turnstileToken, false);
     return { message: 'Te enviamos un código de verificación.', accessToken: rawAccessToken, maskedPhone: `*** *** ${phoneNumber.slice(-3)}`, expiresInSeconds: PRELAUNCH_OTP_EXPIRATION_MINUTES * 60, existingRegistration: false };
+  }
+
+  /**
+   * Responde si un número ya está registrado **sin enviar nada**. Es el ahorro
+   * principal de mensajería: antes, cada visita de alguien ya registrado
+   * costaba un SMS. Turnstile va delante para que no sirva como padrón
+   * consultable por celular.
+   */
+  async checkPhone(input: CheckPreLaunchPhoneDto, client: ClientContext) {
+    await this.verifyTurnstile(input.turnstileToken, client.ip);
+    const phoneNumber = input.phone.replace(/\D/g, '');
+    const lead = await this.prisma.preLaunchLead.findUnique({ where: { phoneE164: `+51${phoneNumber}` } });
+    if (!lead) return { state: 'NEW' as const, maskedPhone: maskPhone(phoneNumber) };
+    if (lead.status === PreLaunchLeadStatus.BLOCKED) return { state: 'BLOCKED' as const, maskedPhone: maskPhone(phoneNumber) };
+    if (!lead.phoneVerifiedAt) return { state: 'PENDING_OTP' as const, maskedPhone: maskPhone(phoneNumber) };
+    return this.registeredAcknowledgement(lead, phoneNumber);
+  }
+
+  /**
+   * Envía el código de recuperación. Solo se llama cuando la persona lo pide
+   * explícitamente desde el acuse de `checkPhone`.
+   */
+  async recoverAccess(input: RecoverPreLaunchAccessDto, client: ClientContext) {
+    await this.verifyTurnstile(input.turnstileToken, client.ip);
+    const phoneNumber = input.phone.replace(/\D/g, '');
+    const lead = await this.prisma.preLaunchLead.findUnique({ where: { phoneE164: `+51${phoneNumber}` } });
+    if (!lead?.phoneVerifiedAt) throw badRequest('PRELAUNCH_LEAD_NOT_FOUND', 'No encontramos un registro verificado con ese número.');
+    if (lead.status === PreLaunchLeadStatus.BLOCKED) throw badRequest('PRELAUNCH_LEAD_BLOCKED', 'Este registro requiere revisión.');
+    const rawRecoveryToken = randomBytes(32).toString('base64url');
+    await this.prisma.preLaunchLead.update({
+      where: { id: lead.id },
+      data: { recoveryTokenHash: this.hash(rawRecoveryToken) },
+    });
+    await this.sendOtp(lead, client, input.turnstileToken, false);
+    return {
+      message: 'Te enviamos un código para recuperar tu acceso.',
+      accessToken: rawRecoveryToken,
+      maskedPhone: maskPhone(phoneNumber),
+      expiresInSeconds: PRELAUNCH_OTP_EXPIRATION_MINUTES * 60,
+      existingRegistration: true,
+    };
+  }
+
+  /**
+   * Lo que se le muestra a un número ya verificado: que está registrado, desde
+   * cuándo y su enlace para invitar. Nada más. El nombre, la posición y el
+   * distrito quedan detrás del OTP.
+   */
+  private registeredAcknowledgement(
+    lead: { phoneVerifiedAt: Date | null; createdAt: Date; referralCode: string },
+    phoneNumber: string,
+  ) {
+    return {
+      state: 'REGISTERED' as const,
+      existingRegistration: true,
+      message: 'Este número ya tiene su acceso anticipado confirmado.',
+      maskedPhone: maskPhone(phoneNumber),
+      registeredAt: (lead.phoneVerifiedAt ?? lead.createdAt).toISOString(),
+      referralCode: lead.referralCode,
+      referralPath: `/unete/${lead.referralCode}`,
+    };
   }
 
   async resendOtp(accessToken: string, turnstileToken: string | undefined, client: ClientContext) {
@@ -561,6 +625,10 @@ export class PreLaunchService implements OnModuleInit {
     const last = await this.prisma.preLaunchOtp.findFirst({ where: { leadId: lead.id }, orderBy: { createdAt: 'desc' } });
     if (last && Date.now() - last.createdAt.getTime() < resendSeconds * 1000) throw badRequest('OTP_RESEND_TOO_SOON', `Espera ${resendSeconds} segundos antes de solicitar otro código.`);
     await this.assertRateLimit({ type: PreLaunchEventType.OTP_REQUESTED, ipHash, leadId: lead.id, maximum: PRELAUNCH_OTP_REQUEST_LIMIT, minutes: 60 });
+    // Tope por IP sobre todas las vías que envían SMS (registro, reenvío y
+    // recuperación). Antes no existía y la rama de "ya registrado" ni
+    // siquiera se contaba.
+    await this.assertRateLimit({ type: PreLaunchEventType.OTP_REQUESTED, ipHash, maximum: PRELAUNCH_OTP_IP_LIMIT, minutes: 60 });
     const code = this.verificationCodes.generateNumericCode();
     const expirationMinutes = PRELAUNCH_OTP_EXPIRATION_MINUTES;
     const codeHash = await this.verificationCodes.hash(code);
@@ -701,6 +769,8 @@ const clean = (value: string) => value.trim().replace(/\s+/g, ' ');
 // El copy del SMS del prelanzamiento vive en su propio módulo, no en el
 // servicio de notificaciones de la app. El código va al inicio porque es lo
 // que leen los autocompletados de iOS y Android en la previsualización.
+const maskPhone = (phoneNumber: string) => `*** *** ${phoneNumber.slice(-3)}`;
+
 const preLaunchOtpMessage = (code: string, expirationMinutes: number) =>
   `${code} es tu código de acceso anticipado a Beerry. Vence en ${expirationMinutes} minutos. No lo compartas.`;
 

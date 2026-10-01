@@ -3,8 +3,10 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { PreLaunchService } from '../application/prelaunch.service';
 import {
+  CheckPreLaunchPhoneDto,
   CreateBusinessPreLaunchApplicationDto,
   PreLaunchAccessDto,
+  RecoverPreLaunchAccessDto,
   RequestPreLaunchOtpDto,
   StartPreLaunchRegistrationDto,
   TrackPreLaunchEventDto,
@@ -23,6 +25,18 @@ export class PreLaunchController {
   @Get('locations')
   @ApiOperation({ summary: 'Obtener el catálogo oficial UBIGEO del Perú' })
   locations() { return this.prelaunch.locations(); }
+
+  @Post('phone-check')
+  @ApiOperation({ summary: 'Saber si un celular ya está registrado, sin enviar ningún mensaje' })
+  phoneCheck(@Body() body: CheckPreLaunchPhoneDto, @Req() request: Request, @Headers('user-agent') userAgent?: string) {
+    return this.prelaunch.checkPhone(body, context(request, userAgent));
+  }
+
+  @Post('access/recover')
+  @ApiOperation({ summary: 'Enviar el código de recuperación a un registro ya verificado' })
+  recover(@Body() body: RecoverPreLaunchAccessDto, @Req() request: Request, @Headers('user-agent') userAgent?: string) {
+    return this.prelaunch.recoverAccess(body, context(request, userAgent));
+  }
 
   @Post('registrations')
   @ApiOperation({ summary: 'Crear registro de acceso anticipado y enviar OTP' })

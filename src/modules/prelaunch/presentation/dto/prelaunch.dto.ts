@@ -57,6 +57,18 @@ export class StartPreLaunchRegistrationDto extends PreLaunchAttributionDto {
   @ApiPropertyOptional({ description: 'Token de Cloudflare Turnstile.' }) @IsOptional() @IsString() @MaxLength(3000) turnstileToken?: string;
 }
 
+export class CheckPreLaunchPhoneDto {
+  @ApiProperty({ example: '987654321' }) @IsString() @Matches(/^9\d{8}$/) phone!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(3000) turnstileToken?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(80) sessionId?: string;
+}
+
+export class RecoverPreLaunchAccessDto {
+  @ApiProperty({ example: '987654321' }) @IsString() @Matches(/^9\d{8}$/) phone!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(3000) turnstileToken?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(80) sessionId?: string;
+}
+
 export class RequestPreLaunchOtpDto {
   @ApiProperty() @IsString() @MinLength(32) @MaxLength(200) accessToken!: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(3000) turnstileToken?: string;
