@@ -17,6 +17,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { BusinessAccessModule } from './modules/business-access/business-access.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { PreLaunchModule } from './modules/prelaunch/prelaunch.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     ReferralsModule,
     BusinessAccessModule,
     PaymentsModule,
+    PreLaunchModule,
   ],
 })
 export class AppModule {}

@@ -11,6 +11,6 @@ import { AccessTokenGuard } from './presentation/guards/access-token.guard';
   imports: [JwtModule.register({}), NotificationModule],
   controllers: [AuthController],
   providers: [AccessTokenGuard, AuthService, TokenService, VerificationCodeService],
-  exports: [AccessTokenGuard, TokenService],
+  exports: [AccessTokenGuard, TokenService, VerificationCodeService],
 })
 export class IdentityModule {}

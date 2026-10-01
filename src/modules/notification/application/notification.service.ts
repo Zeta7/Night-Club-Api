@@ -67,6 +67,14 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  sendPreLaunchVerificationCode(input: SendPhoneVerificationCodeInput): Promise<void> {
+    return this.phoneMessageSender.send({
+      phoneCountryCode: input.phoneCountryCode,
+      phoneNumber: input.phoneNumber,
+      message: `Tu código para entrar al acceso anticipado de Beerry es ${input.code}. Expira en ${input.expirationMinutes} minutos.`,
+    });
+  }
+
   async notifyFromTemplate(
     userId: string,
     templateKey: string,

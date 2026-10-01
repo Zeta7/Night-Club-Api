@@ -1,0 +1,41 @@
+[
+  { "key": "sofia-mendoza", "name": "Sofía Mendoza", "phone": "900000001", "department": "Lima", "province": "Lima", "district": "Miraflores", "interests": ["discotecas", "eventos"] },
+  { "key": "diego-salazar", "name": "Diego Salazar", "phone": "900000002", "department": "Lima", "province": "Lima", "district": "Barranco", "interests": ["restobares", "beneficios"] },
+  { "key": "valeria-rios", "name": "Valeria Ríos", "phone": "900000003", "department": "Lima", "province": "Lima", "district": "Lima", "interests": ["karaokes", "eventos"] },
+  { "key": "mateo-castro", "name": "Mateo Castro", "phone": "900000004", "department": "Lima", "province": "Lima", "district": "Chorrillos", "interests": ["discotecas", "restobares"] },
+
+  { "key": "camila-vega", "name": "Camila Vega", "phone": "900000005", "department": "La Libertad", "province": "Trujillo", "district": "Trujillo", "interests": ["eventos", "beneficios"] },
+  { "key": "sebastian-leon", "name": "Sebastián León", "phone": "900000006", "department": "La Libertad", "province": "Trujillo", "district": "Huanchaco", "interests": ["discotecas", "restobares"] },
+  { "key": "luciana-paredes", "name": "Luciana Paredes", "phone": "900000007", "department": "La Libertad", "province": "Trujillo", "district": "El Porvenir", "interests": ["karaokes", "beneficios"] },
+  { "key": "andres-cardenas", "name": "Andrés Cárdenas", "phone": "900000008", "department": "La Libertad", "province": "Trujillo", "district": "Moche", "interests": ["eventos", "restobares"] },
+
+  { "key": "daniela-torres", "name": "Daniela Torres", "phone": "900000009", "department": "Arequipa", "province": "Arequipa", "district": "Arequipa", "interests": ["discotecas", "eventos"] },
+  { "key": "alejandro-nunez", "name": "Alejandro Núñez", "phone": "900000010", "department": "Arequipa", "province": "Arequipa", "district": "Cayma", "interests": ["restobares", "beneficios"] },
+  { "key": "renata-flores", "name": "Renata Flores", "phone": "900000011", "department": "Arequipa", "province": "Arequipa", "district": "Cerro Colorado", "interests": ["karaokes", "eventos"] },
+  { "key": "gabriel-delgado", "name": "Gabriel Delgado", "phone": "900000012", "department": "Arequipa", "province": "Arequipa", "district": "Alto Selva Alegre", "interests": ["discotecas", "beneficios"] },
+
+  { "key": "mariana-rojas", "name": "Mariana Rojas", "phone": "900000013", "department": "San Martin", "province": "Tocache", "district": "Tocache", "interests": ["restobares", "eventos"] },
+  { "key": "joaquin-reyes", "name": "Joaquín Reyes", "phone": "900000014", "department": "Arequipa", "province": "Arequipa", "district": "La Joya", "interests": ["discotecas", "beneficios"] },
+  { "key": "martina-silva", "name": "Martina Silva", "phone": "900000015", "department": "San Martin", "province": "Tocache", "district": "Nuevo Progreso", "interests": ["karaokes", "eventos"] },
+  { "key": "thiago-perez", "name": "Thiago Pérez", "phone": "900000016", "department": "San Martin", "province": "Tocache", "district": "Santa Lucia", "interests": ["restobares", "beneficios"] },
+
+  { "key": "alessia-quintana", "name": "Alessia Quintana", "phone": "900000017", "department": "Cusco", "province": "Cusco", "district": "Cusco", "interests": ["eventos", "discotecas"] },
+  { "key": "nicolas-huaman", "name": "Nicolás Huamán", "phone": "900000018", "department": "Cusco", "province": "Cusco", "district": "Wanchaq", "interests": ["restobares", "beneficios"] },
+  { "key": "maria-jose-vargas", "name": "María José Vargas", "phone": "900000019", "department": "Cusco", "province": "Cusco", "district": "San Sebastian", "interests": ["karaokes", "eventos"] },
+  { "key": "fabian-condori", "name": "Fabián Condori", "phone": "900000020", "department": "Cusco", "province": "Cusco", "district": "Santiago", "interests": ["discotecas", "restobares"] },
+
+  { "key": "ximena-palacios", "name": "Ximena Palacios", "phone": "900000021", "department": "Piura", "province": "Piura", "district": "Piura", "interests": ["eventos", "beneficios"] },
+  { "key": "bruno-espinoza", "name": "Bruno Espinoza", "phone": "900000022", "department": "Lima", "province": "Lima", "district": "Ate", "interests": ["discotecas", "restobares"] },
+  { "key": "antonella-garcia", "name": "Antonella García", "phone": "900000023", "department": "Piura", "province": "Piura", "district": "Catacaos", "interests": ["karaokes", "beneficios"] },
+  { "key": "lucas-navarro", "name": "Lucas Navarro", "phone": "900000024", "department": "Piura", "province": "Piura", "district": "La Arena", "interests": ["eventos", "restobares"] },
+
+  { "key": "isabella-chavez", "name": "Isabella Chávez", "phone": "900000025", "department": "Lambayeque", "province": "Chiclayo", "district": "Chiclayo", "interests": ["discotecas", "eventos"] },
+  { "key": "emiliano-cabrera", "name": "Emiliano Cabrera", "phone": "900000026", "department": "Lima", "province": "Lima", "district": "Carabayllo", "interests": ["restobares", "beneficios"] },
+  { "key": "mila-fernandez", "name": "Mila Fernández", "phone": "900000027", "department": "Lambayeque", "province": "Chiclayo", "district": "Jose Leonardo Ortiz", "interests": ["karaokes", "eventos"] },
+  { "key": "santino-mejia", "name": "Santino Mejía", "phone": "900000028", "department": "Lambayeque", "province": "Chiclayo", "district": "Monsefu", "interests": ["discotecas", "beneficios"] },
+
+  { "key": "emma-campos", "name": "Emma Campos", "phone": "900000029", "department": "Junin", "province": "Huancayo", "district": "Huancayo", "interests": ["eventos", "restobares"] },
+  { "key": "maximo-valdez", "name": "Máximo Valdez", "phone": "900000030", "department": "Lima", "province": "Lima", "district": "Chaclacayo", "interests": ["discotecas", "beneficios"] },
+  { "key": "julieta-alarcon", "name": "Julieta Alarcón", "phone": "900000031", "department": "Junin", "province": "Huancayo", "district": "El Tambo", "interests": ["karaokes", "eventos"] },
+  { "key": "benjamin-soto", "name": "Benjamín Soto", "phone": "900000032", "department": "La Libertad", "province": "Trujillo", "district": "Laredo", "interests": ["restobares", "discotecas"] }
+]

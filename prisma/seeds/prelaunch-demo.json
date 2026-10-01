@@ -1,0 +1,55 @@
+{
+  "markets": [
+    {
+      "slug": "lima",
+      "count": 684,
+      "locations": [
+        { "department": "Lima", "province": "Lima", "district": "Miraflores" },
+        { "department": "Lima", "province": "Lima", "district": "Barranco" },
+        { "department": "Lima", "province": "Lima", "district": "Lima" },
+        { "department": "Lima", "province": "Lima", "district": "Santiago De Surco" },
+        { "department": "Lima", "province": "Lima", "district": "San Miguel" },
+        { "department": "Lima", "province": "Lima", "district": "Los Olivos" }
+      ]
+    },
+    {
+      "slug": "la-libertad",
+      "count": 428,
+      "locations": [
+        { "department": "La Libertad", "province": "Trujillo", "district": "Trujillo" },
+        { "department": "La Libertad", "province": "Trujillo", "district": "Huanchaco" },
+        { "department": "La Libertad", "province": "Trujillo", "district": "Víctor Larco Herrera" },
+        { "department": "La Libertad", "province": "Trujillo", "district": "Moche" }
+      ]
+    },
+    {
+      "slug": "arequipa",
+      "count": 861,
+      "locations": [
+        { "department": "Arequipa", "province": "Arequipa", "district": "Arequipa" },
+        { "department": "Arequipa", "province": "Arequipa", "district": "Cayma" },
+        { "department": "Arequipa", "province": "Arequipa", "district": "Cerro Colorado" },
+        { "department": "Arequipa", "province": "Arequipa", "district": "Yanahuara" }
+      ]
+    },
+    {
+      "slug": "san-martin",
+      "count": 366,
+      "locations": [
+        { "department": "San Martin", "province": "Tocache", "district": "Tocache" },
+        { "department": "San Martin", "province": "Tocache", "district": "Nuevo Progreso" },
+        { "department": "San Martin", "province": "Tocache", "district": "Santa Lucia" }
+      ]
+    }
+  ],
+  "partners": [
+    { "key": "nebula-barranco", "marketSlug": "lima", "name": "Nébula Barranco", "category": "Discoteca", "district": "Barranco", "benefits": 3, "image": "./assets/night-bar.jpg" },
+    { "key": "terraza-28", "marketSlug": "lima", "name": "Terraza 28", "category": "Restobar", "district": "Miraflores", "benefits": 2, "image": "./assets/night-rooftop.jpg" },
+    { "key": "voz-y-copa", "marketSlug": "lima", "name": "Voz y Copa", "category": "Karaoke", "district": "San Miguel", "benefits": 2, "image": "./assets/night-bar.jpg" },
+    { "key": "moche-nights", "marketSlug": "la-libertad", "name": "Moche Nights", "category": "Discoteca", "district": "Trujillo", "benefits": 2, "image": "./assets/night-bar.jpg" },
+    { "key": "huanchaco-social", "marketSlug": "la-libertad", "name": "Huanchaco Social", "category": "Restobar", "district": "Huanchaco", "benefits": 1, "image": "./assets/night-rooftop.jpg" },
+    { "key": "sillar-rooftop", "marketSlug": "arequipa", "name": "Sillar Rooftop", "category": "Restobar", "district": "Yanahuara", "benefits": 3, "image": "./assets/night-rooftop.jpg" },
+    { "key": "cayma-sessions", "marketSlug": "arequipa", "name": "Cayma Sessions", "category": "Eventos", "district": "Cayma", "benefits": 2, "image": "./assets/night-bar.jpg" },
+    { "key": "selva-social", "marketSlug": "san-martin", "name": "Selva Social", "category": "Restobar", "district": "Tocache", "benefits": 2, "image": "./assets/night-rooftop.jpg" }
+  ]
+}

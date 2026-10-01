@@ -25,6 +25,56 @@ enum PhoneVerificationPurpose {
   ACCOUNT_RECOVERY
 }
 
+enum LaunchMarketStatus {
+  COLLECTING_DEMAND
+  ONBOARDING_PARTNERS
+  READY_TO_LAUNCH
+  LAUNCH_SCHEDULED
+  AVAILABLE
+}
+
+enum PreLaunchLeadStatus {
+  PENDING_OTP
+  VERIFIED
+  BLOCKED
+  CONVERTED
+}
+
+enum BusinessPreLaunchApplicationStatus {
+  RECEIVED
+  CONTACTED
+  IN_CONVERSATION
+  APPROVED
+  PARTNER
+  ACTIVE
+  REJECTED
+}
+
+enum PreLaunchPartnerStatus {
+  APPROVED
+  PARTNER
+  ACTIVE
+  INACTIVE
+}
+
+enum PreLaunchEventType {
+  PAGE_VIEW
+  EARLY_ACCESS_CLICKED
+  REGISTRATION_STARTED
+  REGISTRATION_COMPLETED
+  OTP_REQUESTED
+  PHONE_VERIFIED
+  REFERRAL_SHARED
+  REFERRAL_VERIFIED
+  BUSINESS_FORM_STARTED
+  BUSINESS_FORM_SUBMITTED
+  CITY_VIEWED
+  PARTNER_CLICKED
+  INSTALL_RECORDED
+  USER_CONVERTED
+  SUSPICIOUS_ACTIVITY
+}
+
 enum ClubStatus {
   PENDING_APPROVAL
   ACTIVE
@@ -446,6 +496,7 @@ model User {
   reviewedBusinessRequests BusinessAccessRequest[]  @relation("BusinessAccessReviewer")
   marketplaceOAuthStates   MarketplaceOAuthState[]
   featuredCampaignsCreated FeaturedCampaign[]       @relation("FeaturedCampaignCreator")
+  preLaunchLead            PreLaunchLead?
 
   @@unique([phoneCountryCode, phoneNumber])
   @@index([phoneCountryCode, phoneNumber])
@@ -681,12 +732,12 @@ model WalletCreditLot {
 }
 
 model WalletCreditConsumption {
-  id          String   @id @default(uuid())
-  creditLotId String
-  orderId     String
-  amountCents Int
-  restoredCents Int @default(0)
-  createdAt   DateTime @default(now())
+  id            String   @id @default(uuid())
+  creditLotId   String
+  orderId       String
+  amountCents   Int
+  restoredCents Int      @default(0)
+  createdAt     DateTime @default(now())
 
   creditLot WalletCreditLot @relation(fields: [creditLotId], references: [id], onDelete: Restrict)
   order     Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
@@ -919,21 +970,21 @@ model PlatformSettings {
 }
 
 model Club {
-  id                String     @id @default(uuid())
-  name              String
-  description       String?
-  type              String     @default("club")
-  addressJson       Json?
-  contactJson       Json?
-  coverImageUrl     String?
-  profileImageUrl   String?
-  socialMediaJson   Json?
-  scheduleJson      Json?
-  status            ClubStatus @default(PENDING_APPROVAL)
-  marketplaceFeeBps Int?
-  acceptsWalletPayments Boolean @default(false)
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  id                    String     @id @default(uuid())
+  name                  String
+  description           String?
+  type                  String     @default("club")
+  addressJson           Json?
+  contactJson           Json?
+  coverImageUrl         String?
+  profileImageUrl       String?
+  socialMediaJson       Json?
+  scheduleJson          Json?
+  status                ClubStatus @default(PENDING_APPROVAL)
+  marketplaceFeeBps     Int?
+  acceptsWalletPayments Boolean    @default(false)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
 
   admins                 ClubAdmin[]
   workers                ClubWorker[]
@@ -955,7 +1006,7 @@ model Club {
   accessRequests         BusinessAccessRequest[]
   sellerConnections      MarketplaceSellerConnection[]
   marketplaceOAuthStates MarketplaceOAuthState[]
-  featuredCampaigns       FeaturedCampaign[]
+  featuredCampaigns      FeaturedCampaign[]
 
   @@index([status])
 }
@@ -1080,16 +1131,16 @@ model Event {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  club              Club               @relation(fields: [clubId], references: [id])
-  ticketTypes       TicketType[]
-  promotions        Promotion[]
-  tickets           Ticket[]
-  consumableRights  ConsumableRight[]
-  workerShifts      WorkerShift[]
-  occupancy         EventOccupancy?
-  capacityMovements CapacityMovement[]
-  cancellation      EventCancellation?
-  purchasedItems    OrderItem[]
+  club                 Club                         @relation(fields: [clubId], references: [id])
+  ticketTypes          TicketType[]
+  promotions           Promotion[]
+  tickets              Ticket[]
+  consumableRights     ConsumableRight[]
+  workerShifts         WorkerShift[]
+  occupancy            EventOccupancy?
+  capacityMovements    CapacityMovement[]
+  cancellation         EventCancellation?
+  purchasedItems       OrderItem[]
   acceptedReplacements EventReplacementAcceptance[]
   featuredCampaigns    FeaturedCampaign[]
 
@@ -1145,8 +1196,8 @@ model EventCancellation {
   event              Event    @relation(fields: [eventId], references: [id], onDelete: Restrict)
   buyerRequests      EventBuyerRefundRequest[]
   replacementMappings EventReplacementMapping[]
-  replacements EventReplacementAcceptance[]
-  refundJobs EventRefundJob[]
+  replacements        EventReplacementAcceptance[]
+  refundJobs          EventRefundJob[]
 
   @@index([status, createdAt])
 }
@@ -1159,39 +1210,42 @@ model EventBuyerRefundRequest {
   reason String
   businessReason String?
   businessReviewedBy String?
-  beerryReason String?
-  beerryReviewedBy String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
-  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  beerryReason       String?
+  beerryReviewedBy   String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  cancellation       EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  orderItem          OrderItem         @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+
   @@unique([cancellationId, orderItemId])
   @@index([status, createdAt])
 }
 
 model EventReplacementMapping {
-  id String @id @default(uuid())
-  cancellationId String
-  itemType CommerceItemType
-  sourceItemId String
-  targetItemId String
-  targetName String
+  id               String            @id @default(uuid())
+  cancellationId   String
+  itemType         CommerceItemType
+  sourceItemId     String
+  targetItemId     String
+  targetName       String
   reservedQuantity Int
-  createdAt DateTime @default(now())
-  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  createdAt        DateTime          @default(now())
+  cancellation     EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+
   @@unique([cancellationId, itemType, sourceItemId])
 }
 
 model EventReplacementAcceptance {
-  id String @id @default(uuid())
+  id             String            @id @default(uuid())
   cancellationId String
-  orderItemId String
-  targetEventId String
-  targetItemId String
-  targetEvent Event @relation(fields: [targetEventId], references: [id], onDelete: Restrict)
-  createdAt DateTime @default(now())
-  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
-  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  orderItemId    String
+  targetEventId  String
+  targetItemId   String
+  targetEvent    Event             @relation(fields: [targetEventId], references: [id], onDelete: Restrict)
+  createdAt      DateTime          @default(now())
+  cancellation   EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  orderItem      OrderItem         @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+
   @@unique([cancellationId, orderItemId])
 }
 
@@ -1208,11 +1262,12 @@ model EventRefundJob {
   lastError String?
   leaseToken String?
   manualReviewNote String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cancellation EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
-  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
-  refundRequest RefundRequest? @relation(fields: [refundRequestId], references: [id], onDelete: Restrict)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  cancellation     EventCancellation @relation(fields: [cancellationId], references: [id], onDelete: Restrict)
+  orderItem        OrderItem         @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  refundRequest    RefundRequest?    @relation(fields: [refundRequestId], references: [id], onDelete: Restrict)
+
   @@unique([cancellationId, orderItemId])
   @@index([status, nextRunAt])
 }
@@ -1301,22 +1356,22 @@ model WorkerAuthorizedDevice {
 }
 
 model TicketType {
-  id            String           @id @default(uuid())
-  clubId        String
-  eventId       String?
-  name          String
-  description   String?
-  priceCents    Int
-  currency      String           @default("PEN")
-  quantityTotal Int
-  quantitySold  Int              @default(0)
-  replacementReserved Int @default(0)
-  perUserLimit  Int?
-  saleStartAt   DateTime?
-  saleEndAt     DateTime?
-  status        TicketTypeStatus @default(ACTIVE)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id                  String           @id @default(uuid())
+  clubId              String
+  eventId             String?
+  name                String
+  description         String?
+  priceCents          Int
+  currency            String           @default("PEN")
+  quantityTotal       Int
+  quantitySold        Int              @default(0)
+  replacementReserved Int              @default(0)
+  perUserLimit        Int?
+  saleStartAt         DateTime?
+  saleEndAt           DateTime?
+  status              TicketTypeStatus @default(ACTIVE)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 
   club           Club            @relation(fields: [clubId], references: [id])
   event          Event?          @relation(fields: [eventId], references: [id])
@@ -1440,22 +1495,222 @@ model Order {
   @@index([status])
 }
 
+model LaunchMarket {
+  id               String             @id @default(uuid())
+  name             String
+  slug             String             @unique
+  goal             Int
+  status           LaunchMarketStatus @default(COLLECTING_DEMAND)
+  launchAt         DateTime?
+  publicOrder      Int                @default(0)
+  isPublic         Boolean            @default(true)
+  isFallback       Boolean            @default(false)
+  benefitsPrepared Int                @default(0)
+  eventsPrepared   Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  ubigeos  LaunchMarketUbigeo[]
+  leads    PreLaunchLead[]
+  partners PreLaunchPartner[]
+
+  @@index([isPublic, publicOrder])
+  @@index([status])
+}
+
+model LaunchMarketUbigeo {
+  id           String   @id @default(uuid())
+  marketId     String
+  mappingKey   String   @unique
+  departmentId Int
+  provinceId   Int?
+  districtId   Int?
+  ubigeoCode   String?
+  createdAt    DateTime @default(now())
+
+  market LaunchMarket @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@unique([departmentId, provinceId, districtId])
+  @@unique([ubigeoCode])
+  @@index([marketId])
+}
+
+model PreLaunchLead {
+  id                   String              @id @default(uuid())
+  isSynthetic          Boolean             @default(false)
+  syntheticKey         String?             @unique
+  name                 String
+  email                String              @unique
+  phoneCountryCode     String              @default("+51")
+  phoneNumber          String
+  phoneE164            String              @unique
+  phoneVerifiedAt      DateTime?
+  departmentId         Int
+  provinceId           Int
+  districtId           Int
+  departmentName       String
+  provinceName         String
+  districtName         String
+  ubigeoCode           String
+  launchMarketId       String
+  interests            String[]
+  isAdultDeclared      Boolean
+  privacyAcceptedAt    DateTime
+  privacyPolicyVersion String
+  marketingConsent     Boolean             @default(false)
+  marketingConsentAt   DateTime?
+  referralCode         String              @unique
+  referredById         String?
+  utmSource            String?
+  utmMedium            String?
+  utmCampaign          String?
+  sourceBusinessId     String?
+  influencerCode       String?
+  landingOrigin        String?
+  status               PreLaunchLeadStatus @default(PENDING_OTP)
+  accessTokenHash      String              @unique
+  recoveryTokenHash    String?             @unique
+  convertedToUserId    String?             @unique
+  convertedToUserAt    DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  market          LaunchMarket      @relation(fields: [launchMarketId], references: [id])
+  sourceBusiness  PreLaunchPartner? @relation("PreLaunchBusinessAttribution", fields: [sourceBusinessId], references: [id], onDelete: SetNull)
+  referredBy      PreLaunchLead?    @relation("PreLaunchReferral", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals       PreLaunchLead[]   @relation("PreLaunchReferral")
+  otpCodes        PreLaunchOtp[]
+  events          PreLaunchEvent[]
+  convertedToUser User?             @relation(fields: [convertedToUserId], references: [id], onDelete: SetNull)
+
+  @@index([launchMarketId, status, createdAt])
+  @@index([referredById, status])
+  @@index([sourceBusinessId, status])
+  @@index([ubigeoCode, status])
+}
+
+model PreLaunchOtp {
+  id         String    @id @default(uuid())
+  leadId     String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  lead PreLaunchLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, consumedAt, createdAt])
+}
+
+model PreLaunchPartner {
+  id           String                 @id @default(uuid())
+  isSynthetic  Boolean                @default(false)
+  syntheticKey String?                @unique
+  marketId     String
+  sourceApplicationId String?         @unique
+  slug         String                 @unique
+  name         String
+  category     String
+  districtName String
+  logoUrl      String?
+  imageUrl     String?
+  benefitCount Int                    @default(0)
+  status       PreLaunchPartnerStatus @default(APPROVED)
+  isPublic     Boolean                @default(false)
+  publicOrder  Int                    @default(0)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  market       LaunchMarket    @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  sourceApplication BusinessPreLaunchApplication? @relation("PreLaunchApplicationPartner", fields: [sourceApplicationId], references: [id], onDelete: SetNull)
+  sourcedLeads PreLaunchLead[] @relation("PreLaunchBusinessAttribution")
+
+  @@index([marketId, isPublic, publicOrder])
+}
+
+model BusinessPreLaunchApplication {
+  id             String                             @id @default(uuid())
+  businessName   String
+  type           String
+  departmentId   Int
+  provinceId     Int
+  districtId     Int
+  departmentName String
+  provinceName   String
+  districtName   String
+  ubigeoCode     String
+  address        String
+  contactName    String
+  phoneE164      String
+  email          String
+  socialNetworks String?
+  comment        String?
+  privacyAcceptedAt    DateTime
+  privacyPolicyVersion String
+  status         BusinessPreLaunchApplicationStatus @default(RECEIVED)
+  createdAt      DateTime                           @default(now())
+  updatedAt      DateTime                           @updatedAt
+
+  publishedPartner PreLaunchPartner? @relation("PreLaunchApplicationPartner")
+
+  @@index([status, createdAt])
+  @@index([ubigeoCode])
+}
+
+model PreLaunchLevel {
+  id               String   @id @default(uuid())
+  name             String
+  minimumReferrals Int      @unique
+  publicOrder      Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isActive, minimumReferrals])
+}
+
+model PreLaunchEvent {
+  id               String             @id @default(uuid())
+  type             PreLaunchEventType
+  leadId           String?
+  launchMarketId   String?
+  sourceBusinessId String?
+  sessionId        String?
+  ipHash           String?
+  userAgent        String?
+  utmSource        String?
+  utmMedium        String?
+  utmCampaign      String?
+  landingOrigin    String?
+  metadata         Json?
+  createdAt        DateTime           @default(now())
+
+  lead PreLaunchLead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt])
+  @@index([leadId, type, createdAt])
+  @@index([ipHash, type, createdAt])
+  @@index([launchMarketId, type, createdAt])
+  @@index([sourceBusinessId, type, createdAt])
+}
+
 model FeaturedCampaign {
-  id              String                   @id @default(uuid())
+  id              String                 @id @default(uuid())
   clubId          String
   eventId         String?
   createdByUserId String
   targetType      FeaturedTargetType
-  status          FeaturedCampaignStatus   @default(PENDING_PAYMENT)
+  status          FeaturedCampaignStatus @default(PENDING_PAYMENT)
   durationDays    Int
   priceCents      Int
-  currency        String                   @default("PEN")
-  idempotencyKey  String                   @unique
+  currency        String                 @default("PEN")
+  idempotencyKey  String                 @unique
   paidAt          DateTime?
   startsAt        DateTime?
   endsAt          DateTime?
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
 
   club           Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
   event          Event?          @relation(fields: [eventId], references: [id], onDelete: Restrict)
@@ -1486,10 +1741,10 @@ model RefundRequest {
   createdAt                   DateTime            @default(now())
   updatedAt                   DateTime            @updatedAt
 
-  order       Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  eventJob EventRefundJob?
-  club        Club  @relation(fields: [clubId], references: [id], onDelete: Restrict)
-  requestedBy User  @relation(fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  eventJob    EventRefundJob?
+  club        Club            @relation(fields: [clubId], references: [id], onDelete: Restrict)
+  requestedBy User            @relation(fields: [requestedByUserId], references: [id], onDelete: Restrict)
 
   @@index([clubId, status, createdAt])
   @@index([orderId, createdAt])
@@ -1595,7 +1850,7 @@ model PaymentAttempt {
 
   order              Order?                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
   walletTopUp        WalletTopUp?           @relation(fields: [walletTopUpId], references: [id], onDelete: Cascade)
-  featuredCampaign  FeaturedCampaign?       @relation(fields: [featuredCampaignId], references: [id], onDelete: Cascade)
+  featuredCampaign   FeaturedCampaign?      @relation(fields: [featuredCampaignId], references: [id], onDelete: Cascade)
   events             PaymentProviderEvent[]
   ledgerTransactions LedgerTransaction[]
 
@@ -1654,7 +1909,7 @@ model PaymentProviderEvent {
 }
 
 model OrderItem {
-  id                   String                @id @default(uuid())
+  id                   String                       @id @default(uuid())
   orderId              String
   clubId               String
   itemType             CommerceItemType
@@ -1663,15 +1918,15 @@ model OrderItem {
   eventId              String?
   eventSnapshot        Json?
   eventRefundRequests  EventBuyerRefundRequest[]
-  replacements EventReplacementAcceptance[]
-  eventRefundJobs EventRefundJob[]
-  event                Event?                @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  replacements         EventReplacementAcceptance[]
+  eventRefundJobs      EventRefundJob[]
+  event                Event?                       @relation(fields: [eventId], references: [id], onDelete: Restrict)
   quantity             Int
-  productDeliveryMode  ProductDeliveryMode   @default(GROUPED)
+  productDeliveryMode  ProductDeliveryMode          @default(GROUPED)
   unitPriceCents       Int
   totalCents           Int
-  createdAt            DateTime              @default(now())
-  order                Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt            DateTime                     @default(now())
+  order                Order                        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   tickets              Ticket[]
   consumableRights     ConsumableRight[]
   productDeliveryItems ProductDeliveryItem[]
