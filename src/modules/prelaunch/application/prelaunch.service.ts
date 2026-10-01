@@ -143,11 +143,15 @@ export class PreLaunchService implements OnModuleInit {
   async startRegistration(input: StartPreLaunchRegistrationDto, client: ClientContext) {
     const ipHash = this.hashIp(client.ip);
     await this.assertRateLimit({ type: PreLaunchEventType.REGISTRATION_COMPLETED, ipHash, maximum: PRELAUNCH_REGISTRATION_IP_LIMIT, minutes: 60 });
-    await this.verifyTurnstile(input.turnstileToken, client.ip);
+    // Las validaciones locales van primero: el token de Turnstile es de un solo
+    // uso y no tiene sentido canjearlo por un formulario que de todos modos se
+    // va a rechazar.
     if (!input.isAdultDeclared) throw badRequest('ADULT_DECLARATION_REQUIRED', 'Debes confirmar que eres mayor de 18 años.');
     this.assertPrivacyAcceptance(input.privacyAccepted, input.privacyPolicyVersion);
-
     const location = this.ubigeo.resolve(input);
+    // Pero sigue yendo antes de cualquier consulta por teléfono o correo, para
+    // que el endpoint no sirva para enumerar quién está registrado.
+    await this.verifyTurnstile(input.turnstileToken, client.ip);
     const phoneNumber = input.phone.replace(/\D/g, '');
     const phoneE164 = `+51${phoneNumber}`;
     const email = input.email.trim().toLowerCase();
@@ -564,7 +568,11 @@ export class PreLaunchService implements OnModuleInit {
       data: { leadId: lead.id, codeHash, expiresAt: new Date(Date.now() + expirationMinutes * 60_000) },
     });
     try {
-      await this.notifications.sendPreLaunchVerificationCode({ phoneCountryCode: lead.phoneCountryCode, phoneNumber: lead.phoneNumber, code, expirationMinutes });
+      await this.notifications.sendPhoneMessage({
+        phoneCountryCode: lead.phoneCountryCode,
+        phoneNumber: lead.phoneNumber,
+        message: preLaunchOtpMessage(code, expirationMinutes),
+      });
     } catch (error) {
       // No dejamos un OTP que nunca fue entregado bloqueando el siguiente intento.
       await this.prisma.preLaunchOtp.deleteMany({ where: { id: otp.id } });
@@ -690,5 +698,11 @@ export class PreLaunchService implements OnModuleInit {
 }
 
 const clean = (value: string) => value.trim().replace(/\s+/g, ' ');
+// El copy del SMS del prelanzamiento vive en su propio módulo, no en el
+// servicio de notificaciones de la app. El código va al inicio porque es lo
+// que leen los autocompletados de iOS y Android en la previsualización.
+const preLaunchOtpMessage = (code: string, expirationMinutes: number) =>
+  `${code} es tu código de acceso anticipado a Beerry. Vence en ${expirationMinutes} minutos. No lo compartas.`;
+
 const optional = (value?: string | null) => value?.trim() || null;
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
