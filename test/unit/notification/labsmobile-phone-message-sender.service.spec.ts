@@ -30,7 +30,12 @@ describe('LabsMobilePhoneMessageSender', () => {
     });
 
     expect(request).toHaveBeenCalledTimes(1);
-    const [url, options] = request.mock.calls[0];
+    const firstCall = request.mock.calls.at(0);
+    expect(firstCall).toBeDefined();
+    if (!firstCall) {
+      throw new Error('LabsMobile was not called');
+    }
+    const [url, options] = firstCall;
     expect(url).toBe('https://api.labsmobile.com/json/send');
     expect(options).toEqual(
       expect.objectContaining({
@@ -85,7 +90,12 @@ describe('LabsMobilePhoneMessageSender', () => {
       message,
     });
 
-    const payload = JSON.parse(String(request.mock.calls[0][1]?.body));
+    const firstCall = request.mock.calls.at(0);
+    expect(firstCall).toBeDefined();
+    if (!firstCall) {
+      throw new Error('LabsMobile was not called');
+    }
+    const payload = JSON.parse(String(firstCall[1]?.body));
     expect(payload).toEqual(expect.objectContaining({ message, ucs2: 1, long: 1 }));
   });
 

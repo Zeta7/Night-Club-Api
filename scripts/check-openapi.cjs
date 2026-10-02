@@ -21,6 +21,18 @@ const EXPECTED_PUBLIC_OPERATIONS = [
   'AuthController_resendPhoneCode',
   'AuthController_resetPassword',
   'HealthController_check',
+  'PreLaunchController_business',
+  'PreLaunchController_event',
+  'PreLaunchController_locations',
+  'PreLaunchController_overview',
+  'PreLaunchController_phoneCheck',
+  'PreLaunchController_preferences',
+  'PreLaunchController_recover',
+  'PreLaunchController_resend',
+  'PreLaunchController_start',
+  'PreLaunchController_status',
+  'PreLaunchController_venueOptions',
+  'PreLaunchController_verify',
   'PublicEventsController_getPublicEvent',
   'PublicEventsController_listPublicEvents',
 ];
@@ -302,7 +314,13 @@ function checkRequestSchemas(models, schemas) {
         continue;
       }
       const rules = metadata.filter((item) => item.propertyName === property);
-      if (rules.some((item) => item.name === 'isInt') && field.type !== 'integer') {
+      if (
+        rules.some(
+          (item) =>
+            item.name === 'isInt' &&
+            (item.each ? field.items?.type !== 'integer' : field.type !== 'integer'),
+        )
+      ) {
         failures.push(`${label}: @IsInt requires OpenAPI type integer; use @IsInteger().`);
       }
       for (const rule of rules.filter((item) => item.name === 'isEnum' || item.name === 'isIn')) {
