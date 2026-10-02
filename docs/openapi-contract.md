@@ -205,3 +205,25 @@ por plantillas, metadata de revisión y destinos conocidos; conserva IDs, conten
 y estado leído. Repara los eventos de compradores que el despachador antiguo
 había dirigido al modo administrativo por el rol de la cuenta. Firebase transporta
 `audience` como campo reservado que metadata no puede sobrescribir.
+
+
+## Promociones: vigencia y edición (2026-10-01)
+
+API #18, coordinación Mobile #18. Activar y desactivar rechazan
+`PROMOTION_EXPIRED` cuando el fin propio o el evento impiden ofrecer la promoción.
+Al crear o cambiar de evento, sólo se admiten eventos cuyo fin esté en el futuro
+con estado DRAFT, PUBLISHED, SALE_ACTIVE o IN_PROGRESS. Los borradores permiten
+preparar promociones, pero no se muestran al cliente hasta publicar el evento.
+Una asociación histórica sin cambios se conserva para editar sus metadatos.
+
+`UpdatePromotionDto.removeStartsAt` y `removeEndsAt` son booleanos opcionales:
+true elimina esa fecha; no pueden combinarse con una fecha no nula del mismo
+campo (`PROMOTION_DATE_CONFLICT`). Omitir fecha y flag conserva el valor anterior.
+Quitar el fin propio no elimina el límite del evento. Crear o cambiar vigencia
+rechaza un fin pasado (`PROMOTION_END_IN_PAST`) y un inicio igual o posterior al
+fin del evento (`PROMOTION_START_AFTER_EVENT`). Nuevas asociaciones no elegibles
+rechazan `PROMOTION_EVENT_UNAVAILABLE`.
+
+Contrato regenerado con `pnpm docs:build`: 169 rutas, 196 operaciones y 418 schemas.
+El JSON generado vive en `dist/openapi.json`; no se versiona `dist`.
+El SDK de Mobile se regenera desde `/api/docs-json` después del despliegue.

@@ -25,7 +25,7 @@ import { PromotionResponseDto, PromotionsResponseDto } from './promotions.respon
 export class ClubPromotionsController {
   constructor(private readonly promotionsService: PromotionsService) {}
 
-  @ApiOperation({ summary: 'Crear una promoción del club (ADMIN, SUPER_ADMIN)' })
+  @ApiOperation({ summary: 'Crear una promoción del club (ADMIN, SUPER_ADMIN)', description: 'Solo admite eventos vigentes en DRAFT, PUBLISHED, SALE_ACTIVE o IN_PROGRESS. Rechaza un fin en el pasado y un inicio posterior al fin del evento.' })
   @Post()
   @ApiResponse({
     type: PromotionResponseDto,
@@ -70,7 +70,7 @@ export class ClubPromotionsController {
     return this.promotionsService.getPromotion(currentUser, clubId, promotionId);
   }
 
-  @ApiOperation({ summary: 'Actualizar una promoción del club (ADMIN, SUPER_ADMIN)' })
+  @ApiOperation({ summary: 'Actualizar una promoción del club (ADMIN, SUPER_ADMIN)', description: 'Una nueva asociación requiere un evento vigente. removeStartsAt y removeEndsAt quitan explícitamente las fechas. No combinar cada flag con su fecha. Conserva fechas históricas sin cambios.' })
   @Patch(':promotionId')
   @ApiResponse({
     type: PromotionResponseDto,
@@ -86,7 +86,7 @@ export class ClubPromotionsController {
     return this.promotionsService.updatePromotion(currentUser, clubId, promotionId, body);
   }
 
-  @ApiOperation({ summary: 'Activar una promoción del club (ADMIN, SUPER_ADMIN)' })
+  @ApiOperation({ summary: 'Activar una promoción del club (ADMIN, SUPER_ADMIN)', description: 'Rechaza PROMOTION_EXPIRED si la promoción venció o su evento no admite ofertas. Revisa la vigencia antes de reactivarla.' })
   @Patch(':promotionId/activate')
   @ApiResponse({
     type: PromotionResponseDto,
@@ -101,7 +101,7 @@ export class ClubPromotionsController {
     return this.promotionsService.activatePromotion(currentUser, clubId, promotionId);
   }
 
-  @ApiOperation({ summary: 'Desactivar una promoción del club (ADMIN, SUPER_ADMIN)' })
+  @ApiOperation({ summary: 'Desactivar una promoción del club (ADMIN, SUPER_ADMIN)', description: 'Rechaza PROMOTION_EXPIRED si la promoción venció o su evento no admite ofertas. Una promoción vencida no admite cambios de estado.' })
   @Patch(':promotionId/deactivate')
   @ApiResponse({
     type: PromotionResponseDto,

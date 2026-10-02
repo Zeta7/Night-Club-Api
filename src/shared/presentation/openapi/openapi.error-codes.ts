@@ -929,6 +929,9 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
   ClubPromotionsController_createPromotion: {
     '400': [
       'PROMOTION_DATE_RANGE_INVALID',
+      'PROMOTION_EVENT_UNAVAILABLE',
+      'PROMOTION_END_IN_PAST',
+      'PROMOTION_START_AFTER_EVENT',
       'PROMOTION_DISCOUNT_AMOUNT_INVALID',
       'PROMOTION_DISCOUNT_PERCENTAGE_INVALID',
       'PROMOTION_FINAL_PRICE_REQUIRED',
@@ -958,7 +961,11 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
   },
   ClubPromotionsController_updatePromotion: {
     '400': [
+      'PROMOTION_DATE_CONFLICT',
       'PROMOTION_DATE_RANGE_INVALID',
+      'PROMOTION_EVENT_UNAVAILABLE',
+      'PROMOTION_END_IN_PAST',
+      'PROMOTION_START_AFTER_EVENT',
       'PROMOTION_DISCOUNT_AMOUNT_INVALID',
       'PROMOTION_DISCOUNT_PERCENTAGE_INVALID',
       'PROMOTION_FINAL_PRICE_REQUIRED',
@@ -985,6 +992,7 @@ export const OPENAPI_ERROR_CODES: Record<string, Record<string, string[]>> = {
     '404': ['CLUB_NOT_FOUND', 'PROMOTION_NOT_FOUND'],
   },
   ClubPromotionsController_deactivatePromotion: {
+    '400': ['PROMOTION_EXPIRED'],
     '403': ['CLUB_MANAGE_FORBIDDEN'],
     '404': ['CLUB_NOT_FOUND', 'PROMOTION_NOT_FOUND'],
   },
