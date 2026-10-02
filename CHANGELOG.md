@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- 2026-10-01 — Promociones: bloquea ambas transiciones en vencidas; valida eventos
+  al asociar promociones y el rango efectivo de fechas. La edición permite quitar
+  inicio y fin explícitamente. API #18, coordinación Mobile #18.
+
+
 - 2026-09-29 — Bandejas de notificaciones separadas por Cliente y Operaciones,
   con audiencia persistida por productor y migración histórica que conserva
   mensajes y estados de lectura. La API pagina y marca leído en el ámbito

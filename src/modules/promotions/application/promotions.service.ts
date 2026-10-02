@@ -16,7 +16,7 @@ import { PrismaService } from '../../../shared/infrastructure/prisma/prisma.serv
 import { badRequest, forbidden, notFound } from '../../../shared/presentation/api-exception';
 import { AuthenticatedUser } from '../../identity/presentation/current-user';
 import { UploadsService } from '../../uploads/application/uploads.service';
-import { eventCanActivateOffer } from '../../events/application/event-availability';
+import { promotionCanChangeStatus, promotionEventIsEligible } from './promotion-availability';
 import { CreatePromotionDto } from '../presentation/dto/create-promotion.dto';
 import { PromotionItemDto } from '../presentation/dto/promotion-item.dto';
 import { UpdatePromotionDto } from '../presentation/dto/update-promotion.dto';
@@ -31,11 +31,12 @@ export class PromotionsService {
 
   async createPromotion(currentUser: AuthenticatedUser, clubId: string, input: CreatePromotionDto) {
     await this.assertCanManageClub(currentUser, clubId);
-    await this.assertEventBelongsToClub(clubId, input.eventId);
+    const event = await this.assertEventBelongsToClub(clubId, input.eventId);
     this.assertImageMutationInput(input.imageUploadId, input.removeImage);
     const startsAt = parseOptionalDate(input.startsAt);
     const endsAt = parseOptionalDate(input.endsAt);
     assertDateRange(startsAt, endsAt);
+    assertOfferSchedule(startsAt, endsAt, event?.endsAt);
 
     const resolvedItems = await this.resolveItems(clubId, input.eventId ?? undefined, input.items);
     const totals = resolvePromotionTotals({
@@ -133,16 +134,23 @@ export class PromotionsService {
     await this.assertCanManageClub(currentUser, clubId);
     const currentPromotion = await this.findPromotionOrFail(clubId, promotionId);
     const nextEventId = input.eventId !== undefined ? input.eventId ?? null : currentPromotion.eventId;
-    await this.assertEventBelongsToClub(clubId, nextEventId ?? undefined);
+    const event = await this.assertEventBelongsToClub(clubId, nextEventId, nextEventId !== currentPromotion.eventId);
+    if ((input.removeStartsAt && input.startsAt != null) || (input.removeEndsAt && input.endsAt != null)) {
+      throw badRequest('PROMOTION_DATE_CONFLICT', 'No puedes quitar y definir la misma fecha a la vez.');
+    }
     this.assertImageMutationInput(input.imageUploadId, input.removeImage);
 
-    const startsAt = input.startsAt !== undefined
+    const startsAt = input.removeStartsAt ? null : input.startsAt !== undefined
       ? parseOptionalDate(input.startsAt)
       : currentPromotion.startsAt;
-    const endsAt = input.endsAt !== undefined
+    const endsAt = input.removeEndsAt ? null : input.endsAt !== undefined
       ? parseOptionalDate(input.endsAt)
       : currentPromotion.endsAt;
     assertDateRange(startsAt, endsAt);
+    // Historical dates are preserved unless the caller changes the schedule or event.
+    if (nextEventId !== currentPromotion.eventId || startsAt?.getTime() !== currentPromotion.startsAt?.getTime() || endsAt?.getTime() !== currentPromotion.endsAt?.getTime()) {
+      assertOfferSchedule(startsAt, endsAt, event?.endsAt);
+    }
 
     const resolvedItems = input.items
       ? await this.resolveItems(clubId, nextEventId ?? undefined, input.items)
@@ -175,8 +183,8 @@ export class PromotionsService {
     if (input.name !== undefined) data.name = normalizeText(input.name);
     if (input.description !== undefined) data.description = normalizeOptionalText(input.description);
     if (input.currency !== undefined) data.currency = normalizeCurrency(input.currency);
-    if (input.startsAt !== undefined) data.startsAt = startsAt;
-    if (input.endsAt !== undefined) data.endsAt = endsAt;
+    if (input.startsAt !== undefined || input.removeStartsAt) data.startsAt = startsAt;
+    if (input.endsAt !== undefined || input.removeEndsAt) data.endsAt = endsAt;
 
     const promotion = await this.prisma.$transaction(async (tx) => {
       if (input.imageUploadId) {
@@ -232,10 +240,7 @@ export class PromotionsService {
   async activatePromotion(currentUser: AuthenticatedUser, clubId: string, promotionId: string) {
     await this.assertCanManageClub(currentUser, clubId);
     const current = await this.findPromotionOrFail(clubId, promotionId);
-    if ((current.endsAt && current.endsAt <= new Date()) ||
-        (current.event && !eventCanActivateOffer(current.event))) {
-      throw badRequest('PROMOTION_EXPIRED', 'Actualiza la vigencia antes de activar esta promoción.');
-    }
+    assertCanChangeStatus(current);
 
     const promotion = await this.prisma.promotion.update({
       where: { id: promotionId },
@@ -251,7 +256,8 @@ export class PromotionsService {
 
   async deactivatePromotion(currentUser: AuthenticatedUser, clubId: string, promotionId: string) {
     await this.assertCanManageClub(currentUser, clubId);
-    await this.findPromotionOrFail(clubId, promotionId);
+    const current = await this.findPromotionOrFail(clubId, promotionId);
+    assertCanChangeStatus(current);
 
     const promotion = await this.prisma.promotion.update({
       where: { id: promotionId },
@@ -354,19 +360,23 @@ export class PromotionsService {
     return resolvedItems;
   }
 
-  private async assertEventBelongsToClub(clubId: string, eventId?: string | null) {
+  private async assertEventBelongsToClub(clubId: string, eventId?: string | null, requireEligible = true) {
     if (!eventId) {
       return;
     }
 
     const event = await this.prisma.event.findFirst({
       where: { id: eventId, clubId },
-      select: { id: true },
+      select: { id: true, status: true, endsAt: true },
     });
 
     if (!event) {
       throw notFound('EVENT_NOT_FOUND', 'No encontramos el evento seleccionado.');
     }
+    if (requireEligible && !promotionEventIsEligible(event)) {
+      throw badRequest('PROMOTION_EVENT_UNAVAILABLE', 'Selecciona un evento vigente que admita promociones.');
+    }
+    return event;
   }
 
   private async assertCanManageClub(currentUser: AuthenticatedUser, clubId: string) {
@@ -669,3 +679,18 @@ const toPromotionResponse = (
       : null,
   })),
 });
+
+function assertCanChangeStatus(promotion: Parameters<typeof promotionCanChangeStatus>[0]) {
+  if (!promotionCanChangeStatus(promotion)) {
+    throw badRequest('PROMOTION_EXPIRED', 'Esta promoción no admite cambios de estado. Revisa su vigencia y el evento asociado.');
+  }
+}
+
+function assertOfferSchedule(startsAt: Date | null, endsAt: Date | null, eventEndsAt?: Date) {
+  if (endsAt && endsAt <= new Date()) {
+    throw badRequest('PROMOTION_END_IN_PAST', 'El fin de la promoción debe estar en el futuro.');
+  }
+  if (startsAt && eventEndsAt && startsAt >= eventEndsAt) {
+    throw badRequest('PROMOTION_START_AFTER_EVENT', 'El inicio de la promoción debe ser anterior al fin del evento.');
+  }
+}
