@@ -12,6 +12,11 @@ import {
   PUSH_NOTIFICATION_CHANNEL,
 } from './ports/notification-channel.port';
 import { UpdateNotificationPreferenceDto } from '../presentation/notification.dto';
+import {
+  appPasswordChangeOtpMessage,
+  appPasswordRecoveryOtpMessage,
+  appRegistrationOtpMessage,
+} from './app-sms.templates';
 
 type SendPhoneVerificationCodeInput = {
   phoneCountryCode: string;
@@ -55,7 +60,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     return this.phoneMessageSender.send({
       phoneCountryCode: input.phoneCountryCode,
       phoneNumber: input.phoneNumber,
-      message: `Tu codigo de confirmacion de NightClub Platform es ${input.code}. Expira en ${input.expirationMinutes} minutos.`,
+      message: appRegistrationOtpMessage(input.code, input.expirationMinutes),
     });
   }
 
@@ -63,7 +68,15 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     return this.phoneMessageSender.send({
       phoneCountryCode: input.phoneCountryCode,
       phoneNumber: input.phoneNumber,
-      message: `Tu codigo para recuperar tu contrasena en NightClub Platform es ${input.code}. Expira en ${input.expirationMinutes} minutos.`,
+      message: appPasswordRecoveryOtpMessage(input.code, input.expirationMinutes),
+    });
+  }
+
+  sendPasswordChangeCode(input: SendPhoneVerificationCodeInput): Promise<void> {
+    return this.phoneMessageSender.send({
+      phoneCountryCode: input.phoneCountryCode,
+      phoneNumber: input.phoneNumber,
+      message: appPasswordChangeOtpMessage(input.code, input.expirationMinutes),
     });
   }
 

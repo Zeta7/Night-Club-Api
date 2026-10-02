@@ -39,6 +39,24 @@ export class UbigeoService {
     };
   }
 
+  resolveDistrictPreferences(ids: number[]) {
+    const uniqueIds = [...new Set(ids)];
+    const selected = uniqueIds.map((id) => this.districts.find((district) => district.id === id));
+    if (selected.some((district) => !district)) {
+      throw badRequest('INVALID_NIGHTLIFE_DISTRICT', 'Selecciona zonas válidas para indicar por dónde sueles salir.');
+    }
+    return selected.map((district) => {
+      const province = this.provinces.find((item) => item.id === district!.provincia_id);
+      const department = this.departments.find((item) => item.id === district!.departamento_id);
+      return {
+        id: district!.id,
+        name: [titleCase(district!.distrito), province ? titleCase(province.provincia) : null, department ? titleCase(department.departamento) : null]
+          .filter(Boolean)
+          .join(' · '),
+      };
+    });
+  }
+
   private read<T>(fileName: string): T {
     const candidates = [
       join(__dirname, '..', 'data', fileName),

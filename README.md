@@ -31,9 +31,21 @@ Notification incluye:
 - Puerto `PhoneMessageSender`.
 - Servicio `NotificationService`.
 - Implementacion de desarrollo `DevPhoneMessageSender`.
+- Implementacion real `LabsMobilePhoneMessageSender`.
 - Implementacion real `TwilioPhoneMessageSender`.
 
-En desarrollo, el codigo de confirmacion se escribe en logs. Para enviar SMS reales con Twilio, configura:
+En desarrollo, el codigo de confirmacion se escribe en logs. Para iniciar con SMS reales mediante LabsMobile, crea un token exclusivo para Beerry en `Configuracion API` y configura:
+
+```text
+PHONE_MESSAGE_PROVIDER=labsmobile
+LABSMOBILE_USERNAME=cuenta@ejemplo.com
+LABSMOBILE_API_TOKEN=...
+LABSMOBILE_SENDER=Beerry
+```
+
+`LABSMOBILE_USERNAME` es el correo de la cuenta y `LABSMOBILE_API_TOKEN` es el token API, no la contraseña del panel. Los destinatarios se envian en formato internacional E.164 y el backend elimina automaticamente el signo `+` antes de llamar a LabsMobile.
+
+Twilio se conserva como alternativa para una activacion posterior:
 
 ```text
 PHONE_MESSAGE_PROVIDER=twilio

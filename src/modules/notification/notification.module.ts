@@ -4,6 +4,7 @@ import { NotificationService } from './application/notification.service';
 import { PHONE_MESSAGE_SENDER } from './application/ports/phone-message-sender.port';
 import { DevPhoneMessageSender } from './infrastructure/dev-phone-message-sender.service';
 import { TwilioPhoneMessageSender } from './infrastructure/twilio-phone-message-sender.service';
+import { LabsMobilePhoneMessageSender } from './infrastructure/labsmobile-phone-message-sender.service';
 import { NotificationController } from './presentation/notification.controller';
 import { IdentityModule } from '../identity/identity.module';
 import { PUSH_NOTIFICATION_CHANNEL } from './application/ports/notification-channel.port';
@@ -31,6 +32,12 @@ import { FirebasePushNotificationChannel } from './infrastructure/firebase-push-
       useFactory: (config: ConfigService, devSender: DevPhoneMessageSender) => {
         const logger = new Logger('NotificationModule');
         const provider = config.get<string>('PHONE_MESSAGE_PROVIDER', 'dev').toLowerCase();
+
+        if (provider === 'labsmobile') {
+          logger.log('Proveedor de mensajes telefonicos activo: labsmobile');
+
+          return new LabsMobilePhoneMessageSender(config);
+        }
 
         if (provider === 'twilio') {
           logger.log('Proveedor de mensajes telefonicos activo: twilio');

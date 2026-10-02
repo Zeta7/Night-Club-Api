@@ -8,7 +8,7 @@ import {
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
-  ArrayMinSize,
+  ArrayUnique,
   IsArray,
   IsBoolean,
   IsEmail,
@@ -48,13 +48,28 @@ export class StartPreLaunchRegistrationDto extends PreLaunchAttributionDto {
   @ApiProperty() @Type(() => Number) @IsInt() @Min(1) provinceId!: number;
   @ApiProperty() @Type(() => Number) @IsInt() @Min(1) districtId!: number;
   @ApiProperty({ example: '130111' }) @IsString() @Matches(/^\d{6}$/) ubigeoCode!: string;
-  @ApiProperty({ isArray: true, example: ['discotecas', 'eventos'] })
-  @IsArray() @ArrayMinSize(1) @ArrayMaxSize(5) @IsString({ each: true }) interests!: string[];
+  @ApiPropertyOptional({ isArray: true, example: ['discotecas', 'eventos'], description: 'Se completa opcionalmente después de verificar el celular.' })
+  @IsOptional() @IsArray() @ArrayMaxSize(5) @ArrayUnique() @IsString({ each: true }) interests?: string[];
+  @ApiPropertyOptional({ isArray: true, type: Number, maxItems: 3, description: 'Distritos donde la persona suele salir.' })
+  @IsOptional() @IsArray() @ArrayMaxSize(3) @ArrayUnique() @Type(() => Number) @IsInt({ each: true }) @Min(1, { each: true }) nightlifeDistrictIds?: number[];
+  @ApiPropertyOptional({ isArray: true, type: String, maxItems: 5, description: 'Establecimientos que la persona quiere ver en Beerry.' })
+  @IsOptional() @IsArray() @ArrayMaxSize(5) @ArrayUnique() @IsString({ each: true }) @MinLength(2, { each: true }) @MaxLength(120, { each: true }) suggestedVenues?: string[];
   @ApiProperty() @IsBoolean() isAdultDeclared!: boolean;
   @ApiProperty() @IsBoolean() privacyAccepted!: boolean;
-  @ApiProperty({ example: '2026-09-25' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
+  @ApiProperty({ example: '2026-10-01' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
   @ApiProperty() @IsBoolean() marketingConsent!: boolean;
   @ApiPropertyOptional({ description: 'Token de Cloudflare Turnstile.' }) @IsOptional() @IsString() @MaxLength(3000) turnstileToken?: string;
+}
+
+export class UpdatePreLaunchPreferencesDto {
+  @ApiProperty() @IsString() @MinLength(32) @MaxLength(200) accessToken!: string;
+  @ApiPropertyOptional({ isArray: true, example: ['discotecas', 'eventos'] })
+  @IsOptional() @IsArray() @ArrayMaxSize(5) @ArrayUnique() @IsString({ each: true }) interests?: string[];
+  @ApiPropertyOptional({ isArray: true, type: Number, maxItems: 3 })
+  @IsOptional() @IsArray() @ArrayMaxSize(3) @ArrayUnique() @Type(() => Number) @IsInt({ each: true }) @Min(1, { each: true }) nightlifeDistrictIds?: number[];
+  @ApiPropertyOptional({ isArray: true, type: String, maxItems: 5 })
+  @IsOptional() @IsArray() @ArrayMaxSize(5) @ArrayUnique() @IsString({ each: true }) @MinLength(2, { each: true }) @MaxLength(120, { each: true }) suggestedVenues?: string[];
+  @ApiProperty() @IsBoolean() marketingConsent!: boolean;
 }
 
 export class CheckPreLaunchPhoneDto {
@@ -97,7 +112,7 @@ export class CreateBusinessPreLaunchApplicationDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(500) socialNetworks?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(1200) comment?: string;
   @ApiProperty() @IsBoolean() privacyAccepted!: boolean;
-  @ApiProperty({ example: '2026-09-25' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
+  @ApiProperty({ example: '2026-10-01' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(3000) turnstileToken?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(120) sessionId?: string;
 }

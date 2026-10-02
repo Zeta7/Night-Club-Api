@@ -1554,6 +1554,9 @@ model PreLaunchLead {
   ubigeoCode           String
   launchMarketId       String
   interests            String[]
+  nightlifeDistrictIds Int[]               @default([])
+  nightlifeDistrictNames String[]           @default([])
+  suggestedVenues      String[]             @default([])
   isAdultDeclared      Boolean
   privacyAcceptedAt    DateTime
   privacyPolicyVersion String

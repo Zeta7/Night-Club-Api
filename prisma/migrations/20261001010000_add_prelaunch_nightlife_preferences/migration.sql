@@ -1,0 +1,4 @@
+ALTER TABLE "PreLaunchLead"
+ADD COLUMN "nightlifeDistrictIds" INTEGER[] NOT NULL DEFAULT ARRAY[]::INTEGER[],
+ADD COLUMN "nightlifeDistrictNames" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "suggestedVenues" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

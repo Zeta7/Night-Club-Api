@@ -10,6 +10,7 @@ import {
   RequestPreLaunchOtpDto,
   StartPreLaunchRegistrationDto,
   TrackPreLaunchEventDto,
+  UpdatePreLaunchPreferencesDto,
   VerifyPreLaunchOtpDto,
 } from './dto/prelaunch.dto';
 
@@ -25,6 +26,10 @@ export class PreLaunchController {
   @Get('locations')
   @ApiOperation({ summary: 'Obtener el catálogo oficial UBIGEO del Perú' })
   locations() { return this.prelaunch.locations(); }
+
+  @Get('venue-options')
+  @ApiOperation({ summary: 'Listar establecimientos disponibles para sugerencias del prelanzamiento' })
+  venueOptions() { return this.prelaunch.venueOptions(); }
 
   @Post('phone-check')
   @ApiOperation({ summary: 'Saber si un celular ya está registrado, sin enviar ningún mensaje' })
@@ -59,6 +64,10 @@ export class PreLaunchController {
   @Post('access/status')
   @ApiOperation({ summary: 'Consultar posición, mercado, nivel y referidos del registro verificado' })
   status(@Body() body: PreLaunchAccessDto) { return this.prelaunch.accessStatus(body.accessToken); }
+
+  @Post('preferences')
+  @ApiOperation({ summary: 'Guardar preferencias opcionales después de verificar el acceso' })
+  preferences(@Body() body: UpdatePreLaunchPreferencesDto) { return this.prelaunch.updatePreferences(body); }
 
   @Post('business-applications')
   @ApiOperation({ summary: 'Registrar solicitud de un negocio interesado' })
