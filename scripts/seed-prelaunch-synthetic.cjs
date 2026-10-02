@@ -15,7 +15,9 @@ if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL no está configurad
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
-const dataRoot = join(__dirname, '..', '..', 'Night-Club-Mobile', 'assets', 'data');
+// El backend debe ser desplegable de forma independiente. Estos catálogos son
+// la misma fuente versionada que usa UbigeoService y viajan dentro del repo.
+const dataRoot = join(__dirname, '..', 'src', 'modules', 'prelaunch', 'data');
 const demoFile = join(__dirname, '..', 'prisma', 'seeds', 'prelaunch-demo.json');
 const DEMO_PREFIX = 'prelaunch-demo-v1:';
 const baseDate = new Date('2026-08-01T18:00:00.000Z');
@@ -192,7 +194,7 @@ async function main() {
     departamento: item.departmentName,
     usuarios: item._count._all,
   })));
-  console.log('Para retirar únicamente estos datos ejecuta: npm run prelaunch:demo:clear');
+  console.log('Para retirar únicamente estos datos ejecuta: pnpm run prelaunch:demo:clear');
 }
 
 function assertDevelopment() {
