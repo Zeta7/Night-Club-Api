@@ -1540,7 +1540,7 @@ model PreLaunchLead {
   isSynthetic          Boolean             @default(false)
   syntheticKey         String?             @unique
   name                 String
-  email                String              @unique
+  email                String?             @unique
   phoneCountryCode     String              @default("+51")
   phoneNumber          String
   phoneE164            String              @unique

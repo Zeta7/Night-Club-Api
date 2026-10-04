@@ -73,7 +73,11 @@ export class PreLaunchAttributionDto {
 
 export class StartPreLaunchRegistrationDto extends PreLaunchAttributionDto {
   @ApiProperty({ maxLength: 120 }) @IsString() @MinLength(2) @MaxLength(120) name!: string;
-  @ApiProperty() @IsEmail() @MaxLength(200) email!: string;
+  @OptionalField({ format: 'email', maxLength: 200 })
+  @IsEmail()
+  @MaxLength(200)
+  @optionalTrimmed()
+  email?: string;
   @ApiProperty({ example: '987654321' }) @IsString() @Matches(/^9\d{8}$/) phone!: string;
   @Type(() => Number) @IsInteger() @Min(1) departmentId!: number;
   @Type(() => Number) @IsInteger() @Min(1) provinceId!: number;
@@ -116,7 +120,7 @@ export class StartPreLaunchRegistrationDto extends PreLaunchAttributionDto {
   suggestedVenues?: string[];
   @ApiProperty() @IsBoolean() isAdultDeclared!: boolean;
   @ApiProperty() @IsBoolean() privacyAccepted!: boolean;
-  @ApiProperty({ example: '2026-10-01' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
+  @ApiProperty({ example: '2026-10-04' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
   @ApiProperty() @IsBoolean() marketingConsent!: boolean;
   @OptionalField({ description: 'Token de Cloudflare Turnstile.' })
   @IsString()
@@ -191,7 +195,7 @@ export class CreateBusinessPreLaunchApplicationDto {
   @OptionalField() @IsString() @MaxLength(500) socialNetworks?: string;
   @OptionalField() @IsString() @MaxLength(1200) comment?: string;
   @ApiProperty() @IsBoolean() privacyAccepted!: boolean;
-  @ApiProperty({ example: '2026-10-01' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
+  @ApiProperty({ example: '2026-10-04' }) @IsString() @MaxLength(40) privacyPolicyVersion!: string;
   @OptionalField() @IsString() @MaxLength(3000) turnstileToken?: string;
   @OptionalField() @IsString() @MaxLength(120) sessionId?: string;
 }

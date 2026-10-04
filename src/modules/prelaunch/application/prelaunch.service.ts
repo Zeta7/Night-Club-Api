@@ -45,7 +45,7 @@ const PUBLIC_EVENTS = new Set<PreLaunchEventType>([
   PreLaunchEventType.PARTNER_CLICKED,
 ]);
 
-const PRELAUNCH_PRIVACY_POLICY_VERSION = '2026-10-01';
+const PRELAUNCH_PRIVACY_POLICY_VERSION = '2026-10-04';
 const PRELAUNCH_OTP_RESEND_SECONDS = 60;
 const PRELAUNCH_OTP_REQUEST_LIMIT = 3;
 const PRELAUNCH_OTP_MAX_ATTEMPTS = 5;
@@ -202,7 +202,7 @@ export class PreLaunchService implements OnModuleInit {
     await this.verifyTurnstile(input.turnstileToken, client.ip);
     const phoneNumber = input.phone.replace(/\D/g, '');
     const phoneE164 = `+51${phoneNumber}`;
-    const email = input.email.trim().toLowerCase();
+    const email = optional(input.email)?.toLowerCase() ?? null;
     const market = await this.resolveMarket(location);
     const existingPhone = await this.prisma.preLaunchLead.findUnique({ where: { phoneE164 } });
     if (existingPhone?.phoneVerifiedAt) {
@@ -215,7 +215,9 @@ export class PreLaunchService implements OnModuleInit {
       // porque es público por diseño; el nombre, la posición y el distrito no.
       return this.registeredAcknowledgement(existingPhone, phoneNumber);
     }
-    const existingEmail = await this.prisma.preLaunchLead.findUnique({ where: { email } });
+    const existingEmail = email
+      ? await this.prisma.preLaunchLead.findUnique({ where: { email } })
+      : null;
     if (existingEmail && existingEmail.id !== existingPhone?.id) {
       // Antes este error era terminal: no había salida en la interfaz. Ahora
       // el celular es el primer paso, así que se puede volver y entrar con el

@@ -1,0 +1,2 @@
+ALTER TABLE "PreLaunchLead"
+ALTER COLUMN "email" DROP NOT NULL;
