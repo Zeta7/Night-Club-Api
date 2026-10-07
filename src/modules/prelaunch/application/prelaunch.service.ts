@@ -45,7 +45,6 @@ const PUBLIC_EVENTS = new Set<PreLaunchEventType>([
   PreLaunchEventType.PARTNER_CLICKED,
 ]);
 
-const PRELAUNCH_PRIVACY_POLICY_VERSION = '2026-10-04';
 const PRELAUNCH_OTP_RESEND_SECONDS = 60;
 const PRELAUNCH_OTP_REQUEST_LIMIT = 3;
 const PRELAUNCH_OTP_MAX_ATTEMPTS = 5;
@@ -1359,10 +1358,14 @@ export class PreLaunchService implements OnModuleInit {
         'PRIVACY_ACCEPTANCE_REQUIRED',
         'Debes leer y aceptar la Política de Privacidad.',
       );
-    if (clean(version) !== PRELAUNCH_PRIVACY_POLICY_VERSION) {
+    // La versión identifica el texto que la persona vio y se conserva junto al
+    // consentimiento. No debe compararse con una constante del servidor: el
+    // frontend y el backend pueden desplegarse en momentos distintos y una
+    // aceptación válida no puede quedar bloqueada por ese desfase.
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(clean(version))) {
       throw badRequest(
-        'PRIVACY_POLICY_VERSION_OUTDATED',
-        'La Política de Privacidad cambió. Revísala y vuelve a aceptarla.',
+        'PRIVACY_POLICY_VERSION_INVALID',
+        'No pudimos identificar la Política de Privacidad aceptada. Actualiza la página e inténtalo nuevamente.',
       );
     }
   }
